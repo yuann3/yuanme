@@ -8,7 +8,7 @@ Can the Engine subset the math font to the glyphs a Site uses and compress it to
 
 ## Short answer
 
-**Yes, but no crate does it alone. The Engine has to put four crates together and own two small pieces of code itself.** Our pure-Rust spike gave the same pixels as `hb-subset` + `woff2_compress` in Chromium 153, Firefox 155 and 157, WebKit 26.6 and Safari 27.0.1, for all three math-core-fonts faces. Its WOFF2 files were 1–15% larger than HarfBuzz's.
+**Yes, but no crate does it alone. The Engine has to put four crates together and own two small pieces of code itself.** Our pure-Rust spike gave the same pixels as `hb-subset` + `woff2_compress` in Chromium 153, Firefox 155 and 157, WebKit 26.6 and Safari 27.0.1, for all three math-core-fonts faces. Its WOFF2 files were 3–18% larger than HarfBuzz's (6–18% on the 40-case page, 3–9% on all symbols; see [Verification](#verification)).
 
 Recommended stack (all versions pinned):
 
@@ -69,7 +69,7 @@ Fonts are the patched builds from math-core's playground: New Computer Modern Ma
 | Libertinus Math | 341,356 | 27,540 (323) | **31,644** (323) | 30,096 | 237,624 | **255,044** | 245,072 |
 | Noto Sans Math | 297,040 | 28,780 (554) | **33,812** (572) | 31,320 | 230,848 | **251,240** | 236,196 |
 
-Where the 6–15% gap comes from on small subsets, for New Computer Modern Math page subsets:
+Where the 6–18% gap comes from on small subsets, for New Computer Modern Math page subsets:
 
 - **CFF tables.** allsorts keeps the full String INDEX and local Subrs INDEX entry counts. It blanks the unused entries, but their offset arrays remain (8,374 strings, 2,661 subrs). It also does not desubroutinize. hb-subset compacts both. Without `--desubroutinize`, hb's WOFF2 is 50,160 instead of 49,004.
 - **`MATH`.** Our `MATH` is larger (3,362 vs 2,404 bytes) because it keeps per-glyph data that hb drops (see [below](#differences-from-hb-subset)).
@@ -188,7 +188,7 @@ Because the Engine produces the MathML itself, it can collect the characters whi
    - skera 0.8 for the non-outline tables, with explicit gids and `NO_LAYOUT_CLOSURE`
    - allsorts 0.17 for name-keyed CFF, with unused strings blanked
    - an Engine-owned `MATH` subsetter on write-fonts 0.54
-   - ttf2woff2 0.13 patched to accept `OTTO`, or woofwoof if we accept a C++ build step for the Engine's own release builds (Authors never compile)
+   - ttf2woff2 0.13 patched to accept `OTTO`. The alternatives are woofwoof, if we accept a C++ build step for the Engine's own release builds (Authors never compile), or, once it matures, sigilbuzz-woff, which accepts `OTTO` unpatched (see [Verification](#verification))
 2. **Fail the build loudly** if skera's glyph count differs from the closure, if any `MATH` glyph id falls outside the map, or if a requested code point is missing from the subset cmap.
 3. **Subset once per Site, not per page.** Take the union of characters from all pages and cache by (font hash, character-set hash, crate versions). Per-page subsets would cost more requests and lose cache hits across pages.
 4. **Test the pipeline.** Snapshot tests should run OTS and the structural check (outline, advance, `MATH`, `ssty` equivalence per code point) on every font in the Starter.
@@ -208,6 +208,28 @@ Because the Engine produces the MathML itself, it can collect the characters whi
 4. **Author-supplied math fonts.** These may be TrueType-flavoured (`glyf`), for which skera handles outlines natively and ttf2woff2 works unpatched. They may also lack `ssty` or be CFF2. Supporting them would need the same structural tests per font.
 5. **Dev server.** Should it serve the full font (fastest, and correct by definition) and subset only in production builds?
 6. **The build-time-math note's 21 KB figure** should be corrected to the numbers above, and math-core's `extract_math_chars.py` could be patched upstream to add U+0020 (for NBSP) and U+00AF.
+7. **sigilbuzz-woff** (see [Verification](#verification)) encodes `OTTO` WOFF2 in pure Rust without a patch. Once it has a few releases and real users, should it replace the patched ttf2woff2?
+
+## Verification
+
+An independent re-check on 2026-10-04 re-ran the measurements from the spike outputs and checked each claim against primary sources. The recommendation holds. Corrections and additions:
+
+- **The size gap was understated.** The note said Rust's WOFF2 was "1–15%" (short answer) or "6–15%" (small subsets) larger than hb-subset's. From the byte counts in the size table: page subsets are +5.7% (NewCM, 51,792 / 49,004), +14.9% (Libertinus, 31,644 / 27,540) and **+17.5%** (Noto, 33,812 / 28,780, partly because our closure keeps 572 glyphs to hb's 554). All-symbols subsets are +3.4%, +7.3% and +8.8%. The text now says 3–18% overall and 6–18% on the page. The byte counts themselves match the files in `/private/tmp/fontspike/out` and `render/f`.
+- **A candidate was missed: [oxifont-subset](https://crates.io/crates/oxifont-subset) 0.2.2** (2026-08-06, Apache-2.0, pure Rust). It is the only other crate found that claims CFF **and** `MATH` subsetting. It does not change the recommendation. Its `math.rs` remaps only the Coverage tables and copies `MathGlyphConstruction` variant and part glyph ids verbatim ("GID references in construction parts may become dangling"). It does no GSUB closure for `ssty`; GSUB came out as 16 bytes. Run on the page character set, OTS kept NewCM but logged "MATH: failed to parse MathGlyphInfo table / Table discarded", and rejected Libertinus and Noto outright ("CFF: Failed to parse Top DICT Data").
+- **A pure-Rust WOFF2 encoder that accepts `OTTO` unpatched now exists: [sigilbuzz-woff](https://crates.io/crates/sigilbuzz-woff) 0.3.2.** Its code accepts `0x4F54544F` ([wrap.rs L143–L147](https://github.com/Oneiriq/sigilbuzz/blob/fce2d02802149e369483ad5ad6ce9f9a9b96df02/crates/sigilbuzz-woff/src/woff2/wrap.rs#L143-L147)), and it depends only on the `brotli` crate, `miniz_oxide` and `sigilbuzz`. On the spike's Rust page subsets it produced 51,780 / 31,664 / 34,020 bytes (ttf2woff2 patched: 51,792 / 31,644 / 33,812). The `wuff` roundtrip was byte-identical for every table except `head`, and OTS accepted the output with `MATH` kept. It was first published on 2026-10-03, has 2 versions and about 20 downloads, so it is a fallback to watch, not the default. It does make a patched ttf2woff2 fork less of a commitment.
+- **Minor.** `woff2_compress` 1.0.2 on the NewCM Rust page subset gave 51,804 bytes on re-run. The note's 51,840 is probably the woofwoof figure. Either way ttf2woff2 is within 0.1%. The stripped binary re-measured at 2,866,048 bytes. Cargo's `strip = true` left 3,210,624 on macOS, so the Engine's release build may need an explicit `strip`.
+
+Confirmed against primary sources:
+
+- Crate versions and dates on crates.io: skera 0.8.0, read-fonts 0.45.0 and write-fonts 0.54.0 (all 2026-10-03); allsorts 0.17.0 (2026-05-13); fontcull 2.0.1; subsetter 0.2.6; font-subset 0.1.0; woofwoof 1.0.2; ttf2woff2 0.13.3 (2026-09-10).
+- skera-v0.8.0 `lib.rs` has no `CFF `, `CFF2` or `MATH` dispatch arm (L1283–L1426). The MATH closure is "not supported yet" (L564), and `DESUBROUTINIZE` is "UNIMPLEMENTED yet". No open or merged fontations PR adds either.
+- fontations#2105 (MATH in read-fonts and write-fonts) merged on 2026-09-08. Its first tags are read-fonts-v0.45.0 and write-fonts-v0.54.0, and earlier releases have no `math` module.
+- allsorts 0.17.0 `build_otf` writes only cmap, cvt, fpgm, hhea, hmtx, maxp, name, OS/2, post, prep and `CFF `. There have been no commits since the release.
+- ttf2woff2 `sfnt.rs` rejects any `flavor != TTF_FLAVOR`. Its dependencies are `brotli`, `byteorder` and `thiserror`, with no `cc`. woofwoof's `build.rs` uses `cc::Build`.
+- bearcove/fontcull is archived on GitHub, and its README says "absorbed into Dodeca".
+- OTS `math.cc` returns "bad glyph ID" when a part glyph is ≥ numGlyphs, and the README says it is "integrated into Chromium and Firefox". The spike's fontcull, skera, skera-passthrough and subsetter outputs fail OTS with the errors quoted. All six Rust WOFF2 files pass with no table discarded.
+- WebKit `FontCascadeInlines.h` L139–L141 and L176–L179 (`treatAsSpace` includes `noBreakSpace`, and `normalizeSpaces` maps it to space). Gecko `GetRuleThickness` measures U+00AF; `menclose` (L306) and `mroot` (L196) measure `'1'`; `mo` maps `-` to U+2212 (L125).
+- The render matrix: the `full` and `rust` screenshot hashes are identical in every case except the ones the table lists as 2-pixel residues (WebKit NewCM and Noto, Safari Noto).
 
 ## Appendix: spike
 
