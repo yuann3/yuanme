@@ -287,6 +287,30 @@ The Reference site's whole Markdown corpus is 27 KB. At that size comrak takes a
 3. **The slugger**, github-slugger 2.0.0 with Unicode 13 tables, the trailing-`-` strip and the duplicate-id quirk. Org and file stems share it.
 4. **Lifting display math** out of `<p>`, and **parsing the theorem/proof directive's info string**.
 
+## Verification
+
+An independent re-check on 2026-10-04 re-ran the spike and re-read the primary sources. The recommendation holds. These facts were reproduced:
+
+- **Versions and dates.** comrak 0.55.0 on 2026-09-06, pulldown-cmark 0.13.4 on 2026-05-20, markdown 1.0.0 on 2025-04-23 ([crates.io API](https://crates.io/api/v1/crates/comrak/versions)).
+- **Commits since 2025-10-04.** comrak 681 (522 from kivikakk), pulldown-cmark 143, markdown-rs 0. pulldown-cmark `main` is 205 commits ahead of v0.13.4 (GitHub API).
+- **Spec results.** Both spec files are byte-identical to upstream: commonmark-spec tag 0.31.2 and cmark-gfm `master` `test/spec.txt`. The CommonMark counts reproduce (652, 631→652, 652). So do the GFM extension failures: comrak none, markdown-rs #628, pulldown-cmark #621–631 and #652.
+- **Spike behaviour.** All of these reproduce:
+  - the slugger comparison (15/17),
+  - the smartypants table,
+  - `$5 and $10` parsed as math by markdown-rs,
+  - the loose list on `Pew.md` and in the minimal repro,
+  - directive nesting and `{#id .class}` attributes in comrak,
+  - hast-util-to-html 9.0.5 writing `&#x3C;`, `&#x26;` and raw `>` and `"`.
+- **Dedupe.** comrak's `Anchorizer` dedupes differently from github-slugger: it rescans from `-1` where github-slugger keeps a counter per slug. Both still pick the smallest free suffix, so the ids are identical. The only differences are the character filter and the Unicode version, as stated above.
+- **Changelog and sources.** `block_directive` arrived in 0.52 (PR #782, merged 2026-03-30), attributes in 0.54, `sourcepos_chars` in 0.52 (checked against `options.rs` at the v0.51.0 and v0.52.0 tags), and GHSA-xg9p-p4jc-c46g is patched in 0.55.0. docs.rs and crates.io depend on comrak 0.55.0 with `default-features = false`.
+
+Corrections and additions:
+
+1. **Attributes are on by default, not off.** comrak's `default` features include `cli`, and `cli` includes `attributes` ([Cargo.toml `[features]`](https://github.com/kivikakk/comrak/blob/v0.55.0/Cargo.toml)). A library user who keeps the defaults does get attributes. The feature is only lost once `default-features = false` is set to drop clap and syntect, which is why the recommended line still names `features = ["attributes"]`.
+2. **A stray `:::` swallows the rest of the document.** A bare `:::` with no name and no matching opener starts a new, empty `BlockDirective` that runs to the end of the document. In the spike, same-length nesting (`:::a` / `:::b` / `:::` / `:::`) closed both blocks on the first closer. The second `:::` then opened `<div class="">` around every following block, a heading included. The Engine should report a directive with an empty name as a diagnostic, not render it.
+3. **Benchmark numbers depend on load.** A re-run on the same M4 Max under heavy load (load average about 20) measured pulldown-cmark at 330–410 MB/s, comrak at 77–96 MB/s and markdown-rs at 5.4–5.8 MB/s. The ratios hold (about 4× and about 60–70×), so the conclusion does not change. Treat the absolute figures as approximate.
+4. **No better option was missed.** The other extensible Rust parser, markdown-it.rs (crate `markdown-it`), has had no release or commit since 0.6.1 on 2024-07-07 ([crates.io](https://crates.io/crates/markdown-it)), so it is not a better alternative.
+
 ## Open questions
 
 1. **Theorem syntax.** Use the comrak directive form `:::theorem[Title]{#thm-x}` with the Engine parsing the info string, or adopt the generic-directives proposal syntax that remark-directive uses, so Astro-era tools could read the same files? Same-length nesting is not supported, so outer blocks need more colons. Is that acceptable for Authors and agents?
