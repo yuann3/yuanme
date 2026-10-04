@@ -1,0 +1,134 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:{} arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+options: email:nil f:t inline:t num:nil p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+title: learning Rust Series: Perfect Number
+#+date: <2024-06-17 Mon>
+#+author: Kristian Alexander P
+#+email: alexforsale@yahoo.com
+#+language: en
+#+select_tags: export
+#+exclude_tags: noexport
+#+creator: Emacs 29.3 (Org mode 9.6.15)
+#+cite_export:
+#+hugo_section: posts
+#+hugo_base_dir: ../../
+#+hugo_draft: false
+#+hugo_tags: learning prog-modes programming
+#+hugo_categories: learning
+#+startup: inlineimages
+
+This will be a part of a series on my rust-learning journey. The goal of this post is to document my process of creating a simple program that determine if the number given is a perfect number[fn:1]. And also list the perfect number until the given number.
+
+* Imports
+#+name: imports
+#+begin_src rust -n
+  use std::io;
+#+end_src
+This is the common input / output modules.
+
+
+* Function to determine the perfect number
+#+name: is_perfect_number
+#+begin_src rust -n
+fn is_perfect_number(n: i32) ->  bool {
+    let mut sum: i32 = 1;
+    let mut i: i32 = 2;
+
+    while i * i <= n {
+        if n % i == 0 {
+            sum = sum + i + n / i;
+        }
+        i += 1;
+    }
+    if sum == n && n != 1 {
+        return true
+    } else {
+        return false
+    }
+}
+#+end_src
+This will calculate if the number is a perfect number or not.
+
+* Function to list all the perfect number
+#+name: perfect_number_list
+#+begin_src rust -n
+fn perfect_number_list(n: i32) ->  Vec<i32>{
+    let mut numbers: Vec<i32> = vec![];
+    for num in 1..n {
+        if is_perfect_number(num) {
+            numbers.push(num);
+        }
+    }
+    return numbers;
+}
+#+end_src
+This will calculate all the perfect number up to the given number. The return type is a vector, which is a resizeable arrays in rust. It size is unknown at compile time, and it can shrink or grow at any time.
+* The main function
+#+name: main
+#+begin_src rust -n
+  fn main() {
+      println!("Input a number!\n");
+      let mut input_number = String::new();
+      io::stdin()
+          .read_line(&mut input_number)
+          .expect("failed to read input.");
+      let x: i32 = input_number
+          .trim()
+          .parse()
+          .expect("Not an integer");
+      println!("Your input is: {}", x);
+      if is_perfect_number(x) {
+          println!("{} is a perfect number", x)
+      } else {
+          println!("{} is not a perfect number", x)
+      }
+
+      println!("Input a number!\n");
+      let mut number_range = String::new();
+      io::stdin()
+          .read_line(&mut number_range)
+          .expect("Failed to read input.");
+      let y: i32 = number_range
+          .trim()
+          .parse()
+          .expect("Not an integer");
+      print!("The perfect number from 1 to {} is: ", y);
+      for element in &perfect_number_list(y) {
+          print!("{} ", element);
+      }
+      println!(); // for whitespace
+  }
+#+end_src
+There's alot going on here:
+** Reading user input
+I'm sure there are packages that simplify this process, but when I'm learning new programming languages I try to stick with the builtins first. But basically it goes like this:
+- ~String::new~ :: It creates an empty string.
+  I don't actually know if all stdin should be treated as string.
+- ~io::stdin~ :: From the =std::io= module.
+- ~.readline~ :: The actual reading. The =&mut= before the variable =input_number= means it is a mutable reference to the variable =input_number=.
+- ~.expect~ :: In case the input is not a string.
+
+The conversion from string to integer is done by declaring it into another variable and:
+- ~.trim~ :: clear the whitespaces if any.
+- ~.parse~ :: parsing it into another type, in this case =i32=, and lastly,
+- ~.expect~ :: Guard it in case it is a different type
+
+The rest of this main function is by using the two functions earlier.
+* The Whole Code
+#+begin_src rust -n :noweb yes
+  <<imports>>
+
+  <<is_perfect_number>>
+
+  <<perfect_number_list>>
+
+  <<main>>
+#+end_src
+
+This is the running code.
+#+caption: the code in action
+[[./rust-perfect-number.png][file:rust-perfect-number.png]]
+* Footnotes
+
+[fn:1] https://en.wikipedia.org/wiki/Perfect_number

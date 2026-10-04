@@ -1,0 +1,448 @@
+#+OPTIONS:    H:3 num:nil toc:2 \n:nil ::t |:t ^:{} -:t f:t *:t tex:t d:(HIDE) tags:not-in-toc
+#+STARTUP:    align fold nodlcheck hidestars oddeven lognotestate hideblocks
+#+SEQ_TODO:   TODO(t) INPROGRESS(i) WAITING(w@) | DONE(d) CANCELED(c@)
+#+TAGS:       Write(w) Update(u) Fix(f) Check(c) noexport(n)
+#+TITLE:      Python Source Code Blocks in Org Mode
+#+AUTHOR:     Gary Oberbrunner
+#+EMAIL:      garyo[at]oberbrunner[dot]com
+#+LANGUAGE:   en
+#+HTML_LINK_UP:    index.html
+#+HTML_LINK_HOME:  https://orgmode.org/worg/
+#+EXCLUDE_TAGS: noexport
+
+#+name: banner
+#+begin_export html
+  <div id="subtitle" style="float: center; text-align: center;">
+  <p>
+  Org Mode support for <a href="http://python.org/">Python</a>
+  </p>
+  <p>
+  <a href="http://python.org/">
+  <img src="http://www.python.org/images/python-logo.gif"/>
+  </a>
+  </p>
+  </div>
+#+end_export
+
+* Template Checklist [11/14] 					   :noexport:
+  - [X] Revise #+TITLE:
+  - [X] Indicate #+AUTHOR:
+  - [X] Add #+EMAIL:
+  - [X] Revise banner source block [3/3]
+    - [X] Add link to a useful language web site
+    - [X] Replace "Language" with language name
+    - [X] Find a suitable graphic and use it to link to the language
+      web site
+  - [X] Write an [[Introduction]]
+  - [X] Describe [[Requirements and Setup][Requirements and Setup]]
+  - [X] Replace "Language" with language name in [[Org Mode Features for Language Source Code Blocks][Org Mode Features for Language Source Code Blocks]]
+  - [X] Describe [[Header Arguments][Header Arguments]]
+  - [X] Describe support for [[Sessions]]
+  - [ ] Describe [[Result Types][Result Types]]
+  - [ ] Describe [[Other]] differences from supported languages
+  - [X] Provide brief [[Examples of Use][Examples of Use]]
+  - [X] Add caveats about utf-8 in strings
+  - [ ] Add caveats about utf-8 in tables
+* Introduction
+Python is a high-level, readable, interpreted language which can be
+used for many common computing tasks.  It runs on most modern
+operating systems.  Python source code blocks are fully supported in
+Org Mode with a wide variety of Python-specific header arguments.
+
+Python source code blocks in Org Mode can be used to define functions,
+filter and analyze data, create graphics and figures, and produce
+reproducible research papers.
+
+* Requirements and Setup
+Python source code blocks in Org Mode require a working python installation.
+Python is included in Mac OS X and often in Gnu/Linux, and is easily
+available for Windows.  Python installers are located at
+the [[http://www.python.org/download/][Python download site]].
+
+Org Mode supports graphical output for LaTeX and HTML documents using
+[[http://matplotlib.org/][Matplotlib]].
+
+To configure your emacs org-mode to use python, you'll need to ensure
+that ~org-babel-load-languages~ includes an entry for it.
+Typically, ~org-babel-load-languages~ will contain many entries.  The
+example below omits other languages.
+
+#+begin_src emacs-lisp :tangle yes
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)))
+#+end_src
+
+* Org Mode Features for Python Source Code Blocks
+** Header Arguments
+*** Language-Specific Header Arguments
+ - =:results {output, value}=: Output results come from whatever the
+   python code prints on stdout. Value results are the value of the
+   last expression evaluated in the code block. Value mode is the
+   default (as with other languages).  In value mode you can use the
+   following subtypes:
+   - =verbatim=: value is returned as string. In particular, use this
+     to prevent conversion of lists and tuples to tables.
+   - =table=: (Org 9.7+) Try to convert the result to an Org table.
+     Dicts, numpy arrays, and pandas DataFrames/Series can be returned
+     as tables this way (by default, they are printed verbatim).  Note
+     that lists and tuples are already converted to table by default
+     (use =verbatim= to prevent that).
+   - =pp=: value is pretty-printed by python using =pprint.pformat(%s)=, then inserted
+ - =:results graphics file {output, value}=: (Org 9.7+) save graphics
+   with matplotlib. The behavior depends on whether value or output
+   results are used. For value results, the last line should return a
+   matplotlib Figure object to plot. For output results, the current
+   figure (as returned by =pyplot.gcf()=) is cleared before
+   evaluation, and then plotted afterwards. Specify the file to save
+   the results to with =:file=.
+ - =:return=: Appends a =return= statement to the end of the code
+   block. Only when result-type is value, and not in session mode.
+ - =:python=: Name of the command for executing Python code.
+
+*** Common Header Arguments
+ - =:session [name]=: default is no session.
+ - =:var data=data-table=: Variables can be passed into python from org-mode tables as
+   scalars or lists.  See the org-mode manual for more details.
+ - =:exports {code, results, both, none}=: Standard babel option for what to export.
+ - =:file=: Filename to save results to (e.g. for =graphics=).
+
+** Sessions
+Session mode is fully supported in python, including named sessions.
+In session mode, each block is run in the same long-running python
+interactive interpreter session.  You can have multiple sessions, all
+independent.
+
+Sessions can be used to define functions, set up variables, and share
+code between source blocks.
+
+** Return values
+
+Session and non-session modes handle return values slightly
+differently.  In non-session mode, the python code block will be
+wrapped in a function, so to return a value (in =:results value= mode)
+you have to use a =return= statement.  In session mode, the last
+statement's value will be returned if it is a top-level expression;
+you should _not_ use a =return= statement.
+
+*** Non-session mode example
+
+#+begin_example
+# use return statement
+# Entire source block will get indented and used as the body of main()
+,#+begin_src python
+def foo(x):
+  if x>0:
+    return x+1
+
+  else:
+    return x-1
+
+return foo(5)
+,#+end_src
+
+,#+RESULTS:
+: 6
+#+end_example
+
+*** Session mode example
+
+#+begin_example
+# don't use return statement
+,#+begin_src python :session
+def foo(x):
+  if x>0:
+    return x+1
+  else:
+    return x-1
+
+foo(1)
+,#+end_src
+
+,#+RESULTS:
+: 2
+#+end_example
+
+A limitation of session-mode return values is that the final statement
+must be a top-level expression, otherwise nothing is returned.
+
+For example, the code block below doesn't return anything, because the
+final expression is an indented if/else block, not a top-level
+expression:
+
+#+begin_example
+,#+begin_src python :session :results value
+import random
+if random.randint(0,10) % 2 == 0:
+    "even"
+else:
+    "odd"
+,#+end_src
+
+,#+RESULTS:
+#+end_example
+
+To return the value of an indented block, assign the value to a
+variable, and return that variable as the final top-level expression:
+
+#+begin_example
+,#+begin_src python :session :results value
+import random
+if random.randint(0,10) % 2 == 0:
+    ret = "even"
+else:
+    ret = "odd"
+ret
+,#+end_src
+
+,#+RESULTS:
+: even
+#+end_example
+
+** Graphics
+*** Manual plotting with Org 9.6 and earlier
+
+To return plots, save the figure to a file, return the filename, and
+set the header argument =:results file link=.
+
+For example:
+
+#+begin_example
+,#+begin_src python :session :results file link
+import matplotlib
+import matplotlib.pyplot as plt
+fig=plt.figure(figsize=(3,2))
+plt.plot([1,3,2])
+fig.tight_layout()
+
+fname = 'images/myfig.pdf'
+plt.savefig(fname)
+fname # return this to org-mode
+,#+end_src
+
+,#+RESULTS:
+[[file:images/myfig.pdf]]
+#+end_example
+
+You can use noweb to reduce the boilerplate of saving and returning
+the filename; see the [[*Plotting][example]] below.
+
+Depending on your Python and matplotlib installation details, you may
+have to set the backend explicitly to a PDF or PNG or other
+file-exporting backend when using session mode, for example by calling
+=matplotlib.use('Agg')=, for example:
+
+#+begin_example
+,#+begin_src python :results file link
+import matplotlib, numpy
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+fig=plt.figure(figsize=(4,2))
+x=numpy.linspace(-15,15)
+plt.plot(numpy.sin(x)/x)
+fig.tight_layout()
+plt.savefig('images/python-matplot-fig.png')
+return 'images/python-matplot-fig.png' # return filename to org-mode
+,#+end_src
+
+,#+RESULTS:
+[[file:images/python-matplot-fig.png]]
+
+#+end_example
+[[file:images/python-matplot-fig.png]]
+
+*** Automatic plotting in Org 9.7+
+
+Starting in Org 9.7, ob-python can automatically use matplotlib to
+save graphics results, using the header arg =:results graphics file=.
+The behavior depends on whether value or output results are used. For
+value results, the last line should return a matplotlib Figure object
+to plot. For output results, the current figure (as returned by
+=pyplot.gcf()=) is cleared before evaluation, and then plotted
+afterwards.
+
+Here is an example using output results:
+
+#+begin_example
+,#+begin_src python :results graphics file output :file boxplot.svg
+  import matplotlib.pyplot as plt
+  import seaborn as sns
+  plt.figure(figsize=(5, 5))
+  tips = sns.load_dataset("tips")
+  sns.boxplot(x="day", y="tip", data=tips)
+,#+end_src
+#+end_example
+
+And here is the same example using value results:
+
+#+begin_example
+,#+begin_src python :results graphics file value :file boxplot2.svg
+  import matplotlib.pyplot as plt
+  import seaborn as sns
+  plt.figure(figsize=(5, 5))
+  tips = sns.load_dataset("tips")
+  sns.boxplot(x="day", y="tip", data=tips)
+  return plt.gcf()
+,#+end_src
+#+end_example
+
+** Tables
+
+By default, lists and tuples are converted to Org tables automatically:
+
+#+begin_example
+,#+begin_src python
+  return [1,2,3]
+,#+end_src
+
+,#+RESULTS:
+| 1 | 2 | 3 |
+#+end_example
+
+You can suppress the table conversion with =:results verbatim=.
+
+#+begin_example
+,#+begin_src python :results verbatim
+  return [1,2,3]
+,#+end_src
+
+,#+RESULTS:
+: [1, 2, 3]
+#+end_example
+
+Most other objects are printed as string by default, but starting in
+Org 9.7, you can specify =:results table= to tell Org to try and
+convert the result to table.  In particular, this works for dicts,
+numpy arrays, and pandas DataFrames/Series:
+
+#+begin_example
+,#+begin_src python :results table
+  return {"a": 1, "b": 2}
+,#+end_src
+
+,#+RESULTS:
+| a | 1 |
+| b | 2 |
+
+,#+begin_src python :results table
+  import pandas as pd
+  import numpy as np
+
+  return pd.DataFrame(np.array([[1,2,3],[4,5,6]]),
+                      columns=['a','b','c'])
+,#+end_src
+
+,#+RESULTS:
+|   | a | b | c |
+|---+---+---+---|
+| 0 | 1 | 2 | 3 |
+| 1 | 4 | 5 | 6 |
+#+end_example
+
+** Noweb
+
+Noweb syntax allows references between code blocks.  One situation
+where this is useful is when you have some boilerplate code you need
+to repeat across many code blocks, and want to hide during export.
+
+Below are examples of how this can be useful for returning matplotlib
+figures and pandas dataframes, in Org versions 9.6 or earlier (note
+that Org 9.7 adds built-in support for matplotlib graphics and pandas
+dataframes, so noweb isn't necessary for those cases anymore).
+
+*** Plotting
+
+Prior to Org 9.7, returning a plot from a ob-python block requires
+saving the figure to a file and returning the filename. In the example
+below, we extract this to a separate block that can be referred to by
+other code blocks. The =:noweb strip-export= header argument means to
+allow noweb syntax, but to hide the inserted code during export.
+
+#+begin_src org
+,#+name: savefig
+,#+begin_src python :var figname="plot.svg" width=5 height=5 :exports none
+  return f"""plt.savefig('{figname}', width={width}, height={height})
+  '{figname}'"""
+,#+end_src
+
+,#+header: :noweb strip-export
+,#+begin_src python :results value file link :session :exports both
+  import matplotlib, numpy
+  import matplotlib.pyplot as plt
+  fig=plt.figure(figsize=(4,2))
+  x=numpy.linspace(-15,15)
+  plt.plot(numpy.sin(x)/x)
+  fig.tight_layout()
+  <<savefig(figname="plot.png", width=10, height=5)>>
+,#+end_src
+#+end_src
+
+*** Pandas dataframes
+
+In the below example, we use the external [[https://pypi.org/project/tabulate/][tabulate]] package to convert
+a pandas Dataframe into org-mode format, but wrap it in a noweb block
+so we can hide the conversion during export.
+
+#+begin_src org
+,#+name: pd2org
+,#+begin_src python :var df="df" :exports none
+  return f"return tabulate({df}, headers={df}.columns, tablefmt='orgtbl')"
+,#+end_src
+
+,#+header: :prologue from tabulate import tabulate
+,#+header: :noweb strip-export
+,#+begin_src python :results value raw :exports both
+  import pandas as pd
+  df = pd.DataFrame({
+      "a": [1,2,3],
+      "b": [4,5,6]
+  })
+  <<pd2org("df")>>
+,#+end_src
+
+,#+RESULTS:
+|   | a | b |
+|---+---+---|
+| 0 | 1 | 4 |
+| 1 | 2 | 5 |
+| 2 | 3 | 6 |
+#+end_src
+
+* Additional examples
+  - Hello World!
+#+begin_example
+,#+begin_src python :results output
+print("Hello, world!")
+,#+end_src
+
+,#+RESULTS:
+: Hello, world!
+
+#+end_example
+
+  - Inline calling:
+#+begin_example
+Two plus two equals src_python{return(2+2)}
+#+end_example
+when exported, e.g. to HTML or LaTeX/PDF, becomes:
+#+begin_example
+Two plus two equals 4
+#+end_example
+
+
+  - Extracting data from an org-mode table
+#+begin_example
+,#+tblname: data_table
+| a | 1 |
+| b | 2 |
+| c | 3 |
+,#+begin_src python :var val=1 :var data=data_table
+# Return row specified by val.
+# In non-session mode, use return to return results.
+return(data[val])
+,#+end_src
+
+,#+RESULTS:
+| b | 2 |
+
+#+end_example

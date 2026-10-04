@@ -1,0 +1,795 @@
+```{r}
+#| include: false
+library(dsld)
+library(qeML)
+```
+
+{{< pagebreak >}}
+
+ 
+# Projection Operators
+
+::: {.callout-note}
+
+## Goals of this chapter:
+
+Here we go into detail on the tremendous value derived by viewing
+certain operations as projections.
+
+:::
+
+## Projections{#sec-projections}
+
+As mentioned, the extension of classical geometry to abstract vector
+spaces has powerful applications. There is no better example of this
+than the idea of *projections*.
+
+### Projection Decomposition
+
+Recall that we say that vectors $u$ and $v$ are *orthogonal* if $<u,v> = 0$. 
+Then we have the following:
+
+::: {#thm-projection}
+
+## Projection Theorem
+
+Consider an inner product space $V$, with subspace $W$.  Then for any
+vector $x$ in $V$, there is a unique vector $z$ in $W$, such that $z$ is
+the closest vector to $x$ in $W$.  Furthermore, $x-z$ is orthogonal to
+any vector $r$ in $W$.
+
+We say that $z$ is the *projection* of $x$ onto $W$.
+
+
+:::
+
+::: {.proof}
+
+The full proof is beyond the scope of this book, as it requires
+background in real analysis. Indeed, even the statement of the theorem
+is not mathematically tight.[For readers who do have such background,
+this is the Hilbert Projection Theorem. "Closest" is defined in terms of
+infimum, and $W$ needs to be a topologically closed
+set. See for example [the Wikipedia entry.](https://en.wikipedia.org/wiki/Hilbert_projection_theorem)]{.column-margin}
+
+$\square$
+
+:::
+
+In the case of $R^n$, It will be seen shortly that for each
+$W$ in the theorem, there is a matrix $P_{W}$ that implements the
+projection, i.e.
+
+$$
+z = P_W x
+$$
+
+Now consider a subspace $W$ of an inner product space $V$. The set of
+vectors having inner product 0 with all vectors in $W$ is denoted
+$W^{\perp}$.  It too is a subspace, and jointly $W$ and $W^{\perp}$ span
+all of $V$.
+
+We then have the famous relations:
+
+::: {#thm-projdecomp}
+
+Say the vector $x$ is in $R^n$, and $W$ is a subspace of the
+latter. Then there is a matrix $P_W$ such that
+
+* $P_W x$ is the projection of $x$ onto $W$.
+
+* $x$ can be uniquely represented as a sum of two orthogonal terms, one
+  in $W$ and the other in $W^{\perp}$:
+
+  $$
+  x = P_W x + (I-P_W x)
+  $$
+
+
+$\square$
+
+:::
+
+Note that projection operators are *idempotent*, meaning that if you
+apply a projection twice, the effect is the same as applying it once. In
+the matrix equation above, this means $P_W^2 = P_W$. This makes sense;
+once you drop down to the subspace, there is no further dropping down to
+that same space.
+
+## Orthogonal Complements and Direct Sums
+
+From @thm-projection, we know that for any $x$ in $V$, one can uniquely
+write
+
+$$
+x = x_1 + x_2
+$${#eq-x1x2}
+
+where $x_1$ and $x_2$ are in $W$ and $W^{\perp}$, respectively.
+
+Say $u_1,...,u_r$ and $v_1,...,v_s$ are bases for $W$ and $W^{\perp}$.
+Then in @eq-x1x2, we can generate $x_1$ from the $u_i$ and $x_2$ from
+the $v_j$. So together these two sets of vectors form a basis for all of
+$V$. Typically they are chosen to be orthonormal. (@sec-gramschmidt
+shows how we can convert the $u_i$ and $x_2$ to an orthonormal basis for
+$V$.)
+
+Finally, we say that $V$ is the *direct sum* of $W$ and $W^{\perp}$,
+denoted $V = W \oplus W^{\perp}$, and that the two subspaces 
+are *orthogonal complements* of each other.
+
+## Projections in the Linear Model{#sec-conditexpect}
+
+The case of the linear model will deepen our understanding, and will
+lead to a method for outlier detection that is commonly used in
+practice.
+
+### The least-squares solution is a projection
+
+Armed with our new expertise on inner product spaces, we see that
+@eq-matrixss is
+
+$$
+<S-Ab,S-Ab>
+$${#eq-rss}
+
+in the vector space $R^n$, where $n$ is the number of our data
+points.[Of course, "data points" means rows in the data frame.  In the
+statistics realm, people often speak of "observations."]{.column-margin}
+
+As usual, let $p$ denote the number of columns of $A$, and write
+$\widehat{\beta}$ for the value of $b$ that minimizes @eq-rss.
+
+Keep in mind, we are minimizing @eq-rss with respect to $b$. The set $W$
+of all $Ab$, as $b$ varies, is a subspace of $R^n$. In minimizing
+@eq-rss, *we are finding the value of $b$ that makes $Ab$ closest to
+$S$*.  That means that the minimizing $Ab$ *is the projection of $S$ onto
+$W$*.
+
+Then from @thm-projdecomp, we have that
+
+$$
+S - A \widehat{\beta}
+$$
+
+is orthogonal to $A \widehat{\beta}$. In other words, it must be true
+that
+
+$$
+\sum_{i=1}^n A_i \widehat{\beta} (S_i - A_i \widehat{\beta}) = 0
+$$
+
+where $A_i$ denotes row $i$ of $A$.
+
+### The "hat" matrix
+
+Recall @eq-linregformula, which showed the general solution to our
+linear regression model: 
+
+$$
+\widehat{\beta} = (A'A)^{-1} A'S
+$$
+
+The projection itself, i.e. the matrix $P_W x$ in @sec-projections, is then 
+
+$$
+A \widehat{\beta} = A(A'A)^{-1} A'S = HS
+$$
+
+where 
+
+$$
+H = A(A'A)^{-1} A'
+$$ 
+
+As discussed above, $H$ projects $S$ onto the space of all $Ab$. It is
+called the *hat matrix*. 
+
+As a projection, $H$ is idempotent, which one can easily verify by
+multiplication.  $H$ is also symmetric.
+
+### Application: identifying outliers
+
+An *outlier* is a data point that is rather far from the others. It
+could be an error, or simply an anomalous case. Even in the latter
+situation, such a data point could distort our $\widehat{\beta}$, so in both
+cases, identifying outliers, and possibly removing them, is important.
+
+Let $h_{ii}$ denote element $i$ of the diagonal of $H$, and again with
+$A_i$ denoting row $i$ of A. One can show that
+
+$$
+h_{ii} = A_{i} (A'A)^{-1} A_i'
+$${#eq-hii}
+
+The quantity $h_{ii}$ is called the *leverage* for datapoint $i$, with
+the metaphor alluding to the impact of datapoint $i$ on
+$\widehat{\beta}$.
+
+Using the material on circular shifts in @sec-trace, we have
+
+$$
+tr(H) = 
+tr[\underbrace{A(A'A)^{-1}} A'] =
+tr[A'\underbrace{A(A'A)^{-1}}] = tr(I) = p
+$$
+
+for $A$ of size $n \times p$.
+
+Thus the average value of the $n$ quantities $h_{ii}$ is $p/n$.
+Accordingly, we might suspect that $A_i$ is an outlier if $h_{ii}$ is
+considerably larger than $p/n$. 
+
+For example, let's look at the Major League Baseball player  data we've
+seen earlier (@sec-mlb):
+
+```{r}
+library(qeML)
+data(mlb1)
+ourData <- as.matrix(mlb1[,-1]) # must have matrix to enable %*%
+A <- cbind(1,ourData[,c(1,3)])
+dim(A)
+S <- as.vector(mlb1[,3])
+H <- A %*% solve(t(A) %*% A) %*% t(A)
+```
+
+Let's take a look:
+
+``` r
+hist(diag(H))
+```
+
+The ratio $p/n$ here is 3/1015, about 0.003. We might take a look at the 
+observations having $h_{ii}$ above 0.01, say.
+
+## Matrix Form of Projections in $\cal R^n$
+
+Our main question in this section:
+
+> Say we have a subspace $W$ of $\cal R^n$, and a vector
+> $x$ in $V$. How do we find the projection of $x$ in $W$? 
+
+Call the projection $z$, and let $u_1,...,u_k$ be an orthonormal basis
+for $W$.  Then there exist $a_1,...,a_k$ such that
+
+$$
+z = a_1 u_1 + ..., + a_k u_k
+$${#eq-aiui}
+
+We can find $z$ by first finding its coordinates $a_i$ with respect to
+the $u_i$, as follows.[Below, keep in mind that $x$ is known but $z$ is
+not. We desire a method by which we can find $z$ from
+$x$.]{.column-margin} .
+ 
+### Exploiting orthonormality 
+
+We do have a hint to work from: We know that $x-z$ is orthogonal to
+every vector in $W$ -- including the $u_i$. So
+
+$$
+0 = <x-z,u_i> = <x,u_i> - <z,u_i>
+$$
+
+and thus
+
+$$
+<x,u_i> = <z,u_i>
+$$
+
+Since $<z,u_i> = a_i$, we have
+
+$$
+a_i = <x,u_i> = u_i' x
+$$
+
+In partitioned matrix forms, the vector $a$ of the coordinates of $z$ is
+
+$$
+a = 
+ \left (
+ \begin{array}{r}
+ u_1' \\
+ ... \\
+ u_k' \\
+ \end{array}
+ \right )
+ x
+$$
+
+So, we're almost done! We wanted to determine the coordinates $a_i$ of
+$z$ in @eq-aiui, and now we see that we can easily obtain them by
+calculating $<x,u_i>$.  Our projection $z$ is
+
+$$
+(u_1 | ... | u_k) 
+ \left (
+ \begin{array}{rr}
+ a_1 \\
+ ... \\
+ a_k \\
+ \end{array}
+ \right )
+$$
+
+Combining the last two equations, we have
+
+$$
+z = (u_1 | ... | u_k) 
+ \left (
+ \begin{array}{r}
+ u_1' \\
+ ... \\
+ u_k' \\
+ \end{array}
+ \right ) x
+= QQ'x
+$$
+
+Wrapping up:
+
+::: {#thm-psubw}
+# Calculating a Projection Matrix
+
+Given: a subspace $W$ of $\cal R^n$ with orthonormal basis
+$u_1,...,u_k$; and a vector $x$ in $V$. Then the projection of $x$
+onto $W$ is equal to $QQ'x$, where $Q$ is the matrix whose columns are
+the $u_i$.
+
+:::
+
+## The Gram-Schmidt Method{#sec-gramschmidt}
+
+As seen in the last section, it is desirable to have an orthogonal
+basis, and it's even more convenient if its vectors have length 1 (an
+*orthonormal* basis). As noted, converting to length 1 is trivial --
+just divide the vector by its length, but how do we obtain an orthogonal
+basis? In other words, if we start with a basis $b_1,b_2,...,b_m$, how
+can we generate an orthonormal basis from this? 
+
+> *The Gram-Schmidt Method*
+> 
+> Say we have a basis $b_1,...,b_k$ for some vector space. Convert it to
+> an orthonormal basis as follows.
+> 
+> 1. Set $u_1 = b_1/||b_1||$.
+> 
+> 2. For each $i = 2,...,k$, find the projection $q$ of $b_{i}$ onto the
+>    subspace generated by $u_1,...,u_{i-1}$. Set $u_i$ to $b_i-q$, and
+>    normalize it.
+
+Wny does this work?  Let $\cal{W}$ denote the subspace generated by
+$u_1,...,u_{i-1}$.  Since $q$ is the projection of $b_i$ onto $\cal{W}$,
+$b_i - q$ will be orthogonal to $\cal{W}$, thus to $u_1,...,u_{i-1}$ --
+exactly what we need.
+
+## Projections in $RV(\Omega)_0${#sec-rvomegaprojs}
+
+Here is a good example of how a very abstract vector space becomes
+useful in practical applications, such as will be presented in
+@sec-fairness. The material is rather involved, consisting of
+computation of various probabilistic quantities. Since $\cal
+RV(\Omega)_0$
+is a vector space of random variables, each entity is both a random
+variable and a vector. Sometimes the latter will be the focus, sometimes
+the former.  We request the reader's patience in following this duality.
+
+Recall first the definition of inner products in this space,
+@eq-covinner, a connection between the notion of covariance in
+probability theory and the notion of inner product in linear algebra.
+
+$$
+<U,V> = Cov(U,V) = E[(U - EU) (V - EV)] = E(UV)
+$$
+
+Among other things, this implies:
+
+::: {.callout-note}
+## Orthogonality and Uncorrelatedness
+
+Recall from @eq-rhodef that correlation is the quotient of covariance
+and the product of standard deviations. Thus random variables $U$ and
+$V$ in $RV(\Omega)_0$.  are uncorrelated if and only if they are
+orthogonal as vectors. 
+
+:::
+
+### Conditional expectation
+
+[Our definition of $RV(\Omega)_0$ restricts to random variables with
+mean 0. Thus technically the derivation here should subtract means; e.g.
+the random variable $Y$ below should be replaced by $\tilde{Y} = Y -
+EY$. However, in order to avoid clutter, we do not take this
+step.]{.column-margin} It will turn out that in $RV(\Omega)_0$,
+projections take the form of conditional means. Let's see how that
+arises. 
+
+One of the Your Turn problems at the end of this chapter covers this
+setting: 
+
+> Say we roll a die once, producing $X$ dots. If $X = 6$,
+> we get a bonus roll, yielding $B$ additional dots; otherwise, $B = 0$.
+> Let $Y = X+B$.
+
+*The basic form, conditioning value specified:*
+
+Now, what is $E(Y | B = 2)$? If $B = 2$, then we got the bonus roll, so
+$X = 6$ and $Y = X + B = 8$:
+
+$$
+E(Y | B = 2) = 8
+$$
+
+Similarly, 
+
+$$
+E(Y | B = 3) = 9
+$$
+
+and so on. 
+
+But what about $E(Y | B=0)$? In that case, $Y = X$, so
+
+$$
+P(Y = i | B = 0) = P(X = i | X \neq 6) = \frac{1}{5}, ~ i=1,2,3,4,5
+$$
+
+We then have $E(Y|B=0) = 3$.
+
+So our answer is
+
+$$
+E(Y | B = i) =
+\begin{cases}
+3 & i = 0 \\
+6 + i & i = 1,2,3,4,5
+\end{cases}
+$$
+
+*The random variable form:*
+
+The quantity $E(Y | B = i)$, a number, *can be converted to a random
+variable*, in the form of a function of $B$, which we will call $q(B)$.
+Write
+
+$$
+q(B) = 
+\begin{cases}
+3 & B = 0 \\
+6 + B & B = 1,2,3,4,5
+\end{cases}
+$$
+
+It is standard to denote $q(B)$ by $E(Y | B)$ -- without '= i'. 
+
+$B$ is random, so $q(B)$ is also random. In other words, $E(Y|B)$ is a
+random variable.
+
+We need one more thing:
+
+*The Law of Iterated Expectation:*
+
+For random variables $U$ and $V$, set
+
+$$
+R = E[V |U]
+$$
+
+Then 
+
+$$
+E(R) = E(V)
+$$
+
+More concisely:
+
+$$
+E[E(V|U)] = E(V)
+$${#eq-iterexpect}
+
+Intuitive explanation: Say we wish to compute the mean height $E(H)$ of
+all students at a university. We might ask each department $D$ to
+measure their own students, and report to us the resulting mean $E(H|D)$. 
+We could then average all those departmental means to get the overall
+mean for the university:
+
+$$
+E[E(H|D)] = E(H)
+$$
+
+Note, though that that outer $E()$ (the first 'E') is a weighted
+average, since some departments are larger than others. The weights are
+the distribution of $D$.
+
+### Projections in $RV(\Omega)_0$: how they work{#sec-howtheywork}
+
+Consider random variables $X$ and $Y$ in $RV(\Omega)_0$, and consider
+the subspace $W$ consisting of all functions of $X$. (By definition,
+this means that each such function, say $g(X)$, has finite variance and
+mean 0.)
+
+@thm-projection talks of a closest vector
+$C$ in $W$ to $Y$. Let's see what form $C$ would take in this vector
+space. 
+
+Remember, the (squared) distance from $Y$ to $C$ is
+
+$$
+||Y - C||^2 = <Y-C,Y-C> = E[(Y-C)^2]
+$$
+
+By @eq-iterexpect, that last term is 
+
+$$
+E[ E((Y-C)^2 | X) ]
+$$
+
+For any random variable $T$ of finite variance, the minimum value of
+$E[(T-d)^2]$ over all constants $d$ is attained by taking $d$ to be the
+mean of $T$, i.e.  $d = E(T)$. (See Your Turn problem below.) So, the
+minimum of $E((Y-C)^2 | X)$, for all random variables $C$, is attained
+by the *conditional* mean,
+
+$$
+C = E(Y | X)
+$$
+
+In other words:
+
+> Projections in $RV(\Omega)_0$ take the form of conditional means.
+> Here, the projection of $Y$ onto $W$ is $E(Y | X)$.
+> 
+> Moreover:
+> 
+> Since the difference between a vector and its projection onto a subspace
+> is orthogonal to that subspace we have:
+
+> The vector $Y - E(Y|X)$ is uncorrelated with $E(Y|X)$.  In other words,
+> the prediction error (also called the *residual*) has 0 correlation with
+> the prediction itself.
+
+## Application: Fairness in Algorithms{#sec-fairness}
+
+COMPAS is a software tool designed to aid judges in determining
+sentences in criminal trials, by assessing the probability that the
+defendant would recidivate. It is a commercial product by Northpointe.
+
+COMPAS came under intense scrutiny after [an
+investigation](https://www.propublica.org/article/machine-bias-risk-assessments-in-criminal-sentencing)
+by *ProPublica*, which asserted evidence of racial bias against black
+defendants compared to white defendants with similar profiles.
+Northpointe contested these findings, asserting that their software
+treated black and white defendants equally.
+
+It should be noted the *ProPublica* did not accuse Northpointe of
+intentional bias. Instead, the issue largely concerns *proxies*,
+variables that are related to race, rather than race (or gender etc.)
+itself. If for example COMPAS were to use a person's ZIP code as a
+predictor, that might be correlated with race, and thus would be unfair to
+use in prediction. 
+
+Let $S$ denote a vector of one or more sensitive variable, e.g. race.
+The point here is that, due to proxies, we cannot solve the problem by
+simply removing $S$ from our analysis; we would still be using
+correlates of $S$.
+
+This book of course does not take a position on the specific dispute
+between Northpointe and *ProPublica*. The above is simply a motivational
+example.
+
+### Setting
+
+We consider prediction of a variable $Y$ from a feature vector $X$ and a
+vector of sensitive variables $S$. The target $Y$ may be either numeric
+(in a regression setting) or dichotomous (in a two-class classification
+setting where $Y$ = 1 or $Y$ = 0).  We will consider only the numeric
+case here. 
+
+*Our goal is to eliminate the influence of $S$.*
+
+### The method of Scutari *et al*
+
+The basic assumption (BA) amounts to $(Y,X,S)$ having a multivariate
+Gaussian distribution, with $Y$ scalar and $X$ being a vector of length
+$p$.  Again, all variables
+are assumed centered, by subtracting their means, so that they now have
+mean 0.
+
+Let's review the material in @sec-mvn: Say we have $W$ with a
+multivariate normal distribution, and wish to predict one of its
+components, $Y$, from a vector $X$ consisting of one or more of the
+other components, or linear combinations of them. Then:
+
+* The distribution of $Y|X$ is univariate normal.
+
+* E(Y|X=t) is a linear function of $t$.
+
+* Var(Y|X=t) is independent of $t$.
+
+One can also show that,
+
+* Though having 0 correlation does not in general imply statistical
+  independence, it does so in the multivariate normal case.
+
+One first applies a linear model in regressing $X$ on $S$,
+
+$$
+E(X | S) = \gamma' S 
+$$
+
+where $\gamma$ is a length-$p$ coefficient vector. Here we are
+predicting the predictors (of $Y$), seemingly odd, but as a first step
+in ridding ourselves from the influence of $S$.
+
+Now consider the resulting prediction errors (*residuals)*,
+
+$$
+U = X - \gamma' S 
+$$
+
+$U$ can be viewed as the part of $X$ that is unrelated to $S$; think of
+$U$ as "having no $S$ content." $U$ is a vector of length $p$.
+
+Note the following:
+
+* From @sec-howtheywork, $E(X|S)$ is the projection of $X$ onto the
+  subspace of all functions of $S$.
+
+* $X - E(X|S)$ (original vector minus the projection) is orthogonal to $S$.
+
+* That is, 
+
+  \begin{align}
+  0 &= <S,X - E(X|S)> \\
+    &= E[S' (X - E(X|S))]\\ 
+    &= E(S' U) \\
+    &= Cov(S,U)
+  \end{align}
+
+* Thus $S$ and $U$ are uncorrelated.
+
+* Due to the BA, that means $S$ and $U$ are independent.
+
+* In other words, our intution above that $U$ "has no $S$ content" 
+  was mathematically correct.
+
+* Bottom line: Instead of predicting $Y$ from $X$, use $U$ as the
+  predictor vector.  This will enable truly $S$-free prediction.
+
+Goal achieved.
+
+## Your Turn
+
+❄️  **Your Turn:** Consider the space $C(0,1)$. For function $f$ and $g$ 
+of your own choosing, verify that the Cauchy-Schwarz and Triangle
+Inequalities hold in that case.
+
+❄️  **Your Turn:** Show that for any random variable $Q$ of finite
+variance, the minimum value of $E[(Q-d)^2]$ over all constants $d$ is
+attained by taking $d$ to be the mean of $Q$, i.e.  $d = E(Q)$.
+Hint: First expand $(Q-d)^2$ as $Q^2 - dQ + d^2$.
+
+❄️  **Your Turn:** In the die rolling example, verify that
+
+$$
+E[E(Y|B)] = E(Y)
+$$
+
+by calculating both sides.
+
+❄️  **Your Turn:** Say we roll a die once, producing $X$ dots. If $X = 6$,
+we get a bonus roll, yielding $B$ additional dots; otherwise, $B = 0$.
+Let $Y = X+B$. Verify that $X$ and $B$ satisfy the Cauchy-Schwarz and
+Triangle Inequalities, and also find $\rho(X,B)$.
+
+❄️  **Your Turn:** Derive the Cauchy-Schwarz Inequality, using the
+following algebraic outline:
+
+* The inequality
+
+  $$
+  0 ~ \leq ~ <(au+v),(au+v)> ~
+  $$
+
+  holds for any scalar $a$.
+
+* Expand the right-hand side (RHS), using the bilinear property of inner 
+  products.
+
+* Minimize the resulting RHS with respect to $a$.
+
+* Collect terms to yield
+
+   $$
+   <u,v>^2 \leq ||u||^2 ||v||^2
+   $$
+
+❄️  **Your Turn:** Use the Cauchy-Schwarz Inequality to prove the
+Triangle Inequality, using the following algebraic outline.
+
+* Start with
+
+  $$
+  ||u+v||^2 = <(u+v,u+v>
+  $$
+
+* Expand the RHS algebraically.
+
+* Using Cauchy-Schwarz to make the equation an inequality.
+
+* Collect terms to yield the Triangle Inequality.
+
+❄️  **Your Turn:** Consider a set of vectors $W = {v_1,...,v_k}$ in an
+inner product space $V$. Let $u$ be another vector in $V$. Show that
+there exist scalars $a_1,...,a_k$ and a vector $v$ such that
+
+$$
+u = a_1 v_1 + ... + a_k v_k +v 
+$$
+
+with
+
+$$
+<v,v_i> = 0 \textrm{ for all i}
+$$
+
+❄️  **Your Turn:** Consider the quadratic form $x'Px$. Explain why, if $P$ 
+is a projection matrix, the form equals $||Px||^2$.
+
+❄️  **Your Turn:** Explain why any set of orthogonal vectors is linearly
+independent.
+
+❄️  **Your Turn:** Prove that the vector $Y - E(Y|X)$ is uncorrelated
+with $E(Y|X)$
+
+❄️  **Your Turn:** For $X$ and $Y$ in $RV(\Omega)_0$, prove that
+
+$$
+Var(Y) = E[Var(Y|X)] + Var[E(Y|X)],
+$$
+
+first algebraically using @eq-iterexpect and the relation $Var(R) =
+E(R^2) - (E(R))^2$, and then using the Pythagorean Theorem for a much
+quicker proof.  As before, assume $X$ and $Y$ are centered.
+
+❄️  **Your turn:** Show that @eq-hii holds. 
+
+❄️  **Your Turn:** Consider the space $RV(\Omega)_0$. In order for the
+claimed inner product to be valid, we must have that if $<X,X> = 0$,
+then $X$ must be the 0 vector. Prove this. 
+
+❄️  **Your Turn:** Say $V$ is $R^n$. Form the matrix $A$ whose
+columns are the $u_i$, and let $P = AA'$. Show that
+
+$$
+Px = <x,u_1> u_1+...+<x,u_k> u_k
+$$
+
+so that $P$ thereby implements the projection.
+
+❄️  **Your Turn:** Let $A$ be an $m \textrm{ x } n$ matrix. Consider the
+possible inner product on $\cal{R}^n$ defined by $<x,y> = x'A'A y$.
+State a condition on $A$ that is necessary and sufficient for the
+claimed inner product to be value, and prove this.
+
+❄️  **Your Turn:** Show that for any vector $w$ and symmetric matrix $M$,
+the quadratic form $w'Mw \geq 0$.
+
+❄️  **Your Turn:** Say in $C(0,1)$ we want to approximate functions by 
+polynomials. Specifically, for any $f$ in $C(0,1)$, we want to find the
+closest polynomial of degree $m$ or less. Write functions to do this, with the
+following call forms:
+
+``` r
+gsc01(f,m)  # performs Gram-Schmidt and returns the result
+bestpoly(f,gsout)  # approx. f by output from gsc01
+
+```
+
+Hint: Note that the set of polynomials of a given degree or less is a
+subspace of $C(0,1)$.  Also since the vectors here are functions, you'll
+need a data structure capable of storing functions. An R **list** will
+work well here.
+
+❄️  **Your Turn:** We noted that projection matrices in $R^n$ are
+idempotent. Prove the converse, i.e. that any idempotent matrix $A$ must
+be a projection to some subspace. Hint: Try the column space of $A$.

@@ -1,0 +1,240 @@
+#+TITLE:      About Worg
+#+AUTHOR:     Worg people
+#+STARTUP:    align fold nodlcheck hidestars oddeven lognotestate
+#+SEQ_TODO:   TODO(t) INPROGRESS(i) WAITING(w@) | DONE(d) CANCELED(c@)
+#+TAGS:       Write(w) Update(u) Fix(f) Check(c)
+#+LANGUAGE:   en
+#+PRIORITIES: A C B
+#+CATEGORY:   worg
+#+OPTIONS:   H:3 num:nil toc:t \n:nil ::t |:t ^:t -:t f:t *:t tex:t d:(HIDE) tags:not-in-toc
+#+HTML_LINK_UP:    index.html
+#+HTML_LINK_HOME:  https://orgmode.org/worg/
+
+# This file is released by its authors and contributors under the GNU
+# Free Documentation license v1.3 or later, code examples are released
+# under the GNU General Public License v3 or later.
+
+* What is Worg?  What is its relation to Org?
+
+Worg is a collaborative knowledge database about [[https://orgmode.org][Org]].
+
+It is made of numerous =.org= files that you can clone from
+[[https://git.sr.ht/~bzg/worg]].
+
+* Who can participate in the editing of Worg?
+
+Everyone with a minimal knowledge of Org (and Emacs).
+
+You can download =.org= source for any WORG page by replacing =.html=
+with =.org= in the URL.  Then, [[mailto:emacs-orgmode@gnu.org][send an email]] to Org mailing list with
+your suggestions or edits.
+
+If you are familiar with Git, you can directly make edits to Worg
+sources.  See the section describing [[#git][how to use git for Worg]] for
+details.
+
+If you are lost, you can ask [[mailto:contact@tecosaur.net][Timothy]] for help.
+
+* Who's in charge of Worg?
+
+Worg is currently maintained by Christian Moe.
+
+The maintainer's role is to take care of [[https://git.sr.ht/~bzg/worg][the Worg repository]] and to empower new
+maintainers and contributors.
+
+Worg was started by [[http://bzg.fr][Bastien]] in the hope that other Org-ers around will
+bite into this and start sharing tutorials, example of codes, etc.
+
+* Why use Org-mode for creating a collaborative website?
+
+Org makes it easy, fast and effective to edit *well-structured*
+files.  Ever wanted to edit a [[file:org-tutorials/tables.org][table]] in a wiki?  Ever wanted to change
+the outline structure in a wikipage?  Ever wanted to edit lists
+quickly?  Org lets you do this.
+
+Org-mode makes *beautiful* documents: it supports links, font
+beautification, examples, etc.  And you can export those documents to
+HTML, LaTeX, or DocBook.
+
+Org is also a powerful *task-management system*.  Hopefully sharing
+a [[file:todo.org][TODO file]] will make it easy for everyone to know where they could help.
+
+* OK, I want to *contribute to Worg* now!
+
+First, you may be interested in general advice and conventions on how
+to [[file:worg-editing.org][let Worg grow]].
+
+If you're interested in how Worg publishes itself as a website, see
+the [[file:worg-setup.org][Worg setup]] page.
+
+Once you are familiar with the above, you can contribute by sending
+your edits to the [[file:org-mailing-list.org][Org mailing list]].
+
+If you want to contribute via Git, review [[#git][How to use git for Worg]].
+
+: ~$ git clone https://git.sr.ht/~bzg/worg
+
+If you want to contribute regularly, you can ask for commit access.
+When you get it, you can clone the repository like this:
+
+: ~$ git clone git@git.sr.ht:~bzg/worg
+
+and push commits directly.
+
+** How to use git for Worg
+  :PROPERTIES:
+  :CUSTOM_ID: git
+  :END:
+
+*** The first time you contribute to Worg
+  :PROPERTIES:
+  :CUSTOM_ID: contribute-to-worg
+  :END:
+
+1. (optional) Create an account on [[https://sr.ht][Sourcehut]].  Make sure that your
+   [[https://git-scm.com/book/en/v2/Git-on-the-Server-Generating-Your-SSH-Public-Key][public SSH key]] has been added to your profile. (If you don't have
+   one, see [[file:worg-git-ssh-key.org][How to create your own SSH key]].)
+
+2. (optional) Request write access to [[https://git.sr.ht/~bzg/worg][the Worg repo]].
+
+3. Clone the project somewhere in a working directory:
+
+   If you have write access,
+
+   : ~$ git clone git@git.sr.ht:~bzg/worg
+
+   Otherwise,
+
+   : ~$ git clone https://git.sr.ht/~bzg/worg
+
+4. Go to the newly created =worg/= directory and edit some files.
+
+5. If you created files, add them to the git index:
+
+   : ~$ git add *.org
+
+6. Commit changes with the appropriate comment:
+
+   : ~$ git commit -a -m "summary comment about all changes"
+
+7. If you have write access, push your change directly to Worg:
+
+   : ~$ git push
+
+8. If you do not have write access, create a patch and send it to [[mailto:emacs-orgmode@gnu.org][the mailing list]]
+
+   : ~$ git format-patch origin/master
+
+   This will create a patch file that you can attach to your email
+
+The system is designed for immediate updates -- if not, it means
+something is wrong.  You should be able to read the error message and
+see what is wrong, then help with fixing issues.  In general the
+issues are trivial to fix.
+
+*** The second time you contribute to Worg
+
+1. Go to your =worg/= directory.
+
+2. Be sure to "pull" the latest version of the repository.
+
+   : ~$ git pull --rebase
+
+3. Make some changes.  (If you want to learn more about various git
+   workflows, read [[file:worg-git-advanced.org][this page]].)
+
+4. Commit your changes to your local repository:
+
+   : ~$ git commit -a -m "summary comment about all changes"
+
+5. Push your change to the remote repository
+
+   : ~$ git push
+
+   or create a patch and send it to [[mailto:emacs-orgmode@gnu.org][the mailing list]]
+
+   : ~$ git format-patch origin/master
+
+*** Going deeper
+
+**** Getting organized
+
+The Worg TODO file is =todo.org=.  If you are a Worg zealot, maybe
+you want to add this file to the list of your agenda files.  For
+example, here is my =org-agenda-files= variable:
+
+: (setq org-agenda-files '("~/org/bzg.org" "~/git/worg/todo.org")
+
+I have an agenda custom command for checking tasks that are assigned
+to me:
+
+: (org-add-agenda-custom-command '("W" tags "Owner=\"Bastien\""))
+
+The next time someone assigns a task for me, it will appear in my Worg
+agenda view.
+
+**** Register your changes under your name
+
+Information regarding your name can be stored in your global
+=~/.gitconfig= file, or in =Worg/.git/config=.
+
+Edit it like this:
+
+: [user]
+:        name = FirstName LastName
+:        email = you@yourdomain.example.com
+
+Now your changes will be filed under your name.
+
+# I'm not sure this is useful at all:
+
+**** Dealing with line endings
+
+Unix, Windows and Mac all have different conventions for marking the
+end of a line. This might lead to problems when editing the same file
+across platforms. Github advises Linux users to automatically convert
+all external files to LF on committing (see
+[[http://help.github.com/dealing-with-lineendings]]) by setting:
+
+: ~$ git config --global core.autocrlf input
+
+For Worg, this is the wrong solution, since there are already files
+with both end of line conventions in the repository.  Instead tell git
+locally not to convert files by setting:
+
+: ~$ git config core.autocrlf false
+
+Of course you have to be careful not to save Windows files as Unix
+files or vice versa, since this would lead to large and confusing
+diffs. This should not be a problem with Worg as
+
+- one rarely edits other people's files anyway, and
+- Emacs can deal with end of line conventions transparently.
+
+**** Git usage for people who just want to send patches
+
+See [[file:worg-git-advanced.org][this page]].
+
+**** Emacs' in-built version control system and git
+
+Emacs's VC supports many common git operations, but others, like
+repository syncing must be done from the command line.  For example
+the Command =C-x v v= does check in changes in the *local* and not in the
+*remote* repository, in contrast to other back ends like svn.  It is
+necessary to do additionally
+
+: ~$ git push
+
+to sync the change on the remote server.
+
+** Something went wrong
+
+*** Preventing publishing errors
+
+Locally export any document you edit as HTML (=C-c C-e h H=) prior to
+committing it to Worg and ensure the export process doesn't fail.
+This will be more reliable if you're running the latest version of
+Org.
+
+You may also want to check the formatting in a browser before
+committing your change (=C-c C-e h o=).

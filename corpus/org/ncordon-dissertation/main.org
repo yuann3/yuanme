@@ -1,0 +1,2679 @@
+#+TITLE: Cadenas de Markov
+#+AUTHOR: Ignacio Cordón Castillo
+#+OPTIONS: toc:nil
+#+STARTUP: indent
+#+STARTUP: latexpreview
+
+#+latex_class: scrreprt
+#+latex_class_options: [oneside,english,openright,titlepage,numbers=noenddot,openany,headinclude,footinclude=true,cleardoublepage=empty,abstractoff,BCOR=5mm,paper=a4,fontsize=12pt,ngerman,american]
+#+latex_header_extra: \definecolor{ugrColor}{HTML}{c6474b}
+#+latex_header_extra: \input{frontmatter/titlepage}\usepackage{wallpaper}\ThisULCornerWallPaper{1}{imgs/ugrA4.pdf}
+#+latex_header_extra: \usepackage[T1]{fontenc}
+#+latex_header_extra: \usepackage{babel}
+#+latex_header_extra: \usepackage[normalem]{ulem}
+#+latex_header_extra: \usepackage[beramono,eulerchapternumbers,linedheaders,parts,a5paper,dottedtoc,manychapters]{classicthesis}
+#+latex_header_extra: \input{config/setup}
+#+latex_header_extra: \input{config/classicthesis}
+#+latex_header: \input{config/macros}
+
+\newpage
+* Authenticity declaration :ignore:
+:PROPERTIES:
+:UNNUMBERED: t
+:END:
+
+\thispagestyle{empty}
+
+\vspace*{3cm}
+
+\begin{center}
+\textsc{Declaración}
+\end{center}
+
+\vspace*{3.5cm}
+
+En cumplimiento de la normativa aprobada en Consejo de Gobierno de 4 de marzo de 2013,
+sobre Directrices de la Universidad de Granada para el desarrollo de la asignatura "Trabajo Fin
+de Máster" de sus títulos de máster (Art 8,4)
+
+\vspace*{1cm}
+\begin{center}
+\Large \textbf{D.D\textordfeminine} \dotuline{\textsc{Ignacio Cordón Castillo}\hspace*{\fill}} \normalsize
+\end{center}
+
+\vspace*{1cm}
+
+Asume la originalidad del trabajo fin de máster, entendida en el sentido de que no ha utilizado
+fuentes sin citarlas debidamente.
+
+\vspace*{1cm}
+Granada, a \septdate\today
+
+\begin{flushright}
+ \begin{tabular}{m{5.5cm}}
+     \img{imgs/firma_nacho.png}{0.45} \\
+     Fdo: Ignacio Cordón Castillo
+ \end{tabular}
+\end{flushright}
+
+* Acknowledgments
+:PROPERTIES:
+:UNNUMBERED: t
+:END:
+
+I would like to thank my family and my friends, because they are always and important part of what I do,
+providing me with great support.
+
+Also, many thanks to Giorgio, my tutor, since he always kept an open mind when it
+came to me proposing work to do on his package. He encouraged me to try different approaches and I had
+plenty of proposals from his side to work on. I have had lots of good challenges to dive in, learn and
+apply new knowledge thanks to him.
+
+* Abstract
+:PROPERTIES:
+:UNNUMBERED: t
+:END:
+
+Las cadenas de Markov son un área de estudio que comprende conocimientos de, por nombrar algunas,
+probabilidad, inferencia, álgebra lineal, grafos o teoría de algoritmos (puesto que las cadenas discretas
+pueden ser simuladas en un ordenador). Por todo lo expuesto representan un campo de
+estudio interesante desde el ángulo matemático e informático, y las hacen una temática ideal desde
+el punto de vista de la interdisciplinariedad del máster Fisymat.
+
+En el capítulo [[Markov chains]] introducimos las cadenas de Markov en tiempo discreto, con su definición y la
+ecuación de Chapman-Kolmogorov. En el capítulo [[Time-homogeneous Markov chains]] se presenta una revisión
+teórica a las cadenas de Markov en tiempo discreto y homogéneo, centrándonos especialmente en teoremas
+y propiedades relacionados con un número finito de estados: tiempos y probabilidades de llegada,
+clasificación de estados, incluyendo clases comunicantes, transitoriedad, recurrencia y estados absorbentes,
+cadenas de Markov ergódicas y regulares y su relación con las distribuciones estacionarias, tiempos medio
+de llegada y de recurrencia, \ldots
+
+La sección [[R package]] describe el trabajo hecho en el paquete de R =markovchain=. Esta librería
+es un proyecto de sofware libre que permite realizar un análisis probabilístico y estadístico
+de cadenas de Markov discretas. El autor de este trabajo ha analizado la parte del análisis
+probabilístico que este paquete proporciona y se han identificado los puntos clave donde los algoritmos podrían
+ser mejorados, desde el punto de vista de la corrección matemática y la eficiencia algorítmica. Asimismo, se han
+añadido nuevas colecciones de algoritmos. Tanto los procedimientos refactorizados como los añadidos están relacionados
+con los contenidos teóricos descritos en el capítulo anterior.
+
+Los algoritmos mejorados / reprogramados oscilan desde la identificación de clases comunicantes, pasando por
+el cálculo de los tiempos medios de llegada o la descripción de clases recurrentes y transitorias. Como
+consecuencia de ellos, ha sido redise\-ñada la clasificación de estados de una manera más eficiente, así como
+la transformación a forma canónica. Además, el algoritmo del cálculo de distribuciones estacionarias ha sido
+altamente mejorado, puesto que el antiguo podía devolver resultados incorrectos. Las nuevas incorporaciones
+versan principalmente sobre cantidades relacionadas con la absorción (tiempo medio y probabilidad de absorción),
+número esperado de visitas a un estado, el tiempo medio de recurrencia, las probabilidades de
+llegada, el cálculo eficiente de la accesibilidad a estados, de potencias y la clasificación de cadenas
+(regulares, ergódicas, no ergódicas).
+
+En el capítulo [[Conclusions and future work]] se esbozan ideas para trabajo futuro en el sofware, a tenor del
+conocimiento ganado durante el estudio teórico y práctico de la librería, que en conjunción deberían llevar
+a la publicación del mismo en una revista académica de alto impacto.
+
+El anexo [[Appendix]] incluye instrucciones sobre cómo instalar y usar el sofware. Además, se explican otras
+labores realizadas en el marco de este proyecto: incorporación de /tests/ a la librería basados en la
+comprobación de propiedades matemáticas, revisión de documentación y diseño de una página web
+para incrementar la visibilidad del paquete y mejorar el acceso a la documentación del mismo.
+
+\vspace*{1cm}
+\textsc{Palabras clave}: Cadenas de Markov, algoritmos, probabilidad, álgebra lineal, grafos
+
+\vspace*{1cm}
+\begin{center}\rule{10cm}{1pt}\end{center}
+\vspace{1cm}
+
+Markov chains are a mathematical area which encompasses, to name a few, probability, inference, linear
+algebra, graphs or algorithms theory (since discrete markov chains can be simulated in a computer). All of
+the aforementioned conditions make them an interesting study from both the mathematical and computer science
+viewpoint, and therefore a perfect topic for the interdisciplinary nature of Fisymat master's degree.
+
+In chapter [[Markov chains]] we introduce discrete time Markov chains with their definition and
+Chapman-Kolmogorov equation. In chapter [[Time-homogeneous Markov chains]] we present a theoretical review of
+time-homogeneous discrete time Markov chains, focusing mostly on theorems and properties which imply a finite
+number of states: hitting times and probabilities, classification of states, including communicating classes,
+transience, recurrence and absorption, ergodic and regular Markov chains and their relationship with
+steady states, mean first passage and recurrence times, \ldots
+
+Chapter [[R package]] describes the work done in =markovchain= R package. This software library
+comprises open source utilities which allow to perform probabilistic and statistical analyses of
+discrete Markov chains. The author of the present work analyzed the discrete time probabilistic
+capabilities provided by this package and identified key points where the algorithms could be improved, both from
+the mathematical correctness and the computational algorithmic efficiency perspectives. Also a collection
+of new algorithms were added. All those procedures (both the newly added and the refactored ones) are
+related to the theoretical contents described in the previous chapter.
+
+The improved / recoded algorithms range from communicating classes identification, to mean first passage
+times computation or recurrent (resp. transient) classes description. As a consequence of those, state
+classification has been redesigned in a more efficient manner, as well as conversion to canonic form. Furthermore,
+steady states algorithm has been highly improved, due to the fact that incorrect results could arise
+from the former one. The added algorithms are mainly related to absorption related quantities (mean
+aborption time, absorption probability), mean number of visits to a state, mean recurrence times, hitting
+probabilities, efficient reachability, power computation and Markov chain classification
+(regular, ergodic or non ergodic).
+
+In chapter [[Conclusions and future work]] we outline future work that could be done in the package, in light
+of the knowledge we have gathered during the theoretical and practical study of the library, and that should
+culminate with its publication in a high impact journal.
+
+Appendix [[Appendix]] includes instructions on how to install and use the software. It also explains more
+work developed within this project: addition of tests for the library consisting on check of mathematical
+properties, review of documentation and design of a web page to increase the visibility of the
+sofware and improve access to its documentation.
+
+\vspace*{1cm}
+\textsc{Keywords}: Markov chains, algorithms, probability, linear algebra, graphs
+* Table of contents :ignore:
+:PROPERTIES:
+:UNNUMBERED: t
+:END:
+#+TOC: headlines 3
+* Introduction
+
+To fully understand this work we assume previous notions of probability, programming and familiarity with big
+$\mathcal{O}$ algoritmic notation [fn::https://en.wikipedia.org/wiki/Big_O_notation].
+
+Markov chains are still a highly researched area of mathematics and computer science nowadays.
+They are used in a wide variety of fields: weather prediction, actuarial science, algorithms (for example used in Markov
+chain Monte Carlo methods), physics, speech recognition, genetics, \ldots. We focus in this work on discrete
+Markov chains with a finite state space, which because of finitude are the most natural Markov chain we can
+represent in a computer.
+
+Among programming languages nowadays, R is probably the most used one among statisticians and the main
+competitor of python in machine learning programming. The R package
+[fn::https://github.com/spedygiorgio/markovchain] [[citep:dtmc]] is an open source library available
+at the official R packages repository, CRAN [fn::https://cran.r-project.org/web/packages/index.html], which
+aims to provide easy representations, plotting and analysis of discrete time Markov chains. It is placed in
+91st percentile in terms of total downloads (compared to rest of packages of CRAN), and its trend of
+downloads continues to be in the 90th monthly percentile as it can be observed in the figure [[fig:mc-downloads]]
+(over 4000 downloads a month [fn::https://cranlogs.r-pkg.org/badges/markovchain]). We should point
+out that package is not only written in R. The core parts are coded in C++, since it is faster than R.
+
+Being that =markovchain= is widely used, a lot of methods could be improved from the mathematical correctness
+perspective (for example the computation of steady states could return a linearly dependent base of the
+convex space of steady states, which is not correct) and the computational efficiency one (use fewer
+iterative methods and more algebraic ones, improve efficiency for methods in general). Effiency is extremely
+important because it can represent the difference between being able to analyze a Markov chain with $10\times 10$
+dimension transition matrix or a $100\times 100$ one. Furthermore, the package was lacking methods to perform a more complete
+analysis of Markov chains and answer possible questions like: what is the probability of ever hitting that
+state? (whatever the state represents: bankruptcy in case of actuarial analysis, a tornado in case of
+wheather prediction, etc), or how many times are we going to pass through a certain state if initial
+conditions for the system are these ones? Even small contributions to the software could impact a lot of
+users and researchers.
+
+#+header: :width 5 :height 5 :R-dev-args
+#+begin_src R :session examples :results output graphics :file imgs/percentile.svg :exports results :cache yes :eval no-export
+library("packageRank")
+library("ggplot2")
+
+start <- as.Date("01-08-19",format="%d-%m-%y")
+end <- as.Date("30-08-19",format="%d-%m-%y")
+current <- start
+downloads <- c()
+percentile <- c()
+
+while (current <= end) {
+  data <- packageRank(packages = "markovchain", date = current)$package.data
+  downloads <- c(downloads, unname(unlist(data["downloads"])))
+  percentile <- c(percentile, unname(unlist(data["percentile"])))
+  current <- current + 1
+}
+
+
+ndays <- as.numeric(end - start)
+downloads <- data.frame(percentile = percentile, date = as.Date(0:(ndays - 1), origin = start))
+ggplot(downloads, aes(x = date, y = percentile)) +
+  geom_line(color = "darkblue", size = 2) +
+  expand_limits(y=30)
+#+end_src
+
+#+caption: Percentage of daily downloads of markovchain (packages in CRAN) in August 2019
+#+name: fig:mc-downloads
+#+attr_latex: :width 9cm
+#+RESULTS:
+[[file:imgs/percentile.svg]]
+
+The goals set for this work were:
+
++ Get familiarized with the package and the codebase of it. Identify points where it could be improved.
++ Study opportunities of improvement from the mathematical perspective to ensure correctness.
++ Come up with algorithms related to mathematical contents.
++ Code them and integrate them in the package.
++ Send updates for the package in the official CRAN R repository.
+
+All objectives allow for an incremental work and are presented in inverted order in two chapters: as opposed
+to practical driving theory study, the work is presented backwards, with theoretical reviews presented
+first. To summarize, what we intend to do is mathematical driven scientific programming.
+
+* Markov chains
+This section is based on [[citep:velez]], although other theoretical references such as [[citep:takis]]
+or [[citep:zitkovic]] have been used. Ergodic Markov chains section is based on [[citep:horn]] and
+[[citep:grinstead]]. Mean first passage time section is mainly based on [[citep:grinstead]].
+
+** Definition
+For convenience, unless otherwise indicated, we will consider $0\in \mathbb{N}$.
+
+#+begin_definition
+A stochastic random process $\{X_n\}_{n\in \naturals}$, is a Markov chain iff the future process
+$\{X_k\}_{k > n}$ is independent of the past process $\{X_k\}_{k < n}$ conditionally on $X_n$.
+#+end_definition
+
+#+begin_definition
+Given $\{X_n\}_{n \ge 0}$ a Markov chain, let us call the state space the set
+$S = \bigcup_{n \in \naturals} Img \left(X_n\right) \subseteq \naturals$, i.e. the set
+where the Markov chain takes its values.
+#+end_definition
+
+#+begin_lemma
+$\{X_n\}_{n \ge 0}$ is a Markov chain iff for all $n\in\mathbb{N}$ and given arbitrary $s_0, \ldots, s_{n + 1} \in S$, then it holds:
+
+\[
+P(X_{n + 1} = s_{n + 1} | X_n = s_n, \ldots, X_0 = s_0) = P(X_{n + 1} = s_{n + 1} | X_n = s_n)
+\]
+#+end_lemma
+
+#+begin_proof
+From left to right. By Markov chain definition, if $\{X_k\}_{k > n}$ is independent of the past
+process $\{X_k\}_{k < n}$ conditionally on $X_n$, then:
+
+\begin{align*}
+&P(X_{n + 1} = s_{n + 1}, X_{n - 1} = s_{n - 1}, \ldots, X_0 = s_0 | X_n = s_n) = \\
+&P(X_{n + 1} = s_{n + 1} | X_n = s_n) \cdot P(X_{n - 1} = s_{n - 1}, \ldots, X_0 = s_0 | X_n = s_n)
+\end{align*}
+
+The following argument ends (formally) the proof:
+
+\begin{align*}
+\frac{P(X_{n + 1} = s_{n + 1}, X_{n - 1} = s_{n - 1}, \ldots, X_0 = s_0 | X_n = s_n)}{P(X_{n - 1} = s_{n - 1}, \ldots, X_0 = s_0 | X_n = s_n)} &=
+\frac{P(X_{n + 1} = s_{n + 1}, X_n = s_n, \ldots, X_0 = s_0)}{P(X_n = s_n, X_{n - 1} = s_{n - 1}, \ldots, X_0 = s_0)} = \\
+&= P(X_{n + 1}=s_{n + 1} | X_{n} = s_{n}, \ldots, X_0 = s_0)
+\end{align*}
+
+From right to left. We want to prove that:
+
+\begin{align*}
+&P(X_{n + q} = s_{n + q}, \ldots X_{n + 1} = s_{n + 1} | X_n = s_n, \ldots, X_0 = s_0) =\\
+&P(X_{n + q} = s_{n + q}, \ldots, X_{n + 1} = s_{n + 1} | X_n = s_n)
+\end{align*}
+
+On the one hand, if the right part holds, it easy to prove that:
+
+\begin{align*}
+& P(X_0 = s_0, \ldots, X_n = s_n ) =\\
+& P(X_0 = s_0) \cdot P(X_1 = s_1 | X_0 = s_0) \cdot P(X_2 = s_2 | X_1 = s_1) \cdots P(X_n = s_n | X_{n - 1} = s_{n - 1})
+\end{align*}
+
+and summing over all possible values for $s_0, \ldots s_{k - 1}$, we get:
+
+\[
+P(X_{k} = s_{k}, \ldots, X_n = s_n) = P(X_k = s_k) \cdot P(X_{k + 1} = s_{k + 1} | X_k = s_k) \cdots P(X_n = s_n | X_{n - 1} = s_{n - 1})
+\]
+
+Therefore (adjusting the values of $n$ and $k$ above appropriately):
+
+\begin{align*}
+& P(X_{n + q} = s_{n + q}, \ldots, X_{n + 1} = s_{n + 1} | X_n = s_n, \ldots, X_0 = s_0) =\\
+&= \frac{P(X_{n + q}, \ldots, X_0)}{P(X_{n + q - 1}, \ldots, X_0)} \cdot \frac{P(X_{n + q - 1}, \ldots, X_0)}{P(X_{n + p - 2}, \ldots, X_0)} \cdots \frac{P(X_{n + 1}, \ldots, X_0)}{P(X_{n}, \ldots, X_0)} = \\
+&= P(X_{n + q} | X_{n + q - 1}) \cdots P(X_{n + 1} | X_{n}) = \frac{P(X_{n + q} = s_{n + q}, \ldots X_{n + 1} = s_{n + 1}, X_{n} = s_n)}{P(X_n = s_n)} =\\
+&= P(X_{n + q} = s_{n + q}, \ldots, X_{n + 1} = s_{n + 1} | X_n = s_n)
+\end{align*}
+#+end_proof
+
+** Chapman-Kolmogorov equation
+
+Since we intend to represent Markov chains in a computer, we will also assume $S$ is finite henceforth,
+unless otherwise stated, and $S = \{1, \ldots, m\}$.
+
+As stated before, in the right to left implication, we have shown that transition probabilities
+can be expressed as:
+
+\begin{equation}
+P(X_0 = s_0, \ldots, X_n = s_n) = P(X_0 = s_0) \cdot P(X_1 = s_1 | X_0 = s_0) \cdots P(X_n = s_n | X_{n - 1} = s_{n - 1})
+\label{eq:trans-probs}
+\end{equation}
+
+and also, for $n > k$:
+
+\begin{eqnarray}
+&& P(X_n = s_n, \ldots, X_{k + 1} = s_{k + 1} | X_{k} = s_{k}) = \nonumber \\
+&& P(X_{k + 1} = s_{k + 1} | X_{k} = s_{k}) \cdots P(X_n = s_n | X_{n - 1} = s_{n - 1})
+\label{eq:trans-cond-probs}
+\end{eqnarray}
+
+#+begin_definition
+Given $\{X_n\}_{n\in I}$ a Markov chain with finite state space $S$, let us define the initial distribution as $\mu(s) = P(X_0 = s), s \in S$.
+#+end_definition
+
+#+begin_definition
+Given $\{X_n\}_{n\in I}$ a Markov chain with finite state space $S$, let us define the transition probabilities as
+
+\begin{align*}
+& p_{i, j}(k, n) = P(X_n = j | X_k = i),\quad i,j \in S, \quad n,k \in \mathbb{N}, n\neq k \\
+& p_{i, j}(n, n) = \mathbb{1}_{i = j}
+\end{align*}
+#+end_definition
+
+Therefore, we can rewrite Equation \eqref{eq:trans-probs} as:
+
+\[
+P(X_k = s_k, k \le n) = \mu(s_0) \cdot p_{s_0, s_1}(0, 1) \cdot p_{s_1, s_2}(1, 2) \cdots p_{s_{n - 1}, s_n}(n - 1, n)
+\]
+
+Summing over all possible values for $s_{k + 1}, \ldots, s_{n - 1}$ in Equation
+\eqref{eq:trans-cond-probs} and considering $s_k = s, s_{n} = t$, we deduce:
+
+\begin{equation}
+p_{s, t}(k, n) = \sum_{s_{k + 1} \in S} \ldots \sum_{s_{n - 1} \in S}
+\bigg\{ p_{s, s_{k + 1}}(k, k + 1) \cdots p_{s_{n - 1}, t}(n - 1, n) \bigg\}
+\label{eq:sum-probs}
+\end{equation}
+
+#+begin_definition
+We define the matrix $P(k, n) = (p_{i, j}(k, n))_{i,j \in S}$.
+#+end_definition
+
+#+begin_proposition
+$P$ verifies the semigroup property, best known as Chapman-Kolmogorov equation:
+
+\[
+P(k, n) = P(k, l) \cdot P(l, n), \quad \forall k \le l \le n
+\]
+
+\label{prop:chapman-kolmogorov}
+#+end_proposition
+#+begin_proof
+Straightforward from Equation \eqref{eq:sum-probs}
+#+end_proof
+
+* Time-homogeneous Markov chains
+#+begin_definition
+Given a Markov chain $\{X_n\}$ with finite space state $S$, it is said to be a time-homogeneous Markov chain
+iff the transition probabilities do not depend on time:
+
+\[
+\forall i, j\in S, \,\forall n \in \mathbb{N} \qquad p_{i, j} (n, n + 1) = p_{i, j} \in [0, 1]
+\]
+
+$p_{i, j}$ is called one-step transition probability and $P = (p_{i, j})_{i, j \in S}$ the transition matrix.
+#+end_definition
+
+We will use DTMC to refer to discrete time-homogeneous Markov chains with finite space state henceforth.
+
+#+begin_proposition
+Given $\{X_n\}$ a DTMC it holds $P(m, n) = P^{n - m}$
+#+end_proposition
+
+#+begin_proof
+Trivial
+#+end_proof
+
+
+#+begin_proposition
+Naming $\mu_n = \left(\mu_n(0), \ldots, \mu_n(k)\right)$, it holds:
+
+\[
+\mu_n = \mu_0 \cdot P^n
+\]
+#+end_proposition
+
+#+begin_proof
+Trivial from Equation \eqref{eq:trans-probs}
+#+end_proof
+
+Note there is bijection between a DTMC with $S = \{1, \ldots, m\}$,
+a by-row stochastic matrix $P$ of dimension $m \times m$ (we will note it $P_{m\times m}$) and a directed
+graph $G(P):=(S, E, P)$ where there is an edge $e = (i, j), e \in E$ iff $p_{i,j} > 0$.
+From now on we will use any of these three concepts interchangeably. Also, when we talk about
+stochastic matrices, we will refer to by-row stochastic ones.
+
+** Stopping times and strong Markov property
+#+begin_definition
+Given $\{X_n\}$ a Markov chain, defined over $(\Omega, \mathcal{F}, P)$, then a stopping time is a random variable
+$\tau : \Omega \mapsto \mathbb{N} \bigcap \{\infty\}$ such that:
+
+\[
+\{\tau = n \} \in \mathcal{F}_n = \sigma(X_0, X_1, \ldots, X_n), \quad \forall n \in \mathbb{N}
+\]
+
+Moreover, we call the $\sigma$ -algebra of events previous to $\tau$, namely $\mathcal{F}_{\tau}$, the one which contains all
+the events $A \in \mathcal{F}$ verifying:
+
+\[
+A\bigcap \{\tau = n \} \in \mathcal{F}_n
+\]
+#+end_definition
+
+For example, in the case of a coin, the first instant (or coin toss) $\tau$ where we get $4$ heads
+in a row, is a valid stopping time, because we only have to account for the previous random
+variables. However, the first toss where we are just one toss away from having obtained $4$ heads
+is not a valid stopping time, since it involves future events.
+
+We would denote $S^m = \{(s^{(1)}, \ldots, s^{(m)}): s^{(j)} \in S\}$.
+
+#+begin_proposition
+Let $\{X_n\}$ be an arbitrary Markov chain and $\tau$ a stopping time.
+Then for all $m\in \mathbb{N}, C \subseteq S^m, A \in \mathcal{F}_\tau,
+i \in S$, if $P(A \bigcap \{X_\tau = i\}) > 0$ it holds:
+
+\begin{equation}
+P\left((X_{\tau + 1}, \ldots, X_{\tau + m}) \in C | A, X_{\tau} = i\right) =
+P\left((X_{\tau + 1}, \ldots, X_{\tau + m}) \in C | X_{\tau} = i\right)
+\label{ec:strong-mc}
+\end{equation}
+#+end_proposition
+
+#+begin_proof
+Let us start taking $m = 1, C = \{j\}$. Then, intersecting with $\{\tau = n\}$, we have:
+
+\begin{align*}
+P\left(X_{\tau + 1} = j, A, X_{\tau} = i\right) &=
+\sum_{n = 0}^{\infty} P\left(\tau = n, X_{n + 1}, A, X_n = i\right) = \\
+&= \sum_{n = 0}^{\infty} P\left(\tau = n, A, X_n = i\right) \cdot P\left(X_{n + 1} = j | \tau = n, A, X_n = i\right) = \\
+&= \sum_{n = 0}^{\infty} P\left(\tau = n, A, X_n = i\right) \cdot P\left(X_{n + 1} = j | X_n = i\right) = \\
+&= p_{i,j} \sum_{n = 0}^{\infty} P\left(\tau = n, A, X_n = i\right) = p_{i, j} P\left(A, X_{\tau} = i\right)
+\end{align*}
+
+where we have used $A\bigcap \{\tau = n\} \in \mathcal{F}_n$ to simplify
+$P\left(X_{n + 1} = j | \tau = n, A, X_n = i\right)$
+as $P\left(X_{n + 1} = j | X_n = i\right)$. Therefore, using the proven equality we can show:
+
+\[
+P\left(X_{\tau + 1} = j | A, X_\tau = i\right) = \frac{P\left(X_{\tau + 1} = j, A, X_{\tau} = i\right)}{P(A, X_{\tau} = i)} = p_{i, j}
+\]
+
+Applying several times this argument, we have:
+
+\begin{align*}
+& P\left(X_{\tau + 1} = i_1, X_{\tau + 2} = i_2, \ldots, X_{\tau + m} = i_m | A, X_{\tau} = i\right) =\\
+&= P\left(X_{\tau + 1} = i_1 | A, X_{\tau} = i\right) \cdot P\left(X_{\tau + 2} = i_2 | A, X_{\tau} = i, X_{\tau + 1} = i_1\right) \cdots \\
+&\cdots P\left(X_{\tau + m} = i_m | A, X_{\tau} = i, X_{\tau + 1} = i_1, \ldots, X_{\tau + m - 1} = i_{m - 1}\right) = p_{i, i_1} p_{i_1, i_2} \cdots p_{i_{m - 1}, i_m}
+\end{align*}
+
+In particular, when $A$ is the whole space $\Omega$, we arrive at:
+
+\[
+P\left(X_{\tau + 1} = i_1, X_{\tau + 2} = i_2, \ldots, X_{\tau + m} = i_m | X_{\tau} = i\right) = p_{i, i_1} p_{i_1, i_2} \cdots p_{i_{m - 1}, i_m}
+\]
+
+That last step proves the equality:
+
+\[
+P\left(X_{\tau + 1} = i_1, \ldots, X_{\tau + m} = i_m | A, X_{\tau} = i\right) =
+P\left(X_{\tau + 1} = i_1, \ldots, X_{\tau + m} = i_m | X_{\tau} = i\right)
+\]
+
+We have shown that Equation \eqref{ec:strong-mc} holds for $C = \{(i_1, \ldots, i_m)\}$. For
+$C \subseteq S^m$ it would suffice summing over $(i_1, \ldots, i_m) \in C$.
+#+end_proof
+
+The previous result means all Markov chains in discrete time have the strong Markov
+property, and it can be interpreted as the Markov chain restarting each time it hits the arbitrary state
+$i \in S$, without influence of what happened to that moment.
+
+** Hitting times distribution
+We introduce the notation $P_A(X_n \in B) = P(X_n \in B | X_{0} \in A)$.
+Then $p_{i, j}^{(n)} = P_i\left(X_n = j\right)$ gives us of the probability
+of the chain reaching state $j$ in the $n$ -th step, if it starts from $i$. Specifically, we are interested
+now in the first time that a given state is reached.
+
+#+begin_definition
+We define the hitting time for the state $j \in S$ as:
+
+\[
+\tau_j = min \{n > 0 : X_n = j \}
+\]
+#+end_definition
+
+#+begin_definition
+
+The probability that the first hitting time for $j$, starting at $i$, is $n$, is:
+
+\[
+f_{i,j}^{(n)} = P_i\left(\tau_j = n\right) = P_i\left(X_n = j, X_k \neq j \quad \forall k = 1, \ldots, n - 1 \right)
+\]
+
+and we will define the (first) hitting probability for $j$ starting at $i$ as:
+
+\[
+f_{i, j} := \sum_{n = 1}^{\infty} f_{i,j}^{(n)} = P_i\left(\tau_j < \infty\right) =
+\probi{X_n = j \textrm{ for some } n > 0}
+\]
+#+end_definition
+
+Note that we coul have $f_{i, j} < 1$ iff $P_i\left(X_n \neq j, \forall n > 0\right) > 0$.
+
+#+begin_definition
+We will call return time distribution for the state $i$ to $f_{i,i}^{(n)} = P_i \left(\tau_i = n\right)$,
+and we will denote $f_{i,i} = P_i\left(\tau_i < \infty\right)$ (i.e. the probability of ever returning
+to the start state $i$).
+#+end_definition
+
+The values $f_{i, j}$ verify the recurrence:
+
+\begin{equation}
+f_{i,j} = \probi{X_1 = j} + \sum_{k \neq j} \probi {X_1 = k} \prob {\tau_j < \infty, j > 1 | X_1 = k } = p_{i,j} + \sum_{k\neq j} p_{i,k} f_{k,j}
+\label{eq:fij-recurrence}
+\end{equation}
+
+#+begin_lemma
+If $f_{i,j} = 1$ and $p_{i,k} > 0$, then $f_{k,j} = 1$
+#+end_lemma
+
+#+begin_proof
+Straightforward from Equation \eqref{eq:fij-recurrence} and the fact that $\sum_{k \in S} p_{i,k} = 1$
+#+end_proof
+
+*** Computation through absorption
+Let us consider a fixed state $j$. The aim is to compute $f_{i,j}^{(n)}$ with $i\neq j$.
+We could freeze the chain $\{X_n\}$ once it hits $j$ in that state, that is, taking:
+
+\[
+\tildemc = \twopartdef
+             {X_n} { X_r \neq j \; \forall r < n }
+             {j} {X_r = j \textrm{ for some } r  < n}
+\]
+
+Hence, $j$ has been transformed into an absorbing state, such that $\tildemc$ cannot leave it.
+
+The transition matrix for $\tildemc$ is given by:
+
+\[
+\tildeprob_{i, k} = \probi{\tildex_1 = k} =
+  \threepartdef
+    { p_{i,k} } { i\neq j }
+    { 0 }       { i = j, k \neq j }
+    { 1 }       { i = j, k = j }
+\]
+
+Therefore, the transition matrix $\tildeP$ has the same rows as $P$, except for the $j$ -th row,
+which has been substituted by $(0, \ldots, 0, \underset{j}{1}, 0, \ldots, 0)$. We deduce that the $(i, j)$ entry for the matrix $\tildeP^n$ is:
+
+\[
+\tildep_{i,j}^{(n)} = \probi{\tildemc = j} = \probi{\tau_j \le n}
+\]
+
+and hence:
+
+\[
+f_{i,j}^{(n)} = \probi{\tau_j \le n} - \probi{\tau_j \le n - 1} = \tildep_{i, j}^{(n)} - \tildep_{i, j}^{(n - 1)}
+\]
+
+So obtaining $f_{i,j}^{(n)}$ can be done by computing $\tildeP^{n - 1}$ and $\tildeP^n$,
+except for $j = i$. To compute that last probability, we could use:
+
+\[
+f_{jj}^{(n)} = \twopartdef
+  { p_{jj} } { n = 1 }
+  { \sum_{k \in S, k \neq j} p_{j,k} f_{k,j}^{(n - 1)} } { n \ge 2 }
+\]
+
+*** Computation through transition probabilities
+
+We could ask ourselves whether it is possible to relate $f_{i,j}^{(n)}$ to $p_{i,j}^{(n)}$
+directly. It holds:
+
+\begin{align}
+p_{i,j}^{(n)} &= \probi{X_n = j} = \sum_{k = 1}^{n} \probi{\tau_j = k}
+\probi{X_n = j | \tau_j = k} = \nonumber \\
+&= \sum_{k = 1}^{n} \probi{\tau_j = k} \probj{X_{n - k} = j} =
+\sum_{k = 1}^n f_{i, j}^{(k)} p_{j,j}^{(n - k)}
+\label{eq:ps-fs-relation}
+\end{align}
+
+It is not possible to directly express $f_{i,j}^{(n)}$ in terms of $p_{i,j}^{(n)}$, but taking the following generating
+functions, we can determine a theoretical relationship between both:
+
+\[
+P_{i,j}(s) = \sum_{n = 1}^{\infty} p_{i,j}^{(n)} s^n \qquad
+F_{i,j}(s) = \sum_{n = 1}^{\infty} f_{i,j}^{(n)} s^n \qquad s\in [0, 1[
+\]
+
+According to $\eqref{eq:ps-fs-relation}$:
+
+\[
+P_{i,j}(s) = \sum_{n = 1}^{\infty} \sum_{k = 1}^n f_{i, j}^{(k)} p_{j,j}^{(n - k)} s^n =
+\sum_{n = 1}^{\infty} \sum_{k = 1}^{n - 1} f_{i, j}^{(k)} p_{j,j}^{(n - k)} s^n +
+\sum_{n = 1}^{\infty} f_{i, j}^{(n)} \underbrace{p_{j,j}^{(0)}}_{1} s^n \underset{(\ast)} =
+F_{i,j}(s) P_{j,j}(s) + F_{i,j}(s)
+\]
+
+where in $(\ast)$ it has been used that:
+
+\[
+\sum_{n = 1}^{\infty} \sum_{k = 1}^{\infty} p_{i, j}^{(n)} f_{i,j}^{(k)} s^{n + k} =
+\sum_{n = 1}^{\infty} \sum_{k = 1}^{n - 1} f_{i, j}^{(k)} p_{j,j}^{(n - k)} s^n
+\]
+
+We deduce:
+
+\begin{equation}
+F_{i,j}(s) = \frac{P_{i,j}(s)}{1 + P_{j,j}(s)}
+\label{eq:Fs-Ps-relation}
+\end{equation}
+
+Although this is just a theoretical relationship, we can observe, on the one hand:
+
+\begin{equation}
+F_{i,j}(1) = f_{i,j} = \probi{\tau_j < \infty}
+\label{prop:hitting-probs-F}
+\end{equation}
+
+and if the condition $f_{i,j} = 1$ is met:
+
+\[
+F_{i,j}'(1) = \sum_{n = 1}^{\infty} n f_{i,j}^{(n)} = \expecti{\tau_j}
+\]
+
+#+begin_definition
+Taking a fixed state $j$, we can name:
+
+1. The total number of visits to $j$  as $V_j = \sum_{n = 1}^{\infty} \mathbb{1}_{X_n = j}$
+2. The expected number of visits to $j$  as $\expecti{V_j}$
+#+end_definition
+
+#+begin_proposition
+It holds that $\expecti{V_j} = P_{i,j}(1)$
+\label{prop:mean-num-visits-P}
+#+end_proposition
+
+#+begin_proof
+Straightforward from $\expecti{V_j} = \sum_{n = 1}^{\infty} \expecti{\mathbb{1}_{X_n = j}} =
+  \sum_{n = 1}^{\infty} p_{i,j}^{(n)} = P_{i,j}(1)$
+#+end_proof
+
+*** Mean number of visits to a state
+
+#+begin_proposition
+If $f_{j,j} \neq 1$, we have:
+
+\begin{equation}
+  \expecti{V_j} = \frac{f_{i,j}}{1 - f_{j,j}}
+  \label{eq:char-mean-number-visits}
+\end{equation}
+
+Moreover, it holds $f_{j, j} = 1 \dimplies \expecti{V_j} = \infty$.
+\label{prop:fii-equiv}
+#+end_proposition
+
+#+begin_proof
+From \eqref{eq:Fs-Ps-relation}, \eqref{prop:hitting-probs-F} and
+Proposition \eqref{prop:mean-num-visits-P} we can deduce $\expectj{V_j} = \frac{f_{jj}}{1 - f_{j,j}}$ and
+
+\[
+\expecti{V_j} = P_{i,j}(1) = F_{i,j}(1) \bigg\{1 + P_{j,j}(1) \bigg\} =
+F_{i,j}(1) \bigg\{1 + \expectj{V_j} \bigg\} = \frac{f_{j,j}}{1 - f_{j,j}}
+\]
+
+In the case $f_{ij} = 0$ is easy to prove $\expecti{V_j} = 0$. $f_{jj} = 1$ and $f_{ij} > 0$
+implies $\expecti{V_j} = \infty$, using reductio ad absurdum in
+$\expecti{V_j} = f_{ij}(1 + \expectj{V_j})$
+#+end_proof
+
+#+begin_proposition
+There is an equivalence between:
+
+1. $\exists n >0 : p_{i,j}^{(n)} > 0$ (note we will name this $i \goto j$ afterwards)
+2. $\expecti{V_j} > 0$
+3. $f_{i,j} > 0$
+
+\label{prop:fij-equivs}
+#+end_proposition
+
+#+begin_proof
+Since $\expecti{V_j} = \sum_{n = 1}^{\infty} p_{i,j}^{(n)}$, clearly i. is equivalent to ii.
+
+ii. is equivalent to iii. can be deduced from $\expecti{V_j} = f_{i,j}(1 + \expectj{V_j})$ and using similar
+arguments to the ones in the previous proof.
+#+end_proof
+
+** Classification of states
+*** Communicating classes
+
+#+begin_definition
+The state $i\in S$ communicates with $j\in S$, and we will write it like $i \rightarrow j$
+iff $p_{i,j}^{(n)} > 0$ for some $n > 0$. It can be proven it is a transitive relation
+using Proposition \eqref{prop:chapman-kolmogorov}.
+
+If $i \goto j$ and $j \goto i$ then we will say that both states communicate and
+we will represent it as $i \dgoto j$.
+#+end_definition
+
+#+begin_definition
+State $i\in S$ is essential if $i \goto j$ always implies $j \goto i$. We denote the set
+of essential states by $S^{\ast}$.
+#+end_definition
+
+#+begin_lemma
+If $i\in S^{\ast}$ and $i \goto j$, then $j \in S^{\ast}$
+\label{lemma:transitive-es}
+#+end_lemma
+
+#+begin_proof
+Given $j \goto k$, then by transitivity $i \goto k$. Since $i$ is essential, $k \goto i$,
+which applying transitivity again from $i \goto j$, gives us $k \goto j$.
+#+end_proof
+
+#+begin_proposition
+$\dgoto$ is an equivalence relation in $S^{\ast}$, and we can decompose:
+
+\[
+S^{\ast} = C_1 \cup C_2 \cup \ldots \cup C_r
+\]
+
+where for every $i, j \in C_k$, it holds $i \dgoto j$.
+
+\label{prop:equiv-classes}
+#+end_proposition
+
+#+begin_proof
+We have:
+1. Reflexivity holds because given $i \in S^{\ast}$, and $p_{i,j} > 0$ for some $j \in S$ then $j \in S^{\ast}$ and $i \dgoto j$ using previous Lemma \eqref{lemma:transitive-es}.
+2. Symmetry holds trivially.
+3. Transitivity holds because if $p_{i,j}^{(n)} > 0$ and $p_{j,k}^{(m)} > 0$ then $p_{i,k}^{(n + m)} \ge p_{i,j}^{(n)} \cdot p_{j,k}^{(m)} > 0$
+#+end_proof
+
+For a DTMC, we can reorder the states of the matrix: let $P_k$ be the transition matrix for the
+states in $C_k$ (which only communicate with themselves); $Q_k$ the probabilities of
+going from $S - S^{\ast}$ to $C_k$ (and never returning); and $R$ the probability
+of the non-essential states communicating with themselves. The transition (stochastic by rows)
+matrix we get is:
+
+\begin{equation}
+  \left(\begin{array}{cccccccccc}
+  \gcell P_1    &        &            &       &        &       &            &        & \\
+                & \rcell & \rcell     & \rcell&        &       &            &        & \\
+                & \rcell & \rcell P_2 & \rcell&        &       &            &        & \\
+                & \rcell & \rcell     & \rcell&        &       &            &        & \\
+                &        &            &       & \ddots &       &            &        & \\
+                &        &            &       &        &\bcell &   \bcell   & \bcell & \\
+                &        &            &       &        &\bcell & \bcell P_r & \bcell & \\
+                &        &            &       &        &\bcell &   \bcell   & \bcell & \\
+    \rowcolor{gray!20}
+      Q_1       &        &   Q_2      &       & \ldots &       &    Q_r     &        & R\\
+  \end{array}\right)
+\label{eq:canonic-form}
+\end{equation}
+
+#+begin_definition
+If we consider an ordered finite set $S$ and it holds:
+
+1. States are ordered inside each class, $S - S^{\ast}$ included.
+1. $C_k = [s_k]$ where $s_k$ is the minimum of $C_k$ and $s_{i} < s_{i + 1}$ for all $i$.
+
+Then we can say \eqref{eq:canonic-form} is the canonic form for the Markov chain.
+#+end_definition
+
+#+begin_definition
+A Markov chain where there only exists a communicating class is called irreducible (or ergodic)
+Markov chain.
+\label{def:irreducible}
+#+end_definition
+
+*** Recurrence and transience
+
+#+begin_definition
+An state $i\in S$ is called recurrent iff $f_{i,i} = 1$ and transient iff $f_{i,i} < 1$
+#+end_definition
+
+Hence $\sum_{n = 1}^{\infty} p_{i,i}^{(n)}$ diverges when $i$ is recurrent and converges when $i$ is transient.
+
+#+begin_proposition
+If $i$ is a recurrent state and $i$ communicates with $j$, then $f_{j,i} = f_{i,j} = f_{j,j} = 1$,
+and $j$ is recurrent. Therefore, all the states of a communicating class are either
+recurrent or transient.
+\label{prop:recurrent-classes}
+#+end_proposition
+
+#+begin_proof
+By Proposition \eqref{prop:fij-equivs}, $f_{i,j} > 0$. Since $i$ is recurrent $f_{ii} = 1$
+and by Equation \eqref{eq:fij-recurrence}:
+
+\[
+1 = f_{i,i} = p_{i,i} + \sum_{k \neq i} p_{i,k} f_{k,i}
+\]
+
+$i \goto j$ means there exists $k_1, k_2, \ldots, k_r$ verifying:
+
+\[
+p_{i, k_1} \cdot p_{k_1, k_2} \cdots p_{k_{r}, j} > 0
+\]
+
+Since $\sum_{k} p_{i,k} = 1$, and $0 \le f_{k,i} \le 1$, then it must hold $f_{k,i} = 1$ for all
+$k$ such that $p_{i,k} > 0$. In particular $f_{k_1,i} = 1$, and we deduce:
+
+\[
+1 = f_{k_1,i} = p_{k_1,k_1} + \sum_{k\neq k_1} p_{k_1,k} f_{k,i}
+\]
+
+We get $1 = f_{k_2, i}$ by an analogous argument, and recursively we arrive at $f_{j,i} = 1$.
+
+Since $f_{i,j} > 0$, $f_{j,i} = 1$ then by Proposition \eqref{prop:fij-equivs}
+we deduce there exist $u, v$: $p_{i,j}^{(u)} > 0, p_{j,i}^{(v)} > 0$.
+So for every $n \ge u + v$ we arrive at:
+
+\[
+p_{j,j}^{(n)} \ge p_{j,i}^{(v)} p_{i,i}^{(n - u + v)} p_{i,j}^{(u)}
+\]
+
+Since $f_{i,i} = 1$, then $\sum_{n = 1}^{\infty} p_{i,i}^{(n)} = \infty$ by Proposition \eqref{prop:fii-equiv},
+and therefore $\sum_{n = u + v}^{\infty} p_{i,i}^{(n)} = \infty$
+
+\begin{align*}
+\sum_{n = 1}^{\infty} p_{j,j}^{(n)} \ge \sum_{n = u + v}^{\infty} p_{j,j}^{(n)} \ge
+p_{j,i}^{(v)} p_{i,j}^{(u)} \sum_{n = u + v}^{\infty} p_{i,i}^{(n)} = \infty
+\end{align*}
+
+Again from Proposition \eqref{prop:fii-equiv} we deduce $f_{j,j} = 1$. We have proved $j$ is
+recurrent, but also that $j \goto i$, and we can deduce $f_{i,j} = 1$ with an identical procedure.
+#+end_proof
+
+#+begin_definition
+We will say a communicating class is recurrent (resp. transient) iff all of its states
+are recurrent (resp. transient). We will say a communicating class $C$ is closed if it
+holds $i \goto j$ and $i\in C$ implies $j\in C$.
+#+end_definition
+
+#+begin_proposition
+All the closed irreducible subchains of a DTMC are recurrent, and every DTMC has
+at least one subchain of such type. A state is transient iff it is non-essential.
+\label{prop:one-recurrent-class}
+#+end_proposition
+
+#+begin_proof
+Let us fix some $i \in S$. We have
+
+\[
+\sum_{j \in S} \expecti{V_j} = \sum_{j \in S} \sum_{n = 1}^{\infty} p_{i,j}^{(n)} =
+\sum_{n = 1}^{\infty} \sum_{j \in S} p_{i,j}^{(n)} = \sum_{n = 1}^{\infty} 1 = \infty
+\]
+
+We conclude there exits at least one $\expecti{V_j} = \infty \Leftrightarrow f_{j,j} = 1$, so the subchain which
+contains $j$ is recurrent. The same argument can be applied to the other subchains.
+#+end_proof
+
+#+begin_corollary
+In a DTMC, a communicating class is recurrent iff it is closed.
+\label{corollary:comm-recurrence}
+#+end_corollary
+
+#+begin_proof
+If we have a non closed class $C$, there exist $i \in C, j \in S - C$ such that $i \goto j$ and $j\neq \goto j$.
+Therefore $f_{j,i} = 0$ by Proposition \eqref{prop:fij-equivs}.
+
+Therefore:
+
+\[
+f_{i,i} = p_{i,i} + \sum_{k \neq i} p_{i, k} f_{k,i}
+        = p_{i,i} + \sum_{k \neq i, j} p_{i, k} f_{k, i}
+        < \sum_{k \neq j} p_{i, k} \underset{p_{i,j} > 0}{<} 1
+\]
+
+and the class would not be recurrent.
+
+Reciprocally, Proposition \eqref{prop:one-recurrent-class} gives us the result we want.
+#+end_proof
+
+#+begin_definition
+We define the mean recurrence time for $i$ as
+$r_{i} := \expecti{\tau_{i}} = \sum_{n = 1}^{\infty} n f_{ii}^{(n)}$
+#+end_definition
+
+#+begin_definition
+We say that a recurrent state $i \in S$ is:
+1. Positive recurrent iff $r_i < \infty$.
+1. Null recurrent iff $r_i = \infty$.
+#+end_definition
+
+#+begin_lemma
+A state $i$ is recurrent positive iff:
+
+\[
+lim_{s\nearrow 1} \frac{1 - F_{i,i}(s)}{1 - s} < \infty \dimplies lim_{s\nearrow 1} (1 - s) \bigg\{1 + P_{i,i}(s)\bigg\} > 0
+\]
+
+\label{lemma:positive-rec-characterization}
+#+end_lemma
+
+#+begin_proof
+Let us observe that for the limit to exist it must be $\lim_{s\nearrow 1} F_{i,i}(s) = f_{i,i} = 1$.
+
+\[
+\lim_{s\nearrow 1} \frac{1 - F_{i,i}(s)}{1 - s} =
+\frac{1}{1 - s} \sum_{n = 1}^{\infty} (1 - s^n) f_{i,i}^{(n)} =
+\sum_{n = 1}^{\infty} (1 + s + \ldots + s^{n-1}) f_{i,i}^{(n)}
+\underset{s\nearrow 1}{\rightarrow} \sum_{n = 1}^\infty n f_{i,i}^{(n)} = r_i
+\]
+
+The second part is deduced from Equation \eqref{eq:Fs-Ps-relation}.
+#+end_proof
+
+#+begin_proposition
+If $i,j$ are communicating recurrent states, then they are both positive recurrent or null recurrent.
+\label{prop:all-positive-all-null}
+#+end_proposition
+
+#+begin_proof
+By the procedure used in the proof of Proposition \eqref{prop:recurrent-classes}, we have:
+
+\[
+p_{j,i}^{(v)} \cdot p_{i,j}^{(u)} > 0, \quad p_{j,j}^{(n)} \ge p_{j,i}^{(v)} \cdot p_{i,i}^{(n-u-v)} \cdot p_{i,j}^{(u)} \quad \forall n \ge u + v
+\]
+
+Therefore:
+
+\allowdisplaybreaks
+\begin{align*}
+(1-s) \bigg\{1 + P_{j,j}(s)\bigg\} = (1-s) \bigg\{1 + \sum_{n = 1}^{\infty} p_{j,j}^{(n)} s^n\bigg\} = \\
+(1-s) \bigg\{1 + \sum_{n = 1}^{u + v - 1} p_{j,j}^{(n)} s^n + \sum_{n = u + v}^{\infty} p_{j,j}^{(n)} s^n \bigg\} \ge \\
+(1-s) \bigg\{1 + \sum_{n = 1}^{u + v - 1} p_{j,j}^{(n)} s^n + s^{u + v - 1} p_{i,j}^{(u)} p_{j,i}^{(v)} \sum_{n = 1}^{\infty} p_{i,i}^{(n)} s^n \bigg\}\ge \\
+(1-s) \bigg\{1 + s^{u + v - 1} p_{i,j}^{(u)} p_{j,i}^{(v)} P_{i,i}(s) \bigg\} =\\
+(1-s) \bigg\{1 + P_{i,i}(s)\bigg\}s^{u + v - 1} p_{i,j}^{(u)} p_{j,i}^{(v)} + (1-s) \bigg\{1 - s^{u + v - 1} p_{i,j}^{(u)} p_{j,i}^{(v)} \bigg\}
+\end{align*}
+
+Hence:
+
+\[
+\lim_{s\nearrow 1} (1-s) \bigg\{1 + P_{j,j}(s)\bigg\} \ge p_{i,j}^{(u)} p_{j,i}^{(v)} \lim_{s\nearrow 1} (1-s) \bigg\{1 + P_{i,i}(s)\bigg\}
+\]
+
+And exchanging the roles of $i$ and $j$, we deduce $i$ is positive recurrent iff $j$ is.
+#+end_proof
+
+#+begin_proposition
+Every irreducible DTMC is positive recurrent
+#+end_proposition
+
+#+begin_proof
+Let us fix a $s \in [0,1[$. We have, using that $\sum_{n = 1}^{\infty} s^n = \frac{s}{1 - s}$:
+
+\[
+\sum_{j \in S} (1-s) F_{i,j}(s) \bigg\{1 + P_{j,j}(s)\bigg\} \underset{\textrm{\eqref{eq:Fs-Ps-relation}}}{=}
+(1 - s) \sum_{j \in S} P_{i,j}(s) = (1-s) \sum_{n = 1}^{\infty} s^n \underbrace{\sum_{j\in S} p_{i,j}^{(n)}}_{1} = s
+\]
+
+Taking $\lim_{s \nearrow 1}$ we have $\sum_{j \in S} \lim_{s \nearrow  1} (1-s)
+\underbrace{f_{i,j}(s)}_{\underset{s \nearrow 1}{\rightarrow} 1} \bigg\{1 + P_{j,j}(s)\bigg\} = 1$
+
+Therefore, there must exist $j \in S$ with $\lim_{s \nearrow  1} (1-s) F_{i,j}(s) > 0$. By Lemma \eqref{lemma:positive-rec-characterization},
+we deduce $j$ is positive recurrent, therefore recurrent. By Proposition \eqref{prop:recurrent-classes} all states
+communicating with $j$ are also recurrent, and by Proposition \eqref{prop:all-positive-all-null}, all the states of
+the chain are positive recurrent.
+#+end_proof
+
+*** Absorption
+
+Although the concept of absorbing state has arisen before, we give a formal definition.
+
+#+begin_definition
+A state $i\in S$ is absorbing iff $p_{i,i} = 1$.
+#+end_definition
+
+Let us observe the matrix \eqref{eq:canonic-form}. This matrix poses some interesting questions for
+the non-essential states. Let us take a non-essential state, namely $i$. Then it is likely the chain
+will go to a state in $S^{\ast}$ at some point, and never come back.
+
+#+begin_definition
+We define the absorbing time as $\tau^{\ast} = \min \{n > 0: X_n \in S^{\ast}\}$
+If $\tau^{\ast} < \infty$, we can define the entry absorbing state as the value $X_{\tau^{\ast}}$.
+
+We define:
+
+1. The absorbing probability as $f_{i}^{\ast} = \probi{\tau^{\ast} < \infty}$.
+2. Taking $j\in S^{\ast}$, we can define the probability of being absorbed by $j$ as $f_{i,j}^{\ast} = \probi{\tau^{\ast} < \infty, X_{\tau^{\ast}} = j}$
+3. Since we can decompose $S^{\ast} = C_1 \cup C_2 \cup \ldots \cup C_r$ by the Proposition \eqref{prop:equiv-classes}. Given $C = C_i$, we can define the probability of the state $i$ being absorbed by the subchain $C$ as:
+
+\[
+f_{i,C}^{\ast} = \probi{\tau^{\ast} < \infty, X_{\tau^{\ast}} \in C}
+\]
+#+end_definition
+
+#+begin_proposition
+The following holds for each $i \not\in S^{\ast}, j\in S^{\ast}$:
+
+1. $f_i^{\ast} = \sum_{j \in S^{\ast}} p_{i,j} + \sum_{j \not\in S^{\ast}} p_{i,j} f_{j}^{\ast}$
+2. $f_{i,j}^{\ast} = p_{i,j} + \sum_{k \not\in S^{\ast}} p_{i,j} f_{k,j}^{\ast}$
+2. $f_{i,C}^{\ast} = \sum_{j \in C} p_{i,j} + \sum_{j \not\in S^{\ast}} p_{i,j} f_{j}^{\ast}$
+#+end_proposition
+
+It is obvious that $f_{i,C}^{\ast} = \sum_{j \in C} f_{i,j}^{\ast}$. Once the chain enters the
+subchain $C$, it does so with initial probabilities
+$(f_{i,j}^{\ast} / f_{i,C}^{\ast})_{j \in C}$.
+
+It we call $V = \bigg(\expecti{V_j}\bigg)_{i,j \not\in S^{\ast}}$, we have, taking a look at \eqref{eq:canonic-form}
+that $V = \sum_{n = 1}^{\infty} R^n$.
+
+We will note $\onecol$ to the column vector $\left(\begin{array}{c} 1 \\ \vdots \\ 1 \end{array}\right)$
+or the row vector $(1, 1, \ldots, 1)$.
+
+Also, we can define $Q = (Q_1, \ldots, Q_r)$ the matrix of transition probabilities from
+$S - S^{\ast}$ to $S^{\ast}$, and $q = Q \cdot \onecol$ (the row-wise sum of $Q$). And we will call
+$F^{\ast} = (f_{i,j}^{\ast})_{i \in S - S^{\ast}, j \in S^{\ast}}$,
+$f^{\ast} = (f_{i}^{\ast})_{i \in S - S^{\ast}}$.
+
+#+begin_proposition
+The following relations hold:
+
+\begin{align}
+F^{\ast} &= (I + V)Q \label{prop:Fast-matrix}\\
+f^{\ast} &= (I + V)q \label{prop:fast-matrix}
+\end{align}
+
+The distribution for $\tau^{\ast}$ is $\probi{\tau^{\ast} = n} = R^{n - 1}q, \quad n \in \mathbb{N}$
+\label{prop:fast-matrices}
+#+end_proposition
+
+#+begin_proof
+Let us fix $i\in S - S^{\ast}, j \in S^{\ast}$. We have:
+
+\begin{align}
+\probi{\tau^{\ast} = n + 1, X_{\tau^{\ast}} = j} = \sum_{k \in S - S^{\ast}} \probi{X_n = k, X_{n + 1} = j} = \sum_{k \in S - S^{\ast}} p_{i,k}^{(n)} p_{k,j}
+\label{eq:tau-ast-nat}
+\end{align}
+
+Also, using $p_{i,j}^{(0)} = \delta_{i,j}$, we have:
+
+\begin{align}
+\probi{\tau^{\ast} < \infty, X_{\tau^{\ast}} = j} = \sum_{n = 0}^{\infty} \sum_{k \in S - S^{\ast}} p_{i,k}^{(n)} p_{k,j} = \sum_{k \in S - S^{\ast}} \bigg(\delta_{i,k} + \expecti{V_k}\bigg) p_{k,j}
+\label{eq:tau-ast-inf}
+\end{align}
+
+Let us note that this last equality is \eqref{prop:Fast-matrix} expressed matrix-wise.
+To get \eqref{prop:fast-matrix}, it suffices to sum in $j \in S^{\ast}$ in
+Equation \eqref{eq:tau-ast-inf}. And summing in $j \in S^{\ast}$ in \eqref{eq:tau-ast-nat} we arrive at:
+
+\[
+\probi{\tau^{\ast} = n + 1} \sum_{k \in S - S^{\ast}} p_{i,k}^{(n)} q_k = (R^n q)_i
+\]
+#+end_proof
+
+#+begin_definition
+The matrix $N := (I - R)^{-1}$ is called fundamental matrix for the Markov chain. The entry $n_{ij}$ represents the
+number of times the process is in transient state $j$ if it is started in also transient state $i$
+(counting the initial state as $1$ step).
+#+end_definition
+
+#+begin_definition
+We will call $t_i$ to the mean number of steps before the chain is absorbed, given that the chain starts in $i$,
+with $i$ a transient state.
+#+end_definition
+
+#+begin_proposition
+If $S - S^{\ast}$ is finite, then $N = (I - R)^{-1}$ exists, $N = I + V$ and:
+
+\begin{eqnarray}
+F^{\ast} = N\cdot Q \nonumber\\
+t = N \cdot \onecol \nonumber\\
+f^{\ast} = 1 \nonumber \label{eq:char-absorption-probs}\\
+\end{eqnarray}
+
+where the last equation tells us the absorption would take place almost surely.
+\label{prop:i-r-invertible}
+#+end_proposition
+
+#+begin_proof
+It holds:
+\[
+(I + V)(I - R) = \sum_{k = 0}^{\infty} R^k \cdot (I - R) = I
+\]
+and therefore $(I + V) = (I - R)^{-1}$ (finiteness is used in this affirmation).
+
+It is clear that if we take $N = I + R + R^2 + \ldots$, then $N_{ij}$ represents the mean number of
+steps the chain hits $j$ if it starts at $i$ (counting the initial state). Thus, $t = N \cdot \onecol$.
+
+Since the rows of the transition matrix from $S - S^{\ast}$ sum one,
+
+\[
+Q1_{S^{\ast}} + R 1_{S - S^{\ast}} = 1_{S - S^{\ast}} \dimplies Q1_{S^{\ast}} = (I - R) 1_{S - S^{\ast}}
+\]
+
+Therefore:
+
+\[
+f^{\ast} = F^{\ast} 1 = (I - R)^{-1} \cdot Q 1 = (I - R)^{-1}(I - R) 1_{S - S^{\ast}} = 1_{S - S^{\ast}}
+\]
+
+#+end_proof
+
+** Ergodicity
+Let us remember the definition of irreducibility, which has arisen before:
+
+#+begin_definition
+We say that a Markov chain is ergodic (or irreducible) iff all states communicate with each other
+#+end_definition
+
+#+begin_definition
+We say that a Markov chain is regular iff there exists some power of its transition matrix with
+all positive elements
+#+end_definition
+
+#+begin_proposition
+Every regular Markov chain is also ergodic. The opposite does not hold.
+#+end_proposition
+
+#+begin_proof
+If the Markov chain is regular, then there exists $n\in \naturals$ such that for every $i, j\in S$, then
+$p_{i,j}^{(n)} > 0$ and therefore $i \dgoto j$, with $i,j$ arbitrary states.
+
+For the counterexample, it suffices to take the Markov chain given by $P = \left(\begin{array}{cc} 0 & 1 \\ 1 & 0 \end{array}\right)$.
+#+end_proof
+
+#+begin_lemma
+If $P_{m\times m}$ is an ergodic transition matrix for a Markov chain with states $\{1, \ldots, m\}$, then
+it is possible to reach each state $j$ from $i$ in $m-1$ steps at most.
+
+\label{lemma:reachability}
+#+end_lemma
+
+#+begin_proof
+The proof is based on graphs. Given a path of positive transition probabilities from
+$i$ to $j$, $i, k_1, k_2, \ldots, k_n = j \in S$, since $S$ is finite, if there were two states repeated,
+$k_l, k_p$ with $p > l$, we could delete the subpath $k_l, k_{l + 1}, \ldots, k_{p-1}$ and we would still
+have a path of states that would take us to $j$. Therefore we cannot have repeated elements in that path,
+and $n$ can be at most $m - 1$.
+#+end_proof
+
+#+begin_lemma
+Given $P_{m\times m}$ regular, then $P^n$ is regular for every $n\in \naturals$
+\label{lemma:power-regular}
+#+end_lemma
+
+#+begin_proof
+$P$ is regular, so all of its entries are positive. Therefore $P\cdot P$ gives a matrix of positive entries,
+and we can do induction on the number of products.
+#+end_proof
+
+Lemma \eqref{lemma:power-regular} makes possible to define:
+
+#+begin_definition
+Given $P$ a regular matrix, we will call $\gamma(P) = \min\{n \in \naturals: P^n > 0\}$
+#+end_definition
+
+#+begin_definition
+If $L = \{l_1, l_2, \ldots\}$ is a numerable set, we can define $gcd(L): = \lim_{n} g_n$, where
+$g_n = \twopartdefow{l_1}{n = 1}{gcd(g_{n - 1}, l_{n})}$
+
+It can be proven this quantity does not depend on the order of the set.
+#+end_definition
+
+#+begin_theorem
+Let $P_{m \times m}$ be a regular matrix. Let $L_i = \{k_1^{(i)}, k_2^{(i)}, \ldots \}$ the set of lengths
+of all directed paths of $G(P)$ which start and end at the node $i$, with $i = 1, \ldots, n$. Let
+$g_i = gcd(L_i)$. Then $P$ is regular iff $g_i = 1, \forall i = 1, \ldots, n$.
+
+\label{th:regular-characterization}
+#+end_theorem
+
+#+begin_proof
+We are going to prove only that if $P$ is regular, then $g_i = 1, \forall i = 1, \ldots, n$, since this part
+will be used by another result later on. The counterpart is also true, although it lies out of the
+scope of this work.
+
+Since $A$ is regular, there exists $n \in \naturals$ such that $A^n > 0$. Because of Lemma
+\eqref{lemma:power-regular} we have $A^{n + p} > 0$ for all $p \ge 0$. Therefore there exists a path of
+(large enough) prime length in each $L_i$ and $g_i = 1$.
+#+end_proof
+
+#+begin_theorem
+If $P_{m\times m}$ is regular and the shortest cycle in $G(P)$ has length $s$, then
+$\gamma(P) \le m + s(m - 2)$, and $A^{m + s(m - 2)} > 0$.
+
+\label{th:regular-gamma-bound}
+#+end_theorem
+
+#+begin_proof
+We may assume, w.l.o.g. that we have a shortest cycle formed by the sequence with no repeated elements
+given by $[1, \ldots, s]$.
+
+$P$ is ergodic (regular $implies$ ergodic) and therefore there exists a path from every node $i$ to every other node
+$j$, and that path has at most length $m-1$ by Lemma \eqref{lemma:reachability}.
+
+Let us split $P^{m + s(m - 2)} = P^{m - s}(P^s)^{m -1}$ and we partition:
+
+\[
+P^{m - s} =
+\left(\begin{array}{c|c}
+  \underbrace{X_{11}}_{s\times s} & \underbrace{X_{12}}_{s \times (m - s)} \\
+  \hline
+  \underbrace{X_{21}}_{(m - s)\times s} & \underbrace{X_{22}}_{(m - s) \times (m - s)}
+\end{array}\right)
+\qquad
+(P^s)^{m-1} = \left(\begin{array}{c|c}
+  \underbrace{Y_{11}}_{s\times s} & \underbrace{Y_{12}}_{s \times (m - s)} \\
+  \hline
+  \underbrace{Y_{21}}_{(m - s)\times s} & \underbrace{Y_{22}}_{(m - s) \times (m - s)}
+\end{array}\right)
+\]
+
+Since $[1, \ldots, s]$ forms a cycle we can go from every $i$ to another $j$ with $i,j \in \{1, \ldots, s\}$.
+Therefore there must be at least one positive element in each row of $X_{11}$. From the fact that the matrix
+is irreducible, in $r \le m - s$ steps we must be able to go from one state in $i \in \{s + 1, \ldots, m\}$ to another
+state $j \in \{1, \ldots s\}$ and stay inside the path $[1, \ldots, s]$ for the remaining
+$m - s - r$ steps. Therefore every row in $X_{21}$ must contain one positive value.
+
+Since $[1, \ldots, s]$ forms a cycle in $G(P)$ we have a self cycles $[1], [2], \ldots, [s]$ in $G(P^s)$.
+$P$ is regular and by Lemma \eqref{lemma:power-regular} $P^s$ is also regular and thus ergodic. Therefore,
+there must exist a path $[i, \ldots, j]$ of length $m - 1$ at most, with $i,j \in \{1, \ldots, m\}$. And
+looping enough steps in the cycle $[i]$ before, we have that $Y_{11} > 0$ and $Y_{12} > 0$.
+
+To end the proof, it suffices to write:
+
+\[
+P^{m - s} \cdot (P^s)^{m-1} =
+  \left(\begin{array}{c|c}
+  X_{11} & X_{12} \\
+  \hline
+  X_{21} & X_{22}
+  \end{array}\right)
+\cdot
+  \left(\begin{array}{c|c}
+  Y_{11} & Y_{12} \\
+  \hline
+  Y_{21} & Y_{22}
+  \end{array}\right)
+\ge
+  \left(\begin{array}{c|c}
+  X_{11} \cdot Y_{11} & X_{11} \cdot Y_{12} \\
+  \hline
+  X_{21} \cdot Y_{11} & X_{21} \cdot Y_{12}
+  \end{array}\right)
+\]
+
+and using the fact that if we have a matrix $A > 0, x \ge 0, x\neq 0$, then $Ax > 0$ (and analogously for
+row-wise products), we have shown $P^{m + s(m - 2)} > 0$.
+#+end_proof
+
+
+#+begin_corollary
+$P_{m \times m}$ is regular iff $P^{m^2 - 2m + 2} > 0$
+\label{corollary:regular-cond}
+#+end_corollary
+
+#+begin_proof
+One implication is clear by the definition of regular.
+
+The counterpart: if $P$ is regular, then there are cycles. If the shortest one had length $m$
+(all have length lower or equal than $m$ because we need at most $m-1$ steps to go from one state to
+anoher), then by Theorem \eqref{th:regular-characterization} $g_i = m$ for all $i = 1, \ldots, m$
+and matrix could not be regular. Then the shortest cycle must have length $s \le m - 1$, and by
+Theorem \eqref{th:regular-gamma-bound} we would have:
+
+\[\gamma(P) \le m + s(m - 2) \le m + (m - 1)(m - 2) = m^2 - 2m + 2 \]
+#+end_proof
+
+#+begin_lemma
+If $P_{m \times m}$ is ergodic and has some $1 \le d \le m$ diagonal entries strictly positive, then
+$P$ is regular and $\gamma(P) \le 2m - d - 1$
+\label{lemma:ergodic-pos-diagonal}
+#+end_lemma
+
+#+begin_proof
+$A$ must be regular, since there would exist at least one cycle $[i]$, and the matrix is ergodic, so we
+can have as many loops as necessary and then a path $[i, \ldots j]$ (of length lower or equal than $m$) or
+$[j, \ldots i]$ and appropriate number of loops in $[i]$, or junction of paths $[j, \ldots, i]$ plus
+enough loops in $[i]$, plus the path $[i, \ldots, k]$. To sum up, we can prove $A^{2m} > 0$.
+
+Now we know $A$ must have $d$ cycles with length one. Let us suppose, w.l.o.g., that they are at
+$1, \ldots, d$ states. We can partition:
+
+\[
+P^{m - d} =
+\left(\begin{array}{c|c}
+  \underbrace{X_{11}}_{d\times d} & \underbrace{X_{12}}_{s \times (m - d)} \\
+  \hline
+  \underbrace{X_{21}}_{(m - d)\times d} & \underbrace{X_{22}}_{(m - d) \times (m -d)}
+\end{array}\right)
+\qquad
+(P^1)^{m - 1} = \left(\begin{array}{c|c}
+  \underbrace{Y_{11}}_{d\times d} & \underbrace{Y_{12}}_{s \times (m - d)} \\
+  \hline
+  \underbrace{Y_{21}}_{(m - d)\times d} & \underbrace{Y_{22}}_{(m - d) \times (m -d)}
+\end{array}\right)
+\]
+
+and by a similar argument to the one in the demonstration of Theorem \eqref{th:regular-gamma-bound} we
+can show that $X_{11}$ and $X_{21}$ contain at least one positive entry per row and that $Y_{11} > 0$ and
+$Y_{12} > 0$. For this last part it suffices to use the argument that we can loop in $[i]$ for $n - 1 - r_i$
+times and then in $r_i \le n - 1$ steps we can go from $i \in \{1, \ldots, d\}$ to
+$j \in \{1, \ldots, m\}$.
+#+end_proof
+
+#+begin_definition
+Given a matrix $P$, a row vector $r = \left(r_1, \ldots, r_n\right)$ is called a fixed row vector
+iff $rP = r$ (it is a left eigenvector for the matrix). Analogously, a column vector $c = \left(\begin{array}{c} r_1 \\ \vdots \\ r_n\end{array}\right)$
+is called a fixed column vector iff $Pc = c$ (it is a right eigenvector for the matrix).
+#+end_definition
+
+#+begin_definition
+We call steady state to a probability row vector $v$ such that $vP = v$
+#+end_definition
+
+#+begin_lemma
+Let $P_{m\times m}$ be a transition matrix with all its entries positve. Let us fix a probability column
+vector $y$ and name $M_0 = \max y_i$, $m_0 = \min y_i$,
+$M_1 = \max (Py)_i$ and $m_1 = \min (Py)_i$. Hence, there exists
+$k\in [0,1[$ such that:
+
+\[
+M_1 - m_1 \le k (M_0 - m_0)
+\]
+
+\label{lemma:bound-pos-matrix}
+#+end_lemma
+
+#+begin_proof
+Let us call $d = \min\{p_{ij}: i,j\in \{1, \ldots, m\}\}$. If $m = 1$, it suffices to
+take $k = 0$. If $m > 1$, then $d \le \frac{1}{2}$ (no entry is null). Since $Py$ can be
+thought as a weighted average of the entries in $y$, the maximum value we can reach is bounded:
+
+\[ M_1 \le d m_0 + (1 - d)M_0 \]
+
+and likewise for the smallest possible one:
+
+\[ m_1 \ge d M_0 + (1 - d)m_0 \]
+
+Hence:
+
+\[ M_1 - m_1 \le d m_0 + (1 - d)M_0 - dM_0 - (1 - d)m_0 = (1 - 2d)(M_0 - m_0) \]
+
+and we can take $k = 1 - 2d$. Note this minimum only depends on $P$.
+#+end_proof
+
+#+begin_theorem
+**Fundamental limit theorem for regular Markov chains**
+
+Let $P_{m\times m}$ be a regular transition matrix. Then $\{P^{n}\} \rightarrow W$ where
+$w \in (\posreals)^m$ is a probability vector and
+$W = \left(\begin{array}{c} w \\ \vdots \\ w \end{array}\right)$. Moreover, it holds:
+
+1. $wP = w$ and every other fixed row vector $r$ verifies $r = \lambda w$ for some $\lambda \in \mathbb{R}$
+1. $P\onecol = \onecol$ and every fixed column vector $c$ holds $c = \lambda \onecol$ for some $\lambda \in \mathbb{R}$
+
+Therefore, a stochastic regular matrix has a unique steady state.
+\label{th:steady-regular}
+#+end_theorem
+
+#+begin_proof
+/First part/
+
+Firstly, let us prove the theorem for a matrix $P$ with all its elements strictly positive. Given $y$ a
+probability column vector, let us call:
+
+\begin{equation}
+M_n = \max (P^n y)_i \ge (P^n y)_{i} \ge m_n = \min (P^n y)_i
+\label{eq:mns-sandwich}
+\end{equation}
+
+Since each time we multiply a vector by $P$ we do a weighted average, its maximum element would be lower
+than the previous maximum, and the contrary will happen for its minimum. Hence:
+
+\begin{equation}
+  m_0 \le m_1 \le \ldots m_n \le M_n \le \ldots M_1 \le\ldots \le M_0
+\label{eq:ms-sandwich}
+\end{equation}
+
+In other words, $\{m_n\}$ and $\{M_n\}$ are monotonic bounded sequences of numbers, and their limit exits:
+
+\[
+  \{m_n\} \rightarrow m \qquad \{M_n\} \rightarrow M
+\]
+
+By Lemma \eqref{lemma:bound-pos-matrix}
+
+\[
+  M_n - m_n \le k (M_{n-1} - m_{n-1}) \le \ldots \le k^n M_0 - m_0
+\]
+
+with $k\in [0,1[$. Therefore $v := \lim M_n = \lim m_n$, and \eqref{eq:mns-sandwich} let us observe that for
+every probability vector $y$ it holds
+$\{P^n y \} \rightarrow \left(\begin{array}{c} v \\ \vdots \\ v \end{array}\right)$.
+
+Let us observe that $v$ depends on $y$. If we take the column probability vector with $1$ only in the $j$ -th
+position, namely $e_j$, then calling $w_j$ the limit that depends on $e_j$, we have that:
+$\{P^n e_j \} \rightarrow w_j \onecol$
+
+In other words, $(P^n)_i \rightarrow w = (w_1, \ldots w_m)$, and
+$P^n \rightarrow W = \left\{\begin{array}{c} w \\ \vdots \\ w \end{array}\right\}$.
+
+Since $m_0 > 0$ and the sequence is strictly increasing, $v > 0$ and therefore all the entries for $w$ are
+strictly positive.
+
+To extend the demonstration to regular matrices $P$, it suffices to remember that by their definition there
+must exist a $l > 0$ such that $P^l$ has only positive entries. Hence, $\{m_{ln}\}$ and $\{M_{ln}\}$
+converge to the same limit. Equations \eqref{eq:mns-sandwich} and \eqref{eq:ms-sandwich} were obtained
+for regular stochastic matrices, and therefore for sufficiently large $n$ we can find a value $k$ such that
+$m_{lk} \le m_p \le M_p \le M_{lk}, \forall p \ge n$. Then we can assure there is convergence of
+$\{m_n\}$ and $\{M_n\}$ and use the rest of the demonstration for the case of positive entries.
+
+Since $yP$ is a probability vector if $y$ is a probability vector, $\sum_{j=1}^m (e_i \cdot P^n)_j = 1$ and taking
+limits in $n$, $\sum_{j=1}^m w_j = 1$. Finally, $w \ge 0$ implies that it must be a probability vector.
+
+/Second part/
+
+1. If $P^{n + 1} = P^{n} \cdot P \goto WP = W$, then we deduce $wP = w$ row-wise. For other fixed row vector $r$ it holds $r = rW = \big(\sum_{i = 1}^m r_i \big) w$
+1. Since $c = Pc = P^2 c = \ldots P^n c$, taking limits $c = Wc$, and therefore
+\[
+  c = \left(\begin{array}{c} w \cdot c \\ \vdots \\ w \cdot c \end{array}\right) = \onecol \cdot w \cdot c
+\]
+#+end_proof
+
+As consequence of this theorem, since each element $(i,j)$ of $P^n$ is $p_{i,j}^{(n)}$ and each row tends
+to the same value $w$, the probability of starting at state $i$ and being in $j$ after $n$ steps is
+independent of the starting state $i$. Theorem \eqref{th:steady-regular} has an analogous theorem for ergodic
+Markov chains. We will need some previous lemma to show that.
+
+#+begin_lemma
+Given $P$ an ergodic stochastic matrix, then $\frac{1}{2}(I + P)$ is regular and they have the same
+eigenvectors.
+\label{lemma:ergodic-regular-rel}
+#+end_lemma
+
+#+begin_proof
+$\frac{1}{2} (I + P)$ is stochastic: all the elements are non negative and the sum for the $i$ -th row is:
+
+\[ \frac{1}{2} + \frac{1}{2} \sum_{j = 1}^m p_{ij} = \frac{1}{2} + \frac{1}{2} = 1 \]
+
+To show that it is ergodic, fixed $i,j$, we must show that there exists a power matrix
+$\underbrace{\left\{\frac{1}{2}(I + P)\right\}^m}_{A}$ such that
+$(A^m)_{ij} > 0$. Since $P$ is ergodic, there exists $P^k$ such that $(P^k)_{ij} > 0$, and
+$\left\{\frac{1}{2}(I + P)\right\}^k = R + P^k$ where all of the elements of $R$ are non negative. Since its
+diagonal is strictly positive Lemma \eqref{lemma:ergodic-pos-diagonal} ends our proof.
+
+Given $v: vP = v$, then $\frac{1}{2}(I + P)v = \frac{1}{2} (v + v) = v$. To prove the other implication:
+let $v: \frac{1}{2}(I + P)v = v \implies \frac{1}{2}v + \frac{1}{2}Pv = v$, and therefore
+$\frac{1}{2} Pv = \frac{1}{2}v$. Analogously for right eigenvectors.
+#+end_proof
+
+#+begin_theorem
+**Fundamental theorem for ergodic Markov chains**
+
+If $P_{m\times m}$ is an ergodic transition matrix, then there exists a unique steady state $w$ with all its
+elements strictly positive. Moreover, every left eigenvector $r: rP = r$ is linearly dependent of $w$, and
+every right eigenvector $c: Pc = c$ is a multiple of $\onecol$.
+
+\label{th:steady-ergodic}
+#+end_theorem
+
+#+begin_proof
+Lemma \eqref{lemma:ergodic-regular-rel} and Theorem \eqref{th:steady-regular} suffice to reach the result.
+#+end_proof
+
+#+begin_lemma
+An ergodic stochastic matrix $P_{m \times m}$ has a unique steady state $w$ that can be computed as the
+only solution of the system:
+
+\[
+\twopartsys{(I - P^t)w}{0}{\onerow \cdot w}{1}
+\]
+\label{lemma:steady-states-computation}
+#+end_lemma
+
+#+begin_proof
+By means of Theorem \eqref{th:steady-ergodic} we have unicity and that the system
+
+\[
+  \left(\begin{array}{rcl}
+    1 & 1 \ldots & 1 \\
+    \hline
+    & I - P^t & \\
+  \end{array}\right) \cdot w =
+  \left(\begin{array}{c}
+    1 \\
+    0 \\
+    \vdots \\
+    0
+  \end{array}\right)
+\]
+
+must have a unique solution.
+#+end_proof
+** Steady states
+
+We are now in appropriate conditions for depicting how steady states of a general stochastic matrix can be computed.
+
+#+begin_proposition
+Given $P_{m\times m}$ a stochastic matrix, then every steady state $v$ assigns $0$ to the transient states, i.e. if
+$i$ -th state is transient, then $(vP)_i = 0$
+
+\label{prop:ss-transient-zero}
+#+end_proposition
+
+#+begin_proof
+Looking at the canonic matrix from Equation \eqref{eq:canonic-form}, if $[l, \ldots, m]$ are transient
+states (we can suppose w.l.o.g. they are ordered as in the canonic form), we would have:
+
+\[
+(v_l, \ldots, v_m) R = (v_l, \ldots, v_m) \Leftrightarrow (v_l, \ldots, v_m) \cdot (I - R) = 0
+\]
+
+$(I - R)$ is invertible by Proposition \eqref{prop:i-r-invertible}. Hence, $(v_l, \ldots, v_m) = 0$
+
+#+end_proof
+
+Each matrix $P_1, \ldots, P_r$ from \eqref{eq:canonic-form} is irreducible. Therefore, by the fundamental Theorem \eqref{th:steady-ergodic},
+each $P_i$ has a unique steady vector $v^{(i)}$. If $P_i$ corresponds to the states $[l_i, l_i + 1 \ldots, u_i]$ We are going
+to call $\widetilde{v}^{(i)}_j = \twopartdef{0}{j < l_i \textrm{ or } j > u_i}{v^{(i)}_k}{j = l_{i + k - 1}}$.
+
+
+#+begin_proposition
+Given a stochastic matrix $P$ written in its canonic form, then its space of steady states is a convex hull given by:
+
+\[
+\bigg\{\sum_{i = 1}^r \alpha_i \widetilde{v}^{(i)}: 0 \le \alpha_i, \sum_{i = 1}^{r} \alpha_i = 1\bigg\}
+\]
+
+#+end_proposition
+
+#+begin_proof
+Since $P \sum_{i = 1}^r \alpha_i \widetilde{v}^{(i)} = \sum_{i = 1}^r \alpha_i P \widetilde{v}^{(i)} = \sum_{i = 1}^r \alpha_i \widetilde{v}^{(i)}$,
+and $\sum_{j = 1}^m \bigg(\sum_{i = 1}^r \alpha_i \widetilde{v}^{(i)} \bigg)_j = \sum_{i = 1}^m \alpha_i \sum_{j = 1}^m \widetilde{v}^{(i)}_j = \sum_{i = 1}^m \alpha_i = 1$
+then it is clear that every convex combination of $\widetilde{v}^{(i)}$ with
+$i = 1, \ldots, r$, is a steady state for the matrix.
+
+They are also linearly independent, trivially, since they are not null by the Theorem \eqref{th:steady-ergodic} and the positive regions
+of each one do not overlap by construction.
+
+Given a steady state $\widetilde{w}$, by the Proposition \eqref{prop:ss-transient-zero} we know $(\widetilde{w} P)_{j} = 0$ for
+$j= l, \ldots, m$ (the transient states). And by the shape of the matrix, $(\widetilde{w} P)_{j} =
+(w^{(i)} P_i)_j = \widetilde{w}_j$ for each $j = l_i, \ldots, u_i$, where
+$w^{(i)} = (\widetilde{w}_{l_i}, \ldots, \widetilde{w}_{u_i})$. Using Theorem \eqref{th:steady-ergodic},
+then $w^{(i)} = \alpha_i v^{(i)}$ must hold. We deduce $w = \sum_{i = 1}^r \alpha_i \widetilde{v}^{(i)}$
+#+end_proof
+
+** Mean first passage time
+#+begin_definition
+Given an ergodic Markov chain, we call the expected number of steps to reach a state $j$ from initial state $i$
+as mean first passage time from $i$ to $j$. We note it $m_{ij}$. Formally:
+
+\[
+  \tau_{j}^{\ast} := \min \{n \ge 0: X_n = j\}
+  \qquad m_{ij} := \expecti{\tau_{j}^{\ast}}
+\]
+
+Formally, the only condition we should ask to be able to define $m_{ij}$ with $i\neq j$ would be that
+$f_{ij} = 1$. Obviously by the definition $m_{ii} = 0$
+#+end_definition
+
+#+begin_proposition
+It holds
+
+\begin{eqnarray*}
+  & m_{ij}  &= 1 + \sum_{k \neq j} p_{ik} m_{kj} \\
+  & r_{i}  &= 1 + \sum_{k} p_{ik} m_{ki}
+\end{eqnarray*}
+
+\label{prop:mfpt-rec}
+#+end_proposition
+
+#+begin_proof
+It holds: $m_{i,j} = \expecti{\tau_j^{\ast}} = \sum_{n = 0}^{\infty} n f_{i,j}^{(n)}$
+
+On the one hand: $f_{i,j}^{(1)} = p_{i,j}$ and $f_{i,j}^{(n)} = \sum_{k\neq j} p_{i,k} f_{k,j}^{(n-1)}$. Therefore, and having in mind that $f_{i,j} = 1$:
+
+\begin{align*}
+m_{i,j} &= \sum_{n = 1}^{\infty} n f_{i,j}^{(n)} = p_{i,j} + \sum_{n = 2}^{\infty} n \sum_{k \neq j} p_{i,k} f_{k,j}^{(n-1)} \\
+        &= p_{i,j} + \sum_{k \neq j} p_{i,k} \sum_{n = 2}^{\infty} n f_{k,j}^{(n-1)} \\
+        &= p_{i,j} + \sum_{k \neq j} p_{i,k} \bigg\{ \sum_{n = 2}^{\infty} f_{k,j}^{(n-1)} + \sum_{n = 2}^{\infty} (n-1)f_{k,j}^{(n-1)} \bigg\} \\
+        &= p_{i,j} + \sum_{k \neq j} p_{i,k} f_{k,j} + \sum_{k \neq j} p_{i,k} m_{k,j} \\
+        &\underset{\eqref{eq:fij-recurrence}}{=} 1 + \sum_{k\neq j} p_{i,k} m_{k,j}
+\end{align*}
+
+Analogously for $r_i$.
+#+end_proof
+
+Matricially, we can define $M = (m_{ij})$, $D = (\delta_{ij} \cdot r_i)$,
+$C = \left(\begin{array}{cccc} 1 & 1 &\ldots & 1 \\
+                               1 & 1 &\ldots & 1 \\
+                              \vdots & \vdots & \ddots & \vdots \\
+                               1 & 1 &\ldots & 1 \end{array}\right)$
+
+And for the recurrence in Proposition \eqref{prop:mfpt-rec} we have:
+
+\begin{equation}
+M = PM + C - D
+\label{prop:mfpt-rec-mat}
+\end{equation}
+
+#+begin_proposition
+Given an ergodic Markov chain, then $r_i = w_i^{-1}$ where $w$ is its unique steady state.
+
+\label{prop:ss-and-recurrence-prob}
+#+end_proposition
+
+#+begin_proof
+By Equation \eqref{prop:mfpt-rec-mat} we have $w(I - P)M = 0 = w(C -D)$.
+
+Therefore $w\cdot C = \onerow = (w_1\cdot r_1, \ldots w_n r_n)$, and $r_i = w_i^{-1}$
+#+end_proof
+
+#+begin_lemma
+Let $P_{m\times m}$ an ergodic matrix, $w$ its steady state and $W$ the matrix formed by $w$ as rows.
+Then $I - P + W$ is invertible and $Z = (I - P + W)^{-1}$ verifies:
+
+1. $Z \cdot \onecol = \onecol$, $w\cdot Z = w$
+2. $Z(I - P) = I - W$
+\label{lemma:z-invertible}
+#+end_lemma
+
+#+begin_proof
+
+Let $x$ such that $(I - P + W)x = 0$. Since $w P = w$ then $\{w P^n \} \rightarrow wW = w$ and similarly
+$W \onecol = \onecol$. Therefore $w(I - P + W)x = wx = 0 \implies Wx = 0 \implies (I - P)x = 0$. Hence,
+this means $Px = x$. By Theorem \eqref{th:steady-ergodic} this implies
+$x = \lambda \onecol$, but $wx = 0$ and $w$ has only positive elements. Therefore $x = 0$, and we can use
+$A_{m \times m}$ is invertible iff $\forall x \in \reals^m, Ax = 0 \implies x = 0$.
+
+$\onecol = (I - P + W) \onecol$ and multiplying by $Z$ in both sides: $Z \onecol = \onecol$.
+Similarly, we can show $wZ = w$.
+
+Since $ZW = Z \left(\begin{array}{c|c|c} w_1\onecol & \ldots & w_m\onecol \end{array}\right) =
+W$. Then $Z(I - P) = Z(I -P + W - W) = I - ZW = I - W$.
+#+end_proof
+
+#+begin_theorem
+Given $P$ an ergodic matrix, $w$ its steady state, $Z = (I - P + W)^{-1} = (z_{ij})$ and $M = (m_{ij})$,
+it holds:
+
+\[ m_{ij} = \frac{z_{jj} - z_{ij}}{w_j} \]
+
+\label{th:mfpt-computation}
+#+end_theorem
+
+#+begin_proof
+From Equation \eqref{prop:mfpt-rec-mat} we have $(I - P) M = C - D$ and:
+
+\[
+Z(I - P)M = ZC - ZD \underset{\textrm{Lemma \eqref{lemma:z-invertible}}}{\dimplies} M - WM = C -ZD
+\dimplies WM = ZD + M - C
+\]
+
+and from that equation an $m_{jj} = 0$, we deduce:
+
+\[
+  (w M)_{j} = \twopartdef{z_{ij}r_j - 1 + m_{ij}}{i \neq j}{z_{jj}r_j - 1}{i = j}
+\]
+
+and therefore, subtracting and using Proposition \eqref{prop:ss-and-recurrence-prob}:
+
+\[ m_{ij} = \frac{z_{jj} - z_{ij}}{w_j} \]
+#+end_proof
+
+* R package
+This chapter describes the work carried out in [[https://github.com/spedygiorgio/markovchain][markovchain]] package putting into practice the theoretical
+knowledge acquired throughout previous chapters. The library is designed to be used with =R= language and
+provides algorithms to perform analysis of Markov chains. We have focused in the discrete time homogeneous
+part.
+
+The package is coded both in =R= and =C++=. Our main objective was to propose mathematical driven improvements
+to the aforementioned library. Most of the algorithms in this section are an original work and have been
+designed by the author of this report. We have tried to take into account some existent algorithms as
+starting point to propose improvements, such as [[citep:feres]]. As a general guide for the additions to the
+package to be compatible with the requisites and the good practices for =R=, we have used [[citep:rhadleypkg]].
+
+Code has been integrated in the upstream version for the library and is available at [[https://cran.r-project.org/web/packages/markovchain/][CRAN]], the official
+repository for R packages. To browse the added code, one could go to the repository that hosts the
+project [fn::[[https://github.com/spedygiorgio/markovchain]]]. Due to space constraints, this section only
+describes the algorithms, and does not contain listings of code.
+
+** Communicating classes based algorithms
+We can propose an alternative definition of communicating property, taking $n \ge 0$ instead of $n > 0$,
+which has been the one used in the software from the start:
+
+#+begin_definition
+The state $i\in E$ communicates with $j\in S$, and we will write it like $i \rightarrow j$
+iff $p_{i,j}^{(n)} > 0$ for some $n \ge 0$, where $p_{ij}^{(0)} := \delta_{ij}$
+#+end_definition
+
+Proposition \eqref{prop:equiv-classes} was not valid in $S$ because of lack of reflexivity,
+which has been added with this new definition. Therefore, we can reformulate it as:
+
+#+begin_proposition
+$\dgoto$ is an equivalence relationship in $S$
+#+end_proposition
+
+This modification does not affect further results.
+
+=commClassesKernel= (=.commClassesKernelRcpp= in the code) constitutes a core algorithm in the package,
+since computation of communicating classes, classification of states or steady states algorithm depend
+on it. It calculates a matrix of communicating classes (where the entry $(i, j)$ is $true$ iff $i \dgoto j$)
+and whether the class $[i]$ is closed ($v(i) = true$). The original algorithm was based on \cite{feres}
+and run in $\algcomp{m^4}$ in worst cases.
+
+We have improved it turning it into a $\algcomp{m^2}$ algorithm. This has been done treating the
+problem as the directed graph problem of finding its strongly connected components. We have used a
+modification of Tarjan's algorithm from [[citep:tarjan]].
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{$\{L_1, \ldots, L_r\} = \texttt{Tarjan}(P)$}
+  \STATE{$C := (false)_{m\times m}, \quad v := (false, \ldots, false)_{1 \times m}$}
+  \FOR{$k \in \{1, \ldots, r\}$}
+    \FOR{$i \in L_k$}
+      \STATE{$\texttt{isClosed} = \exists j\in \{1, \ldots, m\}, j \not\in L_k: P(i, j) > 0$}
+    \ENDFOR
+    \FOR{$i \in L_k$}
+      \STATE{$v[i] := \texttt{isClosed}$}
+      \FOR{$j \in L_k$}
+        \STATE{$C_{ij} := true$}
+      \ENDFOR
+    \ENDFOR
+  \ENDFOR
+  \NEWLINE
+  \RETURN{$[C, v]$}
+\end{algorithmic}
+\caption{\texttt{commClassesKernel} algorithm}
+\label{alg:commClassesKernel}
+\end{algorithm}
+
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ an adjacency matrix
+  \NEWLINE
+  \STATE{\texttt{i := 0}}
+  \STATE{$\texttt{disc := } (-1, \ldots, -1)_{1 \times m}, \quad \texttt{low := }(-1, \ldots, -1)_{1 \times m}$}
+  \STATE{$\texttt{exploring := stack\{\}}, \quad \texttt{onStack := } (false, \ldots, false)_{1 \times m}$}
+  \STATE{$\texttt{components := } \emptyset$}
+  \FOR{$v \in \{1, \ldots, m\}$}
+    \IF{$disc[v] = -1$}
+      \STATE{\texttt{strongConnect(v)}}
+    \ENDIF
+  \ENDFOR
+  \RETURN{$\texttt{components} = \{L_1, \ldots, L_r\}$}
+\end{algorithmic}
+\caption{\texttt{Tarjan} algorithm}
+\label{alg:tarjan}
+\end{algorithm}
+
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE data structures passed by \texttt{Tarjan} algorithm
+  \NEWLINE
+  \STATE{$\texttt{disc[v] := } i, \quad \texttt{low[v] := } i$}
+  \STATE{\texttt{i := i + 1}}
+  \STATE{\texttt{exploring.push(v)}}
+  \STATE{$\texttt{onStack[v] := } true$}
+  \NEWLINE
+  \FOR{$w \in \{1, \ldots, m\}$}
+    \IF{$P(v, w) > 0$}
+      \IF{$\texttt{disc[w]} = -1$}
+        \STATE{\texttt{strongConnect(w)}}
+        \STATE{\texttt{low[v] = min(low[v], low[w])}}
+      \ELSIF{\texttt{onStack[w]}}
+        \STATE{\texttt{low[v] = min(low[v], disc[w])}}
+      \ENDIF
+    \ENDIF
+  \ENDFOR
+  \IF{\texttt{low[v] = disc[v]}}
+    \STATE{$L := \emptyset$}
+    \REPEAT
+      \STATE{$w := \texttt{exploring.pop()}$}
+      \STATE{$L = L \cup \{w\}$}
+      \STATE{\texttt{onStack[w] := false}}
+    \UNTIL{$w = v$}
+    \STATE{$\texttt{components := components} \cup \{L\}$}
+  \ENDIF
+\end{algorithmic}
+\caption{\texttt{strongConnect}}
+\label{alg:strongConnect}
+\end{algorithm}
+
+
+*** Communicating classes
+
+We can propose an algorithm based on Algorithm \eqref{alg:commClassesKernel}, which runs in
+$\algcomp{m^2}$ since creating the list of communicating classes from the communicating matrix is
+$\algcomp{m^2}$, same as calling \texttt{commClassesKernel}. The former one
+was $\algcomp{m^4}$.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \STATE{Do $[C, v] = \textrm{\texttt{commClassesKernel}}(P)$}
+  \STATE{Mark all states' class as not computed :
+         $w = (\underset{(1)}{false}, \ldots, \underset{(m)}{false})$
+  }
+  \STATE{Initialize $A = \emptyset$}
+  \NEWLINE
+  \FOR{$i \in \{1, \ldots, m\}$}
+    \STATE{$B= \emptyset$}
+    \IF{not $w[i]$ (not computed class)}
+      \FOR{$j \in \{1, \ldots, m\}$}
+         \IF{$C_{ij}$}
+            \STATE{$B := B \bigcup \{j\}$}
+            \STATE{$w[j] := true$}
+         \ENDIF
+      \ENDFOR
+      \STATE{$A := A \bigcup \{B\}$}
+    \ENDIF
+  \ENDFOR
+  \NEWLINE
+  \RETURN{$A$}
+\end{algorithmic}
+\caption{\texttt{communicatingClasses} algorithm}
+\label{alg:commClasses}
+\end{algorithm}
+
+*** Transient and recurrent classes / states
+We provide the algorithms for computing recurrent classes and
+recurrent states, since the ones for transient classes / states are similar (they have been improved in
+the package too).
+
+Note that for DTMCs, Corollary \eqref{corollary:comm-recurrence} guarantees us that recurrent classes
+and closed classes are the same. \texttt{recurrentClasses} algorithm similar to
+\texttt{communicatingClasses} one, with the difference that parsing the communicating matrix we should
+check that the class for the state we are inspecting is closed.
+
+With a similar rationale that the one provided for Algorithm \eqref{alg:commClasses},
+Algorithm \eqref{alg:recurrentClasses} and Algorithm \eqref{alg:recurrentStates} are $\algcomp{m^2}$.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \STATE{Do $[C, v] = \textrm{\texttt{commClassesKernel}}(P)$}
+  \STATE{Mark all states' class as not computed :
+         $w = (\underset{(1)}{false}, \ldots, \underset{(m)}{false})$
+  }
+  \STATE{Initialize $A = \emptyset$}
+  \NEWLINE
+  \FOR{$i \in \{1, \ldots, m\}$}
+    \STATE{$B = \emptyset$}
+    \IF{$v[i]$ (closed class) and not $w[i]$ (not computed class)}
+      \FOR{$j \in \{1, \ldots, m\}$}
+         \IF{$C_{ij}$}
+            \STATE{$B := B \bigcup \{j\}$}
+            \STATE{$w[j] := true$}
+         \ENDIF
+      \ENDFOR
+      \STATE{$A := A \bigcup \{B\}$}
+    \ENDIF
+  \ENDFOR
+  \NEWLINE
+  \RETURN{$A$}
+\end{algorithmic}
+\caption{\texttt{recurrentClasses} algorithm}
+\label{alg:recurrentClasses}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{Do $[C, v] = \textrm{\texttt{commClassesKernel}}(P)$}
+  \STATE{Initialize $A = \emptyset$}
+  \FOR{$i \in \{1, \ldots, m\}$}
+    \IF{$v[i]$}
+      \STATE{$A := A \bigcup \{i\}$}
+    \ENDIF
+  \ENDFOR
+  \NEWLINE
+  \RETURN{$A$}
+\end{algorithmic}
+\caption{\texttt{recurrentStates} algorithm}
+\label{alg:recurrentStates}
+\end{algorithm}
+
+*** Steady States
+**** Original approach
+The original algorithm in the package consisted in trying to compute the eigen vectors for
+the eigen value $1$ and normalize each one by its sum. If some negative value arose (even after
+normalizing and obtaining probability vectors), then the transition matrix was subsetted to retain
+just the states corresponding to recurrent states, same procedure was applied (computing eigen vectors) and
+resulting vectors were completed with $0$ in appropriate places.
+
+It is interesting to provide a small sketch of the original algorithm to compute steady states from
+eigen vectors to analyze flaws in that approach.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix by columns
+  \STATE{Compute $v = (e_1, \ldots, e_k)$, eigen values for $P$, i.e.
+    \[
+      \forall e_j \in \mathbb{C} \quad \exists v_j =
+              \left(\begin{array}{c}
+                v_{j1} \\
+                \vdots \\
+                v_{jm}
+              \end{array}\right)
+      \in \mathbb{C}^m: Pv_j = e_j v_j
+    \]
+  }
+  \STATE{Compute $S = (Re(v_1) | \ldots | Re(v_k)) = (u_1| \ldots |u_k)$, eigen vectors for eigen values $1$}
+  \FOR{$i = 1, \ldots, k$}
+    \STATE{$s_i = \sum_{j = 1}^m u_{ij}$}
+    \STATE{Normalize each column $u_i := u_i / s_i$}
+  \ENDFOR
+  \NEWLINE
+  \RETURN{$S = (u_1 | \ldots | u_k)$}
+\end{algorithmic}
+\caption{Former \texttt{steadyStates} algorithm}
+\label{alg:computeSteadyStatesFirst}
+\end{algorithm}
+
+
+Note the step of taking $(u_1, \ldots, u_l) = (Re(v_1), \ldots, Re(v_l))$ is fundamented in the fact
+that if $e_j \in \complexes$ is eigen value for $P$, and $P \cdot u_j = e_j \cdot u_j$, i.e. $u_j$ is an eigen vector tied to $e_j$, then $Re(v_j)$ and $Im(v_j)$ are also eigen vectors tied to $e_j$.
+
+However, the aforementioned algorithm entails several problems:
+
+1. Algorithms to compute eigen vectors are iterative [fn::[[https://en.wikipedia.org/wiki/Eigenvalue_algorithm#Iterative_algorithms]]] and can take up to $\algcomp{m^3}$ or $\algcomp{m^4}$ (in each iteration!). Also, because of the use of convergence, we could end up having rounding problems (i.e. how to securely search for the $1$ eigen value) and uncertainty about the algorithmic complexity (we do not know how many iterations we need for them to converge beforehand).
+2. Taking real parts does not ensure we will end up with linearly independent eigen vectors. Let us propose a counterexample of this. If the matrix $P$ has real eigen vectors $\{u, v\}$ which are linearly independent and are tied to the eigen value $1$, then $\{u + iu, u + iv\}$ are also independent eigen vectors whose real parts are $\{u,u\}$. We cannot assure that the eigen values computation method is going to output real eigen vectors only (we can only make such an assurance when the matrix $P$ is symmetric).
+
+As result, we could get fewer steady states than we should.
+
+**** Improved approach
+
+The goal was to find an algebraic approach with guaranteed algorithmic complexity,
+instead of having and uncertain iterative method. Following the theoretical section [[Steady states]], we
+fulfilled that objective.
+
+Let $P_1, \ldots, P_r$ be the decomposition of the transition matrix $P$ for its recurrent classes,
+as expressed in its canonic form \eqref{eq:canonic-form}. Solving all the systems from Lemma
+\eqref{lemma:steady-states-computation} for each $k = 1, \ldots, r$ can be done in $\algcomp{m^2}$.
+Therefore, the total cost of the algorithm, since computing recurrent classes is $\algcomp{m^2}$,
+is $\algcomp{m^2}$.
+
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix by columns
+  \STATE{$\{C_1, \ldots, C_r\} = \textrm{\texttt{recurrentClasses}}(P)$}
+  \NEWLINE
+  \FOR{$k = 1, \ldots, r$}
+    \STATE{Compute the submatrix $P_k$ from the matrix \eqref{eq:canonic-form},
+           subsetting $P_k = P[C_k, C_k]$}
+    \STATE{Compute $u_k$ solving the system:
+      \[
+         \twopartsys{(I - P_k)u_k}{0}{\onerow \cdot u_k}{1}
+      \]
+    }
+    \STATE{Compute the vector $v_k$ as $u_k$ completing with $0$ in states outside of $C_k$}
+  \ENDFOR
+  \NEWLINE
+  \STATE{$S := (v_1 | \ldots | v_r)$}
+  \NEWLINE
+  \RETURN{$S$}
+\end{algorithmic}
+\caption{\texttt{steadyStates} algorithm}
+\label{alg:steadyStates}
+\end{algorithm}
+
+** Markov chain classification
+
+Given a matrix $P_{m\times m}$, former =communicatingClasses= algorithm was $\algcomp{m^4}$. New algorithm
+uses the new version of =communicatingClasses= and has been ported to C++. Therefore, its new complexity is
+$\algcomp{m^2}$. This algorithm is based on Definition \eqref{def:irreducible}.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{$\{C_1, \ldots, C_n\} = \texttt{communicatingClasses}(P)$}
+  \IF{$n = 1$}
+    \RETURN{true}
+  \ELSE
+    \RETURN{false}
+  \ENDIF
+\end{algorithmic}
+\caption{\texttt{is.irreducible} algorithm}
+\label{alg:isIrreducible}
+\end{algorithm}
+
+Note that for $P_{m\times m}$, computing the power $P^n$ using the normal matrix product algorithm and
+iterating is $\algcomp{m^3 \cdot n}$. The naive algorithm to compute $P^{m^2 - 2m + 2}$, which is what
+we need by means of Lemma \eqref{lemma:ergodic-pos-diagonal}, would be $O(m^5)$. But we can think of a
+better way of doing this, since every number can be expressed as a sum
+of powers of $2$ (we can encode an arbitrary number using binary representation). Algorithm
+\eqref{alg:matrixPow} formalizes this idea.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \REQUIRE $n$ the exponent
+  \NEWLINE
+  \STATE{$Q:= I_{m \times m}$}
+  \STATE{$A = P$}
+  \WHILE{$n > 0$}
+    \IF{$n \mod(2) = 1$}
+      \STATE{$Q := Q + A$}
+    \ENDIF
+    \STATE{$A := A * A$}
+    \STATE{$n := n / 2$}
+  \ENDWHILE
+  \RETURN{$Q$}
+\end{algorithmic}
+\caption{$\algcomp{m^3\log(n)}$ \texttt{matrixPow} algorithm}
+\label{alg:matrixPow}
+\end{algorithm}
+
+Using this Algorithm \eqref{alg:matrixPow}, Corollary \eqref{corollary:regular-cond} and Lemma
+\eqref{lemma:ergodic-pos-diagonal}, we can arrive to an efficient procedure to compute whether a
+matrix may be regular. This procedure works in $\algcomp{m^3 \log(m)}$.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{$d = \#\{i \in \{1, \ldots, m\}: p_{ii} > 0\}$}
+  \IF{$d > 0$}
+    \RETURN{$\texttt{matrixPow}(P, 2m - d - 1) > 0$}
+  \ELSE
+    \RETURN{$\texttt{matrixPow}(P, m^2 - 2m + 2) > 0$}
+  \ENDIF
+\end{algorithmic}
+\caption{\texttt{is.regular} algorithm}
+\label{alg:isRegular}
+\end{algorithm}
+
+** Absorption
+Based on Proposition \eqref{prop:i-r-invertible}, we have added the following algorithms to the library.
+The first one, \eqref{alg:meanAbsorptionTime}, runs in $\algcomp{m^3}$ (computing transient
+states is $\algcomp{m^2}$, subsetting the matrix $\algcomp{m^2}$ and computing the inverse is $\algcomp{m^3}$).
+The second one, \eqref{alg:absorptionProbabilities} runs in $\algcomp{m^3}$ following an analogous reasoning.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \REQUIRE $C$ destination set, $\emptyset$ by default.
+  \NEWLINE
+  \IF{$C = \emptyset$}
+    \STATE{$A = \texttt{transientStates}(R)$}
+  \ELSE
+    \STATE{Set $A = \{1, \ldots, m\} - C$}
+  \ENDIF
+  \STATE{Compute $R = P[A, A]$}
+  \STATE{Compute the fundamental matrix $N = (I - R)^{-1}$}
+  \STATE{Compute $t = N \cdot \onecol$}
+  \RETURN{$t$}
+\caption{\texttt{meanAbsorptionTime} algorithm}
+\label{alg:meanAbsorptionTime}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{$A = \texttt{transientStates}(P)$}
+  \STATE{$B = \texttt{recurrentStates}(R)$}
+  \STATE{Compute $R = P[A, A]$}
+  \STATE{Compute the fundamental matrix $N = (I - R)^{-1}$}
+  \STATE{Compute $F^{*} = N \cdot P[A, B]$}
+  \RETURN{$F^{\ast}$}
+\caption{\texttt{absorptionProbabilities} algorithm}
+\label{alg:absorptionProbabilities}
+\end{algorithmic}
+\end{algorithm}
+** Hitting probabilities
+We did not found anything documented in the literature with respect to the computation of these probabilities
+algorithmically, so we had tried to come up with our own algorithm. The first thought would be to re-write
+the system \eqref{eq:fij-recurrence} matrix-wise:
+
+\begin{equation*}
+\begin{array}{rcl}
+A_1 = \left(\begin{matrix}
+  -1     & p_{12}       & \ldots & p_{1m} \\
+  0      & (p_{22} - 1) & \ldots & p_{2m} \\
+  \vdots & \vdots       & \ddots & \vdots  \\
+  0      & p_{m 2}      & \ldots & (p_{mm} - 1)
+  \end{matrix}\right) & \ldots &
+A_m = \left(\begin{matrix}
+  (p_{11} - 1) & p_{12}      & \ldots & 0 \\
+  p_{21}       & (p_{22} -1) & \ldots & 0 \\
+  \vdots        & \vdots     & \ddots & \vdots  \\
+  p_{m1}       & p_{m2}      & \ldots & -1
+  \end{matrix}\right)
+\end{array}
+\end{equation*}
+
+\begin{equation*}
+\begin{array}{rlrl}
+X = \left(\begin{array}{c}
+X_1 \\
+X_2 \\
+\vdots \\
+X_m \\
+\end{array}\right) &
+X_j = \left(\begin{array}{c}
+f_{1j} \\
+f_{2j} \\
+\vdots  \\
+f_{mj}
+\end{array}\right) &
+L = \left(\begin{array}{c}
+L_1 \\
+L_2 \\
+\vdots  \\
+L_m
+\end{array}\right) &
+L_j = - \left(\begin{array}{c}
+p_{1j} \\
+p_{2j} \\
+\vdots  \\
+p_{mj}
+\end{array}\right)
+\end{array}
+\end{equation*}
+
+we end up with the system:
+
+\begin{equation}
+\left(\begin{array}{c|c|c|c}
+  A_1 & \bigzero & \ldots & \bigzero \\
+\hline
+  \bigzero & A_2 & \ldots & \bigzero \\
+\hline
+  \vdots & \vdots & \ddots & \bigzero \\
+\hline
+  \bigzero & \bigzero & \ldots & A_m
+\end{array}\right) X = L
+\end{equation}
+
+Clearly, we can solve this system, provided that it has solution, by blocks $A_j X_j = L_j$, but
+the matrix $A_j$ may not be invertible in some cases. Our hypothesis is that if we treated the
+closed communicating classes differently (using the canonic form from Equation \eqref{eq:canonic-form}),
+then we could delete the linearity in the system.
+
+In conclusion using Corollary \eqref{corollary:comm-recurrence} and Proposition
+\eqref{prop:recurrent-classes}, if we have a closed communicating class $C$,
+then $f_{i,j} = 1$ for all $i,j \in C$ and $f_{k,j}  = 0$ for all $k\not\in C$.
+It can be proven that matrices we get after doing that substitution are invertible.
+Solving a system $m \times m$ can be done in $\algcomp{m^2}$. Therefore since we have to solve $m$
+systems, and complexity of =commClassesKernel= is $\algcomp{m^2}$, this procedure runs in $\algcomp{m^3}$.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{$[C,v] = \texttt{commClassesKernel(P)}$}
+  \NEWLINE
+  \FOR{$j \in \{1, \ldots, m\}$}
+    \STATE{Compute the matrix $A_j$}
+    \STATE{Compute the independent terms $L_j$}
+    \NEWLINE
+    \FOR{$i \in \{1, \ldots, m\}$}
+      \IF{$v[i]$ ($i$ is closed)}
+        \FOR{$k \in \{1, \ldots, m\}$}
+           \STATE{$A_j(i,k) = \delta_{ik}$}
+        \ENDFOR
+        \STATE{$L_{j}[i] = C_{ij}$}
+      \ENDIF
+    \ENDFOR
+    \STATE{Solve $A_j \cdot X_j = L_j$}
+  \ENDFOR
+  \RETURN{$X = (X_1 | \ldots | X_m)$}
+\end{algorithmic}
+\caption{\texttt{hittingProbabilities} algorithm}
+\label{alg:hittingProbs}
+\end{algorithm}
+
+Related to hitting probabilities, we have added an algorithm to compute the mean number of visits to
+a state when we start in a given one, based on Proposition \eqref{prop:fii-equiv}, which is $\algcomp{m^3}$,
+since it needs to call Algorithm \eqref{alg:hittingProbs}.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{$(f_{ij}) = \texttt{hittingProbs}(P)$}
+  \FOR{$j \in \{1, \ldots, m\}$}
+    \STATE{$\texttt{isOne := } f_{jj} = 1$}
+    \IF{not \texttt{isOne}}
+      \STATE{$r = \frac{1}{1 - f_{jj}}$}
+    \ENDIF
+    \FOR{$i \in \{1, \ldots, m\}$}
+      \IF{$f_{ij} = 0$}
+        \STATE{$\expecti{V_j} = 0$}
+      \ELSE
+        \STATE{$\expecti{V_j} = \texttt{if isOne } +\infty \texttt{ else } r \cdot f_{ij}$}
+      \ENDIF
+    \ENDFOR
+  \ENDFOR
+  \NEWLINE
+  \RETURN{$(\expecti{V_j})_{m \times m}$}
+\end{algorithmic}
+\caption{\texttt{meanNumVisits} algorithm}
+\label{alg:mean-num-visits}
+\end{algorithm}
+
+** Mean first passage time and recurrence times
+Based on Theorem \eqref{th:mfpt-computation}, we ported and polished the following algorithm to C++ (a
+version of it was already in the package, although it did not made checkings about the matrix being
+regular). Due to backward compatibility with the previous version, the algorithm can be called with an
+ergodic matrix and a set of states \texttt{destination} and it would compute the mean first passage time
+from the states not in \texttt{destination} to any of the states there. This algorithm is $\algcomp{m^3}$,
+since it computes an inverse matrix.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ an ergodic matrix
+  \REQUIRE $C$ destination set, $\emptyset$ by default.
+  \NEWLINE
+  \IF{$C = \emptyset$}
+    \STATE{Compute $w = \texttt{steadyStates}(P^t)$ (there is only one)}
+    \STATE{Compute $Z = (I - P + W)^{-1}$}
+    \STATE{Compute $m_{ij} = (Z_{jj} - Z_{ij}) * w^{-j}$ for all $i, j \in \{1, \ldots, m\}$}
+    \RETURN{$M = (m_{ij})$}
+  \ELSE
+    \STATE{$M = \texttt{meanAborptionTime}(P, C)$}
+  \ENDIF
+  \RETURN{M}
+\end{algorithmic}
+\caption{\texttt{meanFirstPassageTime} algorithm}
+\label{alg:mfpt}
+\end{algorithm}
+
+Based on Proposition \eqref{prop:ss-and-recurrence-prob} and having into account the canonic form
+\eqref{eq:canonic-form}, we can compute the mean recurrence times for the transient states of a
+Markov chain. Thus, the following algorithm has been added to the package ($\algcomp{m^2}$ complexity):
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{$(u_1 | \ldots | u_n) = \texttt{steadyStates}(P^t)$}
+  \STATE{$r = (0, \ldots, 0)$}
+  \FOR{Each steady state $u_i$}
+    \FOR{$j = 1, \ldots, m$}
+      \IF{$u_{ij} > 0$}
+         \STATE{$r_j := u_{ij}^{-1}$}
+      \ENDIF
+    \ENDFOR
+  \ENDFOR
+  \RETURN{$\{(j, r_j): r_j > 0\}$}
+\end{algorithmic}
+\caption{\texttt{meanRecurrenceTime} algorithm}
+\label{alg:mrt}
+\end{algorithm}
+
+** Reachability
+Let us define $sign(P)_{ij} = \twopartdefow{1}{p_{ij} > 0}{0}$ for $P$ a stochastic matrix.
+Former algorithm to compute the reachability matrix (entry $(i, j)$ is $1$ iff $i \goto j$, $0$ otherwise)
+was $\algcomp{m^5}$ since it computed $\left[sign(P + I)\right]^{m - 1}$. Using Algorithm
+\eqref{alg:matrixPow} we can achieve a better $\algcomp{m^3 \log(m)}$ algorithm.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ a stochastic matrix
+  \NEWLINE
+  \STATE{$A = sign(P + I)$}
+  \STATE{$B = \texttt{matrixPow}(A, m - 1)$}
+  \RETURN{$B$}
+\end{algorithmic}
+\caption{\texttt{is.accessible} algorithm}
+\label{alg:is.accessible}
+\end{algorithm}
+
+To compute reachability from a state single $i$ to a state $j$, former algorithm was $\algcomp{m^5}$
+also, since it computed the whole reachability matrix. We have changed it for a DFS exploration, which would
+be $\algcomp{m^2}$ at most.
+
+\begin{algorithm}[H]
+\begin{algorithmic}[1]
+  \REQUIRE $P_{m \times m}$ an adjacency matrix
+  \REQUIRE $i,j \in \{1, \ldots, m\}$
+  \NEWLINE
+  \STATE{$\texttt{exploring := stack\{i\}}$}
+  \STATE{$\texttt{v := } (false, \ldots, false)_{1 \times m}$}
+  \STATE{$\texttt{reachable := } false$}
+  \WHILE{$\texttt{exploring} \neq \emptyset$ and not \texttt{reachable}}
+    \STATE{$k := \texttt{exploring.pop()}$}
+    \STATE{$v[k]: = true$}
+    \STATE{$\texttt{reachable := } k = j$}
+    \FOR{$l \in \{1, \ldots, m\}$}
+      \IF {$\texttt{not } v[l]$}
+        \STATE{\texttt{exploring.push\{l\}}}
+      \ENDIF
+    \ENDFOR
+  \ENDWHILE
+  \RETURN{\texttt{reachable}}
+\end{algorithmic}
+\caption{\texttt{is.accessible} $j$ from $i$}
+\label{alg:is.accessible.i.j}
+\end{algorithm}
+
+* Conclusions and future work
+Firstly a few considerations should be made:
+
++ Reading someone else's software is extremely time-consuming and implies an effort comparable to understanding mathematical proofs that have not been written by oneself: you always have to figure out how all the different pieces fit together, why does certain trick work or it does not, writting style is hardly ever going to be close to yours and it constitutes an incremental process where most probably you are going to have to dive several times into the same fragment to understand the whole picture.
++ Lack of appropriate academic material has been a constant throughout this project: we could either find good mathematical proofs, but lacking sense of how algorithms could be implemented in a computer, or the other way around.
++ The algorithms presented in chaper [[R package]] are in their vast majority an original work based on my own mathematical and computer science knowledge. They are the result of a long process of trial and error, and although only final versions made it to this report, lots of intermediate versions for them were lost along the way. The rationale behind this is that the development workflow looked something alike: identify where the former algorithms of the package could fail or give incomplete results, code a proposal, test it, improve it, find its weak points, write it in paper, analyze it mathematically and algorithmically, think of new improvements and repeat from second step onwards until a satisfactory point was reached.
+
+** Conclusions
+Therefore, and having that into account, the main values of this work can be summarized in the following points:
+
+- Open knowledge: the report is hosted at a public repository [fn::https://github.com/ncordon/graduate-dissertation] so that everyone can consult it, improve it or use its information citing the author. The coding efforts have been integrated into the R package, available at CRAN official repository [fn::https://cran.r-project.org/web/packages/markovchain], as open source software, which means everyone can contribute to it, propose ideas, use it or modify it (as long as they give credit to their authors). Authorship of the relevant parts of the sofware described in this project can be corroborated with the history of the Github public respository. [fn::https://github.com/spedygiorgio/markovchain/commits?author=ncordon].
+- Cooperation: having our efforts integrated in an open source software package means that we are adding more value to what other people did before us, being able to impact more people that if we had presented a separate software.
+- Research and development: the main intent of this work was to do scientific programming driven by mathematical viewpoints and that is what we have tried to capture along this work. I believe the level of correctness that has been achieved is really satisfaying. And in spite of all the struggles to grasp actionable mathematical knowledge from different sources, in the end we have been able to manipulate theoretical constructs in an useful way for our coding purposes.
+- Versatility: Markov chains may not include extremely complicated mathematics (although the learning curve is hard due to the abundance of slightly similar but different concepts), but they certainly require skills in different areas, as it was stated alongside this work: graphs, linear algebra, probability or programming, to name a few. In adition to this, project is multilanguage, with a mixture of R and C++ languages, which certainly has posed more challenges to the endeavour of improving the library.
+- A lot of not so visible work: sending the software to a repository as CRAN implies that the package has to be thorougly documented, all the tests for the algorithms included in it have to be correctly checked and ultimately we had to verify CRAN standards to publish. This implies a huge maintenance work that may not be fairly reflected in this report.
+
+** Future work
+We propose the following lines of further development for the package:
+
++ Keep improving =markovchain= R library, porting the relevant parts to C++ wherever possible. Objective for following months is inference part of the package.
++ Right now the C++ part is tied (less with the work carried in this project) to the R part. A suitable goal is to completely split it from the R part, and use it as a backend for both the R package and a forseeable Python package. In particular the former one could be coded extremely fast due to the core of the functionality been already curated and in good developing state; only missing part is the glue code to make Python communicate with C++, but that can be achieved with C-Python API [fn::[[https://docs.python.org/3/c-api/intro.html]]] easily.
++ Certain algorithms could be further improved, as Algorithm \eqref{alg:matrixPow}, where we could use Strassen method [[citep:strassen]]. The former is $\algcomp{m^{2.81}}$ in algorithmic complexity, where $m$ is the number of states of the Markov chain. That would make reachability matrix computation $\algcomp{m^{2.81} \log(m)}$, which is better than the current $\algcomp{m^{3} \log(m)}$. It could be combined with "bits packing" and the use of =AND= operator instead of product for elements to generate the reachability matrix: groupping rows and columns in packs of 64 bits, with $1$ being reachable state and $0$ not reachable. Let $(A \otimes B)_{i,j} = \sum_{k = 1}^{m/64} \bigg(a_{ik} \textrm{ AND } b_{kj}\bigg)$. Then although the resulting algorithm would still be $\algcomp{m^{2.81} \log(m)}$, hidden constants would be very small: $\algcomp{\frac{1}{64^{2.81}} \cdot m^{2.81} log(m)}$. With that custom product:
+
+\begin{eqnarray*}
+P^{m} &=& \left(\begin{array}{ccccccccccc}
+  1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 & 0 &\ldots \\
+  0 & 1 & 0 & 0 & 0 & 1 & 1 & 1 & 0 & 0 &\ldots \\
+  \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \ddots
+  \end{array}\right)^{m} = \\
+&=& \left(\begin{array}{cc}
+  1010101010\ldots &\ldots \\
+  0100011100\ldots &\ldots \\
+  \vdots & \ddots \\
+  \end{array}
+\right)
+\otimes \underbrace{
+\left(\begin{array}{ccc}
+  \overset{1}{\overset{0}{\overset{0}{\vdots}}} & \overset{0}{\overset{1}{\overset{0}{\vdots}}} \ddots \\
+  \end{array}
+\right)
+\otimes \cdots \otimes
+\left(\begin{array}{ccc}
+  \overset{1}{\overset{0}{\overset{0}{\vdots}}} & \overset{0}{\overset{1}{\overset{0}{\vdots}}} \ddots \\
+  \end{array}
+\right)
+}_{m - 1}
+\end{eqnarray*}
++ Try to write an article for Journal of Statistical Software [fn::[[https://www.jstatsoft.org/index]]], a [[https://www.scimagojr.com/journalsearch.php?q=12137&tip=sid][Q1]] (in Software and in Statistics and Probability categories) open access journal which publishes papers for sofware with highly mathematical foundation. Given the importance of the package and the improvements it is receiving it would be suitable to publish it, as long as we keep adding valuable content to it and we fulfill our purpose of creating bindings for Python.
+
+#+LaTeX: \appendix
+* Appendix
+** Installation of markovchain
+As prerequisite, R [fn::https://cloud.r-project.org] should be installed. In \textit{Debian} based distributions can be installed as:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src bash :eval no
+  sudo apt install r-base rbase-dev
+#+end_src
+
+In \textit{Arch Linux} based distributions as:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src bash :eval no
+  sudo pacman -S r
+#+end_src
+
+It could be useful to have RStudio [fn::https://www.rstudio.com] installed too (although it is not
+mandatory to execute the software). To install the
+=markovchain= [fn::https://github.com/spedygiorgio/markovchain] package, one could do (from an R terminal
+or inside RStudio):
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :eval no
+  install.packages("markovchain")
+#+end_src
+
+** Examples
+First we need to load =markovchain=:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output silent
+library("markovchain")
+#+end_src
+
+We define the data. We will be using Drunkard's Walk example from \citep{grinstead}.
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+# Define Drunkard's Walk transition matrix
+# It is a by row stochastic marix
+drunkardsMatrix <- matrix(c(  1,   0,   0,   0,   0,
+                            0.5,   0, 0.5,   0,   0,
+                              0, 0.5,   0, 0.5,   0,
+                              0,   0, 0.5,   0, 0.5,
+                              0,   0,   0,   0,   1), nrow = 5, byrow = TRUE)
+# Define states as 1: home, 5: bar, rest numbered corners
+states <- c("home", "2", "3", "4", "bar")
+# Create the Markov chain from the matrix
+mc <- new("markovchain", name = "Drunkard's walk",
+          transitionMatrix = drunkardsMatrix, states = states)
+mc
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Drunkard's walk
+ A  5 - dimensional discrete Markov Chain defined by the following states:
+ home, 2, 3, 4, bar
+ The transition matrix  (by rows)  is defined as follows:
+     home   2   3   4 bar
+home  1.0 0.0 0.0 0.0 0.0
+2     0.5 0.0 0.5 0.0 0.0
+3     0.0 0.5 0.0 0.5 0.0
+4     0.0 0.0 0.5 0.0 0.5
+bar   0.0 0.0 0.0 0.0 1.0
+#+end_example
+
+Communicating classes are:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+communicatingClasses(mc)
+#+end_src
+
+#+RESULTS:
+: [[1]]
+: [1] "home"
+:
+: [[2]]
+: [1] "2" "3" "4"
+:
+: [[3]]
+: [1] "bar"
+
+
+#+begin_src R :session examples :results output silent :exports none
+set.seed(450)
+#+end_src
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+header: :width 5 :height 5 :R-dev-args
+#+begin_src R :session examples :results output graphics :file imgs/drunkards-mc.svg :exports both :cache yes
+plot(mc, package = "diagram", box.size = 0.1)
+#+end_src
+
+#+RESULTS:
+[[file:imgs/drunkards-mc.svg]]
+
+
+Recurrent states are:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+recurrentStates(mc)
+#+end_src
+
+#+RESULTS:
+: [1] "home" "bar"
+
+which of course are absorbing:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+recurrentStates(mc) == absorbingStates(mc)
+#+end_src
+
+#+RESULTS:
+: [1] TRUE TRUE
+
+Transient states are:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+transientStates(mc)
+#+end_src
+
+#+RESULTS:
+: [1] "2" "3" "4"
+
+Hitting probabilities are:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+hittingProbabilities(mc)
+#+end_src
+
+#+RESULTS:
+:      home         2   3         4  bar
+: home 1.00 0.0000000 0.0 0.0000000 0.00
+: 2    0.75 0.3333333 0.5 0.3333333 0.25
+: 3    0.50 0.6666667 0.5 0.6666667 0.50
+: 4    0.25 0.3333333 0.5 0.3333333 0.75
+: bar  0.00 0.0000000 0.0 0.0000000 1.00
+
+which means that if the drunk person starts in corner $2$ (state $2$) the probability of ever returning
+there is $0.333333$, of ever reaching home, $0.75$ and of ever reaching the bar, $0.25$. Of course this
+last two former probabilities should coincide with the =absorptionProbabilities=, since they are absorbing
+states:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+absorptionProbabilities(mc)
+#+end_src
+
+#+RESULTS:
+:   home  bar
+: 2 0.75 0.25
+: 3 0.50 0.50
+: 4 0.25 0.75
+
+And the mean absorption time (that is, how much is the drunk person going to take to go home / bar in average) is given by:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+meanAbsorptionTime(mc)
+#+end_src
+
+#+RESULTS:
+: 2 3 4
+: 3 4 3
+
+that is, $3$ steps if that person start in corners $2, 4$, otherwise $4$ steps.
+
+To compute a base for the steady states of the Markov chain:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+steadyStates(mc)
+#+end_src
+
+The number of visits to each state $j$ if we start in $i$:
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+meanNumVisits(mc)
+#+end_src
+
+#+RESULTS:
+:      home   2 3   4 bar
+: home  Inf 0.0 0 0.0   0
+: 2     Inf 0.5 1 0.5 Inf
+: 3     Inf 1.0 1 1.0 Inf
+: 4     Inf 0.5 1 0.5 Inf
+: bar     0 0.0 0 0.0 Inf
+
+Is the matrix regular? And ergodic? Which is its canonic form?
+
+#+attr_latex: :options style=vs, bgcolor=light-gray
+#+begin_src R :session examples :results output :exports both
+is.regular(mc)
+is.irreducible(mc)
+canonic <- canonicForm(mc)
+canonic
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[1] FALSE
+[1] FALSE
+Drunkard's walk
+ A  5 - dimensional discrete Markov Chain defined by the following states:
+ home, bar, 2, 3, 4
+ The transition matrix  (by rows)  is defined as follows:
+     home bar   2   3   4
+home  1.0 0.0 0.0 0.0 0.0
+bar   0.0 1.0 0.0 0.0 0.0
+2     0.5 0.0 0.0 0.5 0.0
+3     0.0 0.0 0.5 0.0 0.5
+4     0.0 0.5 0.0 0.5 0.0
+#+end_example
+
+** Further work on the package
+*** Mathematical tests for the package
+Old way of testing algorithms in the package before this project took off was to take an example (or a
+couple of examples) of reduced dimension from a book, find the analytical solutions, store them in a
+variable, and check that the result of the methods coded in the package did not change against this
+solution across different revisions of the software.
+
+This has the problem that it lacks edge cases, and it misses the point of testing a mathematical
+property $\forall x P(x)$, because the $\forall$ becomes just a couple of examples.
+
+We have designed a better approach for testing the package:
+
+1. Still test against known examples taken from books (giving them credit for that). More examples in this regard have been added.
+1. Generate random Markov chains of random dimnension, given both by-rows stochastic matrices and by-column ones. We cannot generate non numerable infinite instances of course, to cover the $\forall$ that quantifies the property, but at least we should get a little more closer than just a couple of examples.
+1. Of course we cannot compute the solution for random instances by hand. However, we can check that different implications, equivalences and characteristic equation systems inspired from the chapter [[Markov chains]] are verified by the result of the coded methods.
+1. All algorithms coded in chapter [[R package]] have been tested using this approach, and work done in this sense can be consulted in the =testthat= [fn::https://github.com/spedygiorgio/markovchain/tree/master/tests/testthat] folder from the project.
+
+Below we describe the structure of that folder and some of the most important tests carried out
+(where =setupData.R= generates random instances for general Markov chains, Markov chains with identity
+transition matrix or Markov chains with strictly positive matrices):
+
+**** =testHittingProbabilities.R=
++ All hitting probabilities are non negative
++ Hitting probabilities hold their characteristic system \eqref{eq:fij-recurrence}.
++ Hitting probabilities of an identity Markov chain is the identity of same dimension.
+
+**** =testStatesClassification.R=
++ A state is absorbing iff it constitutes its own recurrent class.
++ Recurrent and transient states form a partition of states.
++ $f_{i,i} < 1$ for a transient state (by defintion this must hold).
++ All states are recurrent in a identity Markov chain.
++ If the Markov chain is ergodic $\implies$ all states are recurrent.
++ If there are transient states $\implies$ Markov chain is not be irreducible.
++ $f_{i,j} = 1$ for $i,j$ in same recurrent class.
++ $f_{i,k} = 0$ if $i$ is a recurrent state but $k$ does not belong to the same class.
++ Union of recurrent classes gives the recurrent states.
++ Union of transient classes gives the transient states.
++ Recurrent classes are disjoint.
++ Transient classes are disjoint.
+
+**** =testSteadyStates.R=
++ Number of steady states should coincide with the number of recurrent classes.
++ A steady state is a probability vector.
++ Steady states for a matrix are linearly independent (since they should be a base of the convex hull).
++ Steady states are eigen vectors for the transition matrix.
+
+**** =testCommClasses.R=
++ Communicating classes matrix is symmetric.
++ Rows of the same class can be permuted in a communicating classes matrix and the matrix does not change, i.e. if $i,j$ are in the same class, they should communicate with same states.
++ All classes are closed for identity matrices.
++ Communicating class matrix from \texttt{commClassesKernel} should coincide with the matrix arising from $(sign(P) + I)^{m - 1}$ where $m$ is the number of states.
++ Communicating classes are a partition of the states of the Markov chain.
+
+**** =testMarkovChainsClassification.R=
++ A transition matrix which is strictly positive is regular.
++ If a Markov chain is regular then it should be ergodic.
++ Check Perron-Frobenius theorem: a transition matrix is regular iff $1$ is the unique maximal (in modulo) eigen value.
++ Markov chain is irreducible iff there is a single communicating class.
++ If the matrix is irreducible, its canonic form equals the Markov chain.
+**** =testMeanMeasures.R=
++ Mean first passage times and mean recurrence times should hold the characteristic system \eqref{prop:mfpt-rec-mat}.
++ If we invert the mean recurrence times $(e_{11}^{-1}, \ldots, e_{mm}^{-1})$ is an eigen vector.
++ Mean number of visits should hold the characteristic system \eqref{eq:char-mean-number-visits}.
++ All mean number of visits are $\infty$ if the Markov chain is irreducible.
++ Absorption times hold the characteristic system \eqref{eq:char-absorption-probs}
+
+*** Documentation
+Further work on the package has been port its [[https://github.com/spedygiorgio/markovchain/tree/master/vignettes][vignettes]] (main form of documentation of an R package)
+from =Sweave= to =knitr=, update and curate the documentation for the package or design a
+web page [fn::https://spedygiorgio.github.io/markovchain/].
+
+* Bibliography :ignore:
+\bibliography{references}

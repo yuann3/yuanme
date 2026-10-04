@@ -1,0 +1,850 @@
+#+TITLE: EST-25134: Aprendizaje Estadístico
+#+AUTHOR: Prof. Alfredo Garbuno Iñigo
+#+EMAIL:  agarbuno@itam.mx
+#+DATE: ~Regresión lineal~
+#+STARTUP: showall
+:LATEX_PROPERTIES:
+#+OPTIONS: toc:nil date:nil author:nil tasks:nil
+#+LANGUAGE: sp
+#+LATEX_CLASS: handout
+#+LATEX_HEADER: \usepackage[spanish]{babel}
+#+LATEX_HEADER: \usepackage[sort,numbers]{natbib}
+#+LATEX_HEADER: \usepackage[utf8]{inputenc} 
+#+LATEX_HEADER: \usepackage[capitalize]{cleveref}
+#+LATEX_HEADER: \decimalpoint
+#+LATEX_HEADER:\usepackage{framed}
+#+LaTeX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{fancyvrb}
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LaTeX_HEADER: \definecolor{backcolour}{rgb}{.95,0.95,0.92}
+#+LaTeX_HEADER: \definecolor{codegray}{rgb}{0.5,0.5,0.5}
+#+LaTeX_HEADER: \definecolor{codegreen}{rgb}{0,0.6,0} 
+#+LaTeX_HEADER: {}
+#+LaTeX_HEADER: {\lstset{language={R},basicstyle={\ttfamily\footnotesize},frame=single,breaklines=true,fancyvrb=true,literate={"}{{\texttt{"}}}1{<-}{{$\bm\leftarrow$}}1{<<-}{{$\bm\twoheadleftarrow$}}1{~}{{$\bm\sim$}}1{<=}{{$\bm\le$}}1{>=}{{$\bm\ge$}}1{!=}{{$\bm\neq$}}1{^}{{$^{\bm\wedge}$}}1{|>}{{$\rhd$}}1,otherkeywords={!=, ~, $, \&, \%/\%, \%*\%, \%\%, <-, <<-, ::, /},extendedchars=false,commentstyle={\ttfamily \itshape\color{codegreen}},stringstyle={\color{red}}}
+#+LaTeX_HEADER: {}
+#+LATEX_HEADER_EXTRA: \definecolor{shadecolor}{gray}{.95}
+#+LATEX_HEADER_EXTRA: \newenvironment{NOTES}{\begin{lrbox}{\mybox}\begin{minipage}{0.95\textwidth}\begin{shaded}}{\end{shaded}\end{minipage}\end{lrbox}\fbox{\usebox{\mybox}}}
+#+EXPORT_FILE_NAME: ../docs/02-regresion.pdf
+:END:
+#+PROPERTY: header-args:R :session regresion :exports both :results output org :tangle ../rscripts/02-regresion.R :mkdirp yes :dir ../
+#+EXCLUDE_TAGS: toc latex
+
+#+BEGIN_NOTES
+*Profesor*: Alfredo Garbuno Iñigo | Primavera, 2023 | Regresión lineal.\\
+*Objetivo*. Repasaremos los conceptos de regresión lineal desde un punto de vista de inferencia. Haremos conexiones interesantes con conceptos clave en probabilidad y teoria de la información. Veremos métricas de desempeño para modelos de regresión. Nos llevará a cuestionar el modelo bajo el enfoque de predicción.\\
+*Lectura recomendada*: Capítulo 3 de citet:James2021. 
+#+END_NOTES
+
+
+* Table of Contents                                                             :toc:
+:PROPERTIES:
+:TOC:      :include all  :ignore this :depth 3
+:END:
+:CONTENTS:
+- [[#introducción][Introducción]]
+  - [[#datos-de-marketing][Datos de marketing]]
+- [[#el-modelo-simple][El modelo simple]]
+  - [[#estimación-de-parámetros][Estimación de parámetros]]
+  - [[#solución][Solución]]
+  - [[#precisión-en-los-estimadores][¿Precisión en los estimadores?]]
+  - [[#prueba-de-hipótesis][Prueba de hipótesis]]
+  - [[#el-valor-p][El valor-$p$]]
+  - [[#midiendo-la-precisión-del-modelo][Midiendo la precisión del modelo]]
+- [[#el-modelo-multivariado][El modelo multivariado]]
+  - [[#interpretación][Interpretación]]
+  - [[#estimación][Estimación]]
+  - [[#existe-una-relación-entre-la-respuesta-y-los-predictores][¿Existe una relación entre la respuesta y los predictores?]]
+  - [[#cuáles-son-los-predictores-importantes][¿Cuáles son los predictores importantes?]]
+  - [[#qué-tan-bien-ajusta-el-modelo][¿Qué tan bien ajusta el modelo?]]
+  - [[#cómo-predecimos-y-que-tan-precisa-es-nuestra-predicción][¿Cómo predecimos y que tan precisa es nuestra predicción?]]
+- [[#extensiones][Extensiones]]
+  - [[#predictores-cualitativos][Predictores cualitativos]]
+  - [[#interacciones][Interacciones]]
+  - [[#jerarquías][Jerarquías]]
+  - [[#interacciones-y-modelos-múltiples][Interacciones y modelos múltiples]]
+  - [[#problemas-con-supuestos][Problemas con supuestos.]]
+- [[#generalizaciones][Generalizaciones]]
+- [[#aplicación-predicción-de-asistencia-en-partidos-de-football][Aplicación: Predicción de asistencia en partidos de football]]
+:END:
+
+
+* Introducción
+
+Aproximamos $f(X)$ como una combinación lineal de las entradas.
+
+** Datos de /marketing/
+
+¿Qué preguntas serían las que nos interesarían?
+
+#+begin_src R :exports none :results none
+  ## Setup --------------------------------------------
+  library(tidyverse)
+  library(patchwork)
+  library(scales)
+
+  ## Cambia el default del tamaño de fuente 
+  theme_set(theme_linedraw(base_size = 25))
+
+  ## Cambia el número de decimales para mostrar
+  options(digits = 4)
+  ## Problemas con mi consola en Emacs
+  options(pillar.subtle = FALSE)
+  options(rlang_backtrace_on_error = "none")
+  options(crayon.enabled = FALSE)
+
+  ## Para el tema de ggplot
+  sin_lineas <- theme(panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank())
+  color.itam  <- c("#00362b","#004a3b", "#00503f", "#006953", "#008367", "#009c7b", "#00b68f", NA)
+
+  sin_leyenda <- theme(legend.position = "none")
+  sin_ejes <- theme(axis.ticks = element_blank(), axis.text = element_blank())
+
+  ## Datos de marketing ---------------------------------
+  data <- read_csv("https://www.statlearning.com/s/Advertising.csv", col_select = 2:5)
+  data |> colnames()
+  data |> print(n = 5)
+
+#+end_src
+
+#+REVEAL: split
+#+HEADER: :width 1200 :height 300 :R-dev-args
+#+begin_src R :file images/sales.jpeg :results output graphics file :exports results
+
+  g1 <- ggplot(data, aes(TV, sales)) + geom_point(color = 'red') + geom_smooth(method = "lm", se = FALSE) + sin_lineas
+  g2 <- ggplot(data, aes(radio, sales)) + geom_point(color = 'red') + geom_smooth(method = "lm", se = FALSE) + sin_lineas
+  g3 <- ggplot(data, aes(newspaper, sales)) + geom_point(color = 'red') + geom_smooth(method = "lm", se = FALSE) + sin_lineas
+
+  g1 + g2 + g3
+#+end_src
+
+#+RESULTS:
+[[file:../images/sales.jpeg]]
+
+#+BEGIN_NOTES
+¿Hay alguna relación entre datos de entrada? En especial, ¿hay alguna relación entre cuánto se le dedica al presupuesto de /marketing/ y las ventas observadas? ¿Qué tipo de /marketing/ contribuye mas a las ventas? ¿Qué tan precisos podemos ser con nuestras predicciones? La relación es lineal? ¿Hay algún tipo de sinergia?
+#+END_NOTES
+
+* El modelo simple
+
+\begin{align}
+Y = \beta_0 + \beta_1 X + \varepsilon\,.
+\end{align}
+
+#+BEGIN_NOTES
+Si tuvieramos un estimador $\hat \beta$, ¿cómo podemos realizar predicciones?
+#+END_NOTES
+
+** Estimación de parámetros
+
+\begin{align}
+\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i\,.
+\end{align}
+
+#+REVEAL: split
+#+BEGIN_NOTES
+Formulación de problema de optimización. Conexiones interesantes. 
+#+END_NOTES
+
+
+** Solución
+
+\begin{gather}
+\hat \beta_1 = \frac{\sum_{i = 1}^{n} (x_i - \bar x)(y_i - \bar y)}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\,, \\
+\hat \beta_0 = \bar y - \hat \beta_1 \bar x\,.
+\end{gather}
+
+#+REVEAL: split
+#+begin_src R :exports none :results none
+  ## Modelo lineal simple --------------------------------
+#+end_src
+
+#+caption: Modelo lineal simple
+#+begin_src R :exports none :results none
+  model <- lm(sales ~ TV, data)
+#+end_src
+#+REVEAL: split
+
+
+#+HEADER: :width 900 :height 500 :R-dev-args bg="transparent"
+#+begin_src R :file images/residuals.jpeg :exports results :results output graphics file
+  data |>
+    mutate(fitted = fitted(model)) |>
+    ggplot(aes(TV, sales)) + 
+    geom_smooth(method = "lm", se = FALSE) +
+    geom_errorbar(aes(ymin = fitted, ymax = sales),
+                  lty = 1, color = "gray") +
+    geom_point(color = 'red') + sin_lineas
+#+end_src
+
+#+caption: Ajuste y residuales a la recta de mínimos cuadrados. 
+#+RESULTS:
+[[file:../images/residuals.jpeg]]
+
+#+BEGIN_NOTES
+Qué deficiencia encuentras en el ajuste? 
+#+END_NOTES
+
+** ¿Precisión en los estimadores?
+
+\begin{gather}
+\mathsf{SE}(\hat \beta_1)^2 = \frac{\sigma^2}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\,,\\
+\mathsf{SE}(\hat \beta_0)^2 = \sigma^2 \left[ \frac{1}{n} + \frac{\bar x^2}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\right]\,.
+\end{gather}
+
+#+BEGIN_NOTES
+¿A qué se debe esta variabilidad? Se pueden construir *intervalos de confianza*. 
+#+END_NOTES
+
+#+REVEAL: split
+#+begin_src R :exports none :results none
+  ### Resumenes de modelos --------------------------
+#+end_src
+
+#+caption: Resumen del modelo. 
+#+begin_src R :results org
+  model |> 
+        summary()
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+
+Call:
+lm(formula = sales ~ TV, data = data)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-8.386 -1.955 -0.191  2.067  7.212 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  7.03259    0.45784    15.4   <2e-16 ***
+TV           0.04754    0.00269    17.7   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.3 on 198 degrees of freedom
+Multiple R-squared:  0.612,	Adjusted R-squared:  0.61 
+F-statistic:  312 on 1 and 198 DF,  p-value: <2e-16
+#+end_src
+
+#+REVEAL: split
+#+caption: Resumen del modelo (/tidy/). 
+#+begin_src R
+  model |>
+    broom::tidy() 
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+         term estimate std.error statistic p.value
+1 (Intercept)    7.033    0.4578        15 1.4e-35
+2          TV    0.048    0.0027        18 1.5e-42
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports none :results none
+  ### Simulación de variabilidad ---------------------------- 
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports code
+  genera_datos <- function(id){
+    a <- 1; b <- 0; n <- 100
+    tibble(x = runif(n, -1, 1),
+           y = a * x + b + rnorm(n, sd = 1))
+  }
+  ajusta_modelo <- function(datos){
+    modelo <- lm(y ~ x, datos)
+    modelo
+  }
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports code :results org
+  simulacion <-  tibble(id = seq(1, 10)) |>
+      mutate(datos  = map(id, genera_datos),
+             modelo = map(datos, ajusta_modelo),
+             ajuste = map(modelo, broom::tidy))
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+#+end_src
+
+#+begin_src R :exports none :results none
+  params <- simulacion |>
+    select(id, ajuste) |>
+    unnest(ajuste) |>
+    group_by(term) |>
+    summarise(estimate = mean(estimate)) |>
+    pull(estimate)
+#+end_src
+
+#+HEADER: :width 900 :height 500 :R-dev-args bg="transparent"
+#+begin_src R :file images/incertidumbre.jpeg :exports results :results output graphics file
+  simulacion |>
+    select(id, ajuste) |>
+    unnest(ajuste) |>
+    pivot_wider(names_from = term, values_from = estimate, id_cols = id) |>
+    ggplot() +
+    geom_abline(aes(intercept = `(Intercept)`,
+                    slope = x), alpha = .7) +
+    geom_abline(intercept = 0, slope = 1, color = 'red', size = 3) + 
+    geom_abline(intercept = params[1], slope = params[2], color = 'blue', size = 2, lty = 2)
+#+end_src
+#+caption: Simulación de ajuste (variación en datos). 
+#+RESULTS:
+[[file:../images/incertidumbre.jpeg]]
+
+** Prueba de hipótesis
+
+\begin{align}
+H_0&: \qquad \text{ No hay relación entre } X \text{ y } Y\,,\\
+H_1&: \qquad \text{ Existe una hay relación entre } X \text{ y } Y\,.
+\end{align}
+
+#+BEGIN_NOTES
+La prueba de hipótesis se efectúa en el contexto del modelo que estamos proponiendo. 
+#+END_NOTES
+
+** El valor-$p$
+
+\begin{align}
+t = \frac{\hat \beta_1 - 0}{\textsf{SE}(\hat \beta_1)}, \qquad \text{ distribución } t_{n  - 2}\,.
+\end{align}
+
+** Midiendo la precisión del modelo 
+
+\begin{align}
+\textsf{RSE} = \sqrt{\frac{1}{n-2} \textsf{RSS}}\,.
+\end{align}
+
+#+BEGIN_NOTES
+\begin{align*}
+\textsf{RSS} =\sum_{i = 1}^{n}(y_i - \hat y_i)^2\,.
+\end{align*}
+
+Es una métrica usual de ajuste. Nos dice qué tan precisos podemos ser al calcular una nueva predicción. Tiene sentido cuando comparamos con las unidades de la variable respuesta. Es decir, no es una métrica absoluta. 
+#+END_NOTES
+
+
+#+REVEAL: split
+\begin{align}
+R^2 = \frac{\textsf{TSS} - \textsf{RSS}}{\textsf{TSS}}\,.
+\end{align}
+
+#+BEGIN_NOTES
+\begin{align*}
+\textsf{TSS} = \sum_{i = 1}^{n}(y_i - \bar y)^2\,.
+\end{align*}
+
+Hay que tener cuidado pues la $R^2$ es una métrica de correlación lineal, no de ajuste. Esto lo podemos ver en el caso sencillo de una variable respuesta y un modelo lineal. También está sujeta a la variación de la respuesta. Depende la aplicación para determinar cuándo tenemos un buen coeficiente de variación explicada.  
+#+END_NOTES
+
+
+* El modelo multivariado
+
+\begin{align}
+Y = \beta_0 + \beta_1 X_1 + \cdots + \beta_p X_p + \varepsilon\,.
+\end{align}
+
+#+BEGIN_NOTES
+Cuando tenemos multiples predictores nos gustaría poder entender la relación de cada uno con la respuesta. ¿Ajustaríamos un modelo independiente con sólo un predictor?
+#+END_NOTES
+
+** Interpretación 
+
+\begin{align}
+\mathsf{sales} = \beta_0 + \beta_1 \times \mathsf{TV} + \beta_2 \times \mathsf{radio} + \beta_3 \times\mathsf{newspaper} + \varepsilon\,.
+\end{align}
+
+#+BEGIN_NOTES
+El modelo de regresión lineal usualmente se interpreta como los efectos
+(¿promedio, esperados?) de cada variable al mantener todas las demás
+/constantes/. Hay problemas cuando hay correlación entre predictores. Cuidado con
+datos observacionales.
+#+END_NOTES
+
+** Estimación
+
+#+begin_src R :exports none :results none
+  ## Modelo lineal multiple --------------------------------
+#+end_src
+
+#+begin_src R :exports code :results none
+  model <- lm(sales ~ ., data)
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports both :results org
+  model |>
+    broom::tidy() 
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+         term estimate std.error statistic p.value
+1 (Intercept)    2.939    0.3119      9.42 1.3e-17
+2          TV    0.046    0.0014     32.81 1.5e-81
+3       radio    0.189    0.0086     21.89 1.5e-54
+4   newspaper   -0.001    0.0059     -0.18 8.6e-01
+#+end_src
+
+#+REVEAL: split
+#+BEGIN_NOTES
+Desarollo de verosimilitud.
+#+END_NOTES
+
+
+** ¿Existe una relación entre la respuesta y los predictores?
+
+Nos preguntamos si es que existe alguna $\beta_j \neq 0$ .
+
+\begin{align}
+F = \frac{(\mathsf{TSS} - \mathsf{RSS})/p}{\mathsf{RSS}/(n - p -1)} \sim F_{p, n-p-1}\,.
+\end{align}
+
+#+BEGIN_NOTES
+La prueba de hipótesis que formularíamos sería probar contra alguna $\beta_j \neq 0$ . Se puede probar que si el supuesto del modelo lineal es correcto y bajo la hipótesis nula el cociente será cercano a 1. En caso de que la hipótesis ~alternativa~ sea cierta entonces $F > 1$. 
+#+END_NOTES
+
+#+begin_src R :exports none :results none
+  ### Resumenes globales --------------------------------
+#+end_src
+
+#+REVEAL: split
+#+caption: Resumen global del modelo (/tidy/). 
+#+begin_src R :exports both :results org
+  model |>
+    broom::glance() |>
+    select(statistic, p.value, df, df.residual)
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+  statistic p.value df
+1       570 1.6e-96  3
+#+end_src
+
+#+REVEAL: split
+-  ¿Por qué tenemos que evaluar en conjunto?  
+
+#+BEGIN_NOTES
+  ¿Qué pasa en el caso con 100 predictores donde no hay relación?
+#+END_NOTES
+
+** ¿Cuáles son los predictores importantes?
+
+Métodos de selección.
+
+#+BEGIN_NOTES
+La idea mas ingenua es ajustar todas las posibles combinaciones. Pero se pueden
+construir modelos de manera secuencial . Usualmente ajustando y comparando con
+respecto a /alguna métrica/. Mas adelante lo estudiaremos. 
+#+END_NOTES
+
+** ¿Qué tan bien ajusta el modelo?
+
+Podemos usar las métricas típicas como el $\mathsf{RSE}$ o la $R^2$.
+
+#+BEGIN_NOTES
+
+$R^2$: Agregar predictores siempre ayuda (en datos de entrenamiento). 
+
+$\mathsf{RSE}$: Podemos tener problemas pues mientras mas variables agregemos si el cambio en residuales es pequeño en relación al aumento de $p$. 
+#+END_NOTES
+
+** ¿Cómo predecimos y que tan precisa es nuestra predicción?
+
+#+BEGIN_NOTES
+Podemos utilizar ~intervalos confianza~. Mejor aún, podemos utilizar ~intervalos de predicción~. 
+#+END_NOTES
+
+* Extensiones
+** Predictores cualitativos
+
+#+BEGIN_NOTES
+Modelo con respuestas binarias (1D). ¿Qué tal que tenemos mas categorias?
+#+END_NOTES
+
+** Interacciones
+
+Eliminar el ~supuesto aditivo~: /interacciones/ y /no-linealidad/.
+#+begin_src R :exports none :results none
+  ## Modelos con interacciones ------------------------
+#+end_src
+#+REVEAL: split
+#+caption: Ajuste de modelos sin/con interacciones. 
+#+begin_src R :exports code :results none
+  model.1 <- lm(sales ~ TV + radio, data)
+  model.2 <- lm(sales ~ TV + radio + TV:radio, data)
+#+end_src
+
+#+REVEAL: split
+
+#+begin_src R :exports both :results org
+  tibble(modelo = list(model.1, model.2),
+         tipo   = c("lineal", "interaccion")) |>
+    mutate(resultados = map(modelo, broom::tidy)) |>
+    select(-modelo) |>
+    unnest(resultados) |>
+    select(tipo, term, estimate, p.value) 
+#+end_src
+#+caption: Resúmenes sobre los coeficientes.
+#+RESULTS:
+#+begin_src org
+         tipo        term estimate p.value
+1      lineal (Intercept)   2.9211 4.6e-19
+2      lineal          TV   0.0458 5.4e-82
+3      lineal       radio   0.1880 9.8e-59
+4 interaccion (Intercept)   6.7502 1.5e-68
+5 interaccion          TV   0.0191 2.4e-27
+6 interaccion       radio   0.0289 1.4e-03
+7 interaccion    TV:radio   0.0011 2.8e-51
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports both :results org
+  tibble(modelo = list(model.1, model.2)) |>
+    mutate(resultados = map(modelo, broom::glance)) |>
+    select(-modelo)|>
+    unnest(resultados) |>
+    select(r.squared, sigma, AIC, deviance) 
+#+end_src
+#+caption: Resúmenes globales de los modelos. 
+#+RESULTS:
+#+begin_src org
+  r.squared sigma AIC deviance
+1      0.90  1.68 780      557
+2      0.97  0.94 550      174
+#+end_src
+
+
+#+BEGIN_NOTES
+El efecto de incrementar el presupuesto en un canal de ventas puede aumentar la efectividad de otro. 
+#+END_NOTES
+
+** Jerarquías
+
+¿Qué pasa cuando un valor-$p$ de una interacción es pequeño, pero de los términos individuales no?
+
+** Interacciones y modelos múltiples
+
+#+REVEAL: split
+#+HEADER: :width 900 :height 500 :R-dev-args bg="transparent"
+#+begin_src R :file images/students.jpeg :exports results :results output graphics file
+  data <- ISLR::Credit
+  data |>
+    ggplot(aes(Income, Balance, group = Student, color = Student)) +
+    geom_smooth(method = "lm", se = FALSE) + 
+    geom_point()
+#+end_src
+#+caption: Ajuste con interacción cualitativa y cuantitativa.
+#+RESULTS:
+[[file:../images/students.jpeg]]
+
+** Problemas con supuestos.
+- No hay una relación lineal.
+- Los errores están correlacionados.
+- No hay varianza constante.
+- Valores atípicos.
+- Multicolinealidad.
+- Puntos ancla. 
+
+* Generalizaciones
+
+- Problemas de clasificación (siguiente).
+- No-linealidad.
+- Interacciones.
+- Regularización.
+
+* Aplicación: Predicción de asistencia en partidos de /football/
+
+Tomado de esta [[https://juliasilge.com/blog/intro-tidymodels/][liga]] y es un buen ejemplo de lo que se puede empezar a hacer con [[https://www.tidymodels.org/][tidymodels]] citep:Kuhn2022.
+
+#+begin_src R :exports none :results none
+  ## Aplicación: Modelo de regresión asistencia partidos -----------------------
+#+end_src
+
+#+begin_src R :exports both :results org 
+  library(tidyverse)
+  base_url <- "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-02-04/"
+
+  attendance <- read_csv(paste(base_url, "attendance.csv", sep = ""),
+                         progress = FALSE, show_col_types = FALSE)
+  standings <- read_csv(paste(base_url, "standings.csv", sep = ""),
+                        progress = FALSE, show_col_types = FALSE)
+
+  attendance_joined <- attendance |>
+    left_join(standings, by = c("year", "team_name", "team"))
+  attendance_joined
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+# A tibble: 10,846 × 20
+   team    team_n…¹  year  total   home   away  week weekl…²  wins  loss point…³
+   <chr>   <chr>    <dbl>  <dbl>  <dbl>  <dbl> <dbl>   <dbl> <dbl> <dbl>   <dbl>
+ 1 Arizona Cardina…  2000 893926 387475 506451     1   77434     3    13     210
+ 2 Arizona Cardina…  2000 893926 387475 506451     2   66009     3    13     210
+ 3 Arizona Cardina…  2000 893926 387475 506451     3      NA     3    13     210
+ 4 Arizona Cardina…  2000 893926 387475 506451     4   71801     3    13     210
+ 5 Arizona Cardina…  2000 893926 387475 506451     5   66985     3    13     210
+ 6 Arizona Cardina…  2000 893926 387475 506451     6   44296     3    13     210
+ 7 Arizona Cardina…  2000 893926 387475 506451     7   38293     3    13     210
+ 8 Arizona Cardina…  2000 893926 387475 506451     8   62981     3    13     210
+ 9 Arizona Cardina…  2000 893926 387475 506451     9   35286     3    13     210
+10 Arizona Cardina…  2000 893926 387475 506451    10   52244     3    13     210
+# … with 10,836 more rows, 9 more variables: points_against <dbl>,
+#   points_differential <dbl>, margin_of_victory <dbl>,
+#   strength_of_schedule <dbl>, simple_rating <dbl>, offensive_ranking <dbl>,
+#   defensive_ranking <dbl>, playoffs <chr>, sb_winner <chr>, and abbreviated
+#   variable names ¹​team_name, ²​weekly_attendance, ³​points_for
+# ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+#+end_src
+
+#+REVEAL: split
+#+HEADER: :width 1200 :height 500 :R-dev-args bg="transparent"
+#+begin_src R :file images/nfl-attendance.jpeg :exports results :results output graphics file
+  attendance_joined |>
+    filter(!is.na(weekly_attendance)) |>
+    ggplot(aes(fct_reorder(team_name, weekly_attendance),
+               weekly_attendance,
+               fill = playoffs)) +
+    geom_boxplot(outlier.alpha = 0.5) +
+    labs(
+      fill = NULL, x = NULL,
+      y = "Weekly NFL game attendance"
+    ) + sin_lineas + theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5))
+#+end_src
+#+caption: Asistencia en estadios por equipo. 
+#+RESULTS:
+[[file:../images/nfl-attendance.jpeg]]
+
+#+REVEAL: split
+#+HEADER: :width 1200 :height 500 :R-dev-args bg="transparent"
+#+begin_src R :file images/nfl-margin-victory.jpeg :exports results :results output graphics file
+attendance_joined |>
+  distinct(team_name, year, margin_of_victory, playoffs) |>
+  ggplot(aes(margin_of_victory, fill = playoffs)) +
+  geom_histogram(position = "identity", alpha = 0.7) +
+  labs(
+    x = "Margin of victory",
+    y = "Number of teams",
+    fill = NULL
+  ) + sin_lineas
+#+end_src
+#+caption: Diferencia de puntos en partidos ganados.
+#+RESULTS:
+[[file:../images/nfl-margin-victory.jpeg]]
+
+#+REVEAL: split
+#+HEADER: :width 1200 :height 500 :R-dev-args bg="transparent"
+#+begin_src R :file images/nfl-attendance-week.jpeg :exports results :results output graphics file
+attendance_joined |>
+  mutate(week = factor(week)) |>
+  ggplot(aes(week, weekly_attendance, fill = week)) +
+  geom_boxplot(show.legend = FALSE, outlier.alpha = 0.5) +
+  labs(
+    x = "Week of NFL season",
+    y = "Weekly NFL game attendance"
+  ) + sin_lineas
+#+end_src
+#+caption: Asistencia a lo largo de la temporada.
+#+RESULTS:
+[[file:../images/nfl-attendance-week.jpeg]]
+
+#+REVEAL: split
+#+begin_src R :exports both :results org 
+  attendance_df <- attendance_joined |>
+  filter(!is.na(weekly_attendance)) |>
+  select(
+    weekly_attendance, team_name, year, week,
+    margin_of_victory, strength_of_schedule, playoffs
+  )
+
+attendance_df
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+# A tibble: 10,208 × 7
+   weekly_attendance team_name  year  week margin_of_victory strength_…¹ playo…²
+               <dbl> <chr>     <dbl> <dbl>             <dbl>       <dbl> <chr>  
+ 1             77434 Cardinals  2000     1             -14.6        -0.7 No Pla…
+ 2             66009 Cardinals  2000     2             -14.6        -0.7 No Pla…
+ 3             71801 Cardinals  2000     4             -14.6        -0.7 No Pla…
+ 4             66985 Cardinals  2000     5             -14.6        -0.7 No Pla…
+ 5             44296 Cardinals  2000     6             -14.6        -0.7 No Pla…
+ 6             38293 Cardinals  2000     7             -14.6        -0.7 No Pla…
+ 7             62981 Cardinals  2000     8             -14.6        -0.7 No Pla…
+ 8             35286 Cardinals  2000     9             -14.6        -0.7 No Pla…
+ 9             52244 Cardinals  2000    10             -14.6        -0.7 No Pla…
+10             64223 Cardinals  2000    11             -14.6        -0.7 No Pla…
+# … with 10,198 more rows, and abbreviated variable names
+#   ¹​strength_of_schedule, ²​playoffs
+# ℹ Use `print(n = ...)` to see more rows
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports code :results none
+  library(tidymodels)
+
+  set.seed(108727)
+  attendance_split <- attendance_df |>
+    initial_split(strata = playoffs)
+
+  nfl_train <- training(attendance_split)
+  nfl_test <- testing(attendance_split)
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports both :results org 
+  lm_spec <- linear_reg() |>
+    set_engine(engine = "lm")
+
+  lm_spec
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+Linear Regression Model Specification (regression)
+
+Computational engine: lm
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports both :results org 
+  lm_fit <- lm_spec |>
+    fit(weekly_attendance ~ .,
+        data = nfl_train
+        )
+
+  lm_fit |> broom::tidy()
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+# A tibble: 37 × 5
+   term                estimate std.error statistic  p.value
+   <chr>                  <dbl>     <dbl>     <dbl>    <dbl>
+ 1 (Intercept)         -79125.     33598.   -2.36   1.85e- 2
+ 2 team_nameBears       -2613.       767.   -3.41   6.64e- 4
+ 3 team_nameBengals     -4757.       771.   -6.17   7.08e-10
+ 4 team_nameBills         106.       766.    0.138  8.90e- 1
+ 5 team_nameBroncos      2889.       775.    3.73   1.93e- 4
+ 6 team_nameBrowns        -21.6      775.   -0.0278 9.78e- 1
+ 7 team_nameBuccaneers  -2796.       752.   -3.72   2.04e- 4
+ 8 team_nameCardinals   -5905.       767.   -7.70   1.53e-14
+ 9 team_nameChargers    -5098.       774.   -6.59   4.76e-11
+10 team_nameChiefs       1802.       763.    2.36   1.83e- 2
+# … with 27 more rows
+# ℹ Use `print(n = ...)` to see more rows
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports both :results org 
+  lm_fit |> broom::tidy(conf.int = TRUE)
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+# A tibble: 37 × 7
+   term                estimate std.error statistic  p.value conf.low conf.high
+   <chr>                  <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+ 1 (Intercept)         -79125.     33598.   -2.36   1.85e- 2 -144985.   -13264.
+ 2 team_nameBears       -2613.       767.   -3.41   6.64e- 4   -4117.    -1109.
+ 3 team_nameBengals     -4757.       771.   -6.17   7.08e-10   -6268.    -3246.
+ 4 team_nameBills         106.       766.    0.138  8.90e- 1   -1396.     1608.
+ 5 team_nameBroncos      2889.       775.    3.73   1.93e- 4    1371.     4408.
+ 6 team_nameBrowns        -21.6      775.   -0.0278 9.78e- 1   -1541.     1498.
+ 7 team_nameBuccaneers  -2796.       752.   -3.72   2.04e- 4   -4271.    -1321.
+ 8 team_nameCardinals   -5905.       767.   -7.70   1.53e-14   -7408.    -4401.
+ 9 team_nameChargers    -5098.       774.   -6.59   4.76e-11   -6615.    -3581.
+10 team_nameChiefs       1802.       763.    2.36   1.83e- 2     306.     3298.
+# … with 27 more rows
+# ℹ Use `print(n = ...)` to see more rows
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports both :results org 
+  lm_fit |> broom::glance()
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+# A tibble: 1 × 12
+  r.squared adj.r.…¹ sigma stati…²   p.value    df  logLik    AIC    BIC devia…³
+      <dbl>    <dbl> <dbl>   <dbl>     <dbl> <dbl>   <dbl>  <dbl>  <dbl>   <dbl>
+1     0.152    0.148 8379.    38.1 7.30e-242    36 -80005. 1.60e5 1.60e5 5.35e11
+# … with 2 more variables: df.residual <int>, nobs <int>, and abbreviated
+#   variable names ¹​adj.r.squared, ²​statistic, ³​deviance
+# ℹ Use `colnames()` to see all variable names
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports both :results org
+  results_train <- lm_fit |>
+    predict(new_data = nfl_train) |>
+    mutate(truth = nfl_train$weekly_attendance,
+           model = "lm")
+  results_train |>
+    rmse(truth = truth, estimate = .pred)
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+# A tibble: 1 × 3
+  .metric .estimator .estimate
+  <chr>   <chr>          <dbl>
+1 rmse    standard       8358.
+#+end_src
+
+#+REVEAL: split
+#+begin_src R :exports both :results org
+  results_test <- lm_fit |>
+    predict(new_data = nfl_test) |>
+    mutate(truth = nfl_test$weekly_attendance,
+           model = "lm")
+  results_test |>
+    rmse(truth = truth, estimate = .pred)
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+# A tibble: 1 × 3
+  .metric .estimator .estimate
+  <chr>   <chr>          <dbl>
+1 rmse    standard       8192.
+#+end_src
+
+#+REVEAL: split
+#+HEADER: :width 1200 :height 500 :R-dev-args bg="transparent"
+#+begin_src R :file images/nfl-linear-performance.jpeg :exports results :results output graphics file
+  results_test %>%
+    mutate(train = "testing") %>%
+    bind_rows(results_train %>%
+      mutate(train = "training")) %>%
+    ggplot(aes(truth, .pred)) +
+    geom_point(alpha = 0.5) +
+    geom_abline(lty = 2, color = "salmon", size = 1.5) +
+    facet_wrap(~train) +
+    labs(
+      x = "Truth",
+      y = "Predicted attendance",
+      color = "Type of model"
+    ) + sin_lineas
+#+end_src
+#+caption: Comparativo de predicciones contra valores reales. 
+#+RESULTS:
+[[file:../images/nfl-linear-performance.jpeg]]
+
+
+bibliographystyle:abbrvnat
+bibliography:references.bib
