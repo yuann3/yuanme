@@ -12,7 +12,7 @@ How should the Engine structure incremental rebuilds and `yuanme dev` so that ed
 
 **Measured, the latency in existing tools comes from debounce settings, not from rendering.** Zola waits 1,000 ms by default and Hugo batches every 500 ms. Hugo's rebuild of the 100-Post bench site took 10–16 ms, but save-to-reload took about 235 ms. Zola with `--fast --debounce 1` reached 21 ms but served stale HTML. The plan:
 
-1. **Watch.** Use `notify` 8.2 with no library debouncer. Wait for 15 ms with no new event (cap 50 ms). Treat every event as "this path may have changed": re-read the file, hash it, and drop it if nothing changed. Never rely on event kinds.
+1. **Watch.** Use `notify` 8.2 with no library debouncer. Wait for 15 ms with no new event (cap 50 ms). Treat every event as "this path may have changed": re-read the file, hash it, and drop it if nothing changed. Never rely on event kinds. On a `Rescan` flag, re-walk the whole Site. On a directory hint, re-walk that subtree (see Verification).
 2. **Serve.** Serve from an in-memory output snapshot that is swapped atomically, over HTTP plus a WebSocket.
 3. **Update the browser in place.** Send the new HTML for the page being viewed. The client morphs the DOM, keeping `<canvas>` and anything marked preserve, and swaps CSS `<link>`s without a reload. It falls back to a full reload only when a script changed.
 
@@ -57,7 +57,7 @@ Machine: Apple M4 Max (12P+4E cores, 16 threads), macOS 27.0.1, rustc 1.99.0, re
 | Zola 0.23.6 | notify-debouncer-full, **1,000 ms** | whole site (`recreate_site`). `--fast` renders one page only. Any template change rebuilds everything | WebSocket, LiveReload protocol, livereload.js 3.2.4 | via livereload.js (Zola always sends the path `/x.js` or a file path, so in practice a full reload) | no | default **2.48 s** median; `--debounce 1` 0.99 s; `--debounce 1 --fast` 21 ms (stale output) |
 | Hugo 0.167.0 | fsnotify plus a **500 ms ticker** batcher | dependency-tracked partial rebuild. "Fast render" re-renders the 20 most recently visited pages and renders others on navigation | WebSocket, LiveReload protocol | yes: `RefreshPath` for each changed `.css` | no (full reload, or navigate to the changed page with `--navigateToChanged`) | **236 ms** median (rebuild itself 10–16 ms); fast render on or off made no difference |
 | mdBook 0.5.4 | notify-debouncer-mini, **1 s** | whole book | WebSocket, `"reload"` text | no | no | not measured |
-| Eleventy Dev Server 3.0.0-alpha.12 | chokidar | `--incremental`: changed templates plus layout and collection dependents | WebSocket | yes: cache-bust each matching `<link>` | **yes**: morphdom of `document.documentElement` with the server-sent HTML (`domDiff: true`) | not measured |
+| Eleventy Dev Server 3.0.0-alpha.12 (canary; stable is 2.0.8) | chokidar | `--incremental`: changed templates plus layout and collection dependents | WebSocket | yes: cache-bust each matching `<link>` | **yes**: morphdom of `document.documentElement` with the server-sent HTML (`domDiff: true`) | not measured |
 | tower-livereload 0.10.3 (Rust middleware) | none (BYO) | n/a | **SSE** | no | no (full reload) | n/a |
 
 ### Live-reload transport
@@ -67,7 +67,7 @@ Machine: Apple M4 Max (12P+4E cores, 16 threads), macOS 27.0.1, rustc 1.99.0, re
 | Browser connection limit over HTTP/1.1 | **6 per browser per origin, shared by all tabs**. Chrome and Firefox marked it "Won't fix" ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/EventSource); [WHATWG spec](https://html.spec.whatwg.org/multipage/server-sent-events.html) warns about per-server connection limits) | not subject to the SSE warning |
 | Direction | server → client only | both ways (the client can report which URL it is viewing) |
 | Reconnect | built in; the `retry:` field sets the delay | hand-written (about 10 lines) |
-| Rust side | `axum::response::sse` | axum 0.8.9 `ws` feature (tokio-tungstenite 0.30) |
+| Rust side | `axum::response::sse` | axum 0.8.9 `ws` feature (tokio-tungstenite 0.29) |
 | Precedent among SSGs | tower-livereload | Zola, Hugo, mdBook, Eleventy, Vite |
 | Agent friendliness | `curl -N` readable | needs a client; better to give agents NDJSON on stdout (see below) |
 
@@ -106,7 +106,7 @@ Machine: Apple M4 Max (12P+4E cores, 16 threads), macOS 27.0.1, rustc 1.99.0, re
 
 **salsa** (0.28.5, released 2026-09-24, actively maintained) memoizes "tracked functions" over "inputs". On a new revision it re-validates memos by walking dependencies, and "backdates" a result that recomputes to an equal value, so dependents are not re-run (early cutoff) ([book: the red-green algorithm](https://github.com/salsa-rs/salsa/blob/30b614d826d697c47bc0f21591fab218f2004032/book/src/reference/algorithm.md)). Durability lets it skip checking inputs that rarely change ([book: durability](https://github.com/salsa-rs/salsa/blob/30b614d826d697c47bc0f21591fab218f2004032/book/src/reference/durability.md)). This is the right tool for deep, fine-grained query graphs such as a compiler front end. It does not fit the Engine for four reasons:
 
-- **Unstable API.** Semver-breaking 0.x releases came out on 2025-12-16 (0.25), 2026-02-02 (0.26), 2026-06-04 (0.27) and 2026-07-12 (0.28). 0.28 changed core traits ("replace `Update` with `SalsaValue` and `PartialEq`", "return references by default") ([CHANGELOG](https://github.com/salsa-rs/salsa/blob/30b614d826d697c47bc0f21591fab218f2004032/CHANGELOG.md)).
+- **Unstable API.** Semver-breaking 0.x releases came out on 2025-12-16 (0.25), 2026-02-07 (0.26), 2026-06-04 (0.27) and 2026-07-12 (0.28). 0.28 changed core traits ("replace `Update` with `SalsaValue` and `PartialEq`", "return references by default") ([CHANGELOG](https://github.com/salsa-rs/salsa/blob/30b614d826d697c47bc0f21591fab218f2004032/CHANGELOG.md)).
 - **The SSG graph is shallow.** It runs file → parsed entry → leaf transforms → page HTML → output, with fan-in only at Collection listings and feeds. The expensive nodes are pure leaves with small, hashable inputs.
 - **Most of the Engine sits outside salsa's model anyway.** Writing outputs, encoding images and the HTTP server are side-effecting.
 - **It costs agents and contributors.** Proc-macro-heavy query code is harder for a coding agent to change correctly, and agent ergonomics are a first-class requirement (map #1).
@@ -214,6 +214,28 @@ The throwaway code lived in `/private/tmp/yuanme-spike-incr` and is not committe
 - **`wsprobe`.** A LiveReload-protocol WebSocket client that edits a Post in place, then measures the time until a `reload` command arrives. It ran against `zola serve` 0.23.6 and `hugo server` 0.167.0 (official darwin release binaries) on the same generated 100-Post site, with highlighting on in both, and waited 2.5 s between edits.
 - **Staleness check.** Edited a Post's title, then used `curl` to fetch the page and its listings 1–3 s later.
 
+## Verification
+
+Independent re-check on 2026-10-04 against primary sources (crates.io API, upstream source at the cited commits, MDN) and by re-running the spikes. The recommendation holds. Corrections and additions:
+
+- **axum's WebSocket stack.** axum 0.8.9 (2026-04-14) depends on `tokio-tungstenite ^0.29.0`, not 0.30 ([crates.io dependencies](https://crates.io/api/v1/crates/axum/0.8.9/dependencies)). tokio-tungstenite 0.30.0 came out 2026-07-11. The spike used `tungstenite` 0.30 directly, so it is unaffected. The table above is fixed.
+- **salsa 0.26 date.** crates.io lists 0.26.0 as published 2026-02-07, not 2026-02-02. The count of four breaking 0.x releases between 2025-12 and 2026-07 still holds (0.25.0 2025-12-16, 0.26.0 2026-02-07, 0.27.0 2026-06-04, 0.28.0 2026-07-12), and 0.24.0 (2025-10-05) makes it five in ten months. Fixed above.
+- **Eleventy's morph features are canary-only.** The preserve attribute, the moved-permalink redirect and the post-patch event exist in eleventy-dev-server 3.0.0-alpha.12 (npm `canary` tag, 2026-09-30) but not in the stable `latest` 2.0.8, whose client only runs morphdom with the `<script>` reload fallback. In the alpha the names are `data-buildawesome-preserve` and `buildawesome:reload`, and the morph also skips `inert` elements and any focused `input`/`textarea`/`select`. This is still good precedent, but it is unreleased in Eleventy's stable line.
+- **Benchmarks re-run (load average about 4 to 11).** Warm highlight of the 29-block Post took 13.0 ms, a prose edit with the code-block cache 33 µs, and markdown with no highlighting 22 µs. Re-rendering all 30, 300 and 1,000 Posts with a warm cache took 0.48, 3.1 and 10.7 ms. Cold highlighting speedup with rayon was 8 to 9 times (30 Posts: 455 to 49 ms; 1,000: 14.1 to 1.75 s), better than the reported 5 to 7 times. A 4-item `par_iter` cost a median of 44 µs, above the reported 12 to 19 µs. That figure moves with load, but it is still negligible against the budget. The conclusions do not change.
+- **Bench caveat.** The re-render-all spike uses a 10-line template and Posts that share the same 29 code blocks, and it renders no tag, series, feed or sitemap pages. Real Shell templates cost more per page. At 1,000 pages there is about 4 times headroom, so this doesn't change the tier-1 choice, but #15's budget test should use the real templates.
+- **Zola `--fast` staleness reproduced.** On a fresh 10-Post site with zola 0.23.6, `serve --fast --debounce 1` still served the old title and body for the edited page and for `/blog/` 2 s after an in-place title edit. `serve --debounce 1` served both updated. The root cause is still unknown.
+- **FSEvents event kinds re-confirmed.** A re-run of the watch spike showed that the temp-write-then-rename save again reported only `Modify(Name(Any))` (twice) for `post.md`. The first event arrived 10.3 to 11.5 ms (median) after the save, and the last within 12.5 ms. notify 8.2.0's `latency: 0.0` with `NoDefer` is confirmed at `fsevent.rs` L300–301.
+- **Missing: rescan events.** notify sets `Flag::Rescan` when FSEvents reports `MustScanSubDirs` (user or kernel dropped events) and when inotify reports `Q_OVERFLOW` ([fsevent.rs L116–121](https://github.com/notify-rs/notify/blob/notify-8.2.0/notify/src/fsevent.rs#L116-L121), [inotify.rs L212–213](https://github.com/notify-rs/notify/blob/notify-8.2.0/notify/src/inotify.rs#L212-L213)). The coalescer must answer it with a full re-walk and re-hash of the Site inputs. A hint naming a directory (for example a renamed Collection folder) must re-walk that subtree, because there is no file to re-hash. The hash-based input map makes both cheap.
+- **Equivalence test scope.** The dev pipeline includes drafts and injects the client, so the byte-identical check must compare against a clean build with the same visibility settings, with the client injection stripped or switched off. Otherwise the test fails by design.
+- **Confirmed as stated:**
+  - Zola's `--debounce` default is 1000 (`cli.rs` L110–112), its whole-site rebuild on template changes (#3246) and its editor denylist.
+  - Hugo's `watcher.New(500*time.Millisecond, …)` ticker batcher, the 20-URL `EvictingQueue`, `RefreshPath` for `.css` and the `--renderToMemory` opt-in.
+  - mdBook's 1 s `notify_debouncer_mini` and its full `build()`.
+  - notify 8.2.0 (2025-08-03) as the latest stable, with 9.0.0-rc.5 (2026-08-30) adding `Config::with_fsevent_latency`.
+  - comemo 0.5.1 (2026-01-29), rayon 1.12.0 (2026-04-14), syntect 5.3.0, minijinja 2.24.0, ignore 0.4.33 and tower-livereload 0.10.3 (SSE, `text/event-stream`).
+  - The MDN SSE warning: 6 connections per browser and domain without HTTP/2, "Won't fix" in Chrome and Firefox.
+  - livereload-js's clone, wait-for-load, then remove `<link>` swap.
+
 ## Open questions
 
 - **Browser half of the budget (unmeasured).** How long do a morph and a full reload take on the Reference site, including Film WebGL re-init, font revalidation and the panel intro? This needs a real browser, so it belongs with the Shell router prototype (#26). It decides whether morphing is required or merely nice.
@@ -223,4 +245,5 @@ The throwaway code lived in `/private/tmp/yuanme-spike-incr` and is not committe
 - **Template engine hooks.** The template engine (#6) must offer access-tracked context objects and a loader hook if tier 2 is ever needed.
 - **Persisting leaf caches.** Should leaf caches persist on disk (`.yuanme/cache`, content-addressed, salted by Engine version) so cold `yuanme dev`, `yuanme build` and CI start warm? What about eviction?
 - **Linux and Windows watcher latency.** Only macOS FSEvents was measured.
+- **Rescan and directory events (from verification).** How should a full re-walk triggered by `Flag::Rescan` be tested? Does a directory rename on Linux (inotify `IN_MOVED_*` on the directory) need anything beyond a subtree re-walk?
 - **Budget numbers.** The exact budget numbers (for example ≤ 50 ms server-side p95 at 30 pages and ≤ 100 ms at 1,000) belong to #15, along with how CI measures them.
