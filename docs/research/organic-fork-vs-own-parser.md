@@ -12,23 +12,23 @@ The Org parser research recommended writing our own parser, with a vendored fork
 
 ## Short answer
 
-**Fork organic.** This reverses the primary recommendation of the Org parser research. Its two blocking objections, speed and nightly Rust, turned out to be cheap to fix, and the fork starts at the best fidelity available.
+**Fork organic.** This reverses the primary recommendation of the Org parser research. Its two blocking objections, speed and nightly Rust, turned out to be cheap to fix, and the fork starts at the best fidelity available. An independent re-check upheld this, but it found more exponential-time paths that survive the patches. The fork must therefore bound parse time in general, and the estimate rises to about 14–20 days. See [Verification](#verification).
 
 - **Why it is slow.** The time goes into organic's architecture, not into one hot function. Inside plain text, organic advances one character at a time. At every character it walks the whole stack of "exit matchers" and tries all ~20 object parsers. One of those exit matchers, `paragraph_end`, fully parses a candidate element at every character. Measured over the 293-file Worg corpus, that comes to roughly one full element-parse attempt per character of plain text. The author's own notes name the same two costs ([`notes/optimization_ideas.org`](https://code.fizz.buzz/talexander/organic/src/branch/main/notes/optimization_ideas.org)).
-- **What a few hours of patching bought.** Six small patches (127 added lines in 5 files) made organic **4.1× faster** on Worg: 1,489 → 362 ms, or 237 → 58 µs/KB. A 16 KB file now parses in 1.5 ms instead of 6.3 ms, and the 887 KB Org manual in 68 ms instead of 341 ms. The output was byte-identical, by AST hash, on all 627 corpus, sample and synthetic files and on 2,000 fuzz documents. organic is still about 12× slower than orgize, but that is far inside the budget. The [#11](https://github.com/yuann3/yuanme/issues/11) plan re-parses only the edited Post and leaves about 55 ms for the browser.
+- **What a few hours of patching bought.** Six small patches (127 added lines in 5 files) made organic **4.1× faster** on Worg: 1,489 → 362 ms, or 237 → 58 µs/KB. A 16 KB file now parses in 1.5 ms instead of 6.3 ms, and the 887 KB Org manual in 68 ms instead of 341 ms. The output was byte-identical, by AST hash, on all 627 corpus, sample and synthetic files and on 2,000 fuzz documents. A held-out re-check found 1 difference in 5,000 new fuzz documents, on input that both builds already parse differently from Emacs (see [Verification](#verification)). organic is still about 12× slower than orgize, but that is far inside the budget. The [#11](https://github.com/yuann3/yuanme/issues/11) plan re-parses only the edited Post and leaves about 55 ms for the browser.
 - **The real risks are worse than slowness: exponential time and crashes.**
-  - A 73-byte line of unclosed markup (`*a /b ` repeated 12 times) takes organic **88 seconds**, against 0.14 ms in Emacs. Patch P6 makes it 0.17 ms.
+  - A 73-byte line of unclosed markup (`*a /b ` repeated 12 times) takes organic **88 seconds**, against 0.14 ms in Emacs. Patch P6 makes it 0.17 ms. P6 fixes only that one class: unclosed inline footnotes and sub/superscript braces are still exponential after P1–P6 (see [Verification](#verification)).
   - A 2-minute fuzz run found two crash classes in unpatched organic. A stray `:END:` line followed by a timestamp or a link **panics**. A line containing only `|` makes the **whole document fail to parse**. Emacs parses both.
   - The fork therefore needs a fuzz harness with a time budget, crash fixes and a `catch_unwind` boundary. Those are the largest line items in the estimate below.
 - **The other asks are nearly free.**
   - **Stable Rust**: done in the earlier spike. It needed 3 compile errors fixed and one manifest line removed, plus the two `#[bench]`s and the wasm-only `gloo-utils` dependency removed.
   - **Byte spans**: every node's `source` is a slice of the input. All 173,083 nodes in the corpus check out, so a span is pointer arithmetic.
   - **Missing `#+SETUPFILE`**: needs **no fork change at all**. The Engine supplies its own `FileAccessInterface` that records the miss and returns empty contents. A spike reported `org-guide.org:2645: #+SETUPFILE "doc-setup.org" not found (bytes 86676..86702)` instead of aborting.
-- **Cost.** Making the fork production-ready is about **2–3 focused weeks**. Writing our own is about **6–12 weeks**, with much more fidelity risk. organic's author needed 21 months and about 1,500 source commits to reach parity.
+- **Cost.** Making the fork production-ready is about **2–3 focused weeks** (3–4 after verification). Writing our own is about **6–12 weeks**, with much more fidelity risk. organic's author needed 21 months and about 1,500 source commits to reach parity.
 
 **When to revisit:** two conditions would reopen "write our own":
 
-- Fuzzing with a time budget keeps finding new superlinear or crash classes after the first round of fixes.
+- Fuzzing with a time budget keeps finding new superlinear or crash classes after the first round of fixes. The re-check found three more exponential classes before that first round. They share P6's root cause, so the trigger now applies to classes that survive a general fix: per-construct close prechecks plus a fuel limit.
 - v1 needs a lossless token-level CST, for example for agent-driven source edits.
 
 ## Comparison
@@ -57,9 +57,9 @@ Machine: Apple M4 Max, rustc 1.99.0 stable, release builds. Each file's time is 
 | Builds on stable | yes, after a 3-error patch | yes |
 | Byte spans | node level, via `source` slices (verified) | node and token level, by design |
 | Missing `#+SETUPFILE` | Engine-side `FileAccessInterface`, no fork change | by design |
-| Known defects | 1 exponential-time class (fixed by P6), 2 crash classes (unfixed), no inlinetask, empty dynamic block, `$n$-th` | unknown until written |
+| Known defects | at least 4 exponential-time classes (P6 fixes 1; inline footnotes, `[fn:x:` references and `_{`/`^{` remain), several quadratic ones, 2 crash classes (unfixed), link descriptions spanning blank lines, no inlinetask, empty dynamic block, `$n$-th` | unknown until written |
 | Code we own | about 17.4k lines of nom 7 combinators with 4 lifetimes (`'b 'g 'r 's`) | estimated 5–8k lines (org-parser research) |
-| Effort to production-ready (estimate) | **about 10–14 focused days** | **about 30–60 focused days** |
+| Effort to production-ready (estimate) | **about 14–20 focused days** (10–14 before verification) | **about 30–60 focused days** |
 | Main risk | more superlinear paths hidden in the re-parse-heavy design | the long tail of `org-element` quirks |
 
 ## Details
@@ -184,10 +184,11 @@ These are estimates, in focused engineering days, for one person or agent with t
 | Span API and line/column mapping | 0.5 | included |
 | `#+SETUPFILE` via `FileAccessInterface`, path policy, recursion | 1 | 1 |
 | Fix the two crash classes; add `catch_unwind` and a fuzz harness with crash and time budgets | 3–4 | 2 (fuzzing is needed either way) |
+| Bound the remaining exponential and quadratic paths: close prechecks for each recursive object type, and a fuel limit that turns a runaway parse into a diagnostic (added by verification) | 4–6 | 0–1 (a linear design from the start) |
 | Re-pin the oracle to Org 9.8.7 and fix divergences such as `$n$-th` | 2–4 | included below |
 | Recognise all 30 element and 24 object types with spans (5–8k lines) | — | 15–25 |
 | Long-tail fidelity from first pass to ≥99.9% on the corpus | — | 10–30 |
-| **Total** | **≈10–14** | **≈30–60** |
+| **Total** | **≈14–20** | **≈30–60** |
 
 The Org subset gate ([#16](https://github.com/yuann3/yuanme/issues/16)) costs the same either way, so it is left out of the table. It is an exhaustive `match` over a node enum that turns excluded kinds into build errors. organic's `AstNode` already has 59 variants to match on.
 
@@ -223,7 +224,50 @@ Everything was done in `/private/tmp/organicprof` on 2026-10-04: rustc/cargo 1.9
 
 1. **Do we adopt this reversal?** The ticket asks for a recommendation; this document recommends forking. If accepted, [#16](https://github.com/yuann3/yuanme/issues/16) and [#17](https://github.com/yuann3/yuanme/issues/17) should assume organic's `AstNode` as the parser surface, and the org-parser research's "Short answer" should be marked superseded.
 2. **What is the fuzz time budget?** A per-input cap, for example "no input parses slower than 1 ms/KB plus 1 ms", turns "no more exponential paths" into a CI check. The number belongs to [#15](https://github.com/yuann3/yuanme/issues/15) (performance budgets).
-3. **Do we upstream the patches?** The forge is self-hosted and dormant since 2024-04, and 0BSD does not require it. Upstreaming would be a courtesy, not a dependency.
+3. **Do we upstream the patches?** The forge is self-hosted. Its parser code has not changed since 2024-04, but the author was still committing build and CI changes in July 2026 (see Verification). 0BSD does not require upstreaming. Upstreaming would be a courtesy, not a dependency.
 4. **Token-level spans or a lossless CST?** If agent edits or [#21](https://github.com/yuann3/yuanme/issues/21) (the agent-native surface) need exact source rewriting of Org, organic's node-level slices may not be enough. That is the clearest trigger for revisiting "write our own".
 5. **nom 7 or nom 8?** Staying on nom 7.1.3 costs nothing today. A port is mechanical but touches most of the 12k parser lines, so [#27](https://github.com/yuann3/yuanme/issues/27) (dependency policy) should say whether an unmaintained major version is acceptable.
 6. **Which Org version is the oracle?** organic tests against Org `main` of 2023-10-13, and the Engine wants Org 9.8.7. Re-pinning means running organic's compare tooling against a newer Emacs and fixing the diffs. The size of that job is unknown until it is run.
+7. **Fuel limit or per-construct prechecks?** A fuel limit, such as a counter in `check_exit_matcher`, guarantees termination. It fails only the pathological file, and that file would need a plain-text fallback for its paragraph. Prechecks keep exact output but have to be written for each construct. The fork probably needs both. [#15](https://github.com/yuann3/yuanme/issues/15) should set the fuel budget.
+
+## Verification
+
+An independent re-check on 2026-10-04 used the same machine, the spike's built binaries in `/private/tmp/organicprof` and Emacs 31.1 / Org 9.8.7. It confirmed most of the findings and corrected several. **The recommendation still holds**: forking costs about 14–20 days against 30–60 for our own parser. But the margin is smaller, and bounding parse time is now required work, not optional.
+
+**Reproduced as stated.**
+- Worg totals from the TSVs: 1,488.5 / 362.1 / 28.9 ms over 6,431,567 bytes (237.0 / 57.7 / 4.6 µs/KB). A fresh run gave 1,457 / 354 / 21.5 ms, so the orgize ratio is 12–16× depending on the run.
+- Single files: manual 336 → 67 ms, `guide-500.org` 6.25 → 1.36 ms, `flat16.org` 7.40 → 1.47 ms.
+- The patch diff is 127 insertions in 5 files.
+- AST hashes are identical on the 594 + 33 files and on the original 2,000 fuzz documents. The fuzz set had 1,597 ok, 310 panics and 93 errors.
+- `*a /b ` × 4 / 6 / 8 took 3.0 / 25.6 / 278 ms unpatched and 0.06 ms patched. Emacs parsed the 73-byte line in 0.135 ms.
+- The `bullshitium.rs:69` and `:130` panics and the `a\n|\nb\n` → `Parser(Eof)` error reproduce. Emacs gives `section > paragraph > timestamp` and `table > table-row`.
+- Spans: 173,083 nodes, 0 outside the input.
+- The `#+SETUPFILE` spike: the default parse fails with `IO(NotFound)` when `doc-setup.org` is absent, and the lenient interface reports the spanned warning.
+- Every cited organic line number, the `org.el` lines 4725–4741 and 4910–4921 (`org-file-contents uri :noerror` → `message "Unable to read file %S"`), the `optimization_ideas.org` quotes and the oracle pin (`emacs-29.1`, Org `abf5156`) check out.
+- Repository history: 1,505 commits touch `src/`, and the last change under `src/parser` was 2024-04-11. Of the 29,490 lines in `src`, the compare, wasm, wasm_test and wasm_cli modules are 9,899. `gloo-utils` 0.2.0 is non-optional. nom 7.1.3 is from 2023-01-15 and nom 8.0.0 from 2025-01-26 (crates.io API). organic 0.1.16 (2024-04-12) is still the newest release.
+
+**Corrections.**
+1. **P6 does not remove exponential time. At least three more classes survive P1–P6.** They share P6's root cause: an opener scans ahead, fails to close, backtracks, and the plain-text loop then retries the inner opener. The rows below come from the patched build's `try` binary, with Emacs `org-element-parse-buffer` timed the same way as the 73-byte case.
+
+   | Input | Bytes | organic + P1–P6 | unpatched | Emacs 9.8.7 |
+   |---|---|---|---|---|
+   | `[fn:: ` × 14 | 84 | **11,037 ms** (about 3× per repeat) | 21,249 ms | 0.03 ms |
+   | `a_{b ` × 20 (same for `a^{b `) | 100 | **1,741 ms** (2× per repeat); × 40 > 60 s | — | 0.11 ms (× 40) |
+   | `Let x_{i be y and ` × 20 (prose with unclosed subscripts) | 360 | **2,696 ms** | — | — |
+   | `See[fn:: a note ` × 10 | 160 | **111 ms** | — | — |
+   | `[fn:x: ` × 14 | 98 | 50 ms (2× per repeat) | 105 ms | — |
+
+   Quadratic paths also remain. `[[a][` × 800 (4.8 KB) took 316 ms, `[[a]` × 800 233 ms, `[cite:@a ` × 800 168 ms, `{{{m(` × 800 64 ms, `<%%(a` × 800 64 ms, `\(a` × 800 50 ms and `src_c{` × 800 37 ms. Any of these breaks a per-KB time budget. This matters for the #11 plan, because it re-parses Posts while they are being typed, and a half-typed Post routinely contains unclosed openers. The fork needs close prechecks like P6 for each recursive object type: footnote references, sub/superscripts, links, citations, macros, inline source and babel calls, LaTeX fragments and diary timestamps. It also needs a fuel limit as a backstop. That adds an estimated 4–6 days, so the fork total becomes ≈14–20 days. The "When to revisit" trigger was reworded to match.
+2. **The patches are not provably output-preserving.** A held-out run on 5,000 new fuzz documents (`gen_fuzz.py` seed 777) found **1 AST difference**. It minimised to `[[1][~]\n\nf~]]`. Unpatched organic parses this as one paragraph that spans the blank line, with a link whose description holds `Code "~]\n\nf~"`. The patched build has plain text there, because P6 assumes markup cannot cross a blank line. Emacs makes two plain paragraphs, so both builds are wrong. Emacs fidelity does not get worse, but "byte-identical output" holds only on the tested sets. A held-out real corpus showed no difference: 311 `.org` files from the doomemacs, emacs-straight/org-mode and spacemacs repositories, 3.18 MB, all parsing ok in both builds.
+3. **New fidelity bug in organic (with or without the patches): regular-link descriptions can span blank lines.** For example, `x [[a][b\n\nc]] y` becomes one paragraph containing a link. Emacs ends the paragraph at the blank line.
+4. **`#+SETUPFILE` values are not unquoted.** organic passes `kw.value` to `read_file` as it is, so `#+SETUPFILE: "s.org"` fails with `IO(NotFound)` while `#+SETUPFILE: s.org` works. Emacs applies `org-strip-quotes` (org.el 4727) and also accepts URLs. The Engine's `FileAccessInterface` can strip the quotes itself, so this still needs no fork change, but it is a requirement that was missing.
+5. **The upstream is not entirely dormant.** The parser has been frozen since 2024-04, but the author made 16 commits in 2025–2026. They are build, CI, Nix and Dockerfile work, the latest being `336b5d3` on 2026-07-17, and include pinning `nightly-2026-05-23`. So the forge is maintained. The parser, however, is not.
+6. **Small numeric differences.**
+   - The first commit's author date is 2022-07-15; 2022-07-16 is its commit date.
+   - October 2023 has 407 `src/` commits by author month, not 408.
+   - Per-file percentiles depend on the percentile method: one gives p90/p99 of 10.4/31.6 ms unpatched and 2.12/18.2 ms patched, against the reported 10.6/52.6 and 2.13/19.7.
+   - "99.99% of nodes", inherited from the org-parser research, is **node-type count agreement** on the manual, guide and syntax spec. It is not tree equality, and it does not detect issues such as correction 3.
+
+**Newly surfaced questions.**
+- Should the Engine fall back to rendering a paragraph as plain text, with a warning, when the fuel limit is hit? Or should the whole file fail?
+- The fork's fuzz harness should include an adversarial generator for unclosed openers (the `adv.py` style), not only random Org. The random generator never produced the cases above.
