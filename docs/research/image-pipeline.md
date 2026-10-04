@@ -14,14 +14,14 @@ Use a mostly-Rust stack with exactly one C library, libwebp:
 |---|---|---|
 | Decode + orientation | `image` 0.25.10 (2026-03-10), which uses `zune-jpeg` for JPEG | `ImageDecoder::orientation()` + `DynamicImage::apply_orientation()` |
 | Resize | `fast_image_resize` 6.1.0 (2026-07-21) | Lanczos3, sRGB (non-linear), like sharp |
-| AVIF | `ravif` 0.13.0 (2026-01-19) on `rav1e` 0.8.1 | speed 6, quality 72, 4:4:4, 10-bit, **fixed tile/thread count** |
+| AVIF | `ravif` 0.13.0 (2026-01-19) on `rav1e` 0.8.1 | speed 6, quality 72, 4:4:4, 10-bit, **fixed tile count** (see Verification: fix `tiles`, not threads) |
 | WebP | `libwebp-sys` 0.14.4 (2026-04-29, bundles libwebp 1.6.0), called directly | quality 80, method 4 (sharp's defaults) |
 | JPEG | `mozjpeg-rs` 0.9.2 (2026-04-17, pure Rust) | baseline, Annex K tables, optimised Huffman, no trellis, q80, 4:2:0 (libvips' defaults) |
 | Cache key | `blake3` 1.8.7 | hash of source bytes, transform, encoder ID and version |
 
-Measured on the About workload (4 photos × 5 widths × 3 formats = 60 outputs, Apple M4 Max), this stack does the whole job (decode, resize, encode, write) in **2.5 s on one core, 0.71 s on 4 threads and 0.24 s on 16**. sharp takes **4.4 s, 1.45 s and 0.64 s** for the same 60 outputs. At equal SSIMULACRA2 quality the WebP output is byte-identical to sharp's and the JPEG output is pixel-identical. AVIF is the one trade-off: rav1e files are about 12% larger than libaom's at sharp's default effort, but cost 0.58× the CPU.
+Measured on the About workload (4 photos × 5 widths × 3 formats = 60 outputs, Apple M4 Max), this stack does the whole job (decode, resize, encode, write) in **2.5 s on one core, 0.71 s on 4 threads and 0.24 s on 16**. sharp takes **4.4 s, 1.45 s and 0.64 s** for the same 60 outputs. At equal SSIMULACRA2 quality the WebP output is byte-identical to sharp's and the JPEG output is pixel-identical. AVIF is the one trade-off: rav1e files are about 12% larger than libaom's at sharp's default effort (about 14% with the deterministic 4-tile setting), but cost 0.58× the CPU.
 
-The biggest CI saving does not come from changing encoders. **70% of today's CI AVIF time (17.8 s of 25.6 s of summed transform time) goes to the four full-size AVIFs that no page references.** Not generating them, plus the faster stack, should bring the cold image step from 9.34 s to about 1.5–2 s on the 4-vCPU runner (an estimate, derived below). With a content-hash cache, a warm build re-encodes nothing.
+The biggest CI saving does not come from changing encoders. **70% of today's CI AVIF time (17.8 s of 25.6 s of summed transform time) goes to the four full-size AVIFs that no page references** (about 64% of AVIF CPU when measured on one core; see Verification). Not generating them, plus the faster stack, should bring the cold image step from 9.34 s to about 2 s (1.5–2.5 s) on the 4-vCPU runner (an estimate, derived below). With a content-hash cache, a warm build re-encodes nothing.
 
 Do not use the AGPL `zen*` crates, the unreleased `image-webp` lossy encoder (it produced corrupt output in this test) or the `webp` crate (it pins libwebp 1.3.1). Keep libaom in reserve: at equal size and quality it is about 4× faster than rav1e, but it brings cmake, nasm and C++ into release CI through stale binding crates.
 
@@ -183,3 +183,38 @@ Enforce this with a `cargo-deny` licence allowlist and ship a generated third-pa
 7. **`cargo install` without nasm.** Offer a `pure-rust` feature that disables rav1e asm, or document nasm as a build requirement?
 8. **Third-party notices.** How does the Engine ship the IJG acknowledgement and other notices (a `yuanme licenses` command, or a file in releases)?
 9. **Re-test `image-webp`** once a lossy-encoder release ships with #191 fixed. A permissively licensed pure-Rust WebP would remove the last C dependency.
+
+## Verification
+
+Independent re-check on 2026-10-04 against crates.io metadata, the crate sources in `~/.cargo/registry`, the libvips/Zola/image-webp repositories, the CI log of run 37196745804, and re-runs of the spike on the same M4 Max (load average about 4–5).
+
+**Confirmed.**
+
+- All crate versions, release dates and licences in the stack table match crates.io (`image` 0.25.10, `fast_image_resize` 6.1.0, `ravif` 0.13.0, `rav1e` 0.8.1, `libwebp-sys` 0.14.4, `mozjpeg-rs` 0.9.2, `blake3` 1.8.7). `webp` 0.3.1 depends on `libwebp-sys ^0.9.3`, whose newest 0.9.x (0.9.6) vendors libwebp 1.3.1 (`vendor/NEWS`). `libwebp-sys` 0.14.4 vendors libwebp 1.6.0 (`vendor/README.md` banner, `WEBP_ENCODER_ABI_VERSION 0x0210`) and its build dependencies are `cc`, `glob`, `pkg-config` and an optional `bindgen`, with no cmake. sharp 0.34.5's `versions.json` lists webp 1.6.0, aom 3.13.1, vips 8.17.3.
+- End-to-end re-run (`imgspike pipeline ravif:speed=6,q=72 libwebp:q=80 mozjpegrs:q=80`): 2.38–2.56 s at 1 thread, 0.69–0.72 s at 4, 0.24–0.26 s at 16. sharp re-run: 4.20–4.46 s single-core (`/usr/bin/time`: 4.35 s real, 4.33 s user), 1.43–1.44 s with 4 workers, 0.59–0.61 s with Astro's scheduling. sharp's AVIF bytes are 314,484 single-threaded and 321,378 under Astro scheduling, as stated.
+- WebP: `cmp` of `out/libwebp-q80` against sharp's encode-only output `out/sx-webp-q80` shows all 20 files byte-identical. JPEG: decoding `mozjpegrs-fast-q80` and `sx-jpeg-q80` with sharp gives identical raw pixels for all 20; `jpeg-encoder` differs on all 20.
+- AVIF quality re-scored: ravif s6 q72 73.80 (min 68.22), aom e4 73.56, aom e2 73.78, matching the table.
+- libvips 8.17.3 `vips2jpeg.c` lines 578–582 set `JCP_FASTEST` before `jpeg_set_defaults`. ravif 0.13.0 `av1encoder.rs` lines 652–654 compute `tiles = threads.min(area / min_tile_size²)`; ravif always passes 4:4:4 (`ChromaSampling::Cs444`). rav1e 0.8.1 `build.rs` panics with "NASM build failed" and its README requires nasm ≥ 2.14.02. `mozjpeg-sys` 2.2.3 `build.rs` prints "NASM not installed. Mozjpeg's SIMD won't be enabled". `libavif-sys` 0.17.0 and `libaom-sys` 0.17.2 both build-depend on `cmake`. `rav1e` ships the AOMedia Patent License 1.0 in `PATENTS`; `mozjpeg-rs` LICENSE carries the IJG sentence.
+- image-webp: PR #161 merged 2025-10-19; #187 and #188 closed unmerged; #192 open; issue #191 open; `main` is still at f4d80bd (2026-04-08), and crates.io's latest is 0.2.4. The spike's usage (`use_lossy = true`, `lossy_quality`) matches the issue's reproduction, so the corrupt output is not a harness bug.
+- Zola `helpers.rs` hashes `input_src` with `DefaultHasher`; `processor.rs` skips work when `output_path.exists() && !ufs::file_stale(...)` (the staleness helper lives in Zola's `utils::fs`).
+- CI log: the per-transform times parse to AVIF 25.56 s, WebP 1.15 s, JPEG 0.34 s (72 transforms, 9.34 s wall); the four slowest AVIFs sum to 17.78 s, and none of their hashes (`_2jt9Hr`, `_1g7VLM`, `_2iCTzw`, `_Z5jz5v`) appears in eyuan.me's built `dist/about/index.html`, which references only the 20 width variants.
+
+**Corrections.**
+
+1. **The 70% figure is contended wall time, not CPU.** Astro runs four per-photo chains at once on four vCPUs, and the full-size AVIFs are the first transform of each chain, so they ran while every chain competed for the CPU. On one core (sharp, `UV_THREADPOOL_SIZE=1`, `sharp.concurrency(1)`), the 20 width AVIFs take 3.68 s and the 24 AVIFs including full size take 10.08 s, so the full-size four are **about 64%** of AVIF CPU. The conclusion is unchanged: they are the largest single cost and nothing references them.
+2. **CI estimate: about 2 s, range 1.5–2.5 s.** With the 64% share, the width AVIFs are about 9 s of summed CI time, not 7.8 s; the same ratio method then gives about 2.2 s. A second method agrees: CI ran 72 transforms whose single-core local cost is 11.4 s in 9.34 s of wall time, and scaling the Rust stack's 2.47 s by the same factor gives about 2.0 s if Rust parallelises no better than Astro (rayon over 60 independent jobs should do better). The x86_64 measurement in open question 1 is still needed.
+3. **"4 tiles cost only +0.3% in bytes" is for all 60 outputs.** For AVIF alone the 4-tile output is 361,533 B against 357,554 B for one tile, **+1.1%**, so the deterministic setting is about **14%** larger than aom effort 4 (318,188 B), not 12%. Quality is unchanged (73.80, min 68.10).
+4. **`with_num_threads(Some(k))` builds a new rayon pool for every encode.** ravif passes `k` to `rav1e::Config::with_threads`, and rav1e's `new_thread_pool` (`src/api/config/mod.rs` ~L258–268) then calls `ThreadPoolBuilder::new().num_threads(k).build()` per encoder. With the global pool at 1 thread, the fixed-4 run still finished 20 encodes in 1.04 s wall against 2.23 s, so it was not single-core; at 16 threads, N outer jobs each spawn k more threads. Determinism actually comes from the **tile count**, which ravif ties to the thread count. The Engine should fix `EncoderConfig::tiles` and leave threads on the shared pool: call `rav1e` directly (ravif's AVIF wrapping is a thin layer over `avif-serialize`), or upstream a `with_tiles` option to ravif. This is a refinement, not a reversal: the measured 0.40–0.50 s (4 threads) and 0.33 s (16) for the fixed-4 configuration are the current worst case.
+5. **`jpegli-rs` 0.12.0 is `AGPL-3.0-or-later` only**, with no commercial option on crates.io (the `zen*` crates are `AGPL-3.0-only OR LicenseRef-Imazen-Commercial`). It stays excluded.
+
+**Additions.**
+
+- **Licence drift risk for `mozjpeg-rs`.** It is published by Imazen, the publisher of the AGPL `zen*` crates. Its `main` (unreleased 0.10.0, pushed 2026-09-29) is still `BSD-3-Clause`, but pin the version and let the `cargo-deny` allowlist catch any relicence; `jpeg-encoder` is the fallback (about 1 SSIMULACRA2 point lower at the same size).
+- **Not considered by the spike: libvips bindings (`libvips` 2.3.0, MIT bindings).** They would reproduce sharp's output exactly, but they link a system libvips (LGPL-2.1+) and its whole C dependency tree, which defeats ADR 0002's single prebuilt binary. They are not a better option here.
+- **Fastest-possible AVIF is still libaom.** aom effort 2 matches ravif s6 at a quarter of the CPU. The recommendation trades that speed for a C-free AVIF build, which is reasonable while the whole cold step is about 2 s, and the reserve plan covers the switch.
+
+**Verdict.** The recommendation holds, with the tile-count refinement in correction 4 and the adjusted CI estimate (about 2 s cold).
+
+**New open questions.**
+
+10. Fix rav1e tiles while sharing the Engine's rayon pool: call `rav1e` directly or upstream a ravif `with_tiles`? Measure the gain over `with_num_threads(Some(4))` at 4 and 16 threads.
