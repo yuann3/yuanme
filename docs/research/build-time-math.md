@@ -174,3 +174,24 @@ Throwaway code lives in `/private/tmp/mathspike`. `spike/` holds math-core, pull
 Each engine rendered the corpus in order as one "document": config macros `\R`, `\C`, and `\newcommand` persisting into later snippets where supported. We counted a case as passed when it rendered without error, and checked the key cases by eye in WebKit.
 
 Corpus ids: inline-quadratic, inline-sets, fonts (`\mathcal`/`\mathscr`/`\mathfrak`/`\mathbb`/`\boldsymbol`), accents (incl. `\widehat`, `\widetilde`, `\vec`), bigops, limits (`\limsup`, `\varinjlim`), delims (`\left\langle`, `\middle|`, `\bigl`…`\Biggl`), binom (`\binom`, `\dfrac`, `\tfrac`, `\cfrac`), arrows (`\xrightarrow`, `\hookrightarrow`, `\overset`), braces (`\underbrace`, `\overbrace`, `\substack`), boxed-phantom (`\boxed`, `\operatorname*`), cases, dcases, matrices (p/b/v/V/B), big-matrix (with `\cdots`/`\vdots`/`\ddots`), smallmatrix, array (with `|` and `\hline`), aligned, align-star, align-numbered (`\label`, `\notag`, `\tag{A}`), tag-math-arg (`\tag{$\ast$}`), equation-label, eqref, ref, eqref-forward, equation-later, tag (top-level `\tag`), gather, multline, split, alignat, cd, newcommand-def, newcommand-use-later, config-macro, declaremathop, sideset, text-nested (`\text{… \(x\)}`), colors, coloneqq (`\coloneqq`, `\pmod`, `\hom`, `\ker`).
+
+## Verification
+
+Independent re-check on 2026-10-04. **The recommendation holds:** math-core 0.8.x, MathML Core output, katex-rs as the documented fallback. Confirmed against primary sources:
+
+- `convert_all` resolves forward references because "all snippets need to be parsed first and can only then be emitted" ([docs.rs](https://docs.rs/math-core/0.8.2/math_core/struct.LatexToMathML.html#method.convert_all)). The spike output has `<a href="#eq:later"><mtext>(3)</mtext></a>`, so numbers are static text.
+- The spike logs match the claimed pass rates and timings exactly (math-core 28/40 at 1.922 µs, katex-rs 30/40 at 37.5 µs, MathML-only 16.0 µs, Temml 37/40 at 321 µs, KaTeX in QuickJS 794 µs).
+- RFC 3958 "Rustdoc LaTeX math" was merged on 2026-09-06 (rust-lang/rfcs#3958). It uses math-core and calls KaTeX in QuickJS "slow" with "poor error reporting". Its default font is Noto Sans Math.
+- `katex.min.css` 0.19.0 (published 2026-10-01) contains `.katex .eqn-num:before{content:"(" counter(katexEqnNo) ")"…}`. KaTeX's supported list does not mention `\label`, `\ref` or `\eqref`.
+- Temml docs: "If Temml is used server-side, `\ref` and `\eqref` are still implemented at runtime with client-side JavaScript."
+- MathML is Baseline widely available since 2025-07-12 (web-features). The Interop team declined "Mathematics Rendering" on 2026-02-12, and the issue was closed on 2026-02-19.
+- NVDA's MathCAT integration (nvaccess/nvda#18323) was merged on 2025-11-17 for milestone 2026.1.
+- The phf build failure reproduces with `cargo build` in `/private/tmp/mathspike/both`.
+
+Corrections and additions:
+
+1. **math-core activity was understated.** It has 508 commits since 2026-04-01, not 100. The earlier count hit the API's 100-per-page cap. Contributors: tmke8 has 1,445 commits, Jules-Bertholet 63 and notriddle 29. The 8 releases since 2026-04-22 (0.6.1 to 0.8.2) are correct.
+2. **Root cause of the phf conflict.** math-core turns on phf's **`ptrhash`** feature, which is not additive: under `cfg(feature = "ptrhash")`, `phf::Map` gains `pilots` and `remap` fields (`phf-0.14.0/src/map.rs`). The `phf_map!` code in katex-rs's build script does not use it. Feature unification therefore breaks katex-rs. Either crate could fix this upstream with a one-line feature change (katex-rs enables `ptrhash`, or math-core makes it optional), so the conflict is cheaper to clear than "needs upstream fixes" suggests.
+3. **`multline` is supported in math-core 0.8.2.** The spike renders it correctly: first row left, last row right, number on the last row. The checklist in [math-core#154](https://github.com/tmke8/math-core/issues/154) still shows it unchecked, so that checklist is out of date and should not be used as the source for coverage.
+4. **pulldown-latex has moved** to [Carlosted/pulldown-latex](https://github.com/Carlosted/pulldown-latex) (crates.io `repository`). The old `carloskiki` URL still resolves.
+5. **A candidate that was missed but is not a contender.** `lo_math` 0.5.3 (MIT, "LaTeX formula parser with MathML and ODF emission") is a component of the `clark-labs-inc/libreoffice-rs` port and targets LibreOffice formulas. We did not evaluate it, and nothing suggests it supports `\label`/`\eqref`.
