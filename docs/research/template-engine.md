@@ -186,3 +186,20 @@ This does not separate the two. The Engine's dev server already has to watch con
 3. Should the Engine start on minijinja 2.24 or wait for 3.0? 3.0 changes the `Value`/serde integration that the Engine's content model will touch, and it is still alpha (2026-09-23).
 4. Escaping parity: should Astro's attribute-context scheme be reproduced with a filter, or written down as a Parity exception? This depends on inventory question 19.
 5. Run an Agent eval with a few template tasks (add a component with a slot, add a Collection list page) against minijinja-style docs. It would confirm the familiarity claim with data instead of argument. Running it against Tera 2 as well would settle the runner-up.
+
+## Verification
+
+An independent re-check on 2026-10-04 confirmed the recommendation against crates.io, the GitHub API, the published crate sources (`~/.cargo/registry`, minijinja 2.24.0 and 3.0.0-alpha.2, tera 2.4.0, minijinja-autoreload 2.24.0, pulldown-cmark-escape 0.11.0), the upstream changelogs and a re-run of the spike.
+
+Confirmed:
+- Versions and dates: minijinja 2.24.0 (2026-08-12), 3.0.0-alpha.2 (2026-09-23); tera 2.0.0 (2026-06-26) to 2.4.0 (2026-09-11) ([crates.io API](https://crates.io/api/v1/crates/tera/versions)).
+- Tera 2's `mod parsing` is private (`src/lib.rs:77`), and `get_template_variables` documents "top level variables" only. minijinja's `machinery::{parse, ast, Span, …}` is still exported under `unstable_machinery` in 3.0.0-alpha.2, and `undeclared_variables(nested)` is still there.
+- The schema-check walker (`src/bin/schema_check.rs`, 131 lines) reproduces the three `unknown field` lines exactly.
+- Escaping: the spike uses tera's `fast` feature, which swaps in `pulldown-cmark-escape`. Version 0.11.0 also maps `'` to `&#39;`, so the byte-for-byte match with html-escaper holds on that path too. minijinja's `&#x27;`/`&#x2f;` are in `src/utils.rs`, and `set_debug` defaults to `cfg!(debug_assertions)`.
+- Maintenance: minijinja has 125 commits since 2026-07-04, 18 open issues and 3 open PRs. tera has 48 commits and 5 open issues. Zola 0.23.0 (2026-08-05) "updated to v2" and removed shortcodes. `minijinja-autoreload` has `default = ["watch-fs"]`.
+- Benchmarks: re-run three times under a load average of 23–40 from other jobs on the machine. The 300-post component list took minijinja 364–413 µs and tera 204–239 µs, a ratio of 1.6–1.9×. Serializing the context with serde on every render added 70–95 µs to both engines. The absolute numbers vary with load, but the ratio and the conclusion hold.
+
+Correction:
+- **Keyword-only filter arguments are not new in Tera 2.** Tera 1 already required them; its docs say "macros, like filters, require keyword arguments" ([Tera v1 docs](https://github.com/Keats/tera/blob/v1/docs/content/docs/_index.md)). Tera 2 changed **tests** to keyword-only ([MIGRATION.md](https://github.com/Keats/tera/blob/master/MIGRATION.md): "tests now always take keyword arguments"). It also removed macros, renamed filters and dropped `x.0`. The point that Tera diverges from Jinja2 still stands, but only part of that divergence started in June 2026. This does not change the recommendation.
+
+No candidate was missed. The crates.io `template-engine` category and a `jinja` search turn up only compiled engines (askama), non-Jinja engines (handlebars, liquid, tinytemplate) and the candidates already listed.
