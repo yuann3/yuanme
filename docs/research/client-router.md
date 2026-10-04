@@ -14,7 +14,7 @@ The Reference site's Shell keeps the rail, the Panel frame and the WebGL Film ca
 
 - emit a `before-swap` event whose `swap` the Site can override, plus `after-swap` and `page-load`;
 - default to `focusReset: 'manual'` and `scroll: 'manual'`, and restore the panel scroll from entry state;
-- adopt redirects through `precommitHandler` + `controller.redirect()` where available, otherwise through `history.replaceState` after the swap;
+- adopt redirects through `precommitHandler` + `controller.redirect()` where available (only on cancelable, non-traverse events; see [Verification](#verification)), otherwise through `history.replaceState` after the swap;
 - prefetch with `<link rel=prefetch>` on hover, not Speculation Rules.
 
 Cross-document `@view-transition` stays available as a separate, zero-JS option for Sites that have no persistent canvas.
@@ -117,6 +117,16 @@ Limits: Playwright's Firefox 155 build would not launch in this environment ("Co
 
 `npm i @hotwired/turbo@8.0.23 swup@4.10.0 @swup/{head,scroll,preload,a11y}-plugin @barba/core htmx.org@2.0.11`. The entries were a bare import (Turbo, htmx), `new Swup({containers:['[data-panel-content]']})` with or without the four plugins, and `barba.init({})`. Each was built with `esbuild --bundle --minify --format=esm` and then compressed with `gzip -9c` and `brotli -q 11`. The Astro figures come from the Reference site's built `dist/` ([inventory §1][inv]: ClientRouter chunk 3,893/1,686/1,474 plus router chunk 11,582/4,086/3,644).
 
+## Verification
+
+An independent re-check on 2026-10-04 held the recommendation. What was re-checked, and what changed:
+
+- **Reproduced.** The BCD entries for `@view-transition`, `PageSwapEvent`/`PageRevealEvent`, `Window.pageswap_event` (Safari partial), `Navigation`, `NavigateEvent`, `NavigationPrecommitController`, `speculationrules` and `link rel=prefetch` match the text ([BCD main][bcdmain]). Browser release dates match: Firefox 147 on 2026-01-13, Safari 26.2 on 2025-12-12, Firefox 157 current, ESR 153. Mozilla bug 1860854 is `NEW` (last changed 2026-09-24) and bug 1881438 is `ASSIGNED` ([Bugzilla REST][bz1860854]). The npm versions and publish dates match (`npm view`). htmx also has a `4.0.0` release on its `next` tag, which changes nothing here. Rebuilding every entry in `/private/tmp/routerbench` with esbuild 0.28.2 gave the same minified and brotli sizes to the byte. Gzip came out within 4 B, because of the gzip header. The Astro figures add up from the inventory chunks (3,893 + 11,582 = 15,475; 1,474 + 3,644 = 5,118). The spike's `result.json` shows the logged evidence for each row of the spike table. The spec quotes (vt2 ED 31 August 2026) and the Chrome guide's four-second timeout and navigation-type list check out.
+- **Correction: Chrome versions.** `NavigateEvent.intercept()` and `scroll` shipped under those names in Chrome 105. Chrome 102-107 had them as `transitionWhile`/`restoreScroll`. `hasUAVisualTransition` is Chrome 118, `activation` 123 and `sourceElement` 135. "Chrome 102+" is right only for the `Navigation` interface itself. All of these predate any browser the Engine targets.
+- **Correction: `precommitHandler` in Safari.** BCD lists the `NavigationPrecommitController` interface as Safari Technology Preview, but lists the `intercept()` option `precommitHandler` as Safari `false`. Feature-detect the option, not just the interface. A check for `'NavigationPrecommitController' in window` can pass where the option is ignored.
+- **Bug in the spike router: `precommitHandler` on traversals.** `handrolled.js` passes `precommitHandler` to every intercepted navigation whenever `NavigationPrecommitController` exists, back/forward included. The HTML spec makes a traverse `navigate` event non-cancelable when the user goes back through browser UI and the page has no history-action activation. `intercept()` then throws if given a `precommitHandler`: "trying to pass a precommitHandler to a non-cancelable NavigateEvent will throw" ([HTML §7.2.6 Navigation API][htmlnav]). The note calls it a `SecurityError`, the algorithm an `InvalidStateError`, and MDN says `SecurityError`. In Chrome and Firefox, the listener would then throw and the same-document traversal would not be intercepted, so the URL would change but the Panel would keep the old page. The re-check could not reproduce this in Playwright, whose headless pages always report `userActivation.hasBeenActive`, so the spike's "back" rows don't cover it. **Fix:** pass `precommitHandler` only when `e.cancelable && e.navigationType !== 'traverse'`. A traversal goes to a URL the router has already adopted, so it never needs a redirect. Add this to the Engine router's test list, along with a check that `intercept()` errors fall back to `location.reload()` instead of leaving a stale Panel.
+- **No better option missed.** Moving the GL work into an `OffscreenCanvas` in a `SharedWorker` would keep the compiled program, but each new Document still needs its own on-screen canvas and a first frame, and `SharedWorker` is missing from Chrome for Android. It doesn't remove the reload. Iframe-based shells break URLs, history and indexing. Neither beats a same-document router.
+
 ## Open questions
 
 1. **Engine router name and event names.** The Reference site's scripts listen for `astro:before-swap`, `astro:after-swap` and `astro:page-load`. The Engine needs its own prefix, which depends on the project name, now under discussion. Keep an `astro:*` alias for porting, or rename film.ts and shell.ts once (inventory Q27)?
@@ -128,6 +138,8 @@ Limits: Playwright's Firefox 155 build would not launch in this environment ("Co
 7. **Real-browser Firefox check.** Re-run the spike on Firefox 157 stable on a desktop before the router lands.
 
 [bcd]: https://github.com/mdn/browser-compat-data/tree/d26d7c58d03d2e3d673261e529cbdad7689db401
+[bcdmain]: https://github.com/mdn/browser-compat-data
+[htmlnav]: https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigation-api
 [vt1]: https://drafts.csswg.org/css-view-transitions-1/
 [vt2]: https://drafts.csswg.org/css-view-transitions-2/#lifecycle
 [bz1860854]: https://bugzilla.mozilla.org/show_bug.cgi?id=1860854
