@@ -170,3 +170,20 @@ These are the decisions this research surfaced.
 5. **Subscripts in programmer prose.** `snake_case` parses as a subscript in Org unless `#+OPTIONS: ^:{}`. Should the Engine default to `^:{}` for programmers, and is that a Parity exception-style documented divergence?
 6. **CST representation.** Use rowan (as orgize does, with lossless round-trip and edit APIs useful for agent edits and #11 incremental rebuilds) or a plain arena with spans (as org-rust-parser does)?
 7. **Is organic's 50–100× slowdown cheap to fix?** It was not profiled. If it is, a fork of organic becomes a stronger alternative to writing our own.
+
+## Verification
+
+An independent re-check on 2026-10-04 re-ran the spike harness and re-queried the primary sources. The recommendation holds. Corrections and additions:
+
+- **Confirmed.**
+  - crates.io: orgize 0.10.0-alpha.10 (2024-06-11, MIT), organic 0.1.16 (2024-04-12, 0BSD), org-rust-parser 0.1.8 (2026-05-07, MIT, MSRV 1.91), windancer 0.1.3 (GPL-3.0).
+  - GitHub: the orgize `v0.10` branch's last commit is 2024-07-22, with 17 open issues and PRs and 47 forks. org-rust-parser's last commit (`fix: source block HTML generation (#12)`) is 2026-08-16.
+  - The organic forge shows no parser change since 2024-04-11. The one later `src/` touch, on 2024-09-30, only removed `#![feature(is_sorted)]` and added a clippy `allow`.
+  - Emacs 31.1 reports Org 9.8.7 with 30 element and 24 object types. `Let $a$, then $b$. And $d$-th and $c$ here` yields `$a$ $b$ $c$`, so `$d$-th` is not a fragment.
+  - `score.py` reproduces 88.32% / 99.99% / 82.58% over 24,536 nodes.
+  - The orgize harness reproduces the `$a$,` miss (only `$c$` is a fragment), `#+CAPTION` table → `PARAGRAPH`, and `#+NAME`d equation → `PARAGRAPH` with `LATEX_FRAGMENT`.
+  - The orgize POST check is at `src/syntax/latex_fragment.rs:116-121`. organic's `lib.rs` (as published in 0.1.16) has 7 `#![feature]`s. org-rust-parser hard-codes `["TODO", "DONE"]` at `src/element/heading.rs:11`.
+- **Correction: absolute timings are about 3× too high; the ratio stands.** Re-running the same bench binaries on the same M4 Max gave, for 16 KB / 88 KB / 887 KB: organic 6.6–7.3 / 36–39 / 366–407 ms, orgize 0.10–0.11 / 0.54 / 6.5 ms, org-rust-parser 0.22 / 1.3 / 13.4 ms. organic is still about 55–75× slower than orgize. However, "roughly 20 ms for a 16 KB post" should read "roughly 7 ms". That makes organic's speed a weaker objection for typical posts, but not for cold builds of large Sites.
+- **Addition: organic aborts the whole parse on a missing `#+SETUPFILE`.** Running the bench on `org-manual.org` from a directory where `doc-setup.org` was not resolvable failed the entire parse with `Parsing Failure: IO(... NotFound)`, with no partial tree. Emacs only warns in that case. A vendored organic fallback would need this changed, so that an Engine diagnostic with a span is reported instead.
+- **Option not discussed: shelling out to Emacs at build time** (the ox-hugo style, with `org-element` as the parser itself). That gives perfect fidelity by definition, but it conflicts with ADR 0003's "one binary" toolchain goal and adds Emacs startup time to every build. It stays an oracle for fixtures, not a runtime dependency.
+- **Crates search re-run** (crates.io, `org-mode`/`orgmode`/`org parser`/`org-syntax`, sorted by recent updates). It found no new general-purpose parser. `ikigai-org`, `vix-org` (regex-based), `markdown-org-extract`, `org-rust` (org-rust-parser's CLI) and `orgrender` (built on orgize) are agenda tools, editors or wrappers.
