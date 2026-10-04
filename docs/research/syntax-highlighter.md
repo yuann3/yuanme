@@ -51,6 +51,7 @@ Sources for the maintenance row: the crates.io API (`/api/v1/crates/<name>`) and
 Two newer TextMate options were also checked and rejected:
 - **[shiki](https://crates.io/crates/shiki) 0.0.7** (2026-07-26, MIT/Apache) is a TextMate engine on Oniguruma. It has 0 GitHub stars, ~570 downloads, and docs.rs reports 13% documentation coverage ([docs.rs](https://docs.rs/crate/shiki/latest)). Too young.
 - **[zalo](https://crates.io/crates/zalo) 0.3.18** is a one-person EUPL-1.2 fork of giallo with 0 stars. No reason to prefer it over upstream.
+- **[ferriki](https://crates.io/crates/ferriki) 0.10.0**, **[irosashi](https://crates.io/crates/irosashi) 0.2.0** and **[syntaxmate](https://crates.io/crates/syntaxmate) 0.2.1** were found during verification. All are MIT or MIT/Apache TextMate engines, weeks old, with 0 to 3 stars. ferriki was spiked; see Verification.
 
 ## Details
 
@@ -78,7 +79,7 @@ With `merge_whitespace(false)`, and adjacent tokens merged when their (light col
 ### Class-based light/dark markup
 
 - giallo's built-in class mode writes two classes per span (`class="g-l-9 g-d-9"`), plus two small stylesheets of one rule per distinct colour (830 bytes each for Latte and Mocha†) ([src/themes/css.rs](https://github.com/getzola/giallo/blob/master/src/themes/css.rs)).
-- Its default inline mode uses CSS `light-dark()` ([README, HTML renderer](https://github.com/getzola/giallo#html-renderer)). That cannot follow a manual theme toggle, as the README says. An [open issue (#61)](https://github.com/getzola/giallo/issues/61) asks for `light-dark()` in generated CSS.
+- Its default inline mode uses CSS `light-dark()` ([README, HTML renderer](https://github.com/getzola/giallo#html-renderer)). The README says this does not suit a manual light/dark switch, but `light-dark()` follows the element's `color-scheme`, so a toggle that sets `color-scheme` does drive it (see Verification). An [open issue (#61)](https://github.com/getzola/giallo/issues/61) asks for `light-dark()` in generated CSS.
 - On the Reference site's largest code page (`/blog/extending-c-stdlib/`, 29 blocks), the code markup measured†:
   - Shiki today (inline `style` with `--shiki-dark` vars): 105,814 B.
   - giallo inline `light-dark()`: 98,216 B.
@@ -128,7 +129,7 @@ Authors install one prebuilt binary (ADR 0002, ADR 0003), so this matters. It ru
    - It handles `plaintext`, trailing-newline stripping and the `<span class="line">` structure the inventory specifies.
 3. Let Authors add VS Code / TextMate JSON grammars and themes from their Site directory at runtime through the same `add_*_from_path` calls.
 
-Fallback if the EUPL licence is rejected: syntect + two-face + the official Catppuccin tmThemes, with Reference site highlighting declared a Parity exception (~80% colour agreement). Revisit the MIT/Apache `shiki` crate once it matures.
+Fallback if the EUPL licence is rejected: syntect + two-face + the official Catppuccin tmThemes, with Reference site highlighting declared a Parity exception (~80% colour agreement). Revisit the MIT/Apache `shiki` and `ferriki` crates once they mature. ferriki already matches Shiki span for span but is currently far too slow (see Verification).
 
 ## Method (spike, throwaway, in `/private/tmp/hlspike`)
 
@@ -153,3 +154,31 @@ All on rustc 1.99.0, macOS arm64.
 - **Markup.** Should the Reference site switch from Shiki's inline-style markup to class-based markup (−62% code markup on the largest page)? This is inventory open question 18, now answerable in favour of classes.
 - **Org source blocks.** How do Org `#+BEGIN_SRC` language names map onto TextMate grammar names and aliases (for example `emacs-lisp`, `sh`, `lean4`)?
 - **Upstream dependence.** Should the Engine depend on giallo's crates.io releases, or vendor it given the single maintainer and the `onig-regset` fork?
+
+## Verification
+
+Independent re-check on 2026-10-04. The recommendation holds. Every key number was reproduced from the spike's outputs, and every external fact was re-read from its primary source. Corrections and additions:
+
+**Confirmed as stated.**
+- Fidelity: re-running `compare.py` gives giallo 100% on eyuan.me code (299/299 lines) and on every sample except Haskell (31.8%), syntect 79.8%, arborium 36.7%, with arborium missing Coq and LaTeX.
+- Haskell: re-running the `pin` binary (Shiki 3.19's Catppuccin JSON loaded with `add_theme_from_path`) gives 368/368 characters.
+- The Shiki reference is the only Shiki in eyuan.me (`node_modules/shiki` 3.19.0). `@shikijs/langs` pins `tm-grammars ^1.26.0`, `@shikijs/themes` pins `tm-themes ^1.10.13`.
+- Binary sizes match the files in `size/target/release` (base 302,736 B, giallo 2,553,216 B, syntect + two-face 1,924,960 B, arborium Lean 19,990,080 B, all languages 167,672,448 B).
+- Markup: `dist/blog/extending-c-stdlib/index.html` has 29 `astro-code` blocks totalling 105,814 B.
+- crates.io: giallo 0.5.2 (EUPL-1.2, releases 06-01, 06-22, 07-17, 08-03, 08-06); syntect 5.3.0 on 2025-09-27 and nothing since; arborium 2.18.2 on 2026-08-28; tree-sitter-highlight 0.27.0 on 2026-08-30. No `tree-sitter-coq` or `tree-sitter-rocq` crate exists.
+- GitHub: giallo has 132 stars and Keats has 57 of 65 commits; the last commit is 2026-09-05. Zola's workspace `Cargo.toml` (0.23.6) depends on `giallo = {version = "0.5", features = ["dump"]}`. syntect's CHANGELOG "Unreleased" section lists breaking changes.
+- The giallo README, `src/tokenizer/mod.rs` line 1, `HtmlRenderer.css_class_prefix`, `Registry::generate_dual_css`, `merge_whitespace`, `add_*_from_path`, `dump`, and the `can_tokenize_like_vscode_textmate` / `can_highlight_like_vscode_textmate` tests all exist as cited.
+
+**Corrections and caveats.**
+- **664/664 leaves out Haskell.** The non-plaintext corpus has 687 lines. 664 is that total minus the 23-line Haskell sample, which used giallo's newer built-in theme. With the built-in themes, the span-level count is 674/687.
+- **Why the merge rule works.** Shiki 3.19's dual-theme tokens never contain two adjacent tokens with the same (light, dark, italic) style: 0 such pairs in the whole corpus. Equal-style neighbours are merged before Shiki emits them. So merging giallo's tokens on exactly that triple reproduces Shiki's token list. Any further merging in the Engine, such as leaving default-coloured text unwrapped, saves markup but breaks the one-to-one match with Shiki's spans. That is a parity decision.
+- **The speed numbers are not like-for-like.** giallo was timed rendering dual-theme inline HTML. syntect was timed producing classed HTML, which does no theme resolution. arborium was timed on `highlight` alone. The "about 2×" in [giallo#40](https://github.com/getzola/giallo/issues/40) comes from the jQuery file. On a 300-line TypeScript sample the same thread reports 42.6 ms for giallo against 7.7 ms for syntect (with its JS syntax), about 5.5×. Expect 2 to 5× depending on the grammar. That is still small for the Engine's workloads.
+- **`light-dark()` can follow a manual toggle.** CSS `light-dark()` resolves against the element's used `color-scheme` ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark)). A toggle that sets `color-scheme: light` or `dark` on the root therefore drives giallo's inline mode. The README's warning is about `prefers-color-scheme`-only setups. Classes remain the better choice for markup size.
+- **Missed option: ferriki.** [ferriki](https://github.com/sebastian-software/ferriki) 0.10.0 (MIT OR Apache-2.0) is a Rust TextMate engine on [ferroni](https://github.com/sebastian-software/ferroni), a pure-Rust Oniguruma (BSD-2-Clause), so it needs no C compiler. It is tested against a pinned vscode-textmate oracle and Shiki's own test suite, and it has a dual-theme token API (`Highlighter::highlight_with_themes`). A spike on the same 62 blocks (`/private/tmp/hlspike/ferspike`, its repo's `assets/shiki` at tag v0.10.0) found:
+  - 100% colour-and-italic agreement with Shiki 3.19, and raw tokens identical span for span with no merge pass (except Haskell at 31.8%, the same theme-version difference as giallo).
+  - About **3 s per pass** against giallo's 14.5 ms, roughly 200× slower. The 294-byte Julia sample alone took about 5 s. The C blocks from eyuan.me took 70 to 150 ms each.
+  - Its `Highlighter` is `!Send`, so each thread needs its own.
+  - It was first published to crates.io on 2026-09-28, had 11 releases in 6 days, has 1 GitHub star, and one human author (271 commits, plus 41 co-authored by Claude).
+  - Not viable today. It is the strongest licence-clean alternative to watch, and if its speed is fixed it would beat syntect as the EUPL fallback, since it keeps exact parity.
+- **Other new crates.** [irosashi](https://github.com/frostybee/irosashi) 0.2.0 (MIT, first published 2026-09-16, 0 stars, one author) and [syntaxmate](https://github.com/phongndo/syntaxmate) 0.2.1 (MIT, 2026-08-02, 3 stars, one author) also claim TextMate/VS Code output. Both are too young to assess. They were not spiked.
+
