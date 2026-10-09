@@ -52,3 +52,25 @@ A deliberate, written-down difference between the Reference site and its Astro p
 **Agent eval**:
 The fixed suite of Author prompts run against a fresh coding agent that has only yuanme's docs, scored on success, number of turns and performance budgets.
 _Avoid_: benchmark (that is for speed)
+
+**Scale Site**:
+A committed, generated Site of about 1,000 Posts in both Source formats, used alongside the Reference site to measure how the Engine behaves at size.
+_Avoid_: stress test, large fixture
+
+### Performance budgets
+
+**Budget**:
+A numeric limit on one measurable property of a Site or of a build, such as JS bytes per page or warm build time.
+_Avoid_: target, SLO
+
+**Gate**:
+A Budget enforced in the Engine's own CI on the Reference site, the Starters or the Scale Site. Breaching it fails the change.
+_Avoid_: hard cap, check
+
+**Site budget**:
+A Budget applied to an Author's Site. Breaching it is a warning unless the Author opts into strict mode, and the Author can override any number.
+_Avoid_: limit, quota
+
+**Acknowledged overage**:
+An Author's named, per-page allowance above a Site budget. It silences that warning but stays listed in the build report.
+_Avoid_: exception (that word belongs to Parity exception), waiver
