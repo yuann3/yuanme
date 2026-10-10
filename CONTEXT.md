@@ -18,6 +18,10 @@ _Avoid_: app, dist (the folder name, not the concept)
 The person who owns a Site, whether they build it by hand or by prompting a coding agent.
 _Avoid_: user (ambiguous with Site visitors), customer
 
+**Site config**:
+The one file at the root of an Author's project that declares the Site: its metadata, Collections, Taxonomies and Engine settings.
+_Avoid_: settings, configuration file (unqualified)
+
 **Starter**:
 A minimal ready-made Site the Engine can create for a new Author to begin from.
 _Avoid_: theme, template (a template is a rendering file)
@@ -36,9 +40,36 @@ _Avoid_: org support (unqualified)
 A named group of content files sharing one schema, such as posts, projects or talks. Authors define their own Collections.
 _Avoid_: content type, section
 
+**Entry**:
+One content file in a Collection. It has the fields every Entry shares plus the ones its Collection declares.
+_Avoid_: item, document, page (a page is what a visitor loads)
+
 **Post**:
-An entry in a blog Collection, written in either Source format.
-_Avoid_: article, entry
+An Entry in a blog Collection, written in either Source format.
+_Avoid_: article
+
+**Slug**:
+The URL-safe name of an Entry or Term, unique within its Collection or Taxonomy. Two things that would share a Slug are a build error.
+_Avoid_: id, permalink
+
+**Draft**:
+An Entry that is still being written. It appears while the Author previews the Site and is absent from the published Site.
+
+**Unlisted**:
+An Entry that is published and reachable by its URL but left out of every list, Taxonomy, feed and sitemap.
+_Avoid_: hidden, private (nothing on a Site is private)
+
+**Taxonomy**:
+A named way of grouping Entries by a shared value, such as tags or series. Authors declare their own Taxonomies.
+_Avoid_: category (that is one possible Taxonomy), tag system
+
+**Term**:
+One value in a Taxonomy, such as the tag `rust`. Spellings with the same Slug are the same Term.
+_Avoid_: tag (unless the Taxonomy is tags), label
+
+**Data file**:
+A file of structured data that belongs to the Site but is not an Entry, such as a résumé or navigation links.
+_Avoid_: content file, config
 
 ### Proving it works
 
