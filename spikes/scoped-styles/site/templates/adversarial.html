@@ -1,0 +1,19 @@
+{# Not a Reference page. Slot content and a sibling that reuse every class name the sidecars style. #}
+{% extends "layouts/shell.html" %}
+{% from "components/photo_pile.html" import photo_pile %}
+{% from "components/pagination.html" import pagination %}
+{% from "components/list_row.html" import list_row %}
+{% set title = "Adversarial" %}
+{% block content %}
+  {% call photo_pile(photos=data.photos) %}
+    <div class="pile" data-md><div class="pile-stage"><figure class="photo photo-tall"><img src="/x.jpg" alt=""><figcaption>slot caption</figcaption></figure></div></div>
+    <div class="about-body" data-md><em>slot em</em></div>
+  {% endcall %}
+  <div data-md>
+    <a class="row row-link project list-row" href="#"><span class="project-name">x</span><span class="project-year">y</span><span class="row-arrow project-arrow list-row-arrow">→</span></a>
+    <nav><a class="page-link meta-link text-ink-2" href="#">p <span class="meta-arrow">↗</span></a></nav>
+    <article class="project-body"><h1>page-level h1</h1><em>page em</em></article>
+  </div>
+  <ul>{{ list_row(href="/a", title="A", meta="m") }}</ul>
+  {{ pagination(prev="/p", next="/n") }}
+{% endblock %}

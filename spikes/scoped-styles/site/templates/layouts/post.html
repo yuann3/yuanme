@@ -1,0 +1,26 @@
+{% extends "layouts/shell.html" %}
+{% from "components/panel_header.html" import panel_header %}
+{% from "components/formatted_date.html" import formatted_date %}
+{% set title = entry.title %}
+{% set description = entry.description %}
+{% set section = "writing" %}
+{% set image = entry.og_image|default("/og-image/" ~ entry.slug ~ ".png") %}
+{% set article_date = entry.modified %}
+{% block content %}
+  {{ panel_header(title=entry.title) }}
+  <div data-reveal-group>
+    <p class="label-mono flex flex-wrap gap-x-6 gap-y-2 text-muted" data-reveal>
+      {{ formatted_date(date=entry.date) }}
+      {% if entry.updated %}<span>Updated {{ formatted_date(date=entry.updated) }}</span>{% endif %}
+      <span>{{ entry.reading_time }} min read</span>
+      {% if entry.draft %}<span>Draft</span>{% endif %}
+      {% if entry.series %}<a href="/series/{{ entry.series }}/" class="meta-link text-ink-2">{{ entry.series }}</a>{% endif %}
+      {% for tag in entry.tags %}<a href="/tags/{{ tag }}/" class="meta-link text-ink-2">#{{ tag }}</a>{% endfor %}
+    </p>
+    <article class="prose-panel mt-10" data-copy-code data-reveal>
+      {% if entry.hero %}<img src="{{ entry.hero.src }}" alt="{{ entry.hero.alt|default('') }}" />{% endif %}
+      {% block body %}{{ entry.content }}{% endblock %}
+    </article>
+  </div>
+  {% block after_article %}<!-- end of post -->{% endblock %}
+{% endblock %}
