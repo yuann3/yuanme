@@ -8,7 +8,7 @@ ADR 0002 promises that templates are validated against the content schema at bui
 
 ## Verdict
 
-**Yes, with four gaps.** A 1,000-line AST walker (`src/check.rs`) checks the ported Reference templates without rendering them.
+**Yes, with four gaps.** A 1,400-line AST walker (`src/check.rs`) checks the ported Reference templates without rendering them.
 
 - It caught **45 of 48** seeded mistakes, each as `file:line:col: message`, most with a did-you-mean.
 - It raised **0 false positives** on the 18 ported templates, and 1 on 30 extra legitimate idioms.
@@ -45,7 +45,7 @@ Run with `cargo run --release -- <command>`. `render` writes pages to `out/` (ig
 | Render, SemiStrict | 29 / 48 |
 | Render, Strict (errors beyond its baseline) | 27 / 48 |
 
-`check` alone caught 19 mistakes that a SemiStrict render let through, among them:
+`check` caught 17 mistakes that a SemiStrict render let through, among them:
 
 - a typo swallowed by `| default`, and one in a branch the Entries never reach;
 - a macro body reading `entries` from the importer's context (minijinja leaks it, so the page renders);
