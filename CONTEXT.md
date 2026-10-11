@@ -71,6 +71,32 @@ _Avoid_: tag (unless the Taxonomy is tags), label
 A file of structured data that belongs to the Site but is not an Entry, such as a résumé or navigation links.
 _Avoid_: content file, config
 
+### Rendering
+
+**Template**:
+A file the Engine fills with content to produce a Page or part of one.
+_Avoid_: view, theme (a Starter is the ready-made Site)
+
+**Layout**:
+A Template that other Templates extend, holding the structure they share.
+_Avoid_: base, wrapper
+
+**Component**:
+A reusable piece of a Template that takes declared inputs and can carry its own styles and scripts.
+_Avoid_: widget, macro (that is how it is written, not what it is), island
+
+**Partial**:
+A piece of a Template included as-is, which reads whatever the including Template can see.
+_Avoid_: include, snippet
+
+**Route**:
+One URL of a Site together with what produces it: an Entry, a list, a Term, or a Template alone.
+_Avoid_: path (the URL alone), endpoint
+
+**Page**:
+What a visitor loads at one Route. An Entry is content; a Page is that content rendered at a URL.
+_Avoid_: document, view
+
 ### Proving it works
 
 **Reference site**:
