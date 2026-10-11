@@ -55,7 +55,7 @@ Run with `cargo run --release -- <command>`. `render` writes pages to `out/` (ig
 
 ### False positives
 
-- 0 diagnostics on the 18 ported templates.
+- 0 diagnostics on the 18 ported templates. The templates and the walker were written together: one template was edited to get there (`entry.website != entry.github|default("")`), because SemiStrict itself rejects `!=` on an undefined value.
 - `results/fp-stress.md`: 30 legitimate idioms in the Post route. The first run flagged 5; else-branch narrowing, loop-filter narrowing and untyped local macros fixed 4. The `continue` early exit remains.
 
 ### SemiStrict against Strict (`results/undefined-probe.md`)
@@ -90,6 +90,8 @@ The Reference's four tags all have count 1 today, so the tags index order change
 | Render 1,122 pages, 10.2 MB | 22.6 ms (20 µs a page) | 1 s for the whole build |
 
 Context construction is about 11% of construction plus render. Parsing content is not in these numbers.
+
+Template checking walks templates against the schema, never against Entries, so its 2.0 ms is the same at 1,000 Posts. Against the `check` budgets (200 ms for the Reference site, 1 s for 1,000 Posts) it leaves almost everything for content validation, which this spike did not measure.
 
 ## Awkward or impossible in minijinja 3.0.0
 
