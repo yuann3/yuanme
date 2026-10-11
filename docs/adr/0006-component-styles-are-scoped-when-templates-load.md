@@ -13,7 +13,11 @@ Authors asked for CSS as capable as in Astro or SvelteKit, where a component's s
 
 ## Consequences
 
-- An element whose tag is built from an expression is not scoped. `check` warns about it, and about a selector that matches nothing in its own Template.
-- The generated attribute appears in every Site's HTML, so its name and the way it is derived are frozen once v1 ships.
-- The Engine now rewrites Template source before the template engine sees it, so diagnostics must still point at the Author's original line and column.
-- Provisional until the rewriter has been run over the Reference site's real Templates.
+- A stylesheet styles only the tags written in its own Template file. Unlike Astro, the scope is not passed down to the Components a Template calls, so markup that a stylesheet targets has to live in the same file. `check` reports a selector that matches nothing in its own Template.
+- A tag whose name is built from an expression may not be scoped, and `check` warns about it.
+- Only Templates that have a stylesheet are rewritten, which keeps the attribute out of every other Page.
+- The generated attribute appears in Sites' HTML, so its name and the way it is derived are frozen once v1 ships.
+- The Engine rewrites Template source before the template engine sees it. `check` reads the Author's original file, and render errors are mapped back to the original line and column.
+- Animation names stay global, as they do in Astro, because scripts refer to them by name.
+
+A spike ran this over the Reference site's real Templates (branch `spike/scoped-styles`): all 68 scoped selectors matched the same elements as the Astro build in Chromium, nothing leaked into slot or rendered content, and rewriting all 21 Templates took 34 microseconds. Firefox and WebKit were not tested.
