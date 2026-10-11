@@ -1,10 +1,32 @@
-.0.1.2.3.4.5.6.7.8.9error: async newContext: Target page, context or browser has been closed
-Browser logs:
+exit 0
+chromium 156.0.8078.4 headed renderer=ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)
+step | variant | n | kinds | painted med/p95 | settled med/p95 | film first frame med/p95 | GL init med/p95 | CLS max (all / counted) | ctx lost
+A idle→expanded | astro | 8 | soft | 41 / 49 | 640 / 656 | - / - | - / - | 0.510 / 0.000 | no
+A idle→expanded | full | 8 | full | 51 / 69 | 589 / 606 | 51 / 69 | 8 / 11 | 0.000 / 0.000 | no
+A idle→expanded | hist | 7 | soft | 28 / 34 | 631 / 640 | - / - | - / - | 0.510 / 0.000 | no
+A idle→expanded | proto | 7 | soft | 29 / 36 | 633 / 640 | - / - | - / - | 0.510 / 0.000 | no
+B expanded→expanded | astro | 8 | soft | 31 / 56 | 571 / 649 | - / - | - / - | 0.000 / 0.000 | no
+B expanded→expanded | full | 8 | full | 33 / 105 | 574 / 639 | 33 / 105 | 8 / 68 | 0.000 / 0.000 | no
+B expanded→expanded | hist | 7 | soft | 21 / 24 | 563 / 565 | - / - | - / - | 0.000 / 0.000 | no
+B expanded→expanded | proto | 7 | soft | 21 / 31 | 563 / 571 | - / - | - / - | 0.000 / 0.000 | no
+C expanded→idle | astro | 8 | soft | 30 / 65 | 747 / 783 | - / - | - / - | 0.534 / 0.300 | no
+C expanded→idle | full | 8 | full | 30 / 222311 | 649 / 222923 | 30 / 222311 | 10 / 193 | 0.000 / 0.000 | no
+C expanded→idle | hist | 7 | soft | 17 / 18 | 731 / 883 | - / - | - / - | 0.530 / 0.000 | no
+C expanded→idle | proto | 7 | soft | 17 / 156 | 731 / 873 | - / - | - / - | 0.530 / 0.301 | no
+back idle→expanded | astro | 8 | soft | 31 / 40 | 837 / 867 | - / - | - / - | 0.512 / 0.512 | no
+back idle→expanded | full | 8 | full | 34 / 39 | 573 / 576 | 34 / 39 | 10 / 11 | 0.000 / 0.000 | no
+back idle→expanded | hist | 7 | soft | 17 / 21 | 824 / 829 | - / - | - / - | 0.510 / 0.510 | no
+back idle→expanded | proto | 7 | soft | 14 / 17 | 821 / 829 | - / - | - / - | 0.510 / 0.510 | no
+cold / | astro | 8 | full | 75 / 408 | 690 / 1025 | 75 / 408 | 7 / 19 | 0.000 / 0.000 | no
+cold / | full | 8 | full | 88 / 418 | 709 / 1027 | 88 / 418 | 17 / 19 | 0.000 / 0.000 | no
+cold / | hist | 7 | full | 68 / 697 | 690 / 1309 | 68 / 697 | 19 / 30 | 0.000 / 0.000 | no
+cold / | proto | 7 | full | 77 / 405 | 702 / 1026 | 77 / 405 | 18 / 26 | 0.000 / 0.000 | no
+fwd expanded→idle | astro | 8 | soft | 27 / 39 | 743 / 752 | - / - | - / - | 0.531 / 0.531 | no
+fwd expanded→idle | full | 8 | full | 35 / 43 | 652 / 654 | 35 / 43 | 11 / 13 | 0.000 / 0.000 | no
+fwd expanded→idle | hist | 7 | soft | 14 / 27 | 729 / 739 | - / - | - / - | 0.530 / 0.530 | no
+fwd expanded→idle | proto | 7 | soft | 17 / 19 | 729 / 732 | - / - | - / - | 0.530 / 0.530 | no
+0644 .rw-r--r--@  77k yuan 11 Oct 20:21 nav-chromium-headed.json
+0644 .rw-r--r--@ 220k yuan  9 Oct 16:18 nav-chromium-headless.json
+0644 .rw-r--r--@ 154k yuan  9 Oct 16:32 nav-webkit-headless.json
 
-<launching> /Users/yuan/Library/Caches/ms-playwright/chromium-1248/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --no-sandbox --user-data-dir=/var/folders/1j/3rccs1r112l5n3mtwv6m29lr0000gn/T/playwright_chromiumdev_profile-6qsROA --remote-debugging-pipe --no-startup-window
-<launched> pid=60980
- log: [],
-
-      at processTicksAndRejections (native:7:39)
-
-Bun v1.4.2 (macOS arm64)
+[exited with code 0]

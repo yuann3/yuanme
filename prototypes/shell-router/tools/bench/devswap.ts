@@ -3,13 +3,13 @@
 //   soft  - hands it to the router's dev hook (yuanme:patch -> parse -> quiet shell swap)
 //   reload - location.reload() (what a dev server without a morph does)
 // Usage: bun bench/devswap.ts <chromium|webkit> <headless|headed|throttle4x> [runs=30]
-import { chromium, webkit } from 'playwright';
+import { chromium, firefox, webkit } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { pct } from './stats';
 
 const [bname = 'chromium', mode = 'headless', runsArg = '30'] = process.argv.slice(2);
 const runs = +runsArg;
-const browser = await (bname === 'webkit' ? webkit : chromium).launch({ headless: mode !== 'headed' });
+const browser = await (bname === 'webkit' ? webkit : bname === 'firefox' ? firefox : chromium).launch({ headless: mode !== 'headed' });
 const pages = ['/blog/', '/blog/extending-c-stdlib/'];
 const rows: any[] = [];
 
@@ -32,7 +32,7 @@ const done = async () => {
 };
 
 for (const path of pages) {
-	await page.goto('http://localhost:4322' + path);
+	await page.goto(`http://${process.env.HOST ?? 'localhost'}:4322` + path);
 	await done();
 	for (let run = 0; run < runs; run++) {
 		await page.waitForTimeout(400);

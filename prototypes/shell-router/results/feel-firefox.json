@@ -1,0 +1,306 @@
+{
+ "browser": "firefox",
+ "version": "157.0",
+ "results": {
+  "astro": {
+   "tour": [
+    "click Writing -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click post -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=2",
+    "click Projects -> /projects/ [about:- projects:true writing:- resume:-] contents=1 ann=3",
+    "back -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=4",
+    "back -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=5",
+    "forward -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=6",
+    "click Writing (same section) -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=7",
+    "click post again -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=8",
+    "Esc -> / [about:- projects:- writing:- resume:-] contents=1 ann=9",
+    "click About -> /about/ [about:true projects:- writing:- resume:-] contents=1 ann=10",
+    "click Resume -> /resume/ [about:- projects:- writing:- resume:true] contents=1 ann=11",
+    "click About again -> /about/ [about:true projects:- writing:- resume:-] contents=1 ann=12"
+   ],
+   "filmSameCanvas": true,
+   "filmContexts": 1,
+   "filmLost": 0,
+   "copyButtonsPerPre": [
+    "29/29",
+    "29/29",
+    "29/29",
+    "29/29"
+   ],
+   "photoPileInit": [
+    "1/1",
+    "1/1"
+   ],
+   "pageLoadListeners": "()=>{if(!t){t=!0;return}e()},()=>{if(!t){t=!0;return}e()},()=>{if(!t){t=!0;return}e()},function se(){mn(),En(),An()},copybtn,photopile",
+   "announcersAfterTour": 12,
+   "titles": [
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Projects",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Yiyuan Li",
+    "About",
+    "Resume",
+    "About"
+   ],
+   "scriptsCount": "3,5,4,5,4,5,4,5,4,5,4,5",
+   "entries": 9,
+   "mobileWindowScroll": {
+    "maxY": 47,
+    "before": 47,
+    "afterPush": 0,
+    "afterBack": 47,
+    "afterFwd": 0
+   },
+   "desktopPanelScrollAfterBack": 0,
+   "reducedMotion": {
+    "morphAnims": 0,
+    "rvBases": "0ms",
+    "filmReady": "(unset)",
+    "glCalls": 0,
+    "escToUrlMs": 43
+   },
+   "focus": {
+    "afterRail": "A.writing",
+    "afterPanel": "body",
+    "afterEsc": "body"
+   },
+   "abort": {
+    "path": "/projects/",
+    "title": "Projects",
+    "contents": 1,
+    "afterSwaps": 1,
+    "entries": 2
+   },
+   "rss": "full load"
+  },
+  "proto": {
+   "tour": [
+    "click Writing -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click post -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click Projects -> /projects/ [about:- projects:true writing:- resume:-] contents=1 ann=1",
+    "back -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "back -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "forward -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click Writing (same section) -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click post again -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "Esc -> / [about:- projects:- writing:- resume:-] contents=1 ann=1",
+    "click About -> /about/ [about:true projects:- writing:- resume:-] contents=1 ann=1",
+    "click Resume -> /resume/ [about:- projects:- writing:- resume:true] contents=1 ann=1",
+    "click About again -> /about/ [about:true projects:- writing:- resume:-] contents=1 ann=1"
+   ],
+   "filmSameCanvas": true,
+   "filmContexts": 1,
+   "filmLost": 0,
+   "copyButtonsPerPre": [
+    "29/29",
+    "29/29",
+    "29/29",
+    "29/29"
+   ],
+   "photoPileInit": [
+    "1/1",
+    "1/1"
+   ],
+   "pageLoadListeners": "function Se(){Pn(),kn(),Hn()},copybtn,photopile",
+   "announcersAfterTour": 1,
+   "titles": [
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Projects",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Yiyuan Li",
+    "About",
+    "Resume",
+    "About"
+   ],
+   "scriptsCount": "2,3,2,3,2,3,2,3,2,3,2,3",
+   "entries": 9,
+   "mobileWindowScroll": {
+    "maxY": 47,
+    "before": 47,
+    "afterPush": 0,
+    "afterBack": 47,
+    "afterFwd": 0
+   },
+   "desktopPanelScrollAfterBack": 0,
+   "reducedMotion": {
+    "morphAnims": 0,
+    "rvBases": "0ms",
+    "filmReady": "(unset)",
+    "glCalls": 0,
+    "escToUrlMs": 30
+   },
+   "focus": {
+    "afterRail": "A.writing",
+    "afterPanel": "body",
+    "afterEsc": "body"
+   },
+   "abort": {
+    "path": "/projects/",
+    "title": "Projects",
+    "contents": 1,
+    "afterSwaps": 1,
+    "entries": 3
+   },
+   "rss": "full load"
+  },
+  "full": {
+   "tour": [
+    "click Writing -> /blog/ [about:- projects:- writing:page resume:-] contents=1 ann=0",
+    "click post -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=0",
+    "click Projects -> /projects/ [about:- projects:page writing:- resume:-] contents=1 ann=0",
+    "back -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=0",
+    "back -> /blog/ [about:- projects:- writing:page resume:-] contents=1 ann=0",
+    "forward -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=0",
+    "click Writing (same section) -> /blog/ [about:- projects:- writing:page resume:-] contents=1 ann=0",
+    "click post again -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=0",
+    "Esc -> / [about:- projects:- writing:- resume:-] contents=1 ann=0",
+    "click About -> /about/ [about:page projects:- writing:- resume:-] contents=1 ann=0",
+    "click Resume -> /resume/ [about:- projects:- writing:- resume:page] contents=1 ann=0",
+    "click About again -> /about/ [about:page projects:- writing:- resume:-] contents=1 ann=0"
+   ],
+   "filmSameCanvas": false,
+   "filmContexts": 13,
+   "filmLost": 0,
+   "copyButtonsPerPre": [
+    "29/29",
+    "29/29",
+    "29/29",
+    "29/29"
+   ],
+   "photoPileInit": [
+    "1/1",
+    "1/1"
+   ],
+   "pageLoadListeners": "photopile,function Se(){Pn(),kn(),Hn()}",
+   "announcersAfterTour": 0,
+   "titles": [
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Projects",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Yiyuan Li",
+    "About",
+    "Resume",
+    "About"
+   ],
+   "scriptsCount": "3,4,3,4,3,4,3,4,3,4,3,4",
+   "entries": 9,
+   "mobileWindowScroll": {
+    "maxY": 47,
+    "before": 47,
+    "afterPush": 0,
+    "afterBack": 47,
+    "afterFwd": 0
+   },
+   "desktopPanelScrollAfterBack": 2000,
+   "reducedMotion": {
+    "morphAnims": 1,
+    "rvBases": "",
+    "filmReady": "(unset)",
+    "glCalls": 0,
+    "escToUrlMs": -1220
+   },
+   "focus": {
+    "afterRail": "body",
+    "afterPanel": "body",
+    "afterEsc": "body"
+   },
+   "abort": {
+    "path": "/projects/",
+    "title": "Projects",
+    "contents": 1,
+    "afterSwaps": 0,
+    "entries": 2
+   },
+   "rss": "full load"
+  },
+  "hist": {
+   "tour": [
+    "click Writing -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click post -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click Projects -> /projects/ [about:- projects:true writing:- resume:-] contents=1 ann=1",
+    "back -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "back -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "forward -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click Writing (same section) -> /blog/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "click post again -> /blog/extending-c-stdlib/ [about:- projects:- writing:true resume:-] contents=1 ann=1",
+    "Esc -> / [about:- projects:- writing:- resume:-] contents=1 ann=1",
+    "click About -> /about/ [about:true projects:- writing:- resume:-] contents=1 ann=1",
+    "click Resume -> /resume/ [about:- projects:- writing:- resume:true] contents=1 ann=1",
+    "click About again -> /about/ [about:true projects:- writing:- resume:-] contents=1 ann=1"
+   ],
+   "filmSameCanvas": true,
+   "filmContexts": 1,
+   "filmLost": 0,
+   "copyButtonsPerPre": [
+    "29/29",
+    "29/29",
+    "29/29",
+    "29/29"
+   ],
+   "photoPileInit": [
+    "1/1",
+    "1/1"
+   ],
+   "pageLoadListeners": "function Ce(){kn(),$n(),Wn()},copybtn,photopile",
+   "announcersAfterTour": 1,
+   "titles": [
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Projects",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Writing",
+    "Stealing Ideas from Rust and C++ for Your C Standard Library",
+    "Yiyuan Li",
+    "About",
+    "Resume",
+    "About"
+   ],
+   "scriptsCount": "3,4,3,4,3,4,3,4,3,4,3,4",
+   "entries": 9,
+   "mobileWindowScroll": {
+    "maxY": 47,
+    "before": 47,
+    "afterPush": 0,
+    "afterBack": 47,
+    "afterFwd": 0
+   },
+   "desktopPanelScrollAfterBack": 0,
+   "reducedMotion": {
+    "morphAnims": 0,
+    "rvBases": "0ms",
+    "filmReady": "(unset)",
+    "glCalls": 0,
+    "escToUrlMs": 23
+   },
+   "focus": {
+    "afterRail": "A.writing",
+    "afterPanel": "body",
+    "afterEsc": "body"
+   },
+   "abort": {
+    "path": "/projects/",
+    "title": "Projects",
+    "contents": 1,
+    "afterSwaps": 1,
+    "entries": 2
+   },
+   "rss": "full load"
+  }
+ }
+}

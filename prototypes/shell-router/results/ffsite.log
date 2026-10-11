@@ -1,0 +1,29 @@
+== firefox desktop media={"rm":false,"mob":false}
+  getContext(webgl) -> null
+  astro:page-load scrollY=0 max=0 state=idle
+  console: warning: [JavaScript Warning: "Failed to create WebGL context: WebGL creation failed: 
+* WebglAllowWindowsNativeGl:false restricts context creation on this sys
+== firefox mobile media={"rm":false,"mob":true}
+  getContext(webgl) -> null
+  astro:page-load scrollY=0 max=47 state=idle
+  scroll evt 47
+  --- click Writing at 47
+  scroll() push 47 -> 47 (max 47)
+  astro:after-swap scrollY=47 max=47 state=expanded
+  astro:page-load scrollY=47 max=47 state=expanded
+  console: warning: [JavaScript Warning: "Failed to create WebGL context: WebGL creation failed: 
+* WebglAllowWindowsNativeGl:false restricts context creation on this sys
+== chromium desktop media={"rm":false,"mob":false}
+  getContext(webgl) -> ok
+  astro:page-load scrollY=0 max=0 state=idle
+  console: warning: [.WebGL-0x1c00197800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels | warning: [.WebGL-0x1c00197800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels | warning: [.WebGL-0x1c00197800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels | warning: [.WebGL-0x1c00197800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+== chromium mobile media={"rm":false,"mob":true}
+  getContext(webgl) -> ok
+  astro:page-load scrollY=0 max=81 state=idle
+  scroll evt 81
+  --- click Writing at 81
+  scroll() push 81 -> 0 (max 81)
+  astro:after-swap scrollY=0 max=81 state=expanded
+  astro:page-load scrollY=0 max=81 state=expanded
+  scroll evt 0
+done 0

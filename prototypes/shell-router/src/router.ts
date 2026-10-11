@@ -152,7 +152,11 @@ if (nav && shell()) {
 				if (e.signal.aborted) return;
 				if (!page) return location.reload();
 				await swap(page.doc, from, page.url, e.navigationType, () => {
-					try { e.scroll(); } catch {}
+					// Firefox 157's scroll() leaves a push where it was after the
+					// body swap, so push/replace scroll themselves; traverse restores.
+					const target = to.hash && d.getElementById(decodeURIComponent(to.hash.slice(1)));
+					if (e.navigationType === 'traverse') try { e.scroll(); } catch {}
+					else target ? target.scrollIntoView() : scrollTo(0, 0);
 					adopt(page.url);
 				});
 			},

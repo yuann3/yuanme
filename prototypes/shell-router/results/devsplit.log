@@ -1,0 +1,2 @@
+webkit 27.2 html 138815 B, fragment 113571 B parseDoc 1 / 3 | parseFrag 2 / 3 | replace 1 / 2 | paintAfterReplace 38 / 42
+chromium 156.0.8078.4 html 138815 B, fragment 113571 B parseDoc 1.4 / 1.7 | parseFrag 1.3 / 1.7 | replace 0.7 / 0.8 | paintAfterReplace 44.4 / 72.8

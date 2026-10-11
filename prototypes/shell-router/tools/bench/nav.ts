@@ -2,7 +2,7 @@
 //   bun bench/nav.ts <chromium|webkit> <headless|headed> [runs=20] [variants=astro,proto,full,hist]
 // Each run: cold "/" -> A idle→expanded (click Writing) -> B expanded→expanded (click Projects)
 // -> C expanded→idle (click Close) -> back (idle→expanded) -> fwd (expanded→idle).
-import { chromium, webkit } from 'playwright';
+import { chromium, firefox, webkit } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { summary, type Row } from './stats';
 
@@ -10,7 +10,7 @@ const [bname = 'chromium', mode = 'headless', runsArg = '20', varArg = 'astro,pr
 const runs = +runsArg;
 const PORTS: Record<string, number> = { astro: 4321, proto: 4322, full: 4323, hist: 4324, astronovt: 4321 };
 const variants = varArg.split(',');
-const bt = bname === 'webkit' ? webkit : chromium;
+const bt = bname === 'webkit' ? webkit : bname === 'firefox' ? firefox : chromium;
 const browser = await bt.launch({ headless: mode === 'headless' });
 const rows: Row[] = [];
 let renderer = '';
@@ -21,7 +21,7 @@ for (let run = 0; run < runs; run++) {
 		await ctx.addInitScript({ path: import.meta.dir + '/probe.js' });
 		if (v === 'astronovt') await ctx.addInitScript(() => { delete (Document.prototype as any).startViewTransition; });
 		const page = await ctx.newPage();
-		const base = `http://localhost:${PORTS[v]}`;
+		const base = `http://${process.env.HOST ?? 'localhost'}:${PORTS[v]}`;
 		const done = async () => {
 			for (let i = 0; i < 400; i++) {
 				try {

@@ -1,17 +1,17 @@
 // Feel checks, Astro build vs prototype, same probe. Usage: bun bench/feel.ts <chromium|webkit> [ports=4321,4322,4324]
-import { chromium, webkit, type Page } from 'playwright';
+import { chromium, firefox, webkit, type Page } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 const [bname = 'chromium', portArg = '4321,4322,4324'] = process.argv.slice(2);
 const NAMES: Record<string, string> = { 4321: 'astro', 4322: 'proto', 4323: 'full', 4324: 'hist' };
-const browser = await (bname === 'webkit' ? webkit : chromium).launch();
+const browser = await (bname === 'webkit' ? webkit : bname === 'firefox' ? firefox : chromium).launch();
 const results: Record<string, Record<string, unknown>> = {};
 
 async function open(port: number, opts: Parameters<typeof browser.newContext>[0] = {}) {
 	const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, ...opts });
 	await ctx.addInitScript({ path: import.meta.dir + '/probe.js' });
 	const page = await ctx.newPage();
-	return { ctx, page, base: `http://localhost:${port}` };
+	return { ctx, page, base: `http://${process.env.HOST ?? 'localhost'}:${port}` };
 }
 const settle = async (page: Page, ms = 1300) => page.waitForTimeout(ms);
 const state = (page: Page) => page.evaluate(() => {

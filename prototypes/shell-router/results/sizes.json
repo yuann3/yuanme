@@ -3,33 +3,33 @@
   [
    "router.ts alone (Navigation API driver + swap core + scripts + prefetch + announcer + dev hook)",
    {
-    "raw": 3759,
-    "gz": 1728,
-    "br": 1545
+    "raw": 3900,
+    "gz": 1808,
+    "br": 1608
    }
   ],
   [
    "router.ts without the dev hook",
    {
-    "raw": 3619,
-    "gz": 1692,
-    "br": 1506
+    "raw": 3760,
+    "gz": 1770,
+    "br": 1562
    }
   ],
   [
    "router.ts without dev hook and prefetch",
    {
-    "raw": 3209,
-    "gz": 1510,
-    "br": 1345
+    "raw": 3350,
+    "gz": 1585,
+    "br": 1412
    }
   ],
   [
    "router.ts + router-history.ts (History API driver)",
    {
-    "raw": 4722,
-    "gz": 2044,
-    "br": 1827
+    "raw": 4863,
+    "gz": 2109,
+    "br": 1879
    }
   ],
   [
@@ -105,11 +105,19 @@
    }
   ],
   [
-   "proto-dist/_astro/Shell.astro_astro_type_script_index_0_lang.CKVbN6Qv.js",
+   "proto-dist/_astro/Shell.astro_astro_type_script_index_0_lang.DehljIte.js",
    {
-    "raw": 30590,
-    "gz": 12510,
-    "br": 11114
+    "raw": 30733,
+    "gz": 12587,
+    "br": 11178
+   }
+  ],
+  [
+   "proto-hist-dist/_astro/Shell.astro_astro_type_script_index_0_lang.DJ1hmFPl.js",
+   {
+    "raw": 31916,
+    "gz": 12958,
+    "br": 11539
    }
   ],
   [
@@ -119,14 +127,6 @@
     "gz": 3051,
     "br": 2751
    }
-  ],
-  [
-   "proto-hist-dist/_astro/Shell.astro_astro_type_script_index_0_lang.BkTpFW-m.js",
-   {
-    "raw": 31773,
-    "gz": 12889,
-    "br": 11510
-   }
   ]
  ],
  "lines": [
@@ -134,13 +134,13 @@
   "astro-dist blog/index.html: JS requests 3; external 42189 / 16754 / 14914; inline 264 / 200 / 136; total 42453 / 16954 / 15050",
   "astro-dist blog/extending-c-stdlib/index.html: JS requests 3; external 42189 / 16754 / 14914; inline 1120 / 703 / 548; total 43309 / 17457 / 15462",
   "astro-dist about/index.html: JS requests 4; external 49408 / 19805 / 17665; inline 264 / 200 / 136; total 49672 / 20005 / 17801",
-  "proto-dist index.html: JS requests 1; external 30590 / 12510 / 11114; inline 264 / 200 / 136; total 30854 / 12710 / 11250",
-  "proto-dist blog/index.html: JS requests 1; external 30590 / 12510 / 11114; inline 264 / 200 / 136; total 30854 / 12710 / 11250",
-  "proto-dist blog/extending-c-stdlib/index.html: JS requests 1; external 30590 / 12510 / 11114; inline 1120 / 703 / 548; total 31710 / 13213 / 11662",
-  "proto-dist about/index.html: JS requests 2; external 37809 / 15561 / 13865; inline 264 / 200 / 136; total 38073 / 15761 / 14001",
-  "proto-hist-dist index.html: JS requests 1; external 31773 / 12889 / 11510; inline 264 / 200 / 136; total 32037 / 13089 / 11646",
-  "proto-hist-dist blog/index.html: JS requests 1; external 31773 / 12889 / 11510; inline 264 / 200 / 136; total 32037 / 13089 / 11646",
-  "proto-hist-dist blog/extending-c-stdlib/index.html: JS requests 1; external 31773 / 12889 / 11510; inline 1120 / 703 / 548; total 32893 / 13592 / 12058",
-  "proto-hist-dist about/index.html: JS requests 2; external 38992 / 15940 / 14261; inline 264 / 200 / 136; total 39256 / 16140 / 14397"
+  "proto-dist index.html: JS requests 1; external 30733 / 12587 / 11178; inline 264 / 200 / 136; total 30997 / 12787 / 11314",
+  "proto-dist blog/index.html: JS requests 1; external 30733 / 12587 / 11178; inline 264 / 200 / 136; total 30997 / 12787 / 11314",
+  "proto-dist blog/extending-c-stdlib/index.html: JS requests 1; external 30733 / 12587 / 11178; inline 1120 / 703 / 548; total 31853 / 13290 / 11726",
+  "proto-dist about/index.html: JS requests 2; external 37952 / 15638 / 13929; inline 264 / 200 / 136; total 38216 / 15838 / 14065",
+  "proto-hist-dist index.html: JS requests 1; external 31916 / 12958 / 11539; inline 264 / 200 / 136; total 32180 / 13158 / 11675",
+  "proto-hist-dist blog/index.html: JS requests 1; external 31916 / 12958 / 11539; inline 264 / 200 / 136; total 32180 / 13158 / 11675",
+  "proto-hist-dist blog/extending-c-stdlib/index.html: JS requests 1; external 31916 / 12958 / 11539; inline 1120 / 703 / 548; total 33036 / 13661 / 12087",
+  "proto-hist-dist about/index.html: JS requests 2; external 39135 / 16009 / 14290; inline 264 / 200 / 136; total 39399 / 16209 / 14426"
  ]
 }

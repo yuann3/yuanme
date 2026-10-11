@@ -75,10 +75,10 @@ index 0000000..bf84a02
 +}
 diff --git a/src/scripts/router.ts b/src/scripts/router.ts
 new file mode 100644
-index 0000000..83929f3
+index 0000000..4099174
 --- /dev/null
 +++ b/src/scripts/router.ts
-@@ -0,0 +1,185 @@
+@@ -0,0 +1,189 @@
 +// Prototype Shell swap router (yuanme #26). Throwaway.
 +//
 +// A same-document router on the Navigation API. It fetches the next page,
@@ -233,7 +233,11 @@ index 0000000..83929f3
 +				if (e.signal.aborted) return;
 +				if (!page) return location.reload();
 +				await swap(page.doc, from, page.url, e.navigationType, () => {
-+					try { e.scroll(); } catch {}
++					// Firefox 157's scroll() leaves a push where it was after the
++					// body swap, so push/replace scroll themselves; traverse restores.
++					const target = to.hash && d.getElementById(decodeURIComponent(to.hash.slice(1)));
++					if (e.navigationType === 'traverse') try { e.scroll(); } catch {}
++					else target ? target.scrollIntoView() : scrollTo(0, 0);
 +					adopt(page.url);
 +				});
 +			},
