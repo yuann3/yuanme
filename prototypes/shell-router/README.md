@@ -2,7 +2,7 @@
 
 **Throwaway.** This answers [#26](https://github.com/yuann3/yuanme/issues/26): is a small Navigation API router good enough to become the Engine's built-in router? It replaces Astro's `<ClientRouter />` on the Reference site (eyuan.me at `6567e01`) and compares the two side by side.
 
-**Verdict: yes.** In Firefox 157, Chromium 156 and WebKit 27.2 the prototype matches Astro on every feel check. It keeps one WebGL context for the Film across a 12-step tour and paints soft navigations sooner. The router is 1.6 KB br, against 3.6 KB br for Astro's router alone.
+**Verdict: yes.** In Firefox 157 (Playwright's build, on Linux), Chromium 156 and WebKit 27.2 the prototype matches Astro on every feel check. It keeps one WebGL context for the Film across a 12-step tour and paints soft navigations sooner. The router is 1.6 KB br, against 3.6 KB br for Astro's router alone.
 
 ## What is here
 
@@ -32,9 +32,10 @@ Run: `./build.sh && bun serve.ts`, then from `tools/` (after `bun install`): `bu
 | Focus after a keyboard-activated rail link | link | link | link | body |
 | Two clicks 5 ms apart land on the second page, one panel | ok | ok | ok | ok |
 | `.rss.xml` link is a full load | ok | ok | ok | ok |
+| Redirect `/about` → 301 `/about/`: ends on `/about/`, panel swapped, one new entry, back works (`results/redirect.log`) | ok | ok, but `navigateerror` fires | n/a | n/a |
 | Route announcers in the DOM after the tour | **12** (leak) | 1 | 1 | 0 |
 
-The prototype also does one swap on an interrupted navigation where Astro does two in Chromium and WebKit.
+**Redirect adoption aborts the navigation.** As [#12](https://github.com/yuann3/yuanme/issues/12) predicted, adopting the final URL with `replaceState` inside the handler aborts the intercepted navigation, so `navigateerror` fires in all three engines and `navigation.transition.finished` rejects. The swap, scripts and `page-load` still run, so a visitor sees nothing wrong. The Engine's router should redirect with `precommitHandler` + `redirect()` where that option exists (Chromium 141, Firefox 147; only when `e.cancelable && e.navigationType !== 'traverse'`) and keep `replaceState` for Safari. The Engine links to `/x/` directly, so redirects only come from hand-written links.
 
 **Bug found and fixed in Firefox 157.** After the body swap, `NavigateEvent.scroll()` on a push left the window where it was (47 → 47 on mobile), while Chromium and WebKit scroll to the top (`results/ffsite.log`). On a plain page all three engines reset a push, and they differ on traverse: WebKit restores inside `scroll()`, Firefox has restored before the handler runs, and headless Chromium went to 0 (`results/ffscroll.log`). The router now scrolls push and replace itself (to the fragment, or to the top) and calls `scroll()` only on traverse. With that, Firefox matches Astro.
 
@@ -95,10 +96,13 @@ First-party JS per Page, as served:
 
 ## Fallback for browsers without the Navigation API
 
-Every current engine has the Navigation API (Chrome 102, Firefox 147, Safari 26.2). Hiding it gives full page loads: correct on every check except the Film, which restarts on each load. The History API driver keeps the Film too, but costs 271 B br and a second code path to test. **Recommendation: full page loads**, with no History API driver.
+Every current engine has the Navigation API (Chrome 105, Firefox 147, Safari 26.2). Hiding it gives full page loads: correct on every check except the Film, which restarts on each load. The History API driver keeps the Film too, but costs 271 B br and a second code path to test. **Recommendation: full page loads**, with no History API driver.
 
 ## Not covered
 
-- Firefox on a real GPU. Playwright Firefox 157 crashes at startup on macOS 27.0.1 ("Could not find profile folder", even outside Playwright). The Firefox runs here are Linux, llvmpipe WebGL, in Docker: they cover behaviour, not timing.
+- Firefox 157 stable on a real GPU. Playwright's Firefox (a Nightly-derived 157.0 build) crashes at startup on macOS 27.0.1 ("Could not find profile folder", even outside Playwright). The Firefox runs here are that build on Linux with llvmpipe WebGL, in Docker: they cover behaviour, not timing or stable-release quirks.
 - Bun-shaped lifecycle events from [#19](https://github.com/yuann3/yuanme/issues/19) (`dispose` plus carried `data`). They weren't built. `before-swap` is the natural `dispose` point, and a `data` object on the swap event would carry state across.
-- The `precommitHandler` bug from [#12](https://github.com/yuann3/yuanme/issues/12) doesn't apply: this router never passes `precommitHandler` and adopts redirects with `replaceState` after the swap.
+- Panel scroll on back. #12 recommended restoring the panel's scroll from entry state. Astro doesn't, so the prototype doesn't either (0 after back in every engine). Restoring it would be an improvement over Astro, so it belongs with the Parity exceptions ([#23](https://github.com/yuann3/yuanme/issues/23)).
+- The event prefix. The prototype still fires `astro:before-swap` / `astro:after-swap` / `astro:page-load`; whether the Engine's events are `yuanme:*` is still open.
+- The `precommitHandler` traverse bug from #12 doesn't arise, because this router never passes `precommitHandler`. The Engine's router must apply #12's guard when it adds `redirect()`.
+- A failed load falls back to a full load: when the response isn't HTML, has no `[data-shell]` or the fetch fails, the handler calls `location.reload()`, so the panel never shows a stale Page.
