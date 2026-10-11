@@ -51,7 +51,7 @@ The rule: insert ` data-y-<hash>` right after the tag name. The scan never needs
 | `<html>`, `<head>`, `<body>` | pass | `html` and `body` stamped; `head`, `meta`, `title`, `link`, `base`, `script`, `style`, `noscript`, `template` never; `:root` never scoped |
 | `{% include %}` | pass | The included file carries its own id |
 | Macro from another file, `caller()` content | pass | Macro body: the macro file's id. Slot content: the id of the file it is written in |
-| `{% extends %}` block content | pass | The child template's id |
+| `{% extends %}` block content, `{% set x %}<a>{% endset %}` | pass | The id of the file the tag is written in (the `set` block is by construction, no fixture) |
 | `| safe` strings, safe Values | pass | Never stamped. `| safe` in text position warns; `entry.content` is silent by design |
 | `<{{ tag }}>`, `<h{{ n }}>` | pass | Stamped after the expression, with a warning: type selectors cannot be checked |
 | `<{% if %}h1{% else %}h2{% endif %}>` | pass | Not stamped, warning |
@@ -69,12 +69,13 @@ Stamping every template, not only the six with sidecars, and removing the attrib
 | `.a > * + *` | `.a[h] > [h] + [h]` | Every compound |
 | `:hover`, `*` | `:hover[h]`, `[h]` | A compound with no type or class still gets the attribute |
 | `.a::before`, `::selection` | `.a[h]:before`, `[h]::selection` | Attribute goes before the pseudo-element |
-| `.a:is(.b, .c) .d`, `:not()`, `:has()`, `:where()` | `.a:is(.b, .c)[h] .d[h]` | Arguments are left alone |
+| `.a:is(.b, .c) .d`, `:not()`, `:has()`, `:where()` | `.a:is(.b, .c)[h] .d[h]` | Arguments are left alone, so `:has(img)` can see content; the element styled is still the template's own |
 | `.card { .title {} &:hover {} .dark & {} }` | `.card[h] .title[h]`, `.card[h]:hover`, `.dark[h] .card[h]` | A compound containing `&` is skipped; the parent has the attribute |
 | `@media`, `@container`, `@supports`, `@layer` | Children scoped | Names left as written |
 | `@keyframes spin`, `animation: spin` | Unchanged | Global, as in Astro |
 | `.body > :global(h1)`, `:global(.prose a:hover)` | `.body[h] > h1`, `.prose a:hover` | Unwrapped by the walker |
-| `:root`, `html` | `:root`, `html[h]` | |
+| `:root`, `html` | `:root`, `html[h]` | The spike's choice; the Reference has no `:root` in a scoped block, so this is not checked against Astro |
+| `.card:global(.is-open)` | `.card.is-open[h]` | Correct output, but reported as an error here; it should be a warning |
 
 **Keyframe names are not scoped and should not be.** Astro leaves them global. PhotoPile's script tests `animationName` against `pile-drop` and `pile-fade`, and sidecars use keyframes from the global sheet. `check` should reject a duplicate `@keyframes` name across sidecars.
 
@@ -114,7 +115,7 @@ The round trip holds for all 16,804 byte offsets of the 21 templates. Running `c
 
 Chromium 156 through Playwright 1.64.0, JavaScript off, against the Reference's Astro build with its real global CSS.
 
-- **(a) Own elements only.** 29 pages, 68 selectors, 392 matches, 375 stamped elements. 0 matches on an element written in another template. The selector set equals Astro's (68 against 68) once the attribute name and simple-selector order are normalised. On the five page pairs every exercised rule matches the same kinds of element; on `/about/` and `/projects/` the counts match too (118 stamped elements on `/projects/` in both).
+- **(a) Own elements only.** 29 pages, 68 selectors, 392 matches, 375 stamped elements. 0 matches on an element written in another template. The selector set equals Astro's (68 against 68) once the attribute name and simple-selector order are normalised. On the five page pairs every exercised rule matches the same kinds of element; on `/about/` and `/projects/` the counts match too (118 stamped elements on `/projects/` in both). The `img` differences on the two Entry pages are hero images that the fake Entries have or lack, not scoping.
 - **(b) Content.** 0 matches inside `data-md` content or slot content. The six `:global()` selectors matched 69 elements, 37 of them in content, as intended.
 - **(c) Specificity.** `.project` over `.row` at 375 px, `.list-row-arrow` and `.project-arrow` over `.row-arrow`, `.meta-link:hover` over `.text-ink-2`: computed styles equal the Astro build's, also with the scoped sheet loaded before the global one. With the attribute removed and that order, `.project` loses to `.row` (`align-items: center`), so the +0-1-0 is doing real work.
 - 26 selectors matched nothing: all need `:hover`, `:focus-visible`, a pseudo-element or state that PhotoPile's script sets.
@@ -152,6 +153,7 @@ There is no per-page pass. The attribute is template text; the 0.6% render diffe
 - Firefox and WebKit. Only Chromium 156 ran.
 - Astro's build itself was not re-run; the comparison uses an existing build of the Reference.
 - PhotoPile's script against the ported markup, and the 26 state-dependent selectors.
+- Astro's documented rule for keyframe names and `:root`. The keyframe finding rests on one build and PhotoPile's script.
 - Pixel output. Only selector matches and seven computed-style probes were compared.
 - Un-lowered nesting in a browser. The nested fixtures were read, not rendered; the Reference sidecars have no nesting.
 - `@scope` and `@starting-style` inside a sidecar, `:host`, `::slotted`, `::part`.
