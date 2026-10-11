@@ -1,0 +1,4 @@
+{# props: date: date, attrs?: attrs #}
+{% macro formatted_date(date, attrs={}) %}
+<time datetime="{{ date|dateformat(format='iso') }}"{{ attrs|attrs }}>{{ date|dateformat(format='iso') }}</time>
+{% endmacro %}

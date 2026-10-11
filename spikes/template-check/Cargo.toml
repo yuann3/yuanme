@@ -1,0 +1,15 @@
+[package]
+name = "template-check-spike"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[dependencies]
+minijinja = { version = "=3.0.0", features = ["unstable_machinery", "loop_controls", "json", "serde"] }
+minijinja-contrib = { version = "=3.0.0", features = ["datetime"] }
+serde_json = "1"
+
+[profile.release]
+debug = false

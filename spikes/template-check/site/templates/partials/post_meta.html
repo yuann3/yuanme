@@ -1,0 +1,9 @@
+{% from "components/formatted_date.html" import formatted_date %}
+<p class="label-mono flex flex-wrap gap-x-6 gap-y-2 text-muted" data-reveal>
+  {{ formatted_date(date=entry.date) }}
+  {% if entry.updated %}<span>Updated {{ formatted_date(date=entry.updated) }}</span>{% endif %}
+  <span>{{ entry.reading_time }} min read</span>
+  {% if entry.draft %}<span>Draft</span>{% endif %}
+  {% if entry.series %}<a href="/series/{{ entry.series }}/" class="meta-link text-ink-2">{{ entry.series }}</a>{% endif %}
+  {% for tag in entry.tags %}<a href="/tags/{{ tag }}/" class="meta-link text-ink-2">#{{ tag }}</a>{% endfor %}
+</p>

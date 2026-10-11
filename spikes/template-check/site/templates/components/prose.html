@@ -1,0 +1,6 @@
+{# props: class?: string, attrs?: attrs #}
+{% macro prose(class="", attrs={}) %}
+<article class="prose-panel{{ ' ' ~ class if class else '' }}"{{ attrs|attrs }}>
+  {{ caller() }}
+</article>
+{% endmacro %}
