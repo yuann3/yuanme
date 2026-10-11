@@ -113,6 +113,7 @@ fn main() {
         }
         "seeded" => seeded(&tdir),
         "probe" => probe(),
+        "fp" => fp_stress(&tdir),
         "sort" => sort_demo(),
         "bench" => bench(&tdir, args.get(2).and_then(|s| s.parse().ok()).unwrap_or(1000)),
         _ => eprintln!("usage: check | render | seeded | probe | sort | bench [N]"),
@@ -149,6 +150,10 @@ fn seeded(tdir: &Path) {
         }
     }
 
+    let strict_base = {
+        let env = site::make_env(&base, UndefinedBehavior::Strict);
+        render_all(&env, &routes, &base, None).2
+    };
     // 1. seeds
     writeln!(md, "\n## Seeded mistakes\n").unwrap();
     writeln!(md, "| # | Mistake | check | check diagnostic (first relevant) | SemiStrict render | Strict render |").unwrap();
@@ -172,6 +177,8 @@ fn seeded(tdir: &Path) {
             e
         };
         let (se, st) = (render(UndefinedBehavior::SemiStrict), render(UndefinedBehavior::Strict));
+        // Strict already rejects the correct templates; only count errors the seed added
+        let st: Vec<String> = st.into_iter().filter(|e| !strict_base.contains(e)).collect();
         total += 1;
         if !errs.is_empty() { caught += 1 } else { missed.push(i + 1) }
         if !se.is_empty() { semi_c += 1 }
@@ -190,7 +197,7 @@ fn seeded(tdir: &Path) {
         )
         .unwrap();
     }
-    writeln!(md, "\ncheck caught {caught}/{total}; missed seeds: {missed:?}. Render caught: SemiStrict {semi_c}/{total}, Strict {strict_c}/{total} (render only sees executed paths of the fake Entries).").unwrap();
+    writeln!(md, "\ncheck caught {caught}/{total}; missed seeds: {missed:?}. Render caught: SemiStrict {semi_c}/{total}, Strict {strict_c}/{total} (Strict counts only errors beyond those it already raises on the correct templates; render sees only the paths the fake Entries execute, and stops at the first error on a page).").unwrap();
     print!("{md}");
     std::fs::write(Path::new(env!("CARGO_MANIFEST_DIR")).join("results/seeded.md"), md).unwrap();
 }
@@ -338,7 +345,7 @@ fn sort_demo() {
         .render_str("{{ ps|sort_by(['order', '-date'])|map(attribute='slug')|join(' ') }}", context! { ps => input })
         .unwrap();
     println!("template `ps|sort_by(['order','-date'])`: {out}");
-    println!("ALL REQUIRED ORDERINGS MATCH: see lines above ({})", if all_ok { "every comparison matched" } else { "some comparisons differ, by design or by tie rule" });
+    println!("{}", if all_ok { "every comparison matched" } else { "some comparisons differ: see the DIFFERENT lines above" });
 }
 
 // ---------------------------------------------------------------- timing

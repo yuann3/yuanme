@@ -176,9 +176,12 @@ fn lev(a: &str, b: &str) -> usize {
     prev[b.len()]
 }
 fn dym<'x>(name: &str, cands: impl Iterator<Item = &'x str>) -> String {
-    let best = cands.map(|c| (lev(name, c), c)).filter(|(d, c)| *d <= (name.len().max(c.len()) / 3).max(1) + 1 && *d < name.len().max(2)).min();
+    let best = cands
+        .map(|c| (lev(name, c), c.chars().next() != name.chars().next(), c))
+        .filter(|(d, _, c)| *d <= (name.len().max(c.len()) / 3).max(1) + 1 && *d < name.len().max(2))
+        .min();
     match best {
-        Some((_, c)) => format!("; did you mean `{c}`?"),
+        Some((_, _, c)) => format!("; did you mean `{c}`?"),
         None => String::new(),
     }
 }
@@ -859,7 +862,7 @@ impl Checker {
         if opt {
             match mode {
                 Mode::Use => {
-                    let txt = self.text(e.span());
+                    let txt = Self::path_of(e).unwrap_or_else(|| self.text(e.span()));
                     self.err(
                         e.span(),
                         format!("`{txt}` is optional and may be undefined here; wrap it in `{{% if {txt} %}}` or give it `| default(…)`"),
@@ -882,7 +885,10 @@ impl Checker {
                 None if o.open => (Ty::Any, false),
                 None => {
                     let on = Self::path_of(base).unwrap_or_else(|| "value".into());
-                    let hint = dym(name, o.fields.keys().map(|k| k.as_str()));
+                    let mut hint = dym(name, o.fields.keys().map(|k| k.as_str()));
+                    if hint.is_empty() && o.fields.len() <= 8 {
+                        hint = format!("; it has {}", o.fields.keys().map(|k| format!("`{k}`")).collect::<Vec<_>>().join(", "));
+                    }
                     self.err_end(e.span(), name.len(), format!("unknown field `{name}` on `{on}` ({}){hint}", o.name));
                     (Ty::Any, false)
                 }
@@ -919,7 +925,8 @@ impl Checker {
                 None if v.id == "caller" && self.in_macro.is_some() => (Ty::Any, true),
                 None if v.id == "self" || v.id == "loop" => (Ty::Any, false),
                 None => {
-                    let names: Vec<String> = self.scopes.iter().flat_map(|s| s.keys().cloned()).collect();
+                    let skip = if self.in_macro.is_some() { 1 } else { 0 };
+                    let names: Vec<String> = self.scopes.iter().skip(skip).flat_map(|s| s.keys().cloned()).collect();
                     let hint = dym(v.id, names.iter().map(|s| s.as_str()));
                     match self.in_macro.clone() {
                         Some(m) => self.err(
@@ -934,8 +941,8 @@ impl Checker {
             ast::Expr::GetAttr(g) => {
                 let (bt, bopt) = self.infer(&g.expr);
                 if bopt {
-                    let bt_txt = self.text(g.expr.span());
-                    let full = self.text(e.span());
+                    let bt_txt = Self::path_of(&g.expr).unwrap_or_else(|| self.text(g.expr.span()));
+                    let full = Self::path_of(e).unwrap_or_else(|| self.text(e.span()));
                     self.err(g.expr.span(), format!("`{bt_txt}` is optional, so `{full}` reaches through a value that may be undefined; guard with `{{% if {bt_txt} %}}`"));
                 }
                 self.field(e, &g.expr, &bt, g.name)
@@ -1342,5 +1349,12 @@ pub fn run(sources: BTreeMap<String, String>, schema: &crate::site::Schema) -> C
         c.check_route(k);
     }
     c.diags.sort_by(|a, b| (&a.file, a.line, a.col).cmp(&(&b.file, b.line, b.col)));
+    c
+}
+
+pub fn run_one(sources: BTreeMap<String, String>, schema: &crate::site::Schema, kind: &RouteKind) -> Checker {
+    let mut c = Checker::new(sources, schema.globals.clone(), schema.named.clone());
+    c.check_macro_bodies();
+    c.check_route(kind);
     c
 }
