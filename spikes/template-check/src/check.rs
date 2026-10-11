@@ -508,7 +508,7 @@ impl Checker {
                     let none_default = di.map(|j| matches!(&m.defaults[j], ast::Expr::Const(c) if c.value.is_none())).unwrap_or(false);
                     let optional = match prop {
                         Some(pr) => pr.optional && (!has_default || none_default),
-                        None => !has_default,
+                        None => false, // no props comment (a local helper macro): untyped, unchecked
                     };
                     self.bind(p, prop.map(|x| x.ty.clone()).unwrap_or(Ty::Any), optional);
                 }
@@ -691,10 +691,13 @@ impl Checker {
                 self.scopes.push(HashMap::new());
                 self.bind_target(&f.target, elem, false, None);
                 self.bind("loop", Ty::Any, false);
+                let mark = self.narrowed.len();
                 if let Some(fe) = &f.filter_expr {
-                    self.expr(fe, Mode::Guard);
+                    let n = self.cond(fe);
+                    self.narrowed.extend(n);
                 }
                 self.body(&f.body);
+                self.narrowed.truncate(mark);
                 self.scopes.pop();
                 self.body(&f.else_body);
             }
@@ -704,7 +707,9 @@ impl Checker {
                 self.narrowed.extend(n);
                 self.body(&i.true_body);
                 self.narrowed.truncate(mark);
+                self.narrowed.extend(Self::narrows_neg(&i.expr));
                 self.body(&i.false_body);
+                self.narrowed.truncate(mark);
             }
             ast::Stmt::WithBlock(w) => {
                 self.scopes.push(HashMap::new());
@@ -845,6 +850,20 @@ impl Checker {
                 v
             }
             ast::Expr::Test(t) if t.name == "defined" => Self::path_of(&t.expr).into_iter().collect(),
+            ast::Expr::UnaryOp(u) if matches!(u.op, ast::UnaryOpKind::Not) => Self::narrows_neg(&u.expr),
+            _ => vec![],
+        }
+    }
+    /// Paths proven defined when the condition is false (the `else` branch).
+    fn narrows_neg(e: &Expr) -> Vec<String> {
+        match e {
+            ast::Expr::UnaryOp(u) if matches!(u.op, ast::UnaryOpKind::Not) => Self::narrows(&u.expr),
+            ast::Expr::Test(t) if t.name == "undefined" => Self::path_of(&t.expr).into_iter().collect(),
+            ast::Expr::BinOp(b) if matches!(b.op, ast::BinOpKind::ScOr) => {
+                let mut v = Self::narrows_neg(&b.left);
+                v.extend(Self::narrows_neg(&b.right));
+                v
+            }
             _ => vec![],
         }
     }

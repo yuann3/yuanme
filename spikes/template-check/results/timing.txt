@@ -1,0 +1,12 @@
+check: read 18 templates 0.313 ms, build schema 0.333 ms, parse + walk 5 route kinds 0.127 ms (medians of 21)
+render 1000 fake Posts: 1122 routes, 1122 rendered, 10.2 MB HTML (medians of 7, single thread)
+  generate fake Entries (stands in for parsing content): 2.92 ms
+  context construction (Values, sort, taxonomies, per-route contexts): 2.73 ms
+  Environment + compile all templates: 0.10 ms
+  render all pages: 22.63 ms (20.2 us/page)
+Benchmark 1: ./target/release/template-check-spike check
+  Time (mean ± σ):       2.0 ms ±   0.1 ms    [User: 0.8 ms, System: 0.8 ms]
+  Range (min … max):     1.9 ms …   2.6 ms    1532 runs
+ 
+  Warning: Statistical outliers were detected. Consider re-running this benchmark on a quiet system without any interferences from other programs. It might help to use the '--warmup' or '--prepare' options.
+ 

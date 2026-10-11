@@ -1,0 +1,30 @@
+blog list [order, -modified], 8 hand-written posts: MATCH
+  reference: ["pinned-first", "extending_c_stdlib", "updated-late", "a-draft", "tie-a", "tie-b", "so_here_we_go_again"]
+  sort_by:   ["pinned-first", "extending_c_stdlib", "updated-late", "a-draft", "tie-a", "tie-b", "so_here_we_go_again"]
+series [modified] ascending, 8 hand-written posts: MATCH
+  reference: ["pinned-first", "tie-a", "updated-late"]
+  sort_by:   ["pinned-first", "tie-a", "updated-late"]
+series [date] ascending vs Reference (which sorts on updated ?? date), 8 hand-written posts: DIFFERENT
+  reference: ["pinned-first", "tie-a", "updated-late"]
+  sort_by:   ["updated-late", "pinned-first", "tie-a"]
+terms [-count], 8 hand-written posts (Reference breaks ties by first-seen, sort_by by slug): DIFFERENT
+  reference: ["life", "c", "rust", "programming", "draft"]
+  sort_by:   ["c", "life", "rust", "draft", "programming"]
+  counts: [("life", 3), ("c", 3), ("rust", 2), ("programming", 1), ("draft", 1)]
+blog list [order, -modified], 1,000 fake posts: MATCH
+series [modified] ascending, 1,000 fake posts: MATCH
+series [date] ascending vs Reference (which sorts on updated ?? date), 1,000 fake posts: DIFFERENT
+  reference: ["post-0250", "post-0810", "post-0500", "post-0190", "post-0750", "post-0440", "post-0130", "post-0690", "post-0380", "post-0940", "post-0320", "post-0880", "post-0010", "post-0570", "post-0260"]
+  sort_by:   ["post-0000", "post-0560", "post-0250", "post-0810", "post-0500", "post-0190", "post-0750", "post-0440", "post-0130", "post-0690", "post-0380", "post-0940", "post-0070", "post-0630", "post-0320"]
+terms [-count], 1,000 fake posts (Reference breaks ties by first-seen, sort_by by slug): DIFFERENT
+  reference: ["rust", "emacs", "life", "go", "c", "notes", "wgpu", "org", "math", "perf", "tools", "linux"]
+  sort_by:   ["emacs", "go", "life", "rust", "c", "linux", "math", "notes", "org", "perf", "tools", "wgpu"]
+  counts: [("rust", 164), ("emacs", 164), ("life", 164), ("go", 164), ("c", 163), ("notes", 163), ("wgpu", 163), ("org", 163), ("math", 163), ("perf", 163), ("tools", 163), ("linux", 163)]
+projects [order, -date] with order: 1..13 in each file: MATCH
+  reference: ["emaclaude", "mra", "shaderview", "linear-app", "sequel", "rego", "rayrust", "lrle", "shell", "ruskey", "pew", "hrust", "ylib"]
+  sort_by:   ["emaclaude", "mra", "shaderview", "linear-app", "sequel", "rego", "rayrust", "lrle", "shell", "ruskey", "pew", "hrust", "ylib"]
+projects, three without `order` (missing sorts last, then -date): MATCH
+  reference: ["emaclaude", "mra", "shaderview", "linear-app", "sequel", "rego", "rayrust", "lrle", "shell", "ruskey", "pew", "hrust", "ylib"]
+  sort_by:   ["emaclaude", "mra", "shaderview", "linear-app", "sequel", "rego", "rayrust", "lrle", "shell", "ruskey", "pew", "hrust", "ylib"]
+template `ps|sort_by(['order','-date'])`: emaclaude mra shaderview linear-app sequel rego rayrust lrle shell ruskey pew hrust ylib
+some comparisons differ: see the DIFFERENT lines above
