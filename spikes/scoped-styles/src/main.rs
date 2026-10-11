@@ -123,6 +123,7 @@ fn main() {
             std::process::exit(if n > 0 { 1 } else { 0 });
         }
         "edges" => edges(root),
+        "seeded" => seeded(&tdir),
         "css" => css_edges(root),
         "offsets" => offsets(&tdir),
         "render" => render(&tdir, root),
@@ -135,6 +136,15 @@ fn main() {
 
 /// Template check on the ORIGINAL sources, then the sidecar validations. Returns the error count.
 fn sidecar_check(t: &Map, c: &Map, print: bool) -> usize {
+    let (lines, errors) = sidecar_lines(t, c);
+    if print {
+        for l in &lines { println!("{l}"); }
+        eprintln!("check: {} templates, {} sidecars, {errors} errors, {} lines", t.len(), c.len(), lines.len());
+    }
+    errors
+}
+
+fn sidecar_lines(t: &Map, c: &Map) -> (Vec<String>, usize) {
     let schema = site::schema();
     let ck = check::run(t.clone(), &schema);
     let mut lines: Vec<String> = ck.diags.iter().map(|d| d.to_string()).collect();
@@ -171,11 +181,58 @@ fn sidecar_check(t: &Map, c: &Map, print: bool) -> usize {
             }
         }
     }
-    if print {
-        for l in &lines { println!("{l}"); }
-        eprintln!("check: {} templates, {} sidecars, {errors} errors, {} lines", t.len(), c.len(), lines.len());
+    (lines, errors)
+}
+
+/// Seeded Author mistakes for the sidecar validations.
+fn seeded(tdir: &Path) {
+    let (t, c) = load(tdir);
+    let (base, _) = sidecar_lines(&t, &c);
+    let mut md = format!("unseeded site: {} diagnostics\n\n| # | Seed | Diagnostics |\n|---|---|---|\n", base.len());
+    let post_partial = "<p class=\"label-mono\" data-reveal>\n  {% for tag in entry.tags %}<a href=\"/tags/{{ tag }}/\" class=\"meta-link text-ink-2\">#{{ tag }}</a>{% endfor %}\n</p>\n";
+    let prose = "{# props: class?: string #}\n{% macro prose(class=\"\") %}\n<article class=\"prose-panel {{ class }}\">{{ caller() }}</article>\n{% endmacro %}\n";
+    // (description, [(file, find, replace)]) ; file ending .css edits the sidecar; find "" = whole-file replace/add
+    let seeds: Vec<(&str, Vec<(&str, &str, &str)>)> = vec![
+        ("typo in a sidecar class", vec![("projects/index.css", ".project-name {", ".project-nam {")]),
+        ("the same typo where the template has an element with a Jinja-built class (`class=\"{{ lane }}\"`): MISSED, that element may carry any class", vec![("components/list_row.css", ".list-row-arrow {", ".list-row-arow {")]),
+        ("type selector for an element the template does not write", vec![("components/pagination.css", ".page-link:hover", "nav li")]),
+        ("rule targets an element that lives in an included partial (the template-check port's shape)", vec![
+            ("partials/post_meta.html", "", post_partial),
+            ("layouts/post.html", "{% for tag in entry.tags %}<a href=\"/tags/{{ tag }}/\" class=\"meta-link text-ink-2\">#{{ tag }}</a>{% endfor %}", "{% include \"partials/post_meta.html\" %}"),
+            ("layouts/post.html", "{% if entry.series %}<a href=\"/series/{{ entry.series }}/\" class=\"meta-link text-ink-2\">{{ entry.series }}</a>{% endif %}", "")]),
+        ("class handed to another file's macro (`prose(class=\"project-body\")`, the template-check port's shape)", vec![
+            ("components/prose.html", "", prose),
+            ("projects/entry.html", "<article class=\"prose-panel project-body mt-10\" data-reveal>", "{% from \"components/prose.html\" import prose %}{% call prose(class=\"project-body mt-10\") %}"),
+            ("projects/entry.html", "</article>", "{% endcall %}")]),
+        ("child component's element styled without :global()", vec![("components/photo_pile.css", ".photo :global(picture),", ".photo picture,")]),
+        ("rendered content styled without :global()", vec![("layouts/post.css", "article :global(em),", "article em,")]),
+        ("`:global()` empty", vec![("layouts/post.css", "article :global(em),", "article :global(),")]),
+        ("`:global` without parentheses", vec![("layouts/post.css", "article :global(em),", "article :global em,")]),
+        ("`:global(a, b)` list", vec![("layouts/post.css", "article :global(em),\narticle :global(i)", "article :global(em, i)")]),
+        ("`:global(` unbalanced", vec![("layouts/post.css", "article :global(em),", "article :global(em,")]),
+        ("`:local()`", vec![("layouts/post.css", "article :global(em),", ":local(article) :global(em),")]),
+        ("`| safe` in a template with a sidecar", vec![("components/pagination.html", "← Prev", "{{ \"<b>Prev</b>\"|safe }}")]),
+        ("dynamic tag name in a template with a sidecar", vec![("components/pagination.html", "<nav class", "<{{ \"nav\" }} class"), ("components/pagination.html", "</nav>", "</{{ \"nav\" }}>")]),
+        ("NOT a mistake: class built with Jinja (`photo-{{ kind }}`), state attributes, `:hover`", vec![("components/photo_pile.css", ".photo[data-st='wait']", ".photo-tall[data-st='wait']:hover")]),
+    ];
+    for (i, (what, edits)) in seeds.iter().enumerate() {
+        let (mut t2, mut c2) = (t.clone(), c.clone());
+        for (file, find, repl) in edits {
+            let (map, key) = if file.ends_with(".css") { (&mut c2, file.replace(".css", ".html")) } else { (&mut t2, file.to_string()) };
+            if find.is_empty() {
+                map.insert(key, repl.to_string());
+            } else {
+                let cur = map[&key].clone();
+                assert!(cur.contains(find), "seed {}: `{find}` not in {file}", i + 1);
+                map.insert(key, cur.replacen(find, repl, 1));
+            }
+        }
+        let (lines, _) = sidecar_lines(&t2, &c2);
+        let new: Vec<String> = lines.iter().filter(|l| !base.contains(l)).map(|l| format!("`{}`", l.replace('|', "\\|"))).collect();
+        md.push_str(&format!("| {} | {} | {} |\n", i + 1, what.replace('|', "\\|"), if new.is_empty() { "none".to_string() } else { new.join("<br>") }));
     }
-    errors
+    print!("{md}");
+    std::fs::write(Path::new(env!("CARGO_MANIFEST_DIR")).join("results/seeded.md"), md).unwrap();
 }
 
 // ---------------------------------------------------------------- edge cases

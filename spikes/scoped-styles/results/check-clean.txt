@@ -1,0 +1,1 @@
+check: 21 templates, 6 sidecars, 0 errors, 0 lines
