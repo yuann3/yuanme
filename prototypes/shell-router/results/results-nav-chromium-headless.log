@@ -1,0 +1,27 @@
+.0.1.2.3.4.5.6.7.8.9.10.11.12.13.14.15.16.17.18.19
+chromium 156.0.8078.4 headless renderer=ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)
+step | variant | n | kinds | painted med/p95 | settled med/p95 | film first frame med/p95 | GL init med/p95 | CLS max (all / counted) | ctx lost
+A idle→expanded | astro | 20 | soft | 163 / 244 | 854 / 962 | - / - | - / - | 0.535 / 0.166 | no
+A idle→expanded | full | 20 | full | 175 / 187 | 807 / 862 | 175 / 187 | 158 / 168 | 0.000 / 0.000 | no
+A idle→expanded | hist | 20 | soft | 82 / 100 | 804 / 863 | - / - | - / - | 0.538 / 0.015 | no
+A idle→expanded | proto | 20 | soft | 83 / 99 | 811 / 869 | - / - | - / - | 0.543 / 0.036 | no
+B expanded→expanded | astro | 20 | soft | 150 / 188 | 794 / 905 | - / - | - / - | 0.000 / 0.000 | no
+B expanded→expanded | full | 20 | full | 166 / 186 | 807 / 848 | 166 / 186 | 152 / 169 | 0.000 / 0.000 | no
+B expanded→expanded | hist | 20 | soft | 73 / 132 | 742 / 810 | - / - | - / - | 0.000 / 0.000 | no
+B expanded→expanded | proto | 20 | soft | 83 / 146 | 735 / 799 | - / - | - / - | 0.000 / 0.000 | no
+C expanded→idle | astro | 20 | soft | 146 / 171 | 949 / 1019 | - / - | - / - | 0.556 / 0.341 | no
+C expanded→idle | full | 20 | full | 163 / 181 | 873 / 934 | 163 / 181 | 153 / 167 | 0.000 / 0.000 | no
+C expanded→idle | hist | 20 | soft | 73 / 132 | 885 / 953 | - / - | - / - | 0.559 / 0.310 | no
+C expanded→idle | proto | 20 | soft | 84 / 100 | 886 / 951 | - / - | - / - | 0.558 / 0.310 | no
+back idle→expanded | astro | 20 | soft | 101 / 202 | 1005 / 1160 | - / - | - / - | 0.538 / 0.538 | no
+back idle→expanded | full | 20 | full | 101 / 109 | 741 / 796 | 101 / 109 | 85 / 91 | 0.000 / 0.000 | no
+back idle→expanded | hist | 20 | soft | 32 / 71 | 972 / 1101 | - / - | - / - | 0.537 / 0.537 | no
+back idle→expanded | proto | 20 | soft | 26 / 80 | 962 / 1039 | - / - | - / - | 0.539 / 0.539 | no
+cold / | astro | 20 | full | 179 / 203 | 887 / 967 | 179 / 203 | 122 / 149 | 0.000 / 0.000 | no
+cold / | full | 20 | full | 186 / 203 | 908 / 962 | 186 / 203 | 132 / 146 | 0.000 / 0.000 | no
+cold / | hist | 20 | full | 187 / 222 | 909 / 980 | 187 / 221 | 126 / 148 | 0.000 / 0.000 | no
+cold / | proto | 20 | full | 187 / 204 | 908 / 992 | 187 / 204 | 130 / 148 | 0.000 / 0.000 | no
+fwd expanded→idle | astro | 20 | soft | 91 / 152 | 913 / 981 | - / - | - / - | 0.557 / 0.557 | no
+fwd expanded→idle | full | 20 | full | 92 / 104 | 815 / 891 | 92 / 104 | 81 / 88 | 0.000 / 0.000 | no
+fwd expanded→idle | hist | 20 | soft | 60 / 77 | 856 / 898 | - / - | - / - | 0.558 / 0.558 | no
+fwd expanded→idle | proto | 20 | soft | 51 / 78 | 856 / 920 | - / - | - / - | 0.563 / 0.563 | no

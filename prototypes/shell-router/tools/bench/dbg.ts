@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+const page = await ctx.newPage();
+await page.goto('http://localhost:' + process.argv[2] + '/'); await page.waitForTimeout(1500);
+await page.click('[data-nav-link][data-section=writing]'); await page.waitForTimeout(1500);
+await page.click('[data-panel-content] a.close-desktop'); await page.waitForTimeout(1500);
+await page.evaluate(() => history.back()); await page.waitForTimeout(1500);
+await page.evaluate(() => history.forward()); await page.waitForTimeout(1200);
+console.log(await page.evaluate(() => document.getAnimations().filter(a=>a.playState!=="finished" && isFinite(a.effect!.getComputedTiming().endTime as number)).map((a) => { const t = a.effect!.getComputedTiming(); const el = (a.effect as KeyframeEffect).target as Element; return `${(a as any).animationName || 'waapi'} ${el?.tagName}.${el?.className} end=${t.endTime} delay=${t.delay} dur=${t.duration} state=${a.playState}`; }).join('\n')));
+await b.close();

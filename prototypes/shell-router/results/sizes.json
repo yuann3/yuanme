@@ -1,0 +1,146 @@
+{
+ "rows": [
+  [
+   "router.ts alone (Navigation API driver + swap core + scripts + prefetch + announcer + dev hook)",
+   {
+    "raw": 3759,
+    "gz": 1728,
+    "br": 1545
+   }
+  ],
+  [
+   "router.ts without the dev hook",
+   {
+    "raw": 3619,
+    "gz": 1692,
+    "br": 1506
+   }
+  ],
+  [
+   "router.ts without dev hook and prefetch",
+   {
+    "raw": 3209,
+    "gz": 1510,
+    "br": 1345
+   }
+  ],
+  [
+   "router.ts + router-history.ts (History API driver)",
+   {
+    "raw": 4722,
+    "gz": 2044,
+    "br": 1827
+   }
+  ],
+  [
+   "shell.ts bundle (film, palettes, reveal; router external)",
+   {
+    "raw": 26640,
+    "gz": 10996,
+    "br": 9798
+   }
+  ],
+  [
+   "shell.ts bundle without glue (morph, syncNav, swapPanel, before-swap)",
+   {
+    "raw": 23428,
+    "gz": 9915,
+    "br": 8827
+   }
+  ],
+  [
+   "shell.ts bundle without the dev branch of the glue",
+   {
+    "raw": 26397,
+    "gz": 10913,
+    "br": 9739
+   }
+  ],
+  [
+   "glue alone (morph + syncNav + swapPanel + before-swap, motion-reveal external)",
+   {
+    "raw": 3723,
+    "gz": 1698,
+    "br": 1541
+   }
+  ],
+  [
+   "astro-dist/_astro/router.CNTNUqWm.js",
+   {
+    "raw": 11582,
+    "gz": 4086,
+    "br": 3644
+   }
+  ],
+  [
+   "astro-dist/_astro/Shell.astro_astro_type_script_index_0_lang.C3Ek_E9W.js",
+   {
+    "raw": 26714,
+    "gz": 10982,
+    "br": 9796
+   }
+  ],
+  [
+   "astro-dist/_astro/PhotoPile.astro_astro_type_script_index_0_lang.Cmp7FTzI.js",
+   {
+    "raw": 7219,
+    "gz": 3051,
+    "br": 2751
+   }
+  ],
+  [
+   "astro-dist/_astro/ClientRouter.astro_astro_type_script_index_0_lang.C8icoCZT.js",
+   {
+    "raw": 3893,
+    "gz": 1686,
+    "br": 1474
+   }
+  ],
+  [
+   "proto-dist/_astro/PhotoPile.astro_astro_type_script_index_0_lang.Cmp7FTzI.js",
+   {
+    "raw": 7219,
+    "gz": 3051,
+    "br": 2751
+   }
+  ],
+  [
+   "proto-dist/_astro/Shell.astro_astro_type_script_index_0_lang.CKVbN6Qv.js",
+   {
+    "raw": 30590,
+    "gz": 12510,
+    "br": 11114
+   }
+  ],
+  [
+   "proto-hist-dist/_astro/PhotoPile.astro_astro_type_script_index_0_lang.Cmp7FTzI.js",
+   {
+    "raw": 7219,
+    "gz": 3051,
+    "br": 2751
+   }
+  ],
+  [
+   "proto-hist-dist/_astro/Shell.astro_astro_type_script_index_0_lang.BkTpFW-m.js",
+   {
+    "raw": 31773,
+    "gz": 12889,
+    "br": 11510
+   }
+  ]
+ ],
+ "lines": [
+  "astro-dist index.html: JS requests 3; external 42189 / 16754 / 14914; inline 264 / 200 / 136; total 42453 / 16954 / 15050",
+  "astro-dist blog/index.html: JS requests 3; external 42189 / 16754 / 14914; inline 264 / 200 / 136; total 42453 / 16954 / 15050",
+  "astro-dist blog/extending-c-stdlib/index.html: JS requests 3; external 42189 / 16754 / 14914; inline 1120 / 703 / 548; total 43309 / 17457 / 15462",
+  "astro-dist about/index.html: JS requests 4; external 49408 / 19805 / 17665; inline 264 / 200 / 136; total 49672 / 20005 / 17801",
+  "proto-dist index.html: JS requests 1; external 30590 / 12510 / 11114; inline 264 / 200 / 136; total 30854 / 12710 / 11250",
+  "proto-dist blog/index.html: JS requests 1; external 30590 / 12510 / 11114; inline 264 / 200 / 136; total 30854 / 12710 / 11250",
+  "proto-dist blog/extending-c-stdlib/index.html: JS requests 1; external 30590 / 12510 / 11114; inline 1120 / 703 / 548; total 31710 / 13213 / 11662",
+  "proto-dist about/index.html: JS requests 2; external 37809 / 15561 / 13865; inline 264 / 200 / 136; total 38073 / 15761 / 14001",
+  "proto-hist-dist index.html: JS requests 1; external 31773 / 12889 / 11510; inline 264 / 200 / 136; total 32037 / 13089 / 11646",
+  "proto-hist-dist blog/index.html: JS requests 1; external 31773 / 12889 / 11510; inline 264 / 200 / 136; total 32037 / 13089 / 11646",
+  "proto-hist-dist blog/extending-c-stdlib/index.html: JS requests 1; external 31773 / 12889 / 11510; inline 1120 / 703 / 548; total 32893 / 13592 / 12058",
+  "proto-hist-dist about/index.html: JS requests 2; external 38992 / 15940 / 14261; inline 264 / 200 / 136; total 39256 / 16140 / 14397"
+ ]
+}

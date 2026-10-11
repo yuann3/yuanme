@@ -1,0 +1,1208 @@
+{
+ "browser": "chromium",
+ "version": "156.0.8078.4",
+ "mode": "headed",
+ "runs": 30,
+ "rows": [
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 0,
+   "swap": 5.099999964237213,
+   "painted": 17.599999964237213,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 0,
+   "painted": 28.199951171875,
+   "settled": 629.89990234375,
+   "film": 28.199951171875,
+   "glInit": 6.099999964237213
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 1,
+   "swap": 4,
+   "painted": 17.100000023841858,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 1,
+   "painted": 25.199951171875,
+   "settled": 579.5,
+   "film": 25.199951171875,
+   "glInit": 5.800000011920929
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 2,
+   "swap": 4.200000047683716,
+   "painted": 18.900000035762787,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 2,
+   "painted": 41.39990234375,
+   "settled": 593.2998046875,
+   "film": 41.39990234375,
+   "glInit": 8.399999976158142
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 3,
+   "swap": 5.5,
+   "painted": 18.600000023841858,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 3,
+   "painted": 38.900146484375,
+   "settled": 595.2001953125,
+   "film": 38.900146484375,
+   "glInit": 9.199999988079071
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 4,
+   "swap": 2.399999976158142,
+   "painted": 17,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 4,
+   "painted": 33.699951171875,
+   "settled": 597.7998046875,
+   "film": 33.699951171875,
+   "glInit": 8.100000023841858
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 5,
+   "swap": 5,
+   "painted": 16.899999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 5,
+   "painted": 31.39990234375,
+   "settled": 597.199951171875,
+   "film": 31.39990234375,
+   "glInit": 8
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 6,
+   "swap": 3.800000011920929,
+   "painted": 15.800000011920929,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 6,
+   "painted": 22.699951171875,
+   "settled": 580.5,
+   "film": 22.699951171875,
+   "glInit": 5.800000011920929
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 7,
+   "swap": 4.5,
+   "painted": 16.899999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 7,
+   "painted": 20.400146484375,
+   "settled": 581.10009765625,
+   "film": 20.400146484375,
+   "glInit": 6.899999976158142
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 8,
+   "swap": 3.5,
+   "painted": 19.099999964237213,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 8,
+   "painted": 37,
+   "settled": 594.60009765625,
+   "film": 37,
+   "glInit": 8.100000023841858
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 9,
+   "swap": 4.899999976158142,
+   "painted": 12.699999988079071,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27656
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 9,
+   "painted": 41.5,
+   "settled": 596.699951171875,
+   "film": 41.39990234375,
+   "glInit": 8.599999964237213
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 10,
+   "swap": 2,
+   "painted": 17.5,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 10,
+   "painted": 36.10009765625,
+   "settled": 594.39990234375,
+   "film": 36.10009765625,
+   "glInit": 9.200000047683716
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 11,
+   "swap": 2,
+   "painted": 16.69999998807907,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 11,
+   "painted": 37.89990234375,
+   "settled": 589.10009765625,
+   "film": 37.89990234375,
+   "glInit": 8.600000023841858
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 12,
+   "swap": 2.900000035762787,
+   "painted": 18.30000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 12,
+   "painted": 25.100341796875,
+   "settled": 579.7001953125,
+   "film": 25.100341796875,
+   "glInit": 6.199999988079071
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 13,
+   "swap": 3.799999952316284,
+   "painted": 16.899999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 13,
+   "painted": 22.899658203125,
+   "settled": 581.7998046875,
+   "film": 22.899658203125,
+   "glInit": 5.200000047683716
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 14,
+   "swap": 5.100000023841858,
+   "painted": 21.80000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 14,
+   "painted": 19.000244140625,
+   "settled": 574.80029296875,
+   "film": 19.000244140625,
+   "glInit": 5.600000023841858
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 15,
+   "swap": 6.399999976158142,
+   "painted": 16.5,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 15,
+   "painted": 34.499755859375,
+   "settled": 592.599853515625,
+   "film": 34.499755859375,
+   "glInit": 8.800000011920929
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 16,
+   "swap": 2.899999976158142,
+   "painted": 16.899999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 16,
+   "painted": 35.10009765625,
+   "settled": 596.699951171875,
+   "film": 35.10009765625,
+   "glInit": 8.799999952316284
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 17,
+   "swap": 5.199999988079071,
+   "painted": 16.80000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 17,
+   "painted": 34.69970703125,
+   "settled": 597.89990234375,
+   "film": 34.69970703125,
+   "glInit": 8.900000035762787
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 18,
+   "swap": 2,
+   "painted": 16.900000035762787,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 18,
+   "painted": 29,
+   "settled": 580.800048828125,
+   "film": 29,
+   "glInit": 7.400000035762787
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 19,
+   "swap": 2.699999988079071,
+   "painted": 16.80000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 19,
+   "painted": 34.5,
+   "settled": 598.199951171875,
+   "film": 34.5,
+   "glInit": 7.699999988079071
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 20,
+   "swap": 4.700000047683716,
+   "painted": 16.700000047683716,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 20,
+   "painted": 24.699951171875,
+   "settled": 582.10009765625,
+   "film": 24.699951171875,
+   "glInit": 5.800000011920929
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 21,
+   "swap": 7.300000011920929,
+   "painted": 17.30000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 21,
+   "painted": 18.60009765625,
+   "settled": 581.10009765625,
+   "film": 18.60009765625,
+   "glInit": 6.100000023841858
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 22,
+   "swap": 5.899999976158142,
+   "painted": 16.80000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 22,
+   "painted": 39.2001953125,
+   "settled": 596.5,
+   "film": 39.2001953125,
+   "glInit": 9
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 23,
+   "swap": 3.5,
+   "painted": 16.899999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 23,
+   "painted": 33.400146484375,
+   "settled": 597.100341796875,
+   "film": 33.400146484375,
+   "glInit": 8.300000011920929
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 24,
+   "swap": 6,
+   "painted": 16.69999998807907,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 24,
+   "painted": 33.300048828125,
+   "settled": 596,
+   "film": 33.300048828125,
+   "glInit": 8.699999988079071
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 25,
+   "swap": 2.099999964237213,
+   "painted": 16.899999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 25,
+   "painted": 38.10009765625,
+   "settled": 598.10009765625,
+   "film": 38.10009765625,
+   "glInit": 9.199999988079071
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 26,
+   "swap": 6.800000011920929,
+   "painted": 16.5,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 26,
+   "painted": 35.099853515625,
+   "settled": 597.89990234375,
+   "film": 35.099853515625,
+   "glInit": 8.599999964237213
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 27,
+   "swap": 5.899999976158142,
+   "painted": 17.30000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 27,
+   "painted": 26.60009765625,
+   "settled": 580.300048828125,
+   "film": 26.60009765625,
+   "glInit": 5.600000023841858
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 28,
+   "swap": 3.200000047683716,
+   "painted": 18.600000023841858,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 28,
+   "painted": 18.10009765625,
+   "settled": 580.2001953125,
+   "film": 18.10009765625,
+   "glInit": 5.800000011920929
+  },
+  {
+   "path": "/blog/",
+   "kind": "soft",
+   "run": 29,
+   "swap": 7.600000023841858,
+   "painted": 16.80000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 0,
+   "htmlBytes": 27657
+  },
+  {
+   "path": "/blog/",
+   "kind": "reload",
+   "run": 29,
+   "painted": 35.300048828125,
+   "settled": 598.10009765625,
+   "film": 35.300048828125,
+   "glInit": 9.5
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 0,
+   "swap": 16.899999976158142,
+   "painted": 22.30000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 0,
+   "painted": 41.5,
+   "settled": 592.5,
+   "film": 41.5,
+   "glInit": 13.800000011920929
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 1,
+   "swap": 9.899999976158142,
+   "painted": 16.69999998807907,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 1,
+   "painted": 36.5,
+   "settled": 600.10009765625,
+   "film": 36.5,
+   "glInit": 14.399999976158142
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 2,
+   "swap": 24.099999964237213,
+   "painted": 32.09999996423721,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 2,
+   "painted": 56.2998046875,
+   "settled": 614.2998046875,
+   "film": 56.2998046875,
+   "glInit": 18.19999998807907
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 3,
+   "swap": 19.400000035762787,
+   "painted": 27.100000023841858,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 3,
+   "painted": 59.599853515625,
+   "settled": 620.699951171875,
+   "film": 59.599853515625,
+   "glInit": 17.600000023841858
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 4,
+   "swap": 21.799999952316284,
+   "painted": 29.899999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 4,
+   "painted": 57.099853515625,
+   "settled": 616.999755859375,
+   "film": 57.099853515625,
+   "glInit": 17.80000001192093
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 5,
+   "swap": 22.200000047683716,
+   "painted": 30.30000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 5,
+   "painted": 62.400146484375,
+   "settled": 617.900146484375,
+   "film": 62.400146484375,
+   "glInit": 18.100000023841858
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 6,
+   "swap": 20.399999976158142,
+   "painted": 27.599999964237213,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 6,
+   "painted": 59.800048828125,
+   "settled": 620.10009765625,
+   "film": 59.800048828125,
+   "glInit": 17.100000023841858
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 7,
+   "swap": 14.800000011920929,
+   "painted": 19.600000023841858,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 7,
+   "painted": 56.400146484375,
+   "settled": 611.400146484375,
+   "film": 56.400146484375,
+   "glInit": 18.5
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 8,
+   "swap": 9.699999988079071,
+   "painted": 16.69999998807907,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 8,
+   "painted": 42.599853515625,
+   "settled": 598.7998046875,
+   "film": 42.599853515625,
+   "glInit": 15.300000011920929
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 9,
+   "swap": 15,
+   "painted": 22,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138821
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 9,
+   "painted": 53.500244140625,
+   "settled": 609.2001953125,
+   "film": 53.500244140625,
+   "glInit": 18.600000023841858
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 10,
+   "swap": 18,
+   "painted": 26.100000023841858,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 10,
+   "painted": 46.300048828125,
+   "settled": 601,
+   "film": 46.300048828125,
+   "glInit": 16.399999976158142
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 11,
+   "swap": 19,
+   "painted": 26.599999964237213,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 11,
+   "painted": 36.89990234375,
+   "settled": 603.999755859375,
+   "film": 36.89990234375,
+   "glInit": 14.300000011920929
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 12,
+   "swap": 16,
+   "painted": 22.5,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 12,
+   "painted": 57.60009765625,
+   "settled": 624.500244140625,
+   "film": 57.60009765625,
+   "glInit": 18.899999976158142
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 13,
+   "swap": 20.600000023841858,
+   "painted": 28.100000023841858,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 13,
+   "painted": 54.400146484375,
+   "settled": 624.199951171875,
+   "film": 54.400146484375,
+   "glInit": 19
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 14,
+   "swap": 21.100000023841858,
+   "painted": 28.5,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 14,
+   "painted": 65.499755859375,
+   "settled": 618.39990234375,
+   "film": 65.499755859375,
+   "glInit": 18.600000023841858
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 15,
+   "swap": 9.599999964237213,
+   "painted": 15.899999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 15,
+   "painted": 56.999755859375,
+   "settled": 615.499755859375,
+   "film": 56.999755859375,
+   "glInit": 17.599999964237213
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 16,
+   "swap": 21.399999976158142,
+   "painted": 28.80000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 16,
+   "painted": 60.5,
+   "settled": 617.800048828125,
+   "film": 60.5,
+   "glInit": 18.19999998807907
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 17,
+   "swap": 15.099999964237213,
+   "painted": 19.80000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 17,
+   "painted": 42.699951171875,
+   "settled": 596.099853515625,
+   "film": 42.699951171875,
+   "glInit": 14.699999988079071
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 18,
+   "swap": 10.800000011920929,
+   "painted": 16.80000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 18,
+   "painted": 35.300048828125,
+   "settled": 598.300048828125,
+   "film": 35.300048828125,
+   "glInit": 13.799999952316284
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 19,
+   "swap": 21.399999976158142,
+   "painted": 28.599999964237213,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 19,
+   "painted": 54.89990234375,
+   "settled": 619.599853515625,
+   "film": 54.89990234375,
+   "glInit": 16.69999998807907
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 20,
+   "swap": 12.699999988079071,
+   "painted": 19.30000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 20,
+   "painted": 57.89990234375,
+   "settled": 610.300048828125,
+   "film": 57.89990234375,
+   "glInit": 18
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 21,
+   "swap": 18,
+   "painted": 25.69999998807907,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 21,
+   "painted": 59.000244140625,
+   "settled": 618.800048828125,
+   "film": 59.000244140625,
+   "glInit": 18.5
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 22,
+   "swap": 18.100000023841858,
+   "painted": 25.600000023841858,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 22,
+   "painted": 56.300048828125,
+   "settled": 623.89990234375,
+   "film": 56.300048828125,
+   "glInit": 17.80000001192093
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 23,
+   "swap": 23.399999976158142,
+   "painted": 31.399999976158142,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 23,
+   "painted": 58.89990234375,
+   "settled": 613.89990234375,
+   "film": 58.89990234375,
+   "glInit": 17.299999952316284
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 24,
+   "swap": 12.899999976158142,
+   "painted": 17.69999998807907,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 24,
+   "painted": 55.999755859375,
+   "settled": 614.7998046875,
+   "film": 55.999755859375,
+   "glInit": 17.899999976158142
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 25,
+   "swap": 9.5,
+   "painted": 16.799999952316284,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 25,
+   "painted": 36.300048828125,
+   "settled": 600.7001953125,
+   "film": 36.300048828125,
+   "glInit": 13.5
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 26,
+   "swap": 18.19999998807907,
+   "painted": 26.30000001192093,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 26,
+   "painted": 60.2998046875,
+   "settled": 621.199951171875,
+   "film": 60.2998046875,
+   "glInit": 18
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 27,
+   "swap": 18.19999998807907,
+   "painted": 25.299999952316284,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 27,
+   "painted": 42.300048828125,
+   "settled": 606.60009765625,
+   "film": 42.199951171875,
+   "glInit": 16.600000023841858
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 28,
+   "swap": 22.69999998807907,
+   "painted": 30,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 28,
+   "painted": 36.60009765625,
+   "settled": 601.199951171875,
+   "film": 36.60009765625,
+   "glInit": 14.300000011920929
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "soft",
+   "run": 29,
+   "swap": 21.400000035762787,
+   "painted": 29.19999998807907,
+   "visible": true,
+   "sameCanvas": true,
+   "scrollKept": 400,
+   "htmlBytes": 138822
+  },
+  {
+   "path": "/blog/extending-c-stdlib/",
+   "kind": "reload",
+   "run": 29,
+   "painted": 54.89990234375,
+   "settled": 612,
+   "film": 54.7998046875,
+   "glInit": 17
+  }
+ ]
+}

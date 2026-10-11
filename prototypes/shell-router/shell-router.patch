@@ -1,0 +1,347 @@
+diff --git a/src/layouts/Shell.astro b/src/layouts/Shell.astro
+index a89b1de..b89688b 100644
+--- a/src/layouts/Shell.astro
++++ b/src/layouts/Shell.astro
+@@ -1,5 +1,4 @@
+ ---
+-import { ClientRouter } from 'astro:transitions';
+ import BaseHead from '../components/BaseHead.astro';
+ import Wordmark from '../components/Wordmark.astro';
+ import { siteConfig, SECTIONS, FOOTER_LINKS, type Section } from '../consts';
+@@ -49,7 +48,6 @@ const filmCss = [
+ <html lang="en" data-state={section ? 'expanded' : 'idle'} data-section={section}>
+ 	<head>
+ 		<BaseHead title={title} description={description} image={image} articleDate={articleDate} />
+-		<ClientRouter />
+ 		<style is:inline set:html={filmCss}></style>
+ 	</head>
+ 	<body>
+diff --git a/src/scripts/router-history.ts b/src/scripts/router-history.ts
+new file mode 100644
+index 0000000..bf84a02
+--- /dev/null
++++ b/src/scripts/router-history.ts
+@@ -0,0 +1,51 @@
++// Optional History API driver, for browsers without the Navigation API
++// (Firefox < 147, Safari < 26.2). Prototype only: built into the
++// "proto-hist" variant to measure what it costs.
++
++import { load, skip, swap, useFallback } from './router';
++
++const w = window as any;
++if (!w.navigation && document.querySelector('[data-shell]')) {
++	let cur = new URL(location.href);
++	let ctrl: AbortController | undefined;
++	let t = 0;
++	history.scrollRestoration = 'manual';
++	const save = () => history.replaceState({ x: scrollX, y: scrollY }, '');
++	addEventListener('scroll', () => {
++		clearTimeout(t);
++		t = window.setTimeout(save, 100);
++	}, { passive: true });
++
++	const go = async (to: URL, state?: { x: number, y: number }) => {
++		ctrl?.abort();
++		const signal = (ctrl = new AbortController()).signal;
++		let page;
++		try {
++			page = await load(to, signal);
++		} catch {}
++		if (signal.aborted) return;
++		if (!page) return state ? location.reload() : location.assign(to);
++		const from = cur;
++		cur = page.url;
++		await swap(page.doc, from, page.url, state ? 'traverse' : 'push', () => {
++			if (!state) history.pushState({ x: 0, y: 0 }, '', page.url);
++			else history.replaceState(state, '', page.url);
++			scrollTo(state?.x || 0, state?.y || 0);
++		});
++	};
++	useFallback((href) => go(new URL(href, location.href)));
++
++	document.addEventListener('click', (e) => {
++		const a = (e.target as Element).closest?.<HTMLAnchorElement>('a[href]');
++		if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey ||
++			(a.target && a.target !== '_self') || a.hasAttribute('download')) return;
++		const to = new URL(a.href);
++		if (skip(to) || (to.hash && to.pathname === location.pathname && to.search === location.search)) return;
++		e.preventDefault();
++		save();
++		go(to);
++	});
++	addEventListener('popstate', (e) => {
++		if (location.pathname + location.search !== cur.pathname + cur.search) go(new URL(location.href), e.state || { x: 0, y: 0 });
++	});
++}
+diff --git a/src/scripts/router.ts b/src/scripts/router.ts
+new file mode 100644
+index 0000000..83929f3
+--- /dev/null
++++ b/src/scripts/router.ts
+@@ -0,0 +1,185 @@
++// Prototype Shell swap router (yuanme #26). Throwaway.
++//
++// A same-document router on the Navigation API. It fetches the next page,
++// fires astro:before-swap (whose `swap` the Site may replace), swaps, adopts
++// the final URL, fires astro:after-swap, runs scripts not yet run in this
++// Document, then fires astro:page-load. Anything unexpected (no Navigation
++// API, non-HTML, no [data-shell], a cross-origin redirect, a network error)
++// falls back to an ordinary full page load.
++
++type Nav = { navigate(url: string): unknown, addEventListener(t: 'navigate', f: (e: any) => void): void };
++export type SwapEvent = Event & { from: URL, to: URL, navigationType: string, newDocument: Document, swap: () => void };
++
++const d = document;
++const nav: Nav | undefined = (window as any).navigation;
++const shell = () => d.querySelector('[data-shell]');
++const ran = new Set<string>();
++const key = (s: HTMLScriptElement) => (s.src ? new URL(s.src, location.href).href : s.textContent!);
++const fire = (name: string, props?: object) => d.dispatchEvent(Object.assign(new Event('astro:' + name), props));
++let parser: DOMParser | undefined;
++let announcer: HTMLElement | undefined;
++let adopting = false;
++let fallback: ((href: string) => void) | undefined;
++
++for (const s of d.scripts) ran.add(key(s));
++
++export const skip = (u: URL) => u.origin !== location.origin || /\.(?!html?$)\w+$/.test(u.pathname);
++
++export function swapRootAttributes(doc: Document) {
++	const r = d.documentElement;
++	for (const { name } of [...r.attributes]) r.removeAttribute(name);
++	for (const { name, value } of doc.documentElement.attributes) r.setAttribute(name, value);
++}
++
++// Keep stylesheets that are in both heads (no reflow, no flash); replace the rest.
++const sheet = (doc: Document, el: Element) =>
++	el.matches('link[rel=stylesheet]') && doc.head.querySelector(`link[rel=stylesheet][href="${el.getAttribute('href')}"]`);
++
++export function swapHeadElements(doc: Document) {
++	for (const el of [...d.head.children]) {
++		const twin = sheet(doc, el);
++		twin ? twin.remove() : el.remove();
++	}
++	d.head.append(...doc.head.children);
++}
++
++// Fetch and parse; null means "do a full load instead".
++export async function load(to: URL, signal: AbortSignal) {
++	const res = await fetch(to, { signal });
++	const url = new URL(res.url);
++	if (!/^(text\/html|application\/xhtml\+xml)/.test(res.headers.get('content-type') || '') || skip(url)) return;
++	const doc = (parser ||= new DOMParser()).parseFromString(await res.text(), 'text/html');
++	if (!doc.querySelector('[data-shell]')) return;
++	// New stylesheets load before the swap, as Astro does.
++	await Promise.all([...doc.head.querySelectorAll<HTMLLinkElement>('link[rel=stylesheet]')]
++		.filter((l) => !sheet(d, l))
++		.map((l) => new Promise((r) => {
++			const p = d.createElement('link');
++			p.rel = 'preload';
++			p.as = 'style';
++			p.href = l.href;
++			p.onload = p.onerror = r;
++			d.head.append(p);
++		})));
++	return { doc, url };
++}
++
++// Run each script once per Document (keyed on src or text), and wait for
++// them so page-load listeners they register see the first page-load.
++// Inline modules fire no load event in Chromium, so (as Astro does) a later
++// empty data: module stands in for them.
++const SENTINEL = 'data:application/javascript,';
++ran.add(SENTINEL);
++const loaded = (n: HTMLScriptElement) => new Promise((r) => (n.onload = n.onerror = r));
++function runScripts() {
++	const waits: Promise<unknown>[] = [];
++	let inline = false;
++	for (const s of [...d.scripts]) {
++		const k = key(s);
++		const t = s.type;
++		if (ran.has(k) || (t && t !== 'module' && t !== 'text/javascript')) continue;
++		ran.add(k);
++		const n = d.createElement('script');
++		for (const { name, value } of s.attributes) n.setAttribute(name, value);
++		n.textContent = s.textContent;
++		if (n.src) waits.push(loaded(n));
++		else inline ||= t === 'module';
++		s.replaceWith(n);
++	}
++	if (inline) {
++		const n = Object.assign(d.createElement('script'), { type: 'module', src: SENTINEL });
++		waits.push(loaded(n).then(() => n.remove()));
++		d.body.append(n);
++	}
++	return Promise.all(waits);
++}
++
++function announce() {
++	const a = (announcer ||= Object.assign(d.createElement('div'), { className: 'astro-route-announcer' }));
++	a.setAttribute('aria-live', 'assertive');
++	a.setAttribute('aria-atomic', 'true');
++	a.textContent = '';
++	d.body.append(a);
++	setTimeout(() => (a.textContent = d.title || d.querySelector('h1')?.textContent || location.pathname), 60);
++}
++
++// The swap core, shared by every driver (Navigation API, History API, dev).
++// `commit` runs between the swap and after-swap: scroll and URL adoption.
++export async function swap(newDocument: Document, from: URL, to: URL, navigationType: string, commit?: () => void) {
++	newDocument.querySelectorAll('noscript').forEach((n) => n.remove());
++	const ev = Object.assign(new Event('astro:before-swap'), {
++		from, to, navigationType, newDocument,
++		swap() {
++			swapRootAttributes(newDocument);
++			swapHeadElements(newDocument);
++			d.body.replaceWith(newDocument.body);
++		},
++	}) as SwapEvent;
++	d.dispatchEvent(ev);
++	ev.swap();
++	commit?.();
++	fire('after-swap');
++	await runScripts();
++	fire('page-load');
++	announce();
++}
++
++// Adopt a redirected URL without a new entry. This replace fires its own
++// navigate event, which we must not intercept.
++export function adopt(url: URL) {
++	if (url.href === location.href) return;
++	adopting = true;
++	history.replaceState(history.state, '', url);
++	adopting = false;
++}
++
++export const useFallback = (f: typeof fallback) => (fallback = f);
++export const navigate = (href: string) => (nav ? nav.navigate(href) : fallback ? fallback(href) : location.assign(href));
++
++if (nav && shell()) {
++	nav.addEventListener('navigate', (e) => {
++		const to = new URL(e.destination.url);
++		if (adopting || !e.canIntercept || e.hashChange || e.downloadRequest !== null || e.formData || e.navigationType === 'reload' || skip(to)) return;
++		const from = new URL(location.href);
++		e.intercept({
++			scroll: 'manual',
++			focusReset: 'manual',
++			async handler() {
++				let page;
++				try {
++					page = await load(to, e.signal);
++				} catch {}
++				if (e.signal.aborted) return;
++				if (!page) return location.reload();
++				await swap(page.doc, from, page.url, e.navigationType, () => {
++					try { e.scroll(); } catch {}
++					adopt(page.url);
++				});
++			},
++		});
++	});
++}
++
++// Hover/focus prefetch after 80 ms, as Astro's prefetchAll does.
++const seen = new Set<string>();
++let timer = 0;
++const prefetch = (a: HTMLAnchorElement) => {
++	if (seen.has(a.href) || skip(new URL(a.href)) || a.pathname === location.pathname || (navigator as any).connection?.saveData) return;
++	seen.add(a.href);
++	d.head.append(Object.assign(d.createElement('link'), { rel: 'prefetch', href: a.href }));
++};
++for (const t of ['mouseover', 'focusin', 'touchstart']) {
++	d.addEventListener(t, (e) => {
++		clearTimeout(timer);
++		const a = (e.target as Element).closest?.<HTMLAnchorElement>('a[href]');
++		if (a) timer = window.setTimeout(prefetch, t[0] === 't' ? 0 : 80, a);
++	}, { passive: true });
++}
++
++addEventListener('load', () => fire('page-load'));
++
++// Dev soft-swap hook (#11): the dev client hands over the page's new HTML.
++d.addEventListener('yuanme:patch', (e) => {
++	const u = new URL(location.href);
++	swap((parser ||= new DOMParser()).parseFromString((e as CustomEvent<string>).detail, 'text/html'), u, u, 'dev');
++});
+diff --git a/src/scripts/shell.ts b/src/scripts/shell.ts
+index 39908e0..3facffd 100644
+--- a/src/scripts/shell.ts
++++ b/src/scripts/shell.ts
+@@ -1,6 +1,6 @@
+ // Client side of Shell.astro.
+ //
+-// Navigation between shell pages uses Astro's <ClientRouter /> with a custom
++// Navigation between shell pages uses the prototype router (./router.ts) with a custom
+ // swap: the shell (left column, panel, film canvas) is never replaced. We copy
+ // the new <html> attributes (data-state / data-section drive the CSS), swap
+ // <head>, update the nav, and replace only the panel content.
+@@ -15,7 +15,7 @@
+ //   or after the exit on a section swap.
+ // - Esc closes an expanded panel, with a floating hint.
+ 
+-import { navigate, swapFunctions } from 'astro:transitions/client';
++import { navigate, swapHeadElements, swapRootAttributes, type SwapEvent } from './router';
+ import { startFilm } from './film';
+ import { enter, play, unobserve } from './motion-reveal';
+ 
+@@ -298,18 +298,35 @@ function swapPanel(next: Document, from: State) {
+ 	}
+ }
+ 
+-document.addEventListener('astro:before-swap', (event) => {
++document.addEventListener('astro:before-swap', (e) => {
++	const event = e as SwapEvent;
+ 	const next = event.newDocument;
+ 	// Only shell → shell navigations get the custom swap.
+ 	if (!document.querySelector('[data-shell]') || !next.querySelector('[data-shell]')) return;
+ 
++	// Dev soft swap (#11): replace the content in place, no motion.
++	if (event.navigationType === 'dev') {
++		event.swap = () => {
++			swapRootAttributes(next);
++			swapHeadElements(next);
++			syncNav(event.to.pathname);
++			const old = $('[data-panel-content]');
++			const content = next.querySelector<HTMLElement>("[data-panel-content]");
++			if (old && content) {
++				unobserve(old);
++				const top = old.scrollTop;
++				old.replaceWith(document.adoptNode(content));
++				content.scrollTop = top;
++			}
++		};
++		return;
++	}
++
+ 	event.swap = () => {
+ 		const from = state();
+-		swapFunctions.deselectScripts(next);
+-		const restoreFocus = swapFunctions.saveFocus();
+ 		morph(() => {
+-			swapFunctions.swapRootAttributes(next);
+-			swapFunctions.swapHeadElements(next);
++			swapRootAttributes(next);
++			swapHeadElements(next);
+ 		}, from);
+ 		const to = state();
+ 		syncNav(event.to.pathname);
+@@ -323,7 +340,6 @@ document.addEventListener('astro:before-swap', (event) => {
+ 			// The headline re-reveals once the panel is ~70% collapsed.
+ 			play(introItems(), { base: reduced() ? 0 : Math.round(COLLAPSE_MS * 0.7), stagger: 40 }, true);
+ 		}
+-		restoreFocus();
+ 	};
+ });
+ 
+diff --git a/src/styles/global.css b/src/styles/global.css
+index 0b53563..2077339 100644
+--- a/src/styles/global.css
++++ b/src/styles/global.css
+@@ -1217,3 +1217,6 @@
+     }
+   }
+ }
++
++/* Route announcer (was in Astro's <ClientRouter /> component). */
++.astro-route-announcer{position:absolute;left:0;top:0;clip:rect(0 0 0 0);clip-path:inset(50%);overflow:hidden;white-space:nowrap;width:1px;height:1px}
