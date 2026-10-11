@@ -401,3 +401,85 @@ fn bench(tdir: &Path, n: usize) {
         med(render_t) * 1e3 / stats.0 as f64
     );
 }
+
+// ---------------------------------------------------------------- false-positive stress: legitimate idioms
+
+fn fp_stress(tdir: &Path) {
+    let cases = [
+        r#"{% if not entry.hero %}none{% else %}{{ entry.hero.src }}{% endif %}"#,
+        r#"{% if entry.hero is undefined %}none{% else %}{{ entry.hero.src }}{% endif %}"#,
+        r#"{{ entry.hero.src if entry.hero is defined else "" }}"#,
+        r#"{% if entry.hero and entry.hero.alt %}{{ entry.hero.alt }}{% endif %}"#,
+        r#"{% if entry.hero %}{% set h = entry.hero %}{{ h.src }}{% endif %}"#,
+        r#"{% set h = entry.hero|default(none) %}{% if h %}{{ h.src }}{% endif %}"#,
+        r#"{{ entry.updated or entry.date }}"#,
+        r#"{{ entry.series|default("none")|upper }}"#,
+        r#"{% if entry.updated is defined and entry.updated != entry.date %}u{% endif %}"#,
+        r#"{% if entry.series is defined %}{% set sname = entry.series %}{% else %}{% set sname = "none" %}{% endif %}{{ sname }}"#,
+        r#"{% for p in collections.posts if p.series is defined %}{{ p.series }}{% endfor %}"#,
+        r#"{% for p in collections.posts %}{% if not p.updated %}{% continue %}{% endif %}{{ p.updated }}{% endfor %}"#,
+        r#"{% for p in collections.posts %}{{ loop.index }}{{ loop.previtem.title if loop.previtem else "" }}{% endfor %}"#,
+        r#"{% set ns = namespace(n=0) %}{% for t in entry.tags %}{% set ns.n = ns.n + 1 %}{% endfor %}{{ ns.n }}"#,
+        r#"{{ entry.tags|map("upper")|join(",") }}"#,
+        r#"{% for k, v in data.nav[0]|items %}{{ k }}={{ v }}{% endfor %}"#,
+        r#"{{ entry["title"] }} {{ collections["posts"]|length }}"#,
+        r#"{% set key = "title" %}{{ entry[key] }}"#,
+        r#"{% for g in collections.posts|groupby("date") %}{{ g.grouper }}:{{ g.list|length }} {% endfor %}"#,
+        r#"{{ (collections.posts|first).title }}"#,
+        r#"{{ entry.tags[0] if entry.tags else "" }}"#,
+        r#"{% macro local(x) %}{{ x }}{% endmacro %}{{ local(entry.title) }}"#,
+        r#"{{ entry.title ~ " " ~ entry.reading_time }}"#,
+        r#"{% filter upper %}{{ entry.title }}{% endfilter %}"#,
+        r#"{{ taxonomies.tags.terms|selectattr("count", "gt", 1)|map(attribute="name")|join(" ") }}"#,
+        r#"{% for i in range(entry.tags|length) %}{{ entry.tags[i] }}{% endfor %}"#,
+        r#"{{ entry.word_count // 200 }} {{ entry.title|length > 3 }}"#,
+        r#"{% with d = entry.updated|default(entry.date) %}{{ d|dateformat(format="%Y") }}{% endwith %}"#,
+        r#"{% for p in collections.posts|sort_by(["-date"]) %}{{ p.title }}{% break %}{% endfor %}"#,
+        r#"{% set cls = ["a", "b" if entry.draft else ""]|select|join(" ") %}{{ cls }}"#,
+    ];
+    let base = load(tdir);
+    let schema = site::schema();
+    let routes: Vec<site::Route> = small_site().into_iter().filter(|r| r.template == "posts/entry.html").collect();
+    let kind = check::RouteKind { name: "entry(posts)".into(), template: "stress.html".into(), vars: schema.kinds[0].vars.iter().map(|(a, b, c)| (a.clone(), b.clone(), *c)).collect() };
+    let mut md = String::from("| # | Legitimate idiom | SemiStrict render | check | Verdict |\n|---|---|---|---|---|\n");
+    let (mut fp, mut fnn) = (0, 0);
+    for (i, c) in cases.iter().enumerate() {
+        let mut src = base.clone();
+        src.insert("stress.html".into(), c.to_string());
+        let ck = check::run_one(src.clone(), &schema, &kind);
+        let errs: Vec<String> = ck.diags.iter().filter(|d| !d.warn).map(|d| d.msg.clone()).collect();
+        let warns = ck.diags.iter().filter(|d| d.warn).count();
+        let env = site::make_env(&src, UndefinedBehavior::SemiStrict);
+        let mut rerr = None;
+        for r in &routes {
+            if let Err(e) = env.get_template("stress.html").and_then(|t| t.render(&r.ctx)) {
+                rerr = Some(err_line(&e, &src));
+                break;
+            }
+        }
+        let verdict = match (rerr.is_some(), errs.is_empty()) {
+            (false, true) => "agree (ok)",
+            (true, false) => "agree (both reject)",
+            (false, false) => {
+                fp += 1;
+                "**FALSE POSITIVE**"
+            }
+            (true, true) => {
+                fnn += 1;
+                "**check misses a render error**"
+            }
+        };
+        writeln!(
+            md,
+            "| {} | `{}` | {} | {} | {verdict} |",
+            i + 1,
+            c.replace('|', "\\|"),
+            rerr.map(|e| format!("ERR `{}`", e.replace('|', "\\|"))).unwrap_or("ok".into()),
+            if errs.is_empty() { format!("clean{}", if warns > 0 { " (1 warning)" } else { "" }) } else { format!("`{}`", errs[0].replace('|', "\\|")) }
+        )
+        .unwrap();
+    }
+    writeln!(md, "\n{} idioms: {fp} false positives, {fnn} render errors that check did not predict", cases.len()).unwrap();
+    print!("{md}");
+    std::fs::write(Path::new(env!("CARGO_MANIFEST_DIR")).join("results/fp-stress.md"), md).unwrap();
+}
