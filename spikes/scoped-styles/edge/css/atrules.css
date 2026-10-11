@@ -1,0 +1,10 @@
+@layer components {
+  .card { color: red; }
+}
+@media (min-width: 600px) { .card .title { color: blue; } }
+@container side (min-width: 300px) { .card { color: green; } }
+@supports (display: grid) { .card { display: grid; } }
+@keyframes spin { from { rotate: 0deg } to { rotate: 360deg } }
+.card { animation: spin 1s linear; container-name: side; }
+@font-face { font-family: X; src: url(x.woff2); }
+@property --p { syntax: "<color>"; inherits: true; initial-value: red; }

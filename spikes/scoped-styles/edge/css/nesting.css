@@ -1,0 +1,9 @@
+.card {
+  color: red;
+  .title { color: blue; }
+  &:hover { color: green; }
+  & > .body { margin: 0; }
+  .dark & { color: white; }
+  @media (min-width: 600px) { padding: 1px; .title { padding: 2px; } }
+  :global(.prose) { color: gray; }
+}

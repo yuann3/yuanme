@@ -1,0 +1,7 @@
+.body > :global(h1:first-of-type) { display: none; }
+article :global(em), article :global(i) { font-synthesis: style; }
+:global(.dark) .card { color: white; }
+:global(.prose a:hover) { color: red; }
+.photo :global(img)::after { content: ""; }
+:global(body) { margin: 0; }
+.card:global(.is-open) { color: red; }

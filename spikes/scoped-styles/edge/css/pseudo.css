@@ -1,0 +1,13 @@
+:hover { color: red; }
+* { box-sizing: border-box; }
+.a > * + * { margin-top: 1em; }
+.a::before, .a:hover::after, ::selection { content: ""; }
+.a:is(.b, .c) .d { color: red; }
+:is(.a, .b) > :where(.c, .d) { color: red; }
+.a:not(.b):not([hidden]) { color: red; }
+.a:has(> img, .x) + .b { color: red; }
+:where(.a) :not(.b) { color: red; }
+li:nth-child(2n + 1 of .x) { color: red; }
+a:focus-visible, a[href^="http"]:not(:hover) { color: red; }
+:root { --x: 1; }
+html, body { margin: 0; }
