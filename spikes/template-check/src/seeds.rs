@@ -1,3 +1,4 @@
+//! The seeded mistakes. Each is one textual edit to one template (`§§` separates several edits in a file).
 pub struct Seed {
     pub what: &'static str,
     pub file: &'static str,
@@ -5,6 +6,58 @@ pub struct Seed {
     pub replace: &'static str,
     pub warn_ok: bool,
 }
+fn s(what: &'static str, file: &'static str, find: &'static str, replace: &'static str) -> Seed {
+    Seed { what, file, find, replace, warn_ok: false }
+}
 pub fn seeds() -> Vec<Seed> {
-    vec![]
+    vec![
+        s("typo'd Entry field (depth 1), in a top-level `set`", "layouts/post.html", "{% set title = entry.title %}", "{% set title = entry.titel %}"),
+        s("typo'd field at depth 2, in a guarded branch", "layouts/post.html", "entry.hero.src", "entry.hero.scr"),
+        s("typo'd field swallowed by `| default`", "layouts/post.html", "entry.hero.alt|default('')", "entry.hero.atl|default('')"),
+        s("typo'd field on a loop variable over a Data file", "layouts/shell.html", "{{ s.title }}", "{{ s.titel }}"),
+        s("typo'd key in `site.extra` (schema inferred from values)", "layouts/shell.html", "site.extra.greeting", "site.extra.greting"),
+        s("typo'd derived field in a `set` alias", "layouts/post.html", "entry.modified", "entry.modifed"),
+        s("typo inside an include", "partials/post_meta.html", "entry.reading_time", "entry.reading_tim"),
+        s("typo inside a block of an extending template", "posts/list.html", "prev=paginator.prev", "prev=paginator.previous"),
+        s("typo inside a `{% call %}` body", "projects/entry.html", "{{ entry.content }}\n    {% endcall", "{{ entry.contents }}\n    {% endcall"),
+        s("typo through a `with` alias (Project hero has `url`, not `src`)", "projects/entry.html", "hero.url", "hero.src"),
+        s("typo in a branch the fake Entries rarely reach (`if a and b`)", "partials/post_meta.html", "{% if entry.draft %}", "{% if entry.draft and entry.sereis %}"),
+        s("typo'd prop name inside a macro body", "components/list_row.html", "data-row-name>{{ title }}", "data-row-name>{{ titel }}"),
+        s("macro body reads route context it was not given", "components/post_list.html", "{% if posts %}", "{% if entries %}"),
+        s("typo'd Entry field inside a macro body (prop typed `list<entry<posts>>`)", "components/post_list.html", "post.description", "post.descripton"),
+        s("same typo, but the prop is typed with the provisional `list<object>`", "components/post_list.html", "list<entry<posts>>§§post.description", "list<object>§§post.descripton"),
+        s("wrong prop name at a call site", "posts/list.html", "panel_header(title=\"Writing\")", "panel_header(titel=\"Writing\")"),
+        s("missing required prop", "tags/index.html", "list_row(href=t.url, title=", "list_row(title="),
+        s("wrong prop type, schema-typed path (int for url)", "posts/list.html", "prev=paginator.prev", "prev=paginator.number"),
+        s("wrong prop type, schema-typed path (list for string)", "series/term.html", "panel_header(title=term.name)", "panel_header(title=entries)"),
+        s("wrong prop type, literal (string for date)", "partials/post_meta.html", "formatted_date(date=entry.date)", "formatted_date(date=\"yesterday\")"),
+        s("optional field passed to a required prop", "partials/post_meta.html", "formatted_date(date=entry.date)", "formatted_date(date=entry.updated)"),
+        s("`{% call %}` on a component with no default slot", "components/prose.html", "  {{ caller() }}\n", "  \n"),
+        s("props comment drifts from the macro signature", "components/list_row.html", "meta?: string #}", "metta?: string #}"),
+        s("unknown type in a props comment", "components/pagination.html", "prev?: url", "prev?: uri"),
+        s("props comment not directly above its macro", "components/wordmark.html", "#}\n{% macro wordmark", "#}\n<!-- wordmark -->\n{% macro wordmark"),
+        s("imports a macro the component file does not define", "posts/list.html", "import pagination %}", "import paginator_nav %}"),
+        s("unknown macro on an `import … as` namespace", "projects/entry.html", "ui.prose(", "ui.prosa("),
+        s("unknown filter", "projects/entry.html", "entry.title|lower", "entry.title|lowercase"),
+        s("unknown test", "layouts/shell.html", "section is defined else 'idle'", "section is definded else 'idle'"),
+        s("unknown function", "layouts/shell.html", "asset('scripts/shell.ts')", "assets('scripts/shell.ts')"),
+        s("Python method call", "projects/entry.html", "entry.title|lower", "entry.title.lower()"),
+        s("wrong keyword argument to a filter", "components/formatted_date.html", "<time datetime=\"{{ date|dateformat(format=", "<time datetime=\"{{ date|dateformat(fromat="),
+        s("invalid `dateformat` format string (`iso` is not a preset)", "components/base_head.html", "dateformat(format=\"%Y-%m-%d\")", "dateformat(format=\"iso\")"),
+        s("dynamic include name", "layouts/post.html", "{% include \"partials/post_meta.html\" %}", "{% include \"partials/\" ~ page.kind ~ \"_meta.html\" %}"),
+        s("dynamic extends name", "tags/index.html", "{% extends \"layouts/shell.html\" %}", "{% extends \"layouts/\" ~ page.kind ~ \".html\" %}"),
+        s("include of a template that does not exist", "posts/entry.html", "partials/copy_btn.html", "partials/copy_button.html"),
+        s("overrides a block the layout does not have", "posts/entry.html", "{% block after_article %}", "{% block after_artcle %}"),
+        s("layout variable never set by the page", "tags/index.html", "{% set title = \"Tags\" %}\n", ""),
+        s("layout enum variable set to an invalid value", "posts/list.html", "{% set section = \"writing\" %}", "{% set section = \"writting\" %}"),
+        s("printing an optional field unguarded", "partials/post_meta.html", "<span>{{ entry.reading_time }} min read</span>", "<span>{{ entry.series }}</span>"),
+        s("reaching through an optional object (guard on the wrong field)", "layouts/post.html", "{% if entry.hero %}<img", "{% if entry.title %}<img"),
+        s("`==`/`!=` on an optional field", "projects/entry.html", "entry.github|default(\"\") %}", "entry.github %}"),
+        s("looping over a non-list", "partials/post_meta.html", "for tag in entry.tags", "for tag in entry.title"),
+        s("field access on a string (`site.author.name`)", "components/base_head.html", "<meta name=\"author\" content=\"{{ site.author }}\"", "<meta name=\"author\" content=\"{{ site.author.name }}\""),
+        s("context name from another route kind (`entries` on a taxonomy index)", "tags/index.html", "{% if terms %}", "{% if entries %}"),
+        s("`sort` with a `-` prefix", "tags/index.html", "terms|sort_by([\"-count\"])", "terms|sort(attribute=\"-count\")"),
+        s("`sort_by` with an unknown key", "series/term.html", "sort_by([\"date\"])", "sort_by([\"dat\"])"),
+        s("syntax error: unclosed `if` in a macro", "components/pagination.html", "{% endif %}\n{% endmacro %}", "{% endmacro %}"),
+    ]
 }

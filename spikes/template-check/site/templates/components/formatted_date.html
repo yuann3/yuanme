@@ -1,4 +1,4 @@
 {# props: date: date, attrs?: attrs #}
 {% macro formatted_date(date, attrs={}) %}
-<time datetime="{{ date|dateformat(format='iso') }}"{{ attrs|attrs }}>{{ date|dateformat(format='iso') }}</time>
+<time datetime="{{ date|dateformat(format="%Y-%m-%d") }}"{{ attrs|attrs }}>{{ date|dateformat(format="%Y-%m-%d") }}</time>
 {% endmacro %}

@@ -158,8 +158,12 @@ fn seeded(tdir: &Path) {
     for (i, s) in seeds::seeds().iter().enumerate() {
         let mut src = base.clone();
         let orig = src.get(s.file).unwrap_or_else(|| panic!("seed {}: no file {}", i + 1, s.file)).clone();
-        assert!(orig.matches(s.find).count() >= 1, "seed {} `{}`: find text not present in {}", i + 1, s.what, s.file);
-        src.insert(s.file.to_string(), orig.replacen(s.find, s.replace, 1));
+        let mut edited = orig.clone();
+        for (f, r) in s.find.split("§§").zip(s.replace.split("§§")) {
+            assert!(edited.contains(f), "seed {} `{}`: find text `{f}` not present in {}", i + 1, s.what, s.file);
+            edited = edited.replacen(f, r, 1);
+        }
+        src.insert(s.file.to_string(), edited);
         let c = check::run(src.clone(), &schema);
         let errs: Vec<&check::Diag> = c.diags.iter().filter(|d| !d.warn || s.warn_ok).collect();
         let render = |ub| {

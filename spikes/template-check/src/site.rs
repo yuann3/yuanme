@@ -350,7 +350,30 @@ pub fn make_env(sources: &BTreeMap<String, String>, ub: UndefinedBehavior) -> En
     env.set_syntax(SyntaxConfig::builder().trim_blocks(true).lstrip_blocks(true).build().unwrap());
     let src = sources.clone();
     env.set_loader(move |name: &str| Ok(src.get(name).cloned()));
-    env.set_formatter(|out, state, value| if value.is_none() { Ok(()) } else { minijinja::escape_formatter(out, state, value) });
+    // `none` prints as empty; html-escaper-style escaping (no `&#x2f;`, `&#39;` for the apostrophe)
+    env.set_formatter(|out, state, value| {
+        if value.is_none() {
+            return Ok(());
+        }
+        if value.is_safe() || !matches!(state.auto_escape(), minijinja::AutoEscape::Html) {
+            return minijinja::escape_formatter(out, state, value);
+        }
+        let s = value.to_string();
+        let mut last = 0;
+        for (i, c) in s.char_indices() {
+            let rep = match c {
+                '&' => "&amp;",
+                '<' => "&lt;",
+                '>' => "&gt;",
+                '"' => "&quot;",
+                '\'' => "&#39;",
+                _ => continue,
+            };
+            out.write_str(&s[last..i]).and_then(|_| out.write_str(rep)).map_err(|_| Error::new(ErrorKind::WriteFailure, "write"))?;
+            last = i + 1;
+        }
+        out.write_str(&s[last..]).map_err(|_| Error::new(ErrorKind::WriteFailure, "write"))
+    });
     env.add_filter("sort_by", sort_by);
     env.add_filter("attrs", attrs);
     env.add_filter("pluralize", |n: i64, one: String, many: String| if n == 1 { one } else { many });
@@ -389,7 +412,7 @@ pub fn build_site(posts: Vec<J>, projects: Vec<J>, page_size: usize) -> Vec<Rout
     sort_values(&mut post_vals, &["slug".into()]);
     sort_values(&mut project_vals, &["order".into(), "-modified".into()]);
 
-    let mut taxo = |field: &str, base: &str| -> (Value, Vec<(Value, Vec<Value>)>) {
+    let taxo = |field: &str, base: &str| -> (Value, Vec<(Value, Vec<Value>)>) {
         let mut terms: BTreeMap<String, (String, Vec<Value>)> = BTreeMap::new();
         for p in &listed_posts {
             let f = p.get_attr(field).unwrap();

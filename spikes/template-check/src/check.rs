@@ -995,12 +995,7 @@ impl Checker {
                     self.expr(&b.right, Mode::Use);
                     (Ty::Str, false)
                 }
-                ast::BinOpKind::Eq | ast::BinOpKind::Ne => {
-                    self.expr(&b.left, Mode::Pass);
-                    self.expr(&b.right, Mode::Pass);
-                    (Ty::Bool, false)
-                }
-                ast::BinOpKind::Lt | ast::BinOpKind::Lte | ast::BinOpKind::Gt | ast::BinOpKind::Gte | ast::BinOpKind::In => {
+                ast::BinOpKind::Eq | ast::BinOpKind::Ne | ast::BinOpKind::Lt | ast::BinOpKind::Lte | ast::BinOpKind::Gt | ast::BinOpKind::Gte | ast::BinOpKind::In => {
                     self.expr(&b.left, Mode::Use);
                     self.expr(&b.right, Mode::Use);
                     (Ty::Bool, false)
@@ -1017,10 +1012,10 @@ impl Checker {
                 }
             },
             ast::Expr::Compare(c) => {
-                self.expr(&c.expr, Mode::Pass);
+                // probe: `==`/`!=` on an undefined value is an error even under SemiStrict
+                self.expr(&c.expr, Mode::Use);
                 for op in &c.ops {
-                    let m = if matches!(op.op, ast::CompareOpKind::Eq | ast::CompareOpKind::Ne) { Mode::Pass } else { Mode::Use };
-                    self.expr(&op.expr, m);
+                    self.expr(&op.expr, Mode::Use);
                 }
                 (Ty::Bool, false)
             }
@@ -1032,8 +1027,8 @@ impl Checker {
                 self.narrowed.truncate(mark);
                 let (ft, fopt) = match &i.false_expr {
                     Some(f) => self.infer(f),
-                    // `{{ a if b }}` yields undefined when b is false
-                    None => (Ty::None, true),
+                    // probe: `{{ a if b }}` prints empty under SemiStrict when b is false
+                    None => (Ty::None, false),
                 };
                 let ty = if matches!(ft, Ty::None) { tt } else if matches!(tt, Ty::None) { ft } else if assignable(&ft, &tt) { tt } else { Ty::Any };
                 (ty, topt || fopt)
@@ -1236,8 +1231,12 @@ impl Checker {
                         };
                     }
                 }
-                self.expr(base, Mode::Use);
+                let (bt, _) = self.expr(base, Mode::Use);
                 self.args(&c.args);
+                if !matches!(base, ast::Expr::Var(v) if v.id == "loop") && !matches!(bt, Ty::Any) {
+                    let hint = if FILTERS.contains(&name) { format!("; use the filter `| {name}`") } else { String::new() };
+                    self.err_end(span, 0, format!("`.{name}()` is a method call on {bt}; templates have no Python methods{hint}"));
+                }
                 (Ty::Any, false)
             }
             ast::CallType::Block(name) => {

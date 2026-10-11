@@ -12,7 +12,7 @@
     <p class="label-mono flex flex-wrap gap-x-6 gap-y-2 text-muted" data-reveal>
       <span>{{ (entry.stack + [entry.date|dateformat(format="%Y")])|join(" · ") }}</span>
       {% if entry.github %}<a href="{{ entry.github }}" target="_blank" rel="noopener" class="meta-link text-ink-2">GITHUB <span class="meta-arrow">↗</span></a>{% endif %}
-      {% if entry.website and entry.website != entry.github %}<a href="{{ entry.website }}" target="_blank" rel="noopener" class="meta-link text-ink-2">WEBSITE <span class="meta-arrow">↗</span></a>{% endif %}
+      {% if entry.website and entry.website != entry.github|default("") %}<a href="{{ entry.website }}" target="_blank" rel="noopener" class="meta-link text-ink-2">WEBSITE <span class="meta-arrow">↗</span></a>{% endif %}
     </p>
     {% call ui.prose(class="project-body mt-10", attrs={"data-reveal": true}) %}
       {% with hero = entry.hero %}
