@@ -1,0 +1,3 @@
+stamp sidecar templates only: 29/29 pages byte-identical to the unstamped render once the attributes are removed; 375 attributes on 3449 start tags; 0 rewriter warnings
+stamp every template: 29/29 pages byte-identical to the unstamped render once the attributes are removed; 2215 attributes on 3449 start tags; 0 rewriter warnings
+wrote 29 pages with provenance attributes, scoped.css (7226 B) and manifest.json to out/site

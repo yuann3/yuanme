@@ -242,7 +242,7 @@ fn edges(root: &Path) {
         if !bad.is_empty() { fails += 1 }
         writeln!(md, "| {} (`{}`) | {} | {} | {} |", case.what, case.file, case.rule, if bad.is_empty() { "pass".to_string() } else { format!("**FAIL** {}", bad.join("; ")) }, if warns.is_empty() { "" } else { "yes" }).unwrap();
         writeln!(detail, "### {}\n\nsource:\n```html\n{}```\nloaded as:\n```html\n{}```\nrendered (H = `{h}`{}):\n```html\n{}\n```", case.file, t[case.file], b.rewritten[case.file],
-            if h2.is_empty() { String::new() } else { format!(", H2 = `{h2}` from `{}`", case.other) }, out.trim_end().replace(&*h2, "H2").replace(h.as_str(), "H")).unwrap();
+            if h2.is_empty() { String::new() } else { format!(", H2 = `{h2}` from `{}`", case.other) }, { let o = out.trim_end().to_string(); let o = if h2.is_empty() { o } else { o.replace(&*h2, "H2") }; o.replace(h.as_str(), "H") }).unwrap();
         for w in warns { writeln!(detail, "- `{w}`").unwrap(); }
         detail.push('\n');
     }

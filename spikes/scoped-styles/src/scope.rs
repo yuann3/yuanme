@@ -439,6 +439,32 @@ impl<'a> Walk<'a> {
                 }
             }
             after_pseudo = pseudo_comb(&comb);
+            // Unwrap :global(x) here. Left in place, lightningcss prints it unwrapped but its compat check
+            // does not know it, and at lowering targets wraps the whole selector list in :is(), which
+            // changes specificity when the list's selectors differ.
+            if self.attr.is_some() {
+                let mut flat: Vec<Component<'i>> = Vec::new();
+                for c in compound.drain(..) {
+                    match c {
+                        Component::NonTSPseudoClass(PseudoClass::Global { selector }) => {
+                            let mut seg: Vec<Component<'i>> = Vec::new();
+                            for ic in selector.iter_raw_parse_order_from(0).cloned() {
+                                if ic.as_combinator().is_some() {
+                                    seg.reverse();
+                                    flat.append(&mut seg);
+                                    flat.push(ic);
+                                } else {
+                                    seg.push(ic);
+                                }
+                            }
+                            seg.reverse();
+                            flat.append(&mut seg);
+                        }
+                        c => flat.push(c),
+                    }
+                }
+                compound = flat;
+            }
             out.append(&mut compound);
             out.extend(comb);
         }

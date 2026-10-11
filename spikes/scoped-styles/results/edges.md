@@ -29,7 +29,7 @@ loaded as:
 ```
 rendered (H = `data-y-imqjk3`):
 ```html
-H2<H2aH2 H2dH2aH2tH2aH2-H2yH2-H2iH2mH2qH2jH2kH23H2 H2cH2lH2aH2sH2sH2=H2"H2aH2"H2 H2hH2rH2eH2fH2=H2"H2/H2"H2>H2tH2<H2/H2aH2>H2<H2aH2 H2dH2aH2tH2aH2-H2yH2-H2iH2mH2qH2jH2kH23H2 H2 H2cH2lH2aH2sH2sH2=H2"H2bH2"H2>H2uH2<H2/H2aH2>H2<H2aH2 H2dH2aH2tH2aH2-H2yH2-H2iH2mH2qH2jH2kH23H2 H2 H2cH2lH2aH2sH2sH2=H2"H2cH2"H2>H2vH2<H2/H2aH2>H2
+<a H class="a" href="/">t</a><a H  class="b">u</a><a H  class="c">v</a>
 ```
 
 ### attrgt.html
@@ -44,7 +44,7 @@ loaded as:
 ```
 rendered (H = `data-y-4xhmsd`):
 ```html
-H2<H2aH2 H2dH2aH2tH2aH2-H2yH2-H24H2xH2hH2mH2sH2dH2 H2tH2iH2tH2lH2eH2=H2"H2aH2 H2>H2 H2bH2"H2 H2dH2aH2tH2aH2-H2xH2=H2'H2&H2gH2tH2;H2'H2 H2hH2rH2eH2fH2=H2"H2/H2uH2?H2aH2=H21H2&H2bH2=H22H2"H2>H2tH2<H2/H2aH2>H2<H2iH2mH2gH2 H2dH2aH2tH2aH2-H2yH2-H24H2xH2hH2mH2sH2dH2 H2aH2lH2tH2=H2"H2<H2bH2>H2nH2oH2tH2 H2aH2 H2tH2aH2gH2<H2/H2bH2>H2"H2 H2sH2rH2cH2=H2"H2xH2.H2pH2nH2gH2"H2>H2<H2iH2nH2pH2uH2tH2 H2dH2aH2tH2aH2-H2yH2-H24H2xH2hH2mH2sH2dH2 H2vH2aH2lH2uH2eH2=H2"H2&H2lH2tH2;H2iH2&H2gH2tH2;H2"H2 H2dH2aH2tH2aH2-H2yH2=H2"H2}H2}H2"H2>H2<H2pH2 H2dH2aH2tH2aH2-H2yH2-H24H2xH2hH2mH2sH2dH2>H21H2 H2<H2 H22H2 H2aH2nH2dH2 H2aH2 H2<H23H2<H2/H2pH2>H2
+<a H title="a > b" data-x='&gt;' href="/u?a=1&b=2">t</a><img H alt="<b>not a tag</b>" src="x.png"><input H value="&lt;i&gt;" data-y="}}"><p H>1 < 2 and a <3</p>
 ```
 
 ### rawtext.html
@@ -69,10 +69,10 @@ loaded as:
 ```
 rendered (H = `data-y-96dlvm`):
 ```html
-H2<H2dH2iH2vH2 H2dH2aH2tH2aH2-H2yH2-H29H26H2dH2lH2vH2mH2>H2<H2sH2cH2rH2iH2pH2tH2>H2iH2fH2 H2(H2aH2 H2<H2 H2bH2 H2&H2&H2 H2cH2 H2>H2 H2dH2)H2 H2{H2 H2dH2oH2cH2uH2mH2eH2nH2tH2.H2wH2rH2iH2tH2eH2(H2"H2<H2pH2>H2xH2<H2/H2pH2>H2"H2)H2;H2 H2}H2<H2/H2sH2cH2rH2iH2pH2tH2>H2
-H2<H2sH2tH2yH2lH2eH2>H2pH2 H2>H2 H2aH2 H2{H2 H2cH2oH2lH2oH2rH2:H2 H2rH2eH2dH2 H2}H2 H2/H2*H2 H2<H2bH2>H2 H2*H2/H2<H2/H2sH2tH2yH2lH2eH2>H2
-H2<H2!H2-H2-H2 H2<H2sH2eH2cH2tH2iH2oH2nH2>H2cH2oH2mH2mH2eH2nH2tH2eH2dH2<H2/H2sH2eH2cH2tH2iH2oH2nH2>H2 H2-H2-H2>H2
-H2<H2aH2sH2iH2dH2eH2>H2{H2{H2 H2nH2oH2tH2 H2jH2iH2nH2jH2aH2 H2}H2}H2<H2/H2aH2sH2iH2dH2eH2>H2<H2tH2eH2xH2tH2aH2rH2eH2aH2 H2dH2aH2tH2aH2-H2yH2-H29H26H2dH2lH2vH2mH2>H2<H2eH2mH2>H2tH2eH2xH2tH2<H2/H2eH2mH2>H2<H2/H2tH2eH2xH2tH2aH2rH2eH2aH2>H2<H2iH2nH2sH2 H2dH2aH2tH2aH2-H2yH2-H29H26H2dH2lH2vH2mH2>H2aH2fH2tH2eH2rH2<H2/H2iH2nH2sH2>H2<H2/H2dH2iH2vH2>H2
+<div H><script>if (a < b && c > d) { document.write("<p>x</p>"); }</script>
+<style>p > a { color: red } /* <b> */</style>
+<!-- <section>commented</section> -->
+<aside>{{ not jinja }}</aside><textarea H><em>text</em></textarea><ins H>after</ins></div>
 ```
 
 ### void.html
@@ -87,7 +87,7 @@ loaded as:
 ```
 rendered (H = `data-y-2ridpz`):
 ```html
-H2<H2bH2rH2 H2dH2aH2tH2aH2-H2yH2-H22H2rH2iH2dH2pH2zH2>H2<H2bH2rH2 H2dH2aH2tH2aH2-H2yH2-H22H2rH2iH2dH2pH2zH2/H2>H2<H2iH2mH2gH2 H2dH2aH2tH2aH2-H2yH2-H22H2rH2iH2dH2pH2zH2 H2sH2rH2cH2=H2"H2aH2.H2pH2nH2gH2"H2/H2>H2<H2hH2rH2 H2dH2aH2tH2aH2-H2yH2-H22H2rH2iH2dH2pH2zH2 H2/H2>H2<H2iH2nH2pH2uH2tH2 H2dH2aH2tH2aH2-H2yH2-H22H2rH2iH2dH2pH2zH2 H2dH2iH2sH2aH2bH2lH2eH2dH2>H2<H2mH2yH2-H2eH2lH2 H2dH2aH2tH2aH2-H2yH2-H22H2rH2iH2dH2pH2zH2>H2<H2/H2mH2yH2-H2eH2lH2>H2<H2xH2-H2fH2oH2oH2 H2dH2aH2tH2aH2-H2yH2-H22H2rH2iH2dH2pH2zH2/H2>H2
+<br H><br H/><img H src="a.png"/><hr H /><input H disabled><my-el H></my-el><x-foo H/>
 ```
 
 ### svg.html
@@ -102,7 +102,7 @@ loaded as:
 ```
 rendered (H = `data-y-sbroeo`):
 ```html
-H2<H2sH2vH2gH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2 H2vH2iH2eH2wH2BH2oH2xH2=H2"H20H2 H20H2 H21H20H2 H21H20H2"H2 H2xH2mH2lH2nH2sH2=H2"H2hH2tH2tH2pH2:H2/H2/H2wH2wH2wH2.H2wH23H2.H2oH2rH2gH2/H22H20H20H20H2/H2sH2vH2gH2"H2>H2<H2dH2eH2fH2sH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2>H2<H2lH2iH2nH2eH2aH2rH2GH2rH2aH2dH2iH2eH2nH2tH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2 H2iH2dH2=H2"H2gH2"H2>H2<H2sH2tH2oH2pH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2 H2oH2fH2fH2sH2eH2tH2=H2"H20H2"H2/H2>H2<H2/H2lH2iH2nH2eH2aH2rH2GH2rH2aH2dH2iH2eH2nH2tH2>H2<H2/H2dH2eH2fH2sH2>H2<H2pH2aH2tH2hH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2 H2dH2=H2"H2MH20H2 H20H2LH21H20H2 H21H20H2"H2 H2fH2iH2lH2lH2=H2"H2uH2rH2lH2(H2#H2gH2)H2"H2/H2>H2<H2uH2sH2eH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2 H2xH2lH2iH2nH2kH2:H2hH2rH2eH2fH2=H2"H2#H2gH2"H2/H2>H2<H2fH2oH2rH2eH2iH2gH2nH2OH2bH2jH2eH2cH2tH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2>H2<H2dH2iH2vH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2>H2xH2<H2/H2dH2iH2vH2>H2<H2/H2fH2oH2rH2eH2iH2gH2nH2OH2bH2jH2eH2cH2tH2>H2<H2tH2eH2xH2tH2 H2dH2aH2tH2aH2-H2yH2-H2sH2bH2rH2oH2eH2oH2>H2aH2 H2&H2lH2tH2;H2 H2bH2<H2/H2tH2eH2xH2tH2>H2<H2/H2sH2vH2gH2>H2
+<svg H viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg"><defs H><linearGradient H id="g"><stop H offset="0"/></linearGradient></defs><path H d="M0 0L10 10" fill="url(#g)"/><use H xlink:href="#g"/><foreignObject H><div H>x</div></foreignObject><text H>a &lt; b</text></svg>
 ```
 
 ### layout_child.html
@@ -168,7 +168,7 @@ loaded as:
 ```
 rendered (H = `data-y-r9cb3w`):
 ```html
-H2<H2dH2iH2vH2 H2dH2aH2tH2aH2-H2yH2-H2rH29H2cH2bH23H2wH2>H2<H2bH2 H2cH2lH2aH2sH2sH2=H2"H2kH2"H2>H2bH2oH2lH2dH2<H2/H2bH2>H2&H2lH2tH2;H2bH2 H2cH2lH2aH2sH2sH2=H2&H2qH2uH2oH2tH2;H2kH2&H2qH2uH2oH2tH2;H2&H2gH2tH2;H2bH2oH2lH2dH2&H2lH2tH2;H2/H2bH2&H2gH2tH2;H2<H2bH2 H2cH2lH2aH2sH2sH2=H2"H2kH2"H2>H2bH2oH2lH2dH2<H2/H2bH2>H2<H2/H2dH2iH2vH2>H2
+<div H><b class="k">bold</b>&lt;b class=&quot;k&quot;&gt;bold&lt;/b&gt;<b class="k">bold</b></div>
 ```
 - `safe.html:1:6: warning: `| safe` output is not stamped: sidecar rules reach its elements only through :global()`
 
@@ -184,7 +184,7 @@ loaded as:
 ```
 rendered (H = `data-y-b7yowj`):
 ```html
-H2<H2sH2eH2cH2tH2iH2oH2nH2 H2dH2aH2tH2aH2-H2yH2-H2bH27H2yH2oH2wH2jH2 H2cH2lH2aH2sH2sH2=H2"H2xH2"H2>H2aH2<H2/H2sH2eH2cH2tH2iH2oH2nH2>H2<H2hH22H2 H2dH2aH2tH2aH2-H2yH2-H2bH27H2yH2oH2wH2jH2 H2iH2dH2=H2"H2tH2"H2>H2bH2<H2/H2hH22H2>H2<H2hH21H2 H2cH2lH2aH2sH2sH2=H2"H2cH2fH2"H2>H2cH2<H2/H2hH21H2>H2<H2iH2 H2dH2aH2tH2aH2-H2yH2-H2bH27H2yH2oH2wH2jH2>H2aH2fH2tH2eH2rH2<H2/H2iH2>H2
+<section H class="x">a</section><h2 H id="t">b</h2><h1 class="cf">c</h1><i H>after</i>
 ```
 - `dyn.html:1:1: warning: expression glued to a tag name is read as a dynamic tag name: stamped, but `check` cannot match type selectors against it`
 - `dyn.html:1:35: warning: expression glued to a tag name is read as a dynamic tag name: stamped, but `check` cannot match type selectors against it`
@@ -202,7 +202,7 @@ loaded as:
 ```
 rendered (H = `data-y-wiejn3`):
 ```html
-H2&H2lH2tH2;H2uH2&H2gH2tH2;H2lH2iH2tH2&H2lH2tH2;H2/H2uH2&H2gH2tH2;H2<H2dH2iH2vH2 H2dH2aH2tH2aH2-H2yH2-H2wH2iH2eH2jH2nH23H2 H2tH2iH2tH2lH2eH2=H2"H2%H2}H2"H2>H2&H2lH2tH2;H2pH2&H2gH2tH2;H2iH2nH2 H2aH2 H2sH2tH2rH2iH2nH2gH2&H2lH2tH2;H2/H2pH2&H2gH2tH2;H2<H2/H2dH2iH2vH2>H2
+&lt;u&gt;lit&lt;/u&gt;<div H title="%}">&lt;p&gt;in a string&lt;/p&gt;</div>
 ```
 
 ### quotes.html
@@ -217,7 +217,7 @@ loaded as:
 ```
 rendered (H = `data-y-vvy2wx`):
 ```html
-H2<H2aH2 H2dH2aH2tH2aH2-H2yH2-H2vH2vH2yH22H2wH2xH2 H2tH2iH2tH2lH2eH2=H2"H2aH2"H2>H2tH2<H2/H2aH2>H2<H2sH2pH2aH2nH2>H2aH2fH2tH2eH2rH2<H2/H2sH2pH2aH2nH2>H2
+<a H title="a">t</a><span>after</span>
 ```
 - `quotes.html:1:1: warning: unterminated tag (unbalanced quotes across Jinja branches?)`
 

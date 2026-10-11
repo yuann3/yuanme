@@ -1,0 +1,1 @@
+{ "name": "scoped-styles-verify", "private": true, "dependencies": { "playwright": "1.64.0" } }
