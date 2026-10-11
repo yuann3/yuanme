@@ -1,0 +1,1 @@
+@scope(.c-row) to ([data-slot]>*,.prose>*){.list-row{position:relative}.list-row-arrow{color:var(--ink-2);align-items:center;font-size:18px;display:flex;position:absolute;top:0;bottom:0;right:0}em{color:var(--accent);font-style:normal}.body{margin-block:8px}@media (hover:hover){.list-row:hover .list-row-arrow{color:var(--ink)}}}.c-row [data-slot]>h1:first-of-type{display:none}

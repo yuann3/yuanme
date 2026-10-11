@@ -1,0 +1,9 @@
+<!doctype html><style>
+@scope ([data-c="row"]) to ([data-c], [data-slot] > *) { em{color:rgb(9,0,0)} :scope{outline:1px solid rgb(9,9,0)} }
+@scope ([data-c="row"]) to (:scope [data-c], [data-slot] > *) { strong{color:rgb(9,0,0)} }
+</style>
+<section data-c="row" id=root><em id=own>x</em><strong id=ownS>x</strong>
+ <span data-c="date" id=child><em id=childEm>d</em><strong id=childS>d</strong></span>
+ <div data-slot><p><em id=slotEm>y</em></p></div></section>
+<script>const c=i=>getComputedStyle(document.getElementById(i));
+document.title=JSON.stringify({rootOutline:c('root').outlineColor,own:c('own').color,childRootSelf:c('child').outlineColor,childEm:c('childEm').color,slotEm:c('slotEm').color,ownS:c('ownS').color,childS:c('childS').color});</script>

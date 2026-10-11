@@ -1,0 +1,9 @@
+{% macro row(href, title) %}
+<li class="c-row border-t border-hairline" data-reveal>
+  <a href="{{ href }}" class="row-link list-row flex flex-col gap-1.5 py-5">
+    <span class="title text-[20px] font-medium">{{ title }} <em>new</em></span>
+    <div class="body" data-slot>{{ caller() }}</div>
+    <span class="row-arrow list-row-arrow" aria-hidden="true">→</span>
+  </a>
+</li>
+{% endmacro %}

@@ -1,0 +1,12 @@
+<!doctype html><style>
+.row-arrow{color:rgb(1,1,1)} .text-ink-2{color:rgb(2,2,2)}
+@scope (.c-row) to ([data-slot] > *, .prose > *) {
+  .list-row-arrow{color:rgb(9,9,9)} em{color:rgb(9,0,0)} .body{outline:1px solid rgb(9,9,0)} .meta-link:hover{color:rgb(0,9,0)}
+}
+.row-arrow2{color:rgb(3,3,3)} .late{color:rgb(4,4,4)} a.late2{color:rgb(5,5,5)}
+@scope (.c-row) { .list-row-arrow2{color:rgb(9,9,9)} }
+</style>
+<section class="c-row"><span id=own><em id=e1>x</em></span><div class="body" data-slot id=slot><p id=p><em id=e2>y</em></p><section class="c-row" id=nested><em id=e3>z</em></section></div>
+<span class="row-arrow list-row-arrow" id=arrow>→</span><span class="list-row-arrow late" id=late>→</span><a class="list-row-arrow late2" id=late2>→</a></section>
+<script>const c=i=>getComputedStyle(document.getElementById(i));
+document.title=JSON.stringify({ownEm:c('e1').color,slotEm:c('e2').color,nestedComponentEm:c('e3').color,slotWrapperOutline:c('slot').outlineColor,arrow_scoped_vs_earlier_global_tie:c('arrow').color,scoped_vs_LATER_global_tie:c('late').color,scoped_vs_more_specific_global:c('late2').color,supports:CSS.supports('selector(:scope)')+'/'+(typeof CSSScopeRule)});</script>

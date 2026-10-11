@@ -1,0 +1,5 @@
+{% from "row.html" import row %}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Probe</title><link rel="stylesheet" href="/assets/site.css"></head>
+<body><main class="prose-panel"><ul class="rows">
+{% for i in range(n) %}{% call row("/p/" ~ i ~ "/", "Post " ~ i) %}{{ content|safe }}{% endcall %}{% endfor %}
+</ul></main></body></html>

@@ -1,0 +1,11 @@
+[package]
+name = "scope-probe"
+version = "0.0.0"
+edition = "2021"
+[dependencies]
+lightningcss = { version = "=1.0.0-alpha.72", default-features = false, features = ["visitor"] }
+lol_html = "=3.0.1"
+minijinja = "=3.0.0"
+brotli = "8"
+[profile.release]
+debug = false
