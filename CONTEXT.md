@@ -97,6 +97,14 @@ _Avoid_: path (the URL alone), endpoint
 What a visitor loads at one Route. An Entry is content; a Page is that content rendered at a URL.
 _Avoid_: document, view
 
+**Router**:
+The Engine's built-in client script that moves between Pages of a Site by swapping the new Page into the current document, so what a Site keeps between Pages survives. Browsers without the Navigation API get full page loads instead.
+_Avoid_: client-side routing, SPA, transitions (a Route is a URL, not something the Router owns)
+
+**Soft navigation**:
+A move between Pages that the Router completes in place, without a full page load.
+_Avoid_: client navigation, page transition
+
 ### Proving it works
 
 **Reference site**:
