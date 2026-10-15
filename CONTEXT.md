@@ -40,6 +40,14 @@ _Avoid_: org support (unqualified)
 A deliberate, written-down difference between how the Engine reads or renders Org and how the pinned Org release does, such as leaving `snake_case` unsubscripted.
 _Avoid_: Parity exception (that compares the Reference site with Astro), quirk
 
+**Label**:
+The name an Author gives a heading, equation, Theorem block or other element so that it can be cross-referenced, such as `eq:gauss`. It becomes the element's id, and is unique within its Entry.
+_Avoid_: anchor, key, id (that is the HTML attribute a Label becomes)
+
+**Theorem block**:
+A block in an Entry's body for a theorem, lemma, definition, proof or another kind the Site declares, numbered or not, and written in the Source format's own block syntax.
+_Avoid_: environment (that is LaTeX's word, used here only for math), admonition, callout
+
 **Collection**:
 A named group of content files sharing one schema, such as posts, projects or talks. Authors define their own Collections.
 _Avoid_: content type, section
