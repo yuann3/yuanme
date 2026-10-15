@@ -26,6 +26,10 @@ _Avoid_: settings, configuration file (unqualified)
 A minimal ready-made Site the Engine can create for a new Author to begin from.
 _Avoid_: theme, template (a template is a rendering file)
 
+**Diagnostic**:
+An error or warning the Engine reports about an Author's project. It has a stable code, the place in a file it is about, and, when it can, a suggested fix. Errors fail the build; warnings do not, unless strict mode is on.
+_Avoid_: lint, log message, error (unqualified: a Diagnostic may be a warning)
+
 ### Content
 
 **Source format**:
