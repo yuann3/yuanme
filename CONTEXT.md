@@ -36,6 +36,10 @@ _Avoid_: content type, file type
 The defined set of Org features the Engine renders. Org outside the subset is a build error, never silently dropped or passed through.
 _Avoid_: org support (unqualified)
 
+**Org divergence**:
+A deliberate, written-down difference between how the Engine reads or renders Org and how the pinned Org release does, such as leaving `snake_case` unsubscripted.
+_Avoid_: Parity exception (that compares the Reference site with Astro), quirk
+
 **Collection**:
 A named group of content files sharing one schema, such as posts, projects or talks. Authors define their own Collections.
 _Avoid_: content type, section
