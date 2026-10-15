@@ -134,6 +134,10 @@ A deliberate, written-down difference between the Reference site and its Astro p
 The fixed suite of Author prompts run against a fresh coding agent that has only yuanme's docs, scored on success, number of turns and performance budgets.
 _Avoid_: benchmark (that is for speed)
 
+**Eval task**:
+One case in the Agent eval: a one-sentence prompt, the project the agent starts from, and a grader the agent never sees that decides pass or fail from the files and the build.
+_Avoid_: fixture (that is test data), test case, benchmark
+
 **Scale Site**:
 A committed, generated Site of about 1,000 Posts in both Source formats, used alongside the Reference site to measure how the Engine behaves at size.
 _Avoid_: stress test, large fixture
