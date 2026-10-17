@@ -22,6 +22,10 @@ _Avoid_: user (ambiguous with Site visitors), customer
 The one file at the root of an Author's project that declares the Site: its metadata, Collections, Taxonomies and Engine settings.
 _Avoid_: settings, configuration file (unqualified)
 
+**Host adapter**:
+The part of the Engine that renders a Site's host-neutral routing rules (header rules, redirects, the 404 page and the immutable prefix) into the configuration one static host reads, such as `_headers` and `_redirects`.
+_Avoid_: plugin, integration, deploy target (that is the host itself)
+
 **Managed tool**:
 An optional external program the Engine downloads at a pinned version, checks and runs for a Site that needs it, such as the Tailwind CLI. Authors never install one.
 _Avoid_: sidecar (that is a file beside a Template), plugin, dependency
