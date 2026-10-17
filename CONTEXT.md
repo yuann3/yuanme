@@ -22,6 +22,10 @@ _Avoid_: user (ambiguous with Site visitors), customer
 The one file at the root of an Author's project that declares the Site: its metadata, Collections, Taxonomies and Engine settings.
 _Avoid_: settings, configuration file (unqualified)
 
+**Managed tool**:
+An optional external program the Engine downloads at a pinned version, checks and runs for a Site that needs it, such as the Tailwind CLI. Authors never install one.
+_Avoid_: sidecar (that is a file beside a Template), plugin, dependency
+
 **Starter**:
 A minimal ready-made Site the Engine can create for a new Author to begin from.
 _Avoid_: theme, template (a template is a rendering file)
