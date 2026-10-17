@@ -109,6 +109,18 @@ _Avoid_: widget, macro (that is how it is written, not what it is), island
 A piece of a Template included as-is, which reads whatever the including Template can see.
 _Avoid_: include, snippet
 
+**Sidecar**:
+A stylesheet or script with the same name as a Template, kept beside it, such as `row.css` and `row.ts` beside `row.html`. A Page gets the Sidecars of the Templates it rendered.
+_Avoid_: component file, colocated asset; and sidecar for an external program (that is a Managed tool)
+
+**Script**:
+A JS or TS module that runs in the visitor's browser: one a Template references with `<script type="module" src>`, or a Template's Sidecar script.
+_Avoid_: entry (that is a content file), island, bundle (that is what the Engine writes)
+
+**Static file**:
+A file in the project's `static/` folder, which the Engine copies to the same path on the Site unchanged and unhashed.
+_Avoid_: public file, asset (assets are what the Engine processes and hashes)
+
 **Route**:
 One URL of a Site together with what produces it: an Entry, a list, a Term, or a Template alone.
 _Avoid_: path (the URL alone), endpoint
