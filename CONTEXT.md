@@ -146,6 +146,10 @@ _Avoid_: demo, example site
 **Parity exception**:
 A deliberate, written-down difference between the Reference site and its Astro predecessor, such as a fixed Astro bug or a performance-motivated markup change.
 
+**Parity baseline**:
+The Astro build of the Reference site from one pinned commit, which the parity test compares against. It is never the live site.
+_Avoid_: live site, original, golden
+
 **Agent eval**:
 The fixed suite of Author prompts run against a fresh coding agent that has only yuanme's docs, scored on success, number of turns and performance budgets.
 _Avoid_: benchmark (that is for speed)
