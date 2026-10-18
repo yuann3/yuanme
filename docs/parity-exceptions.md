@@ -57,9 +57,10 @@ No tag URL changes: the Slugs of `C`, `Programming`, `Life` and `Draft` equal to
 | `visibility-rules` | Drafts are listed and in RSS; hidden Posts keep their tags | Drafts are absent; Unlisted Entries are in no list, Taxonomy, feed or sitemap | [#18](https://github.com/yuann3/yuanme/issues/18) |
 | `collection-order` | First-seen order, `/tags` ties as `life, draft, c, programming` | Collection `sort` rules; ties by Slug: `c, draft, life, programming` | #18, [#19](https://github.com/yuann3/yuanme/issues/19) |
 | `rss` | Includes Drafts and hidden Posts, unsorted | Published, listed Entries, newest first | #19, #23 |
+| `rss-guid` | `<guid isPermaLink="true">https://www.eyuan.me/blog/<slug>/</guid>` | `<guid isPermaLink="false">` with the same `www` string, while `<link>` uses the apex origin. Feed readers then don't show every Post again after `apex-origin`. The Reference site's feed Template overrides the built-in one to do this | [#39](https://github.com/yuann3/yuanme/issues/39) |
 | `heading-ids` | Duplicate headings record `ruskey-` but emit `ruskey` | github-slugger numbering (`ruskey`, `ruskey-1`) | [#2](https://github.com/yuann3/yuanme/issues/2), #23 |
 | `reading-time` | Counts glued blocks: 8 and 2 min | Every visible word at 200 wpm, rounded up, at least 1: 9 and 2 min | #23 |
-| `class-highlighting` | Shiki inline-style dual-theme spans | Class-based spans from giallo with pinned Shiki grammars and themes. A pin bump that changes colours is accepted through the pixel diff and noted here | [#5](https://github.com/yuann3/yuanme/issues/5), #23 |
+| `class-highlighting` | Shiki inline-style dual-theme spans | Class-based spans from ferriki with pinned Shiki grammars and themes. A pin bump that changes colours is accepted through the pixel diff and noted here | [#5](https://github.com/yuann3/yuanme/issues/5), #23, [#27](https://github.com/yuann3/yuanme/issues/27) |
 
 ### Markup and styles
 
