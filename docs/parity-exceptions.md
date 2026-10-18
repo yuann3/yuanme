@@ -32,7 +32,7 @@ Escaping style, kept comments, attribute order and whitespace all decode to the 
 - **Engines:** Chromium on every PR; Firefox and WebKit at releases. Both sides run in the same pinned Playwright browser.
 - **Motion:** screenshots are taken with `prefers-reduced-motion: reduce`, once `document.getAnimations()` has settled. With that setting the Film doesn't start, so its deterministic fallback CSS is what's compared. The Film itself is covered by the behaviour checks.
 - **Fonts:** the harness serves the baseline's Google Fonts requests from the same woff2 files the Reference site self-hosts.
-- **Threshold:** pixelmatch with a per-pixel threshold of 0.1. A screenshot fails if more than 0.05 % of its pixels differ. The four About photos use a per-pixel threshold of 0.25 (`about-image-bytes`).
+- **Threshold:** pixelmatch with a per-pixel threshold of 0.1. A screenshot fails if more than 0.05 % of its pixels differ. Re-encoded photos use a per-pixel threshold of 0.25: the four About photos (`about-image-bytes`) and the hero images (`hero-images`).
 
 ## Exceptions
 
@@ -74,6 +74,8 @@ No tag URL changes: the Slugs of `C`, `Programming`, `Life` and `Draft` equal to
 | `empty-idle-main` | The idle `<main>` holds two spaces, so `:empty` never matches | It is empty, so `.panel-content:empty` hides it as written | #23 |
 | `about-img-src` | `<img src>` is a full-size re-encoded JPEG | The largest srcset JPEG | #23 |
 | `about-image-bytes` | sharp's encodes | The Engine's encoders. Near-identical pixels, compared at the looser threshold | [#8](https://github.com/yuann3/yuanme/issues/8), #23 |
+| `image-formats` | About photos have AVIF and WebP `<source>`s | One AVIF `<source>` plus the JPEG `<img srcset>`. WebP is not generated, because every target browser decodes AVIF | [#28](https://github.com/yuann3/yuanme/issues/28) |
+| `hero-images` | Post and project hero images (`rustc.PNG` 1.6 MB, `plane.png`, `Ylib.png`) are plain `<img>` from `public/` | Processed by `image()`: AVIF and JPEG srcsets, `width`/`height`, `fetchpriority="high"`, and a preload. Compared at the looser per-pixel threshold | #28 |
 
 ### Client runtime
 
