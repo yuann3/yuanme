@@ -1,0 +1,15 @@
+[package]
+name = "yuanme-engine"
+description = "The yuanme build pipeline. Internal; no stability promise."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+include = ["/src"]
+
+[dependencies]
+yuanme-content.workspace = true
+yuanme-render.workspace = true
+yuanme-assets.workspace = true
+yuanme-diag.workspace = true

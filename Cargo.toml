@@ -1,0 +1,18 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "xtask"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+# N−2 stable (#27). The build itself uses the exact release in rust-toolchain.toml.
+rust-version = "1.97"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/yuann3/yuanme"
+
+[workspace.dependencies]
+yuanme-engine = { path = "crates/yuanme-engine", version = "0.0.0" }
+yuanme-content = { path = "crates/yuanme-content", version = "0.0.0" }
+yuanme-render = { path = "crates/yuanme-render", version = "0.0.0" }
+yuanme-assets = { path = "crates/yuanme-assets", version = "0.0.0" }
+yuanme-diag = { path = "crates/yuanme-diag", version = "0.0.0" }
