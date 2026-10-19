@@ -1,0 +1,12 @@
+[package]
+name = "yuanme-content"
+description = "Site config and content for yuanme: Entries, the Document tree, math and links. Internal; no stability promise."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+include = ["/src"]
+
+[dependencies]
+yuanme-diag.workspace = true

@@ -1,0 +1,13 @@
+[package]
+name = "yuanme"
+description = "A Rust static site generator for Markdown, Org and math, built to be driven by coding agents."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+include = ["/src"]
+
+[dependencies]
+yuanme-engine.workspace = true
+yuanme-diag.workspace = true

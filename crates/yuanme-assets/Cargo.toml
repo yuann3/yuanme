@@ -1,0 +1,12 @@
+[package]
+name = "yuanme-assets"
+description = "CSS, JS, images and fonts for yuanme. Internal; no stability promise."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+include = ["/src"]
+
+[dependencies]
+yuanme-diag.workspace = true

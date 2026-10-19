@@ -1,0 +1,9 @@
+[package]
+name = "yuanme-diag"
+description = "Diagnostics for yuanme: the Diagnostic type, codes and renderers. Internal; no stability promise."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+include = ["/src"]

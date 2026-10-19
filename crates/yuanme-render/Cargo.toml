@@ -1,0 +1,13 @@
+[package]
+name = "yuanme-render"
+description = "HTML writing, highlighting and Templates for yuanme. Internal; no stability promise."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+include = ["/src"]
+
+[dependencies]
+yuanme-content.workspace = true
+yuanme-diag.workspace = true

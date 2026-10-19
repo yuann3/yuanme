@@ -1,0 +1,15 @@
+# CI runs cargo-deny on this project with the repository's deny.toml and
+# expects it to reject the GPL crate. If it ever passes, deny.toml has stopped
+# enforcing ADR 0014.
+[workspace]
+members = ["gpl"]
+
+[package]
+name = "deny-fixture"
+version = "0.0.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[dependencies]
+gpl = { path = "gpl" }
