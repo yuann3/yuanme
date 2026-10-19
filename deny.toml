@@ -1,0 +1,33 @@
+[graph]
+all-features = true
+
+[advisories]
+yanked = "deny"
+
+[licenses]
+# ADR 0014. MPL-2.0 is allowed only for unmodified files, so it is added per
+# crate through `exceptions` when lightningcss arrives, never globally.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "0BSD",
+    "CC0-1.0",
+    "BSL-1.0",
+    "Unicode-3.0",
+]
+confidence-threshold = 0.93
+# The list is policy, not a record of what is in the tree today.
+unused-allowed-license = "allow"
+
+[bans]
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
