@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Exact `=` pins are bumped by hand in their own PRs (#27): list each
+  # pinned family under `ignore` here when it arrives.
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
