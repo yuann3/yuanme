@@ -1,0 +1,11 @@
+---
+source: crates/yuanme-diag/src/tests.rs
+expression: "d.render(&files, false)"
+---
+error[math/unknown-label]: unclosed block
+ --> content/posts/a.org:1:13
+  |
+1 | #+begin_src
+  |            ^
+  |
+  = note: run `yuanme docs math/unknown-label` for more

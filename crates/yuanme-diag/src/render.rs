@@ -23,6 +23,8 @@ impl Diagnostic {
                 let mut span = span_json(files, &l.span);
                 span["is_primary"] = json!(i == 0);
                 span["label"] = json!(l.label);
+                // rustc lists every line a span touches; #21 fixed one string,
+                // the line the span starts on.
                 span["text"] = json!(files.line_text(l.span.file, l.span.range.start));
                 span
             })
@@ -120,11 +122,7 @@ impl Diagnostic {
                 let first = &suggestion.edits[0].span;
                 let mut snippet =
                     Snippet::source(files.text(first.file)).path(files.path(first.file));
-                for edit in suggestion
-                    .edits
-                    .iter()
-                    .filter(|e| e.span.file == first.file)
-                {
+                for edit in &suggestion.edits {
                     snippet = snippet.patch(Patch::new(
                         edit.span.range.clone(),
                         edit.replacement.as_str(),

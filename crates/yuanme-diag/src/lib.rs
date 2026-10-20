@@ -116,6 +116,12 @@ impl Diagnostic {
         applicability: Applicability,
         edits: Vec<Edit>,
     ) -> Self {
+        // The rendered fix shows one file's snippet, so a fix that spanned
+        // files would show a person half of what `--json` applies.
+        assert!(
+            !edits.is_empty() && edits.iter().all(|e| e.span.file == edits[0].span.file),
+            "a suggestion edits one file"
+        );
         self.child(
             ChildLevel::Help,
             message.into(),
@@ -148,7 +154,9 @@ pub fn catch_panic<T>(
     file: FileId,
     task: impl FnOnce() -> T,
 ) -> Result<T, Diagnostic> {
-    // The default panic hook has already printed the message and location to
+    // A task owns everything it writes and returns it, so nothing half-updated
+    // outlives the unwind; that is why AssertUnwindSafe is sound here. The
+    // default panic hook has already printed the message and location to
     // stderr by the time this returns, so the panic is never silent.
     catch_unwind(AssertUnwindSafe(task)).map_err(|payload| {
         let reason = payload
@@ -188,6 +196,9 @@ pub fn apply_fixes(
         .filter(|e| e.span.file == file)
         .collect();
     edits.sort_by_key(|e| (e.span.range.start, e.span.range.end));
+    // `check` renders every Page, so one Template mistake reaches here once per
+    // Page with the same fix; identical edits are one edit, not a conflict.
+    edits.dedup_by(|a, b| a.span == b.span && a.replacement == b.replacement);
     if edits
         .windows(2)
         .any(|w| w[0].span.range.end > w[1].span.range.start)

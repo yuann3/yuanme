@@ -119,6 +119,18 @@ fn source_map_keeps_spans_out_of_removed_text() {
     // `.a ` ends at byte 3 in both; it must not jump past the removed `:global(`.
     assert_eq!(map.span(0..3).range, 0..3);
     assert_eq!(map.span(3..5).range, 11..13);
+    // An empty span where text was removed points after the removal, not into it.
+    assert_eq!(map.span(3..3).range, 11..11);
+}
+
+#[test]
+#[should_panic(expected = "copies must be in original order")]
+fn source_map_refuses_copies_out_of_order() {
+    let mut files = Files::default();
+    let file = files.add("a.css", "0123456789abc");
+    let mut b = SourceMapBuilder::new(file, "0123456789abc");
+    b.copy(10..12);
+    b.copy(0..3);
 }
 
 #[test]
@@ -159,6 +171,83 @@ fn overlapping_fixes_are_refused() {
         vec![edit(file, 0..3, "X"), edit(file, 2..4, "Y")],
     );
     assert_eq!(apply_fixes(&files, file, &[d]), Err(OverlappingEdits));
+}
+
+#[test]
+fn adjacent_and_repeated_fixes_apply() {
+    let mut files = Files::default();
+    let file = files.add("a.md", "abcdef");
+    let fix = |edits| {
+        Diagnostic::error(&UNKNOWN_LABEL, "x", span(file, 0..1)).suggest(
+            "fix",
+            Applicability::MachineApplicable,
+            edits,
+        )
+    };
+    // Replace a token and insert right after it: touching, not overlapping.
+    let adjacent = fix(vec![edit(file, 0..3, "X"), edit(file, 3..3, "+")]);
+    // The same mistake reported from two Pages carries the same fix twice.
+    let twice = [
+        fix(vec![edit(file, 4..5, "E")]),
+        fix(vec![edit(file, 4..5, "E")]),
+    ];
+    assert_eq!(apply_fixes(&files, file, &[adjacent]).unwrap(), "X+def");
+    assert_eq!(apply_fixes(&files, file, &twice).unwrap(), "abcdEf");
+}
+
+#[test]
+#[should_panic(expected = "a suggestion edits one file")]
+fn a_suggestion_cannot_span_files() {
+    let mut files = Files::default();
+    let a = files.add("a.md", "x");
+    let b = files.add("b.md", "y");
+    let _ = Diagnostic::error(&UNKNOWN_LABEL, "x", span(a, 0..1)).suggest(
+        "fix",
+        Applicability::MachineApplicable,
+        vec![edit(a, 0..1, "X"), edit(b, 0..1, "Y")],
+    );
+}
+
+#[test]
+fn a_secondary_span_in_another_file_gets_its_own_snippet() {
+    let mut files = Files::default();
+    let post = files.add("content/posts/a.md", "see \\eqref{eq:x}\n");
+    let other = files.add("content/posts/b.md", "$$ x \\label{eq:x} $$\n");
+    let d = Diagnostic::error(
+        &UNKNOWN_LABEL,
+        "`eq:x` is in another Entry",
+        span(post, 11..15),
+    )
+    .label("referenced here")
+    .secondary(span(other, 12..16), "defined here");
+    let json = d.to_json(&files);
+    assert_eq!(json["spans"][1]["is_primary"], false);
+    assert_eq!(json["spans"][1]["file"], "content/posts/b.md");
+    insta::assert_snapshot!(d.render(&files, false));
+}
+
+#[test]
+fn a_panic_on_an_empty_file_renders() {
+    let mut files = Files::default();
+    let file = files.add("content/posts/empty.org", "");
+    let d = catch_panic(&files, file, || -> () { panic!("boom") }).unwrap_err();
+    insta::assert_snapshot!(d.render(&files, false));
+}
+
+#[test]
+fn a_span_at_the_end_of_a_file_is_on_the_line_after_its_last_newline() {
+    let mut files = Files::default();
+    let file = files.add("content/posts/a.org", "#+begin_src\n");
+    let d = Diagnostic::error(&UNKNOWN_LABEL, "unclosed block", span(file, 12..12));
+    let json = d.to_json(&files);
+    assert_eq!(
+        (
+            &json["spans"][0]["line_start"],
+            &json["spans"][0]["column_start"]
+        ),
+        (&2.into(), &1.into())
+    );
+    insta::assert_snapshot!(d.render(&files, false));
 }
 
 #[test]

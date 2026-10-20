@@ -1,0 +1,13 @@
+---
+source: crates/yuanme-diag/src/tests.rs
+expression: "d.render(&files, false)"
+---
+error[internal/panic]: yuanme crashed while processing `content/posts/empty.org`
+ --> content/posts/empty.org:1:1
+  |
+1 |
+  | ^
+  |
+  = note: the panic was: boom
+  = help: this is a bug in yuanme: please report it at https://github.com/yuann3/yuanme/issues
+  = note: run `yuanme docs internal/panic` for more

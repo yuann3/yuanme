@@ -96,6 +96,12 @@ impl<'a> SourceMapBuilder<'a> {
 
     /// Appends `original[range]` unchanged.
     pub fn copy(&mut self, range: Range<usize>) {
+        // `SourceMap::span` relies on pieces' original offsets only growing;
+        // a copy from earlier in the file would give spans that end before they start.
+        debug_assert!(
+            range.start >= self.cursor,
+            "copies must be in original order"
+        );
         self.push(range.len(), range.start, true);
         self.out.push_str(&self.original[range.clone()]);
         self.cursor = range.end;
