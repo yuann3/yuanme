@@ -1,0 +1,15 @@
+---
+source: crates/yuanme-diag/src/tests.rs
+expression: "d.render(&files, false)"
+---
+error[math/unknown-label]: no Label `eq:gaus` in this Entry
+ --> content/posts/maxwell.md:3:11
+  |
+3 | by \eqref{eq:gaus} we get
+  |           ^^^^^^^ referenced here
+  |
+  = note: run `yuanme docs math/unknown-label` for more
+help: a Label with a similar name exists: `eq:gauss`
+  |
+3 | by \eqref{eq:gauss} we get
+  |                  +

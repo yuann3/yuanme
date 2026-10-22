@@ -1,0 +1,16 @@
+---
+source: crates/yuanme-diag/src/tests.rs
+expression: "d.render(&files, false)"
+---
+error[math/unknown-label]: `eq:x` is in another Entry
+ --> content/posts/a.md:1:12
+  |
+1 | see \eqref{eq:x}
+  |            ^^^^ referenced here
+  |
+ ::: content/posts/b.md:1:13
+  |
+1 | $$ x \label{eq:x} $$
+  |             ---- defined here
+  |
+  = note: run `yuanme docs math/unknown-label` for more

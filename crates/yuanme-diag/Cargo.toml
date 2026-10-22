@@ -7,3 +7,10 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 include = ["/src"]
+
+[dependencies]
+annotate-snippets = "0.12"
+serde_json = "1"
+
+[dev-dependencies]
+insta = "1"

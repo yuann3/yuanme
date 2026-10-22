@@ -39,8 +39,7 @@ jobs:
       - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
         with:
           tool: cargo-nextest@0.9.148
-      # --no-tests=warn goes once the first tests land (#43).
-      - run: cargo nextest run --locked --workspace --no-tests=warn
+      - run: cargo nextest run --locked --workspace
 
   supply-chain:
     runs-on: ubuntu-latest
