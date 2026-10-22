@@ -13,3 +13,8 @@ yuanme-content.workspace = true
 yuanme-render.workspace = true
 yuanme-assets.workspace = true
 yuanme-diag.workspace = true
+blake3 = "1.8.7"
+rayon = "1.12.0"
+
+[dev-dependencies]
+tempfile = "3.27.0"

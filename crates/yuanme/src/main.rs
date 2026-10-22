@@ -1,3 +1,6 @@
+use yuanme_engine::{Cache, Inputs, Mode};
+
 fn main() {
-    let yuanme_engine::Build = yuanme_engine::build();
+    let build = yuanme_engine::build(&Inputs::default(), &mut Cache::memory(""), Mode::Build);
+    assert!(!build.failed());
 }
