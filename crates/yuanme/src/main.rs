@@ -8,8 +8,9 @@ use std::process::ExitCode;
 
 use yuanme_engine::{Cache, Mode};
 
-/// Every cache key starts with it (ADR 0011).
-const ENGINE_VERSION: &str = env!("CARGO_PKG_VERSION");
+/// Every cache key starts with it (ADR 0011): the release version, plus the
+/// git commit and a dirty flag when built from a checkout.
+const ENGINE_VERSION: &str = env!("YUANME_ENGINE_VERSION");
 
 fn main() -> ExitCode {
     run().unwrap_or_else(|e| {

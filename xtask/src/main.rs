@@ -50,7 +50,7 @@ fn package_check() -> ExitCode {
             continue;
         }
         for file in String::from_utf8_lossy(&output.stdout).lines() {
-            if !(CARGO_FILES.contains(&file) || file.starts_with("src/")) {
+            if !(CARGO_FILES.contains(&file) || file.starts_with("src/") || file == "build.rs") {
                 eprintln!("{}: would publish {file}", dir.display());
                 ok = false;
             }
