@@ -2,7 +2,7 @@
 
 yuanme is a Rust static site generator for programmers' and mathematicians' personal sites, rendering both Markdown and Org, and built to be driven by coding agents.
 
-**Status: building v1.** The plan is done: its decisions live in the closed tickets of the wayfinder map (the issue labelled `wayfinder:map`). The build is tracked by [Build yuanme v1](https://github.com/yuann3/yuanme/issues/41): take an open, unblocked `build` ticket, and land it as one branch and one PR.
+**Status: building v1.** The plan is done: its decisions live in the closed tickets of the wayfinder map (the issue labelled `wayfinder:map`). The build is tracked by [Build yuanme v1](https://github.com/yuann3/yuanme/issues/41): take an open, unblocked `build` ticket, and land it with commits pushed straight to `main`. Don't open a PR, and close the ticket once its work is on `main`.
 
 ## Before you start
 
