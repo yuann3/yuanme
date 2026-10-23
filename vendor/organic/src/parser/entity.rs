@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::satisfy;
@@ -49,29 +51,71 @@ fn name<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, (&'g EntityDefinition<'s>, OrgSource<'s>, bool)> {
     let text: &str = input.into();
-    let first = text.as_bytes().first();
-    for entity in context.get_global_settings().entities {
-        // A failed `tag`, or even a memcmp, for each of Org's ~400 entities
-        // made every backslash cost a microsecond (#15).
-        if entity.name.as_bytes().first() != first || !text.starts_with(entity.name) {
-            continue;
+    let Some(&first) = text.as_bytes().first() else {
+        return Err(nom::Err::Error(CustomError::Static("NoEntity")));
+    };
+    let entities = context.get_global_settings().entities;
+    // Even comparing the first byte of each of Org's ~400 entities made a
+    // run of backslashes cost half a microsecond each (#15), so only those
+    // that start with the right byte are tried, in their order.
+    INDEX.with_borrow_mut(|index| {
+        let key = (entities.as_ptr() as usize, entities.len());
+        let index = match index {
+            Some(index) if index.entities == key => index,
+            _ => index.insert(Index {
+                entities: key,
+                by_first_byte: by_first_byte(entities),
+            }),
+        };
+        for entity in index.by_first_byte[usize::from(first)]
+            .iter()
+            .map(|&i| &entities[i])
+        {
+            if !text.starts_with(entity.name) {
+                continue;
+            }
+            let result = tuple((
+                tag::<_, _, CustomError>(entity.name),
+                cond(
+                    !entity.name.ends_with(' '),
+                    alt((
+                        map(tag("{}"), |_| true),
+                        map(peek(recognize(entity_end)), |_| false),
+                    )),
+                ),
+            ))(input);
+            if let Ok((remaining, (ent, use_brackets))) = result {
+                return Ok((remaining, (entity, ent, use_brackets.unwrap_or(false))));
+            }
         }
-        let result = tuple((
-            tag::<_, _, CustomError>(entity.name),
-            cond(
-                !entity.name.ends_with(' '),
-                alt((
-                    map(tag("{}"), |_| true),
-                    map(peek(recognize(entity_end)), |_| false),
-                )),
-            ),
-        ))(input);
-        if let Ok((remaining, (ent, use_brackets))) = result {
-            return Ok((remaining, (entity, ent, use_brackets.unwrap_or(false))));
+        Err(nom::Err::Error(CustomError::Static("NoEntity")))
+    })
+}
+
+/// For one list of entities, by first byte, where those that start with it
+/// are in the list.
+struct Index {
+    entities: (usize, usize),
+    by_first_byte: Vec<Vec<usize>>,
+}
+
+thread_local! {
+    static INDEX: RefCell<Option<Index>> = const { RefCell::new(None) };
+}
+
+/// Forgets the index. Another list may sit at an old one's address.
+pub(crate) fn reset() {
+    INDEX.set(None);
+}
+
+fn by_first_byte(entities: &[EntityDefinition<'_>]) -> Vec<Vec<usize>> {
+    let mut index = vec![Vec::new(); 256];
+    for (i, entity) in entities.iter().enumerate() {
+        if let Some(&first) = entity.name.as_bytes().first() {
+            index[usize::from(first)].push(i);
         }
     }
-
-    Err(nom::Err::Error(CustomError::Static("NoEntity")))
+    index
 }
 
 fn entity_end<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ()> {

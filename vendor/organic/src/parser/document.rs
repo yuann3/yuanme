@@ -4,6 +4,7 @@ use nom::multi::many0;
 use nom::InputTake;
 
 use super::closer;
+use super::entity;
 use super::fuel;
 use super::fuel::Stop;
 use super::headline::heading;
@@ -75,6 +76,7 @@ pub fn parse_with_settings<'g, 's>(
     let initial_context = Context::new(global_settings, List::new(&initial_context));
     let wrapped_input = OrgSource::new(input);
     closer::reset();
+    entity::reset();
     fuel::fill(input.len());
     let document =
         all_consuming(bind_context!(document_org_source, &initial_context))(wrapped_input);
