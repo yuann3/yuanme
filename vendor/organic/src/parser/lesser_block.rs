@@ -416,8 +416,11 @@ fn _lesser_block_begin<'b, 'g, 'r, 's, 'c>(
     let (remaining, _leading_whitespace) = space0(input)?;
     let (remaining, (_begin, name)) = tuple((
         tag_no_case("#+begin_"),
+        // The names are ASCII without a k, so no other character folds to
+        // them and Unicode case folding would agree; it allocated a String
+        // for every line starting with #+begin_.
         verify(name, |name: &OrgSource<'_>| {
-            Into::<&str>::into(name).to_lowercase().as_str() == current_name_lower
+            Into::<&str>::into(name).eq_ignore_ascii_case(current_name_lower)
         }),
     ))(remaining)?;
     Ok((remaining, name))
