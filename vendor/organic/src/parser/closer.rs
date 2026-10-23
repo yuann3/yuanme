@@ -87,6 +87,7 @@ pub(crate) fn reset() {
     LAST_DIVIDER.set(None);
     ENDS.with_borrow_mut(Vec::clear);
     TITLE_ENDS.set(None);
+    PUNCTUATION_RUN.set(None);
 }
 
 /// Whether `input` starts the last list-item tag divider on its line: a
@@ -534,4 +535,43 @@ fn title_ends(line: &str) -> Vec<bool> {
         ends[chars[i].0] = first == n || (chars[first].1 == ':' && tags_to_end[first + 1]);
     }
     ends
+}
+
+/// For one input, the last run of plain-link path punctuation found.
+#[derive(Clone, Copy)]
+struct PunctuationRun {
+    source: (usize, usize),
+    end: usize,
+    from: usize,
+    to: usize,
+}
+
+thread_local! {
+    static PUNCTUATION_RUN: Cell<Option<PunctuationRun>> = const { Cell::new(None) };
+}
+
+/// Where the run of punctuation that may end a plain link's path, starting
+/// at `input`, ends. A path asks at each of its characters, and scanning
+/// the run each time made a long run quadratic (#15), so the run is
+/// remembered and every position in it gets the same answer.
+pub(crate) fn path_punctuation_end(input: OrgSource<'_>) -> usize {
+    let (text, at) = input.full_source_and_offset();
+    let source = (text.as_ptr() as usize, text.len());
+    let end = at + input.len();
+    if let Some(run) = PUNCTUATION_RUN.get() {
+        if run.source == source && run.end == end && run.from <= at && at <= run.to {
+            return run.to;
+        }
+    }
+    let to = text[at..end]
+        .char_indices()
+        .find(|&(_, c)| !c.is_ascii_punctuation() || " \t\r\n[]<>()/".contains(c))
+        .map_or(end, |(offset, _)| at + offset);
+    PUNCTUATION_RUN.set(Some(PunctuationRun {
+        source,
+        end,
+        from: at,
+        to,
+    }));
+    to
 }

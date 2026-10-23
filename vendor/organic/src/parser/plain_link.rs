@@ -19,14 +19,14 @@ use nom::combinator::peek;
 use nom::combinator::recognize;
 use nom::combinator::rest;
 use nom::combinator::verify;
-use nom::multi::many0;
 use nom::multi::many1;
 use nom::multi::many1_count;
 use nom::multi::many_till;
 use nom::sequence::tuple;
 use nom::InputTake;
+use nom::Slice;
 
-use super::fuel;
+use super::closer::path_punctuation_end;
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_object_trailing_whitespace_if_not_exiting;
@@ -287,16 +287,7 @@ fn impl_path_plain_end<'b, 'g, 'r, 's>(
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let current_depth = input.get_parenthesis_depth() - starting_parenthesis_depth;
 
-    let (remaining, _leading_punctuation) = many0(verify(anychar, |c| {
-        !" \t\r\n[]<>()/".contains(*c) && c.is_ascii_punctuation()
-    }))(input)?;
-    // This runs at each character of a path and scans the punctuation
-    // ahead, so a long run of it is quadratic. Charging the scan lets fuel
-    // stop that (#15).
-    let scanned = remaining.get_byte_offset() - input.get_byte_offset();
-    if scanned > 1 && fuel::burn(scanned as u64, input.get_byte_offset()) {
-        return Ok((input, input.take(0)));
-    }
+    let remaining = input.slice(path_punctuation_end(input) - input.get_byte_offset()..);
 
     let disallowed_character = alt((recognize(one_of(" \t\r\n[]<>")), eof))(remaining);
     if disallowed_character.is_ok() {
