@@ -267,3 +267,20 @@ fn a_radio_link_spans_lines_only_inside_a_paragraph() {
     assert_eq!(links("<<<a b>>>\n\n|x a\nb"), 0);
     assert_eq!(links("<<<a b>>>\n\n- x a\nb"), 0);
 }
+
+/// Citations nested this deep recursed past a 2 MiB stack, which aborts the
+/// process instead of unwinding. Test threads get 2 MiB.
+#[test]
+fn a_parse_nested_too_deeply_stops_at_its_opener() {
+    let input = format!(
+        "{}{}{}{}",
+        "[cite:".repeat(44),
+        "][".repeat(43),
+        "[".repeat(130),
+        "@".repeat(1152)
+    );
+    match parse(&input) {
+        Err(ParseError::TooDeep { opener }) => assert_eq!(opener, 0),
+        other => panic!("expected TooDeep, got {:?}", other.map(|_| ())),
+    }
+}

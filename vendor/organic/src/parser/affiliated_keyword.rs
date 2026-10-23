@@ -134,9 +134,9 @@ where
                 )))(kw.value.into())
                 {
                     Ok((_remaining, objects)) => objects,
-                    // Once the fuel is spent every exit matcher matches, so
+                    // Once the parse stops every exit matcher matches, so
                     // objects stop short, and the whole parse fails anyway.
-                    Err(_) if fuel::is_spent() => Vec::new(),
+                    Err(_) if fuel::stopped().is_some() => Vec::new(),
                     Err(error) => panic!("Object parser should always succeed: {error:?}"),
                 };
 

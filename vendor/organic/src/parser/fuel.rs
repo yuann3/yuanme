@@ -44,43 +44,72 @@ pub(crate) const ELEMENT: u64 = 24;
 /// Spent per attempt to parse an object or table cell, for the same reason.
 pub(crate) const OBJECT: u64 = 16;
 
+/// How much stack a parse may use. Org sets no limit on nesting, and the
+/// parser recurses for each level, so a deep enough input would overflow
+/// the stack, which aborts the process instead of unwinding. The corpus
+/// needs at most 102 KB in a release build and 670 KB in a debug one, and
+/// 1 MiB leaves room in a 2 MiB thread.
+const STACK: usize = 1 << 20;
+
+/// Why a parse stopped early.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Stop {
+    OutOfFuel,
+    TooDeep,
+}
+
 #[derive(Clone, Copy)]
 struct Tank {
     left: u64,
+    /// The stack's address when the parse began.
+    stack_base: usize,
     /// Where the outermost element attempt in progress began.
     attempt_start: usize,
     attempt_depth: u32,
-    /// Set when the fuel runs out: where the runaway parse began.
-    opener: Option<usize>,
+    /// Set when the parse stops: why, and where the runaway parse began.
+    stopped: Option<(Stop, usize)>,
 }
 
 impl Tank {
     fn burn(&mut self, units: u64, offset: usize) {
-        if self.opener.is_some() {
+        if self.stopped.is_some() {
             return;
         }
-        if let Some(left) = self.left.checked_sub(units) {
+        let stop = if self.stack_base.saturating_sub(stack_address()) > STACK {
+            Stop::TooDeep
+        } else if let Some(left) = self.left.checked_sub(units) {
             self.left = left;
             return;
-        }
-        self.left = 0;
-        self.opener = Some(if self.attempt_depth > 0 {
+        } else {
+            Stop::OutOfFuel
+        };
+        let opener = if self.attempt_depth > 0 {
             self.attempt_start
         } else {
             offset
-        });
+        };
+        self.stopped = Some((stop, opener));
     }
+}
+
+/// About where the stack is now. It grows down on every target yuanme
+/// builds for.
+#[inline(always)]
+fn stack_address() -> usize {
+    let marker = 0u8;
+    std::hint::black_box(&marker) as *const u8 as usize
 }
 
 thread_local! {
     // Unlimited until `fill`, so a parser called on its own in a unit test
-    // never runs out.
+    // never stops.
     static TANK: Cell<Tank> = const {
         Cell::new(Tank {
             left: u64::MAX,
+            stack_base: 0,
             attempt_start: 0,
             attempt_depth: 0,
-            opener: None,
+            stopped: None,
         })
     };
 }
@@ -89,41 +118,54 @@ thread_local! {
 pub(crate) fn fill(len: usize) {
     TANK.set(Tank {
         left: BASE.saturating_add((len as u64).saturating_mul(PER_BYTE)),
+        stack_base: stack_address(),
         attempt_start: 0,
         attempt_depth: 0,
-        opener: None,
+        stopped: None,
     });
 }
 
 /// Spends `units` of fuel on work at byte `offset`, and says whether the
-/// fuel is spent.
+/// parse has stopped.
 pub(crate) fn burn(units: u64, offset: usize) -> bool {
     let mut tank = TANK.get();
     tank.burn(units, offset);
     TANK.set(tank);
-    tank.opener.is_some()
+    tank.stopped.is_some()
 }
 
 /// Spends `units` on an attempt to parse something at `input`, and fails it
-/// once the fuel is spent.
+/// once the parse has stopped.
 pub(crate) fn spend(units: u64, input: OrgSource<'_>) -> Result<(), nom::Err<CustomError>> {
     if burn(units, input.get_byte_offset()) {
-        return Err(out_of_fuel());
+        return Err(stopped_error());
     }
     Ok(())
 }
 
-fn out_of_fuel() -> nom::Err<CustomError> {
-    nom::Err::Failure(CustomError::Static("Out of fuel."))
+fn stopped_error() -> nom::Err<CustomError> {
+    nom::Err::Failure(CustomError::Static("The parse stopped."))
 }
 
-pub(crate) fn is_spent() -> bool {
-    TANK.get().opener.is_some()
+/// Says whether the parse has stopped, stopping it first if the stack is
+/// too deep at byte `offset`.
+pub(crate) fn check(offset: usize) -> bool {
+    let mut tank = TANK.get();
+    if tank.stopped.is_some() {
+        return true;
+    }
+    if tank.stack_base.saturating_sub(stack_address()) <= STACK {
+        return false;
+    }
+    tank.burn(0, offset);
+    TANK.set(tank);
+    true
 }
 
-/// Where the runaway parse began, if this thread's parse ran out of fuel.
-pub(crate) fn opener() -> Option<usize> {
-    TANK.get().opener
+/// Why this thread's parse stopped early, if it did, and where the runaway
+/// parse began.
+pub(crate) fn stopped() -> Option<(Stop, usize)> {
+    TANK.get().stopped
 }
 
 /// Marks an attempt to parse an element at `offset` until it is dropped.
@@ -133,7 +175,7 @@ pub(crate) fn opener() -> Option<usize> {
 pub(crate) struct Attempt;
 
 impl Attempt {
-    /// Starts an attempt at `input`, or fails it once the fuel is spent.
+    /// Starts an attempt at `input`, or fails it once the parse has stopped.
     pub(crate) fn start(input: OrgSource<'_>) -> Result<Attempt, nom::Err<CustomError>> {
         let offset = input.get_byte_offset();
         let mut tank = TANK.get();
@@ -145,8 +187,8 @@ impl Attempt {
         TANK.set(tank);
         // Built first, so its drop ends the attempt when this one fails.
         let attempt = Attempt;
-        if tank.opener.is_some() {
-            return Err(out_of_fuel());
+        if tank.stopped.is_some() {
+            return Err(stopped_error());
         }
         Ok(attempt)
     }

@@ -5,6 +5,7 @@ use nom::InputTake;
 
 use super::closer;
 use super::fuel;
+use super::fuel::Stop;
 use super::headline::heading;
 use super::in_buffer_settings::apply_in_buffer_settings;
 use super::in_buffer_settings::apply_post_parse_in_buffer_settings;
@@ -34,6 +35,9 @@ pub enum ParseError {
     /// when the fuel ran out began: a top-level paragraph whose objects ran
     /// away, or the first of several unclosed blocks nested in each other.
     OutOfFuel { opener: usize },
+    /// Objects or elements nest too deeply for the parser's stack. `opener`
+    /// is as for `OutOfFuel`.
+    TooDeep { opener: usize },
     /// Org has no syntax errors, so this is a bug in the parser, or a
     /// `#+SETUPFILE` the settings' `FileAccessInterface` failed to read.
     Failed(String),
@@ -44,6 +48,9 @@ impl std::fmt::Display for ParseError {
         match self {
             ParseError::OutOfFuel { opener } => {
                 write!(f, "parsing ran out of fuel at byte {opener}")
+            }
+            ParseError::TooDeep { opener } => {
+                write!(f, "parsing nested too deeply at byte {opener}")
             }
             ParseError::Failed(message) => f.write_str(message),
         }
@@ -71,8 +78,10 @@ pub fn parse_with_settings<'g, 's>(
     fuel::fill(input.len());
     let document =
         all_consuming(bind_context!(document_org_source, &initial_context))(wrapped_input);
-    if let Some(opener) = fuel::opener() {
-        return Err(ParseError::OutOfFuel { opener });
+    match fuel::stopped() {
+        Some((Stop::OutOfFuel, opener)) => return Err(ParseError::OutOfFuel { opener }),
+        Some((Stop::TooDeep, opener)) => return Err(ParseError::TooDeep { opener }),
+        None => {}
     }
     document
         .map(|(_remaining, document)| document)
