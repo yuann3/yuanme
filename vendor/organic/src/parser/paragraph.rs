@@ -122,6 +122,12 @@ fn paragraph_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
+    // Every element starts a line, so mid-line only the end of the input
+    // can end a paragraph. Upstream ran a full element parse at every
+    // character to find that out.
+    if !input.is_at_start_of_line() {
+        return eof(input);
+    }
     let regular_end = recognize(tuple((start_of_line, many1(blank_line))))(input);
     if regular_end.is_ok() {
         return regular_end;
