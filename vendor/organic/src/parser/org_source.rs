@@ -171,7 +171,22 @@ impl<'s, 'o, O: Into<&'o str>> Compare<O> for OrgSource<'s> {
     }
 
     fn compare_no_case(&self, t: O) -> nom::CompareResult {
-        (&self.full_source[self.start..self.end]).compare_no_case(t.into())
+        let source = &self.full_source[self.start..self.end];
+        let tag: &str = t.into();
+        // nom lowercases every char through Unicode's tables, which made this
+        // a seventh of upstream's parse time (#30). For ASCII on both sides
+        // a byte compare gives the same answer.
+        let prefix = &source.as_bytes()[..tag.len().min(source.len())];
+        if !(tag.is_ascii() && prefix.is_ascii()) {
+            return source.compare_no_case(tag);
+        }
+        if !prefix.eq_ignore_ascii_case(&tag.as_bytes()[..prefix.len()]) {
+            nom::CompareResult::Error
+        } else if prefix.len() < tag.len() {
+            nom::CompareResult::Incomplete
+        } else {
+            nom::CompareResult::Ok
+        }
     }
 }
 
