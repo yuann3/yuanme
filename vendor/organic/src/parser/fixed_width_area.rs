@@ -1,13 +1,9 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::anychar;
 use nom::character::complete::space0;
 use nom::combinator::map;
 use nom::combinator::not;
-use nom::combinator::peek;
-use nom::combinator::recognize;
 use nom::multi::many0;
-use nom::multi::many_till;
 use nom::sequence::preceded;
 use nom::sequence::tuple;
 use nom::InputTake;
@@ -16,6 +12,7 @@ use super::affiliated_keyword::parse_affiliated_keywords;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_trailing_whitespace_if_not_exiting;
 use super::util::org_line_ending;
+use super::util::rest_of_line;
 use crate::context::parser_with_context;
 use crate::context::RefContext;
 use crate::error::Res;
@@ -78,7 +75,9 @@ fn fixed_width_area_line<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSour
         return Ok((remaining, remaining.take(0)));
     }
     let (remaining, _) = tag(" ")(remaining)?;
-    let (remaining, value) = recognize(many_till(anychar, peek(org_line_ending)))(remaining)?;
+    // As in `comment_line`: a character at a time was slow enough to break
+    // the time bound when unclosed blocks re-read the line.
+    let (remaining, value) = rest_of_line(remaining)?;
     Ok((remaining, value))
 }
 

@@ -1,13 +1,11 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::anychar;
 use nom::character::complete::line_ending;
 use nom::character::complete::space0;
 use nom::combinator::eof;
 use nom::combinator::not;
 use nom::combinator::recognize;
 use nom::multi::many0;
-use nom::multi::many_till;
 use nom::sequence::preceded;
 use nom::sequence::tuple;
 
@@ -15,6 +13,7 @@ use super::org_source::OrgSource;
 use super::util::get_consumed;
 use super::util::maybe_consume_trailing_whitespace_if_not_exiting;
 use super::util::org_line_ending;
+use super::util::rest_of_line;
 use crate::context::parser_with_context;
 use crate::context::ContextElement;
 use crate::context::RefContext;
@@ -80,7 +79,10 @@ fn comment_line<'b, 'g, 'r, 's>(
         return Ok((remaining, line_break));
     }
     let (remaining, _) = tag(" ")(remaining)?;
-    let (remaining, value) = recognize(many_till(anychar, org_line_ending))(remaining)?;
+    // Not `many_till(anychar, ...)`, which spent about 15 ns a character:
+    // a long comment line re-read by each of several unclosed blocks around
+    // it took more than the time bound (#15).
+    let (remaining, value) = recognize(tuple((rest_of_line, org_line_ending)))(remaining)?;
     Ok((remaining, value))
 }
 
