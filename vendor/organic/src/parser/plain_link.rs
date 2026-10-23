@@ -229,7 +229,17 @@ pub(crate) fn protocol<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
+    // Most protocols differ from the input in their first letter, which is
+    // cheaper to compare than the whole tag. A non-ASCII first letter, such
+    // as the Kelvin sign, can still match case-insensitively, so it skips
+    // the check.
+    let first = Into::<&str>::into(input).as_bytes().first().copied();
     for link_parameter in context.get_global_settings().link_parameters {
+        if let (Some(first), Some(protocol_first)) = (first, link_parameter.as_bytes().first()) {
+            if first.is_ascii() && !first.eq_ignore_ascii_case(protocol_first) {
+                continue;
+            }
+        }
         let result = tag_no_case::<_, _, CustomError>(*link_parameter)(input);
         if let Ok((remaining, ent)) = result {
             return Ok((remaining, ent));

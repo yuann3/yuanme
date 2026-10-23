@@ -281,19 +281,21 @@ fn could_start_object(context: RefContext<'_, '_, '_, '_>, input: OrgSource<'_>)
             let after_word = input
                 .get_preceding_character()
                 .is_some_and(|c| WORD_CONSTITUENT_CHARACTERS.contains(c));
+            if after_word {
+                return false;
+            }
+            // Bytes, not chars: never fewer, and far cheaper to count.
             let longest = context
                 .get_global_settings()
                 .link_parameters
                 .iter()
-                .map(|protocol| protocol.chars().count())
+                .map(|protocol| protocol.len())
                 .max()
                 .unwrap_or(0);
-            !after_word
-                && rest
-                    .chars()
-                    .take(longest + 1)
-                    .take_while(|c| !c.is_whitespace())
-                    .any(|c| c == ':')
+            rest.chars()
+                .take(longest + 1)
+                .take_while(|c| !c.is_whitespace())
+                .any(|c| c == ':')
         }
         _ => false,
     }
