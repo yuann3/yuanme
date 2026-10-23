@@ -50,13 +50,9 @@ pub(crate) fn comment<'b, 'g, 'r, 's>(
     if let Some(last_line) = last_line {
         value.push(Into::<&str>::into(first_line));
         value.extend(remaining_lines.into_iter().map(Into::<&str>::into));
-        let last_line = Into::<&str>::into(last_line);
-        // Trim the line ending from the final line.
-        value.push(&last_line[..(last_line.len() - 1)])
+        value.push(without_line_ending(last_line.into()));
     } else {
-        // Trim the line ending from the only line.
-        let only_line = Into::<&str>::into(first_line);
-        value.push(&only_line[..(only_line.len() - 1)])
+        value.push(without_line_ending(first_line.into()));
     }
     Ok((
         remaining,
@@ -66,6 +62,12 @@ pub(crate) fn comment<'b, 'g, 'r, 's>(
             post_blank: post_blank.map(Into::<&str>::into),
         },
     ))
+}
+
+/// Upstream dropped the last byte as the line ending, which panicked on a
+/// lone `#` at the end of the input and cut the last letter off `# a`.
+fn without_line_ending(line: &str) -> &str {
+    line.strip_suffix('\n').unwrap_or(line)
 }
 
 fn comment_line<'b, 'g, 'r, 's>(

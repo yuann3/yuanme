@@ -182,3 +182,15 @@ fn a_tag_ends_at_the_last_divider_on_its_line() {
     let (_, _, paragraph) = first_item(&input);
     assert_eq!(paragraph, "b last\n");
 }
+
+#[test]
+fn a_comment_at_the_end_of_the_input_keeps_its_text() {
+    for (input, value) in [("#", ""), ("# a", "a"), ("# a\n", "a")] {
+        let document = parse(input).unwrap();
+        let section = document.zeroth_section.unwrap();
+        let Element::Comment(comment) = &section.children[0] else {
+            panic!("not a comment: {:?}", section.children[0]);
+        };
+        assert_eq!(comment.value, [value], "{input:?}");
+    }
+}
