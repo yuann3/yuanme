@@ -88,13 +88,13 @@ const REFERENCE: Duration = Duration::from_micros(14_200);
 ///
 /// The fuel has to sit above what the corpus needs, and the corpus's
 /// slowest file parses at a quarter of the bound on the M4 Max. An
-/// ubuntu-latest runner parses about 3 times slower, so there running out
-/// of fuel takes longer than the bound itself. The bound is there to catch
-/// superlinear paths (#15), so fuzz CI scales it by how much slower the
-/// machine parses a corpus-like document. That also scales it with the
-/// parser's own speed: a parser slower at everything gets a longer bound,
-/// which only the benchmark catches. Measure `REFERENCE` again when the
-/// benchmark moves.
+/// ubuntu-latest runner parses 1.7 to 3 times slower, by its CPU, so there
+/// running out of fuel takes longer than the bound itself. The bound is
+/// there to catch superlinear paths (#15), so fuzz CI scales it by how much
+/// slower the machine parses a corpus-like document. That also scales it
+/// with the parser's own speed: a parser slower at everything gets a longer
+/// bound, which only the benchmark catches. Measure `REFERENCE` again when
+/// the benchmark moves.
 pub fn slowdown() -> f64 {
     let document = reference_document();
     let best = (0..20).map(|_| time(&document)).min().unwrap_or_default();

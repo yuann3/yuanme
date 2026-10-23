@@ -19,10 +19,10 @@
 //! - Inputs that run out spend up to about 20 ns a unit, among them every
 //!   slow input the fuzz targets found, so running out takes at most about
 //!   0.7 µs a byte plus 0.2 ms there.
-//! - An ubuntu-latest GitHub runner parses about 3 times slower, so there
-//!   running out can take longer than the bound. Fuzz CI scales the bound
-//!   by how much slower the machine parses a reference document; see
-//!   `slowdown` in the fuzz crate.
+//! - An ubuntu-latest GitHub runner parses 1.7 to 3 times slower, by its
+//!   CPU, so there running out can take longer than the bound. Fuzz CI
+//!   scales the bound by how much slower the machine parses a reference
+//!   document; see `slowdown` in the fuzz crate.
 //!
 //! The limits can't sit much further above the corpus: its slowest file
 //! already parses at a quarter of the bound.
