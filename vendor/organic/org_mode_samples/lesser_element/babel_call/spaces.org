@@ -1,0 +1,3 @@
+#+call: foo [inside] (bar="baz") [outside] 
+
+#+call: foo (bar="baz") [outside] 

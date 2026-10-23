@@ -1,0 +1,10 @@
+* Headline
+before
+:candle:
+inside
+** Headline inside the drawer
+the
+:end:
+
+drawer
+after

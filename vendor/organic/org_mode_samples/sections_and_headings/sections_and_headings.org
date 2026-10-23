@@ -1,0 +1,7 @@
+Before the first heading
+* The first heading
+body of the first section
+** Child heading
+body of child heading
+* second top-level heading
+body of second top-level heading

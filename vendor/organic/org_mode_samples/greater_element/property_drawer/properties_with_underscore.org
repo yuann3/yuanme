@@ -1,0 +1,7 @@
+** foo
+:PROPERTIES:
+:DESCRIPTION: lorem
+:ALT_TITLE: ipsum
+:END:
+
+bar

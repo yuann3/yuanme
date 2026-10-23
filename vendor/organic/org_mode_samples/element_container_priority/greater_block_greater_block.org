@@ -1,0 +1,5 @@
+#+begin_center
+#+begin_quote
+foo
+#+end_center
+#+end_quote

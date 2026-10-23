@@ -1,0 +1,2 @@
+# Fixed width areas must begin with colon followed by a space, not a tab, so this is not a fixed width area.
+:	foo

@@ -1,0 +1,9 @@
+* foo
+** bar
+:PROPERTIES:
+:lorem: ipsum
+:END:
+*** baz
+:PROPERTIES:
+:lorem+:   dolar
+:END:

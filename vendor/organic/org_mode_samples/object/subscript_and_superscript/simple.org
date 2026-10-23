@@ -1,0 +1,7 @@
+foo^*
+bar_*
+baz^{hello *world*}
+lorem_{}
+ipsum^+,\.a5
+dolar_,\.a5
+text before foo_7 text afterwards

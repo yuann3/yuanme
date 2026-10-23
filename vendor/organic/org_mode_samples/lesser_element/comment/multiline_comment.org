@@ -1,0 +1,5 @@
+# Comment
+#
+# At the top of the file
+foo
+# Another comment

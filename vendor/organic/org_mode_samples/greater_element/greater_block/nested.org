@@ -1,0 +1,7 @@
+#+begin_center
+foo
+#+begin_quote
+bar
+#+end_quote
+baz
+#+end_center

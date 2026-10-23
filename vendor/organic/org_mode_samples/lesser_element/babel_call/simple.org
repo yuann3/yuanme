@@ -1,0 +1,9 @@
+#+call: foo(bar="baz")
+
+#+call: lorem ipsum
+
+#+call: dolar cat(dog)
+
+#+call: (bat)
+
+#+call:

@@ -1,0 +1,5 @@
+#+begin_defun
+foo
+
+{{{bar(baz)}}}
+#+end_defun

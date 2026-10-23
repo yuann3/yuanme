@@ -1,0 +1,6 @@
+# Verse blocks are the only lesser blocks that contain objects
+#+begin_verse
+#+begin_comment
+This is a comment.
+#+end_comment
+#+end_verse

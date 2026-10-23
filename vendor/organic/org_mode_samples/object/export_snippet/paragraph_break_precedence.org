@@ -1,0 +1,9 @@
+@@latex:
+
+
+
+\documentclass[margin,11pt]{res} % default is 10 pt
+
+
+
+@@

@@ -1,0 +1,8 @@
+#+STARTUP: odd
+* Foo
+***** Bar
+* Baz
+*** Lorem
+* Ipsum
+**** Dolar
+***** Cat

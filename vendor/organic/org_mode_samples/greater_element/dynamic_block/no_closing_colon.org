@@ -1,0 +1,3 @@
+#+BEGIN: timestamp :format "%Y-%m-%d %H:%M"
+
+#+END

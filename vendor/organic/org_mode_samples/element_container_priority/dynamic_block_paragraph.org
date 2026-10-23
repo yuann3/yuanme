@@ -1,0 +1,4 @@
+#+BEGIN: foo :hlines 1 :id global
+foo
+#+END:
+Is this still in the paragraph?

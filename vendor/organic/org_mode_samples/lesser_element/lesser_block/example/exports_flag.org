@@ -1,0 +1,7 @@
+#+begin_example python :exports results
+print("foo")
+#+end_example
+
+#+begin_example python -n :exports results
+print("foo")
+#+end_example

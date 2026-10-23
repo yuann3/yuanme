@@ -1,0 +1,16 @@
+<file:simple.org::foo>
+
+<file:simple.org::#foo>
+<file:simple.org::foo  bar>
+<file:simple.org::foo
+bar>
+<file:simple.org::foo::bar>
+<file:simple.org::/foo/>
+
+<file://en.wikipedia.org/wiki/Shebang_(Uni::x)>
+
+
+<file:simple.org::*>
+<file:simple.org::* foo>
+<file:simple.org::*bar>
+<file:simple.org::b*az>

@@ -1,0 +1,72 @@
+#+NAME: a
+#+caption: b *lorem* ipsum
+#+results: c
+#+headers: d
+#+header: e
+#+label: f
+#+plot: g
+#+resname: h
+#+result: i
+#+source: j
+#+srcname: k
+#+tblname: l
+#+attr_latex: m
+#+attr_html: n
+#+NAME: aa
+#+caption: bb *lorem* ipsum
+#+results: cc
+#+headers: dd
+#+header: ee
+#+label: ff
+#+plot: gg
+#+resname: hh
+#+result: ii
+#+source: jj
+#+srcname: kk
+#+tblname: ll
+#+attr_latex: mm
+#+attr_html: nn
+#+BEGIN: clocktable :scope file :maxlevel 2
+#+CAPTION: Clock summary at [2023-08-25 Fri 05:34]
+| Headline     | Time   |
+|--------------+--------|
+| *Total time* | *0:00* |
+#+END:
+
+
+
+
+#+NAME: A
+#+CAPTION: B *LOREM* IPSUM
+#+RESULTS: C
+#+HEADERS: D
+#+HEADER: E
+#+LABEL: F
+#+PLOT: G
+#+RESNAME: H
+#+RESULT: I
+#+SOURCE: J
+#+SRCNAME: K
+#+TBLNAME: L
+#+ATTR_LATEX: M
+#+ATTR_HTML: N
+#+NAME: AA
+#+CAPTION: BB *LOREM* IPSUM
+#+RESULTS: CC
+#+HEADERS: DD
+#+HEADER: EE
+#+LABEL: FF
+#+PLOT: GG
+#+RESNAME: HH
+#+RESULT: II
+#+SOURCE: JJ
+#+SRCNAME: KK
+#+TBLNAME: LL
+#+ATTR_LATEX: MM
+#+ATTR_HTML: NN
+#+BEGIN: clocktable :scope file :maxlevel 2
+#+CAPTION: Clock summary at [2023-08-25 Fri 05:34]
+| Headline     | Time   |
+|--------------+--------|
+| *Total time* | *0:00* |
+#+END:

@@ -1,0 +1,25 @@
+non-link text
+<eww://foo>
+<rmail://foo>
+<mhe://foo>
+<irc://foo>
+<info://foo>
+<gnus://foo>
+<docview://foo>
+<bibtex://foo>
+<bbdb://foo>
+<w3m://foo>
+<doi://foo>
+<file+sys://foo>
+<file+emacs://foo>
+<shell://foo>
+<news://foo>
+<mailto://foo>
+<https://foo>
+<http://foo>
+<ftp://foo>
+<help://foo>
+<file://foo>
+<elisp://foo>
+<randomfakeprotocl://foo>
+non-link text

@@ -1,0 +1,25 @@
+non-link text::foo
+eww://foo::foo
+rmail://foo::foo
+mhe://foo::foo
+irc://foo::foo
+info://foo::foo
+gnus://foo::foo
+docview://foo::foo
+bibtex://foo::foo
+bbdb://foo::foo
+w3m://foo::foo
+doi://foo::foo
+file+sys://foo::foo
+file+emacs://foo::foo
+shell://foo::foo
+news://foo::foo
+mailto://foo::foo
+https://foo::foo
+http://foo::foo
+ftp://foo::foo
+help://foo::foo
+file://foo::foo
+elisp://foo::foo
+randomfakeprotocl://foo::foo
+non-link text::foo

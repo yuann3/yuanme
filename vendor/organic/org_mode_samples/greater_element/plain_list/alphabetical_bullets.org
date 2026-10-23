@@ -1,0 +1,3 @@
+# These are only allowed by configuring org-list-allow-alphabetical which the automated tests are not currently set up to do, so this will parse as a paragraph:
+a. foo
+b. bar

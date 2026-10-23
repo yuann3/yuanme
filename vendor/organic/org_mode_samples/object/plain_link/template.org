@@ -1,0 +1,8 @@
+# None of these end up as links.
+
+#+LINK:       foo https://foo.bar/baz#%s
+foo::lorem
+
+cat::bat
+#+LINK:       cat https://dog%s
+cat:bat

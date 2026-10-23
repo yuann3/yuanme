@@ -1,0 +1,4 @@
+* Headline
+#+begin_center
+* Another headline
+#+end_center

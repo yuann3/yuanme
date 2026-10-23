@@ -1,0 +1,6 @@
+# The STARTUP directive here instructs org-mode to align tables which emacs normally does when opening the file. Since Organic is solely a parser, we have no business editing the org-mode document so Organic does not handle aligning tables, so in order for this test to pass, we have to avoid that behavior in Emacs.
+#+STARTUP: align
+
+|foo|bar|
+|-
+|lorem|ipsum|

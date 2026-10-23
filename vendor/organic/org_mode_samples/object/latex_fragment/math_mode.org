@@ -1,0 +1,1 @@
+tex can have math between dollar signs like $x^2=y$ and $$ x=+\sqrt{y} $$ but also braces and brackets like \( x=2 \) and \[ x=-\sqrt{2} \]

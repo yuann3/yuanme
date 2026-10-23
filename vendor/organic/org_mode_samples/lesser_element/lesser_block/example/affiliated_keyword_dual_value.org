@@ -1,0 +1,16 @@
+#+results[foo]: bar
+#+results[lorem]: ipsum
+#+begin_example
+baz
+#+end_example
+
+#+caption[lorem]: ipsum
+#+caption[foo]: bar
+#+begin_example
+baz
+#+end_example
+
+#+header[foo]: bar
+#+begin_example
+baz
+#+end_example

@@ -1,0 +1,6 @@
+#+TODO: TODO(t) INPROGRESS(i/!) | DONE(d!) CANCELED(c@/!)
+# !  : Log changes leading to this state.
+# @  : Log changes leading to this state and prompt for a comment to include.
+# /! : Log changes leaving this state if and only if to a state that does not log. This can be combined with the above like WAIT(w!/!) or DELAYED(d@/!)
+* INPROGRESS
+- State "TODO"       from "INPROGRESS" [2023-09-14 Thu 02:13]

@@ -1,0 +1,4 @@
+# There are trailing spaces after the begin and end src lines
+#+begin_src    
+  echo "this is a source block."
+#+end_src    

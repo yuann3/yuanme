@@ -1,0 +1,4 @@
+#+begin_center
+[fn:1] footenote.
+#+end_center
+Is this still in the footnote?

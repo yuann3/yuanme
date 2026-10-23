@@ -1,0 +1,8 @@
+[fn:1] This is a regular footnote definition because it is on an unindented line while lacking a definition inside the brackets.
+
+
+          [fn:1] This is a footnote reference because the line is indented
+
+[fn:2:This is a footnote reference since it has the definition inside the brackets. This style is referred to as an "inline footnote".]
+
+[fn::This is a footnote reference since it has the definition inside the brackets. This style is referred to as an "anonymous footnote".]

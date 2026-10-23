@@ -1,0 +1,8 @@
+#+begin_example -n 5
+foo
+#+end_example
+
+# Line numbering starts at 15 for the example below since it uses +n.
+#+begin_example +n 10
+bar
+#+end_example

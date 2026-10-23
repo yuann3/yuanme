@@ -1,0 +1,7 @@
+# Even though *exporting* honors the setting to require braces for subscript/superscript, the official org-mode parser still parses subscripts and superscripts.
+
+#+OPTIONS:    ^:{}
+foo_this isn't a subscript when exported due to lack of braces (but its still a subscript during parsing)
+
+
+bar_{this is a subscript}

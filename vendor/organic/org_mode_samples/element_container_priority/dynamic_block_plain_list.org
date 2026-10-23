@@ -1,0 +1,4 @@
+#+BEGIN: foo :hlines 1 :id global
+1. foo
+#+END:
+2. bar

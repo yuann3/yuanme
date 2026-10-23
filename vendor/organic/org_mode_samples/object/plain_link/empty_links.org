@@ -1,0 +1,52 @@
+non-link text
+eww://
+rmail://
+mhe://
+irc://
+info://
+gnus://
+docview://
+bibtex://
+bbdb://
+w3m://
+doi://
+file+sys://
+file+emacs://
+shell://
+news://
+mailto://
+https://
+http://
+ftp://
+help://
+file://
+elisp://
+randomfakeprotocl://
+non-link text
+
+
+non-link text
+eww:
+rmail:
+mhe:
+irc:
+info:
+gnus:
+docview:
+bibtex:
+bbdb:
+w3m:
+doi:
+file+sys:
+file+emacs:
+shell:
+news:
+mailto:
+https:
+http:
+ftp:
+help:
+file:
+elisp:
+randomfakeprotocl:
+non-link text

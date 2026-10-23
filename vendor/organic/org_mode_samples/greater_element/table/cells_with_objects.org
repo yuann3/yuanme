@@ -1,0 +1,6 @@
+src_elisp{(bar)}
+*src_elisp{(bar)}*
+
+| foo *bar* |
+| foo src_elisp{(bar)} |
+| foo *src_elisp{(bar)}* |

@@ -1,0 +1,4 @@
+# Since "foos" has an extra "s", this does not match the target.
+the foos bar
+
+The <<<foo>>> and stuff.

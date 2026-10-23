@@ -1,0 +1,4 @@
+\begin{itemize}
+% this would be a LaTeX comment if this was a LaTeX document
+\item Heres some math \sqrt{y}
+\end{itemize} % Need text on this line to prevent it from becoming a LaTeX environment org-mode element

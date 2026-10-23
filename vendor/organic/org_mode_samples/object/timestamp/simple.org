@@ -1,0 +1,18 @@
+# diary
+<%%(foo bar baz)>
+# active
+<1970-01-01 Thu 8:15rest +1w -1d>
+# Any value for "REST" in the first timestamp makes this a regular timestamp rather than a time range.
+<1970-01-01 Thu 8:15rest-13:15otherrest +1w -1d>
+# inactive
+[1970-01-01 Thu 8:15rest +1w -1d]
+# Any value for "REST" in the first timestamp makes this a regular timestamp rather than a time range.
+[1970-01-01 Thu 8:15rest-13:15otherrest +1w -1d]
+# active date range
+<1970-01-01 Thu 8:15rest +1w -1d>--<1970-01-01 Thu 8:15rest +1w -1d>
+# active time range
+<1970-01-01 Thu 8:15-13:15otherrest +1w -1d>
+# inactive date range
+[1970-01-01 Thu 8:15rest +1w -1d]--[1970-01-01 Thu 8:15rest +1w -1d]
+# inactive time range
+[1970-01-01 Thu 8:15-13:15otherrest +1w -1d]

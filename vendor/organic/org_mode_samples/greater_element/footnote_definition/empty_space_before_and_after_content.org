@@ -1,0 +1,8 @@
+* Footnotes
+
+[fn:1]
+
+#+BEGIN_EXAMPLE
+baz
+#+END_EXAMPLE
+

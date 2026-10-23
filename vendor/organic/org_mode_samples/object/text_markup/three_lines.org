@@ -1,0 +1,17 @@
+foo *bar
+baz* lorem
+
+text *markup
+can
+span* more
+
+than *three
+lines.
+foo
+bar* baz
+
+foo *bar \\
+baz \\
+lorem \\
+ipsum \\
+dolar* cat

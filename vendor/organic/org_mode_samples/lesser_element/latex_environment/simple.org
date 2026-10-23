@@ -1,0 +1,3 @@
+\begin{foo}
+bar
+\end{foo}

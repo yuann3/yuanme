@@ -1,0 +1,6 @@
+* baz
+# lorem
+
+:PROPERTIES:
+:FOO:    bar
+:END:

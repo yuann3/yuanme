@@ -1,0 +1,15 @@
+#+begin_src text -i
+     foo
+#+end_src
+
+#+begin_src text    -n -i
+     foo
+#+end_src
+
+#+begin_src text
+     foo
+#+end_src
+
+#+begin_src text    -n -r -k
+     foo
+#+end_src

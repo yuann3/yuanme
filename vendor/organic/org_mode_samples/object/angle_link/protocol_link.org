@@ -1,0 +1,6 @@
+<shell:foo>
+
+<shell:fo
+o>
+
+<shell:foo::3>

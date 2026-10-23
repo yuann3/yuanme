@@ -1,0 +1,22 @@
+# Extra open
+[cite/a/b-_/foo:unbalancedglobal[prefix;keyprefix @foo keysuffix;globalsuffix]
+
+[cite/a/b-_/foo:globalprefix;unbalancedkey[prefix @foo keysuffix;globalsuffix]
+
+[cite/a/b-_/foo:globalprefix;keyprefix @foo unbalancedkey[suffix;globalsuffix]
+
+[cite/a/b-_/foo:globalprefix;keyprefix @foo keysuffix;unbalancedglobal[suffix]
+
+
+# Extra close
+[cite/a/b-_/foo:unbalancedglobal]prefix;keyprefix @foo keysuffix;globalsuffix]
+
+[cite/a/b-_/foo:globalprefix;unbalancedkey]prefix @foo keysuffix;globalsuffix]
+
+[cite/a/b-_/foo:globalprefix;keyprefix @foo unbalancedkey]suffix;globalsuffix]
+
+[cite/a/b-_/foo:globalprefix;keyprefix @foo keysuffix;unbalancedglobal]suffix]
+
+
+# balanced:
+[cite/a/b-_/foo:gl[obalpref]ix;ke[ypref]ix @foo ke[ysuff]ix;gl[obalsuff]ix]

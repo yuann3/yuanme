@@ -1,0 +1,4 @@
+* DONE foo
+   DEADLINE: <2023-09-08 Fri>
+
+* DONE bar

@@ -1,0 +1,4 @@
+foo ==>bar=.
+
+# This uses a zero-width space to escape the equals signs to make the verbatim not end.
+=lorem =​= ipsum=

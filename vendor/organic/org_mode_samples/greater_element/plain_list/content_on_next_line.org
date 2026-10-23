@@ -1,0 +1,7 @@
+1. foo
+2.
+     bar
+   1.
+       #+begin_center
+Still in the list
+       #+end_center

@@ -1,0 +1,5 @@
+#+CATEGORY: foo
+#+CATEGORY: bar
+#+begin_src text
+#+CATEGORY: baz
+#+end_src

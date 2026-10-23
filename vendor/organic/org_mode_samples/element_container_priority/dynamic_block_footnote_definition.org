@@ -1,0 +1,4 @@
+#+BEGIN: foo :hlines 1 :id global
+[fn:1] footnote.
+#+END:
+Is this still in the footnote definition?

@@ -1,0 +1,2 @@
+# This should be a malformed timestamp according to the current org-mode documentation but it is accepted anyway (with no repeater).
+<1970-01-01 Thu ++y>

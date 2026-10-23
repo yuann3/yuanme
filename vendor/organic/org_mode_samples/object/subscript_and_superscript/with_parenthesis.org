@@ -1,0 +1,13 @@
+foo_(bar)
+
+foo_(b(ar)
+
+foo_(b{ar)
+
+foo_{b(ar}
+
+foo_(b(a)r)
+
+foo_b(a)r
+
+foo_(b+ar)

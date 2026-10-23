@@ -1,0 +1,6 @@
+#+begin_src text
+  foo
+  bar (ref:here)
+  baz
+#+end_src
+Link to the reference: [[(here)]]

@@ -1,0 +1,15 @@
+#+begin_example text -i
+     foo
+#+end_example
+
+#+begin_example text    -n -i
+     foo
+#+end_example
+
+#+begin_example text
+     foo
+#+end_example
+
+#+begin_example text    -n -r -k
+     foo
+#+end_example

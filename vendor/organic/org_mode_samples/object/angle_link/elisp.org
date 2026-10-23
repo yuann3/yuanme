@@ -1,0 +1,1 @@
+<elisp:(local-set-key "\M-\x" 'foo-bar-baz)>

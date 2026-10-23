@@ -1,0 +1,5 @@
+[cite:@foo]
+
+[cite/a/b-_/foo:globalprefix;keyprefix @foo keysuffix;globalsuffix]
+
+text before [cite:@bar] text after

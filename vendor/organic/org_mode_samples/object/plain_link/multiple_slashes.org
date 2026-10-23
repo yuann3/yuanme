@@ -1,0 +1,13 @@
+file:foo
+file:/bar
+file://baz
+file:///lorem
+file:////ipsum
+file://///dolar
+
+https:foo
+https:/bar
+https://baz
+https:///lorem
+https:////ipsum
+https://///dolar

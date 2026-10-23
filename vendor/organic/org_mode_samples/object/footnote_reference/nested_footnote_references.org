@@ -1,0 +1,3 @@
+*[fn:: /abcdef[fn::ghijklmnopqrstuvw]xyz/ r]*
+
+*[fn:: /abcdef[fn::ghijk *lmnopq* rstuvw]xyz/ r]*

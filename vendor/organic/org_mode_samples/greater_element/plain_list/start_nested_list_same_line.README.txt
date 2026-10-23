@@ -1,0 +1,1 @@
+Seems like the only element that can exist on the same line as the opening of an item is a paragraph. Perhaps all other elements should have a start of line matcher at the beginning of their parser to force this?

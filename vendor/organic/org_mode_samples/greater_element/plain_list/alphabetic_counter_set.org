@@ -1,0 +1,22 @@
+# An ordered list starting at 3
+1. [@3] foo
+
+
+# An ordered list starting at 11
+1. [@D] bar
+
+
+# An ordered list starting at 1 with the contents of "[@kk] baz"
+1. [@kk] baz
+
+
+# A paragraph when org-list-allow-alphabetical is nil
+m. lorem
+
+
+# A paragraph when org-list-allow-alphabetical is nil
+m. [@k] ipsum
+
+
+# An unordered list with :counter set to 3
+- [@3] dolar

@@ -1,0 +1,4 @@
+* Headline
+#+BEGIN: foo :hlines 1 :id global
+* Another headline
+#+END:

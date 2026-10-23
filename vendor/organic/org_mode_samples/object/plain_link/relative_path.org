@@ -1,0 +1,4 @@
+# These do not become links
+./simple.org::foo
+../simple.org::foo
+/simple.org::foo

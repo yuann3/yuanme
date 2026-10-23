@@ -1,0 +1,5 @@
+#+caption:
+#+caption: *foo*
+#+caption[bar]:
+#+begin_src bash
+#+end_src

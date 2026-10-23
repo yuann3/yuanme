@@ -1,0 +1,17 @@
+#+name: foo
+: bar
+
+#+source: foo
+: bar
+
+#+tblname: foo
+: bar
+
+#+resname: foo
+: bar
+
+#+srcname: foo
+: bar
+
+#+label: foo
+: bar

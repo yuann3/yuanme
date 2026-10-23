@@ -1,0 +1,5 @@
+# "lorem" is prefixed by a tab instead of spaces, so the editor's tab-width value determines whether lorem is a sibling of baz (tab-width 8), a sibling of bar (tab-width < 8), or a child of baz (tab-width > 8).
+1. foo
+ 1. bar
+        1. baz
+	1. lorem

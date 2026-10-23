@@ -1,0 +1,8 @@
+: Fixed width area
+  : indented line
+:        At the top of the file
+
+
+
+foo
+: Another fixed width area

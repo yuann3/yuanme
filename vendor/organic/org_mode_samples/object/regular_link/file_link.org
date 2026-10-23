@@ -1,0 +1,21 @@
+[[./simple.org]]
+[[../simple.org]]
+[[/simple.org]]
+[[file:simple.org]]
+[[file:sim  ple.org]]
+
+[[file:simp
+le.org]]
+
+[[file:simple.org::3]]
+[[file:simple.org::foo]]
+[[file:simple.org::#foo]]
+[[file:simple.org::foo  bar]]
+[[file:simple.org::foo
+bar]]
+[[file:simple.org::foo  
+bar]]
+[[file:simple.org::foo  
+  bar]]
+[[file:simple.org::foo::bar]]
+[[file:simple.org::/foo/]]

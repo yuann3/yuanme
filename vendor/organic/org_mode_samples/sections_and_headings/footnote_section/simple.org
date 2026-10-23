@@ -1,0 +1,3 @@
+* Foo
+* Footnotes   :foo:bar:
+* Footnotes and stuff

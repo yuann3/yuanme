@@ -1,0 +1,4 @@
+:drawername:
+#+BEGIN: foo :hlines 1 :id global
+:end:
+#+END:

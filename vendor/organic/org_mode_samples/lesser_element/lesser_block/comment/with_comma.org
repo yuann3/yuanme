@@ -1,0 +1,4 @@
+#+begin_comment
+This is a comment
+,* with an escaped line.
+#+end_comment

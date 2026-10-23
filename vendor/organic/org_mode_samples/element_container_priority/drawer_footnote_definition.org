@@ -1,0 +1,4 @@
+:drawername:
+[fn:1] footnote.
+:end:
+Is this still in the footnote?

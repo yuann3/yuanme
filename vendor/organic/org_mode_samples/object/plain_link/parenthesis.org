@@ -1,0 +1,11 @@
+# Should be a link:
+https://en.wikipedia.org/wiki/Shebang_(Unix)
+
+# No closing parenthesis, so link ends at underscore.
+https://en.wikipedia.org/wiki/Shebang_(Unix
+
+# Parenthesis only allowed to depth of 2 so link ends at underscore.
+https://en.wikipedia.org/wiki/Shebang_(((Unix)))
+
+# Even though they eventually become balanced, we hit negative parenthesis depth so link ends at )
+https://en.wikipedia.org/wiki/Shebang)Unix(

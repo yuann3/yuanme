@@ -1,0 +1,5 @@
+* baz
+
+:PROPERTIES:
+:FOO:    bar
+:END:

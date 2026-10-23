@@ -1,0 +1,1 @@
+* Start a document with an immediate heading

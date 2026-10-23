@@ -1,0 +1,6 @@
+* Overwrite
+  :PROPERTIES:
+  :header-args: :var foo="lorem"
+  :header-args:emacs-lisp: :var bar="ipsum"
+  :header-args:emacs-lisp+: :results silent :var baz=7
+  :END:

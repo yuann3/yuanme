@@ -1,0 +1,32 @@
+* Empty
+:PROPERTIES:
+:END:
+* Single new line
+:PROPERTIES:
+
+:END:
+* Single line with spaces
+:PROPERTIES:
+      
+:END:
+* Many lines, first line without spaces
+:PROPERTIES:
+
+
+
+
+:END:
+* Many lines, first line with spaces
+:PROPERTIES:
+      
+
+
+
+:END:
+* Many lines, first line with spaces, later line with spaces
+:PROPERTIES:
+      
+
+    
+
+:END:

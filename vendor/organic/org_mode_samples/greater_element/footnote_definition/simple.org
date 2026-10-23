@@ -1,0 +1,8 @@
+[fn:1] A footnote.
+
+[fn:2] A multi-
+
+line footnote.
+
+
+not in the footnote.

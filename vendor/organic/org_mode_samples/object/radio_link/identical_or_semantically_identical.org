@@ -1,0 +1,1 @@
+alpha *bar* baz foo <<<*bar*  baz>>> lorem ipsum *bar* baz dolar.

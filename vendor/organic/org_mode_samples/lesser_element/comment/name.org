@@ -1,0 +1,2 @@
+#+NAME: foo
+# Comments cannot have affiliated keywords.

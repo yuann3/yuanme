@@ -1,0 +1,4 @@
+#+begin_center
+1. foo
+#+end_center
+2. bar

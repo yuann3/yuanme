@@ -1,0 +1,13 @@
+prologue *goes here* I guess *bold
+text*
+
+bold*wont* start *or stop*when there is text outside it
+
+I guess *regular
+
+text*
+
+[[foo][foo *bar]] baz* car
+
+
+*nesting *bold entrances* and* exits

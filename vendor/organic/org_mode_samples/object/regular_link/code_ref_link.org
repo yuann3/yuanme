@@ -1,0 +1,13 @@
+[[(foo)]]
+
+[[((bar))]]
+
+[[((baz)]]
+
+[[(lo
+rem)]]
+
+# These become fuzzy
+[[(foo) ]]
+[[ (foo)]]
+[[(foo)::3]]

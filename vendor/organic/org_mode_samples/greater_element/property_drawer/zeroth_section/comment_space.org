@@ -1,0 +1,5 @@
+# lorem
+
+:PROPERTIES:
+:FOO:    bar
+:END:

@@ -1,0 +1,4 @@
+#+begin_center
+foo
+#+end_center
+Is this still in the paragraph?

@@ -1,0 +1,2 @@
+# Since this is an ordered list, the text before the " :: " is NOT parsed as a tag.
+1. foo :: bar

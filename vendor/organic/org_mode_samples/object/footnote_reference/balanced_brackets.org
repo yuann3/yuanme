@@ -1,0 +1,2 @@
+[fn:2:This footnote [ has balanced ] brackets inside it]
+[fn::This footnote does not have balanced [ brackets inside it]

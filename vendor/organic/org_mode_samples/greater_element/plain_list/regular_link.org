@@ -1,0 +1,2 @@
+# This test causes problems with regular links if we do not create a new ContextTree when calling into confine_context.
+- foo [[info:bar][baz]] lorem

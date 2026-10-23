@@ -1,0 +1,7 @@
+# All the marks for repeater and warning delay
+[1970-01-01 Thu 8:15-13:15foo +1h -2h]
+[1970-01-01 Thu 8:15-13:15foo ++1d -2d]
+[1970-01-01 Thu 8:15-13:15foo .+1w -2w]
+[1970-01-01 Thu 8:15-13:15foo +1m --2m]
+[1970-01-01 Thu 8:15-13:15foo ++1y --2y]
+[1970-01-01 Thu 8:15-13:15foo .+1d --2h]

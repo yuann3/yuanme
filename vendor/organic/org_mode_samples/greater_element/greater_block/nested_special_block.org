@@ -1,0 +1,12 @@
+#+begin_defun
+foo
+#+begin_lorem
+ipsum
+#+end_lorem
+bar
+#+begin_center
+#+begin_quote
+baz
+#+end_quote
+#+end_center
+#+end_defun

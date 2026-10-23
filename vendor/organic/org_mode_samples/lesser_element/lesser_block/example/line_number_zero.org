@@ -1,0 +1,7 @@
+#+begin_example -n 0
+foo
+#+end_example
+
+#+begin_example +n 0
+bar
+#+end_example

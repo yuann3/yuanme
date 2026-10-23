@@ -1,0 +1,7 @@
+** Foo
+DEADLINE: <2023-10-16 Mon>
+:PROPERTIES:
+:foo:   *a*
+:Bar:   *b*
+:BAZ:   *c*
+:END:

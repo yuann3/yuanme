@@ -1,0 +1,4 @@
+:drawername:
+#+begin_center
+:end:
+#+end_center

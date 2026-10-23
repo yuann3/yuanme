@@ -1,0 +1,7 @@
+#+LINK:       foo https://foo.bar/baz#%s
+[[foo::lorem]]
+[[foo::ipsum][dolar]]
+
+[[cat::bat]]
+#+LINK:       cat dog%s
+[[cat:bat]]

@@ -1,0 +1,3 @@
+src_foo{}
+before src_bar{lorem} after
+src_baz[ipsum]{dolar}

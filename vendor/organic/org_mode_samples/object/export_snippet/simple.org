@@ -1,0 +1,4 @@
+@@html:<b>@@This text is only bold for the html exporter@@html:</b>@@
+@@latex:
+\documentclass[margin,11pt]{res} % default is 10 pt
+@@

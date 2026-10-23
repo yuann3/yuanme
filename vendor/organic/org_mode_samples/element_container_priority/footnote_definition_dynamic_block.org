@@ -1,0 +1,6 @@
+[fn:1] footnote.
+#+BEGIN: foo :hlines 1 :id global
+
+
+#+END:
+Is this still in the footnote?

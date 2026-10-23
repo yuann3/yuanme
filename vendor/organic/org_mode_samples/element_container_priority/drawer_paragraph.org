@@ -1,0 +1,4 @@
+:drawername:
+foo
+:end:
+Is this still in the paragraph?

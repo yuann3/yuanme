@@ -1,0 +1,6 @@
+#+name: foo
+#+source: bar
+#+name: baz
+#+tblname: lorem
+#+label: ipsum
+: dolar

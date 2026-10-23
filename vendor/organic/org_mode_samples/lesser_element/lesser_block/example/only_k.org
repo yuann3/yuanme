@@ -1,0 +1,3 @@
+#+begin_example foo -k
+bar
+#+end_example

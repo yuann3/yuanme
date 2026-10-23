@@ -1,0 +1,84 @@
+* What are the possible element containers
+# Omitting tables because they only contain objects
+# Omitting paragraphs because they only contain objects
+# Omitting inline tasks because they are syntactically the same as heading+section just with a deep headline level.
+# Omitting property drawers because they are syntactically the same as drawers.
+** Sections
+Sections are divided by headlines.
+
+#+begin_src org
+  Zeroth section
+  ,* First headline
+  First section
+  ,** Child headline
+  Child section
+  ,* Second top-level headline
+  Second top-level section
+#+end_src
+** Greater blocks
+#+begin_src org
+  ,#+begin_center
+  elements
+  ,#+end_center
+#+end_src
+** Drawers
+#+begin_src org
+  :drawername:
+  elements
+  :end:
+#+end_src
+** Dynamic blocks
+#+begin_src org
+  ,* Headline
+  ,#+BEGIN: clocktable :scope subtree :maxlevel 2
+  ,#+CAPTION: Clock summary at [2023-04-16 Sun 16:13]
+  | Headline     | Time   |
+  |--------------+--------|
+  | *Total time* | *0:00* |
+  ,#+END:
+#+end_src
+** Footnote definitions
+#+begin_src org
+  [fn:1] A footnote definition.
+
+  [fn:2] A multi-line
+
+  footnote definition.
+#+end_src
+** Plain Lists
+#+begin_src org
+  1. foo
+     1. bar
+  2. baz
+#+end_src
+* Which container takes priority
+This test interleaves the opening and closing of each element container to see which element becomes parsed vs gets broken up. The row determines the first opening element and the column determines the second opening element.
+# Section first and section second tests are identical so I only included section first in the repo.
+# Footnote definition and plain list have the same end condition of two blank lines so they are untestable.
+|                     | Section | Greater Block | Drawer  | Dynamic Block | Footnote Definition | Plain List | Paragraph |
+|---------------------+---------+---------------+---------+---------------+---------------------+------------+-----------|
+| Section             | -       | Section       | Section | Section       | Section             | Section    | Section   |
+| Greater Block       | Section | First         | First   | First         | First               | First      | First     |
+| Drawer              | Section | First         | First   | First         | First               | First      | First     |
+| Dynamic Block       | Section | First         | First   | First         | First               | First      | First     |
+| Footnote Definition | Section | First         | First   | First         | -                   | -          | -         |
+| Plain List          | Section | Second        | Second  | Second        | -                   | -          | -         |
+| Paragraph           | Section | Second        | Second  | Second        | -                   | -          | -         |
+* Possible solutions
+** Greater blocks, drawers, and dynamic blocks disable plain list exit matcher
+*** Test Case 1
+#+begin_src org
+  1. foo
+     ,#+begin_center
+     2. bar
+
+
+     baz
+     ,#+end_center
+#+end_src
+** Parse out headlines first
+Then go through elements parsing them in-order
+** Should paragraph exit matcher apply to the element matcher in the exit matcher
+No. But paragraph exit matcher needs to apply to the object matcher.
+** Maybe two groups of elements: alpha and beta
+When entering an alpha element, ignore beta exit matchers above this in the context.

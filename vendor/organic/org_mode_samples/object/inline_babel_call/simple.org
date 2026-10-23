@@ -1,0 +1,5 @@
+call_foo()
+call_foo(arguments)
+call_bar[header](arguments)
+call_baz(arguments)[header]
+call_lorem[header](arguments)[another header]

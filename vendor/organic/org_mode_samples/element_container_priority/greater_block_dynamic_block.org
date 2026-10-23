@@ -1,0 +1,4 @@
+#+begin_center
+#+BEGIN: foo :hlines 1 :id global
+#+end_center
+#+END:

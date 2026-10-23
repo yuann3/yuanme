@@ -1,0 +1,4 @@
+* Headline
+[fn:1] footnote.
+* Another headline
+is this still in the footnote?

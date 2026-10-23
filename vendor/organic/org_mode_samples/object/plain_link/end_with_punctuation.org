@@ -1,0 +1,3 @@
+mailto:foo@bar.baz.
+
+mailto:foo@bar.baz....

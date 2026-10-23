@@ -1,0 +1,8 @@
+#+CAPTION[foo]: *bar*
+#+CAPTION[*lorem* ipsum]: dolar
+1. baz
+
+
+#+CAPTION[foo]: *bar*
+#+CAPTION[*lorem* ipsum]: dolar
+# Comments cannot have affiliated keywords so those become regular keywords.

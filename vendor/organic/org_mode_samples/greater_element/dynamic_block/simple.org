@@ -1,0 +1,25 @@
+#+BEGIN: clocktable :scope file :maxlevel 2
+#+CAPTION: Clock summary at [2023-08-25 Fri 05:34]
+| Headline     | Time   |
+|--------------+--------|
+| *Total time* | *0:00* |
+#+END:
+
+#+BEGIN: columnview :hlines 1 :id global
+| ITEM  | TODO | PRIORITY | TAGS                         |
+|-------+------+----------+------------------------------|
+| Foo   |      | B        |                              |
+|-------+------+----------+------------------------------|
+| Bar   | TODO | B        |                              |
+|-------+------+----------+------------------------------|
+| Baz   |      | B        | :thisisatag:                 |
+| Lorem |      | B        | :thisshouldinheritfromabove: |
+| Ipsum |      | B        | :multiple:tags:              |
+#+END:
+* Foo
+* TODO Bar
+* Baz :thisisatag:
+** Lorem :thisshouldinheritfromabove:
+*** Ipsum                                                   :multiple:tags:
+* Dolar ::
+* cat :dog: bat

@@ -1,0 +1,15 @@
+#+BEGIN_EXAMPLE elisp -n -r -l "((%s))"
+   foo
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE elisp -k -n -r -l "((%s))"
+   foo
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE elisp -k 8 -n -r -l "((%s))"
+   foo
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE elisp -n -r -k -l "((%s))"
+   foo
+#+END_EXAMPLE

@@ -1,0 +1,15 @@
+#+name: foo
+#+caption: bar
+#+caption: baz
+
+[[file:lorem/ipsum.png]]
+
+#+name: cat
+#+foo: dog
+[[file:lorem/ipsum.png]]
+
+#+name: cat
+#+foo: dog
+
+
+foo

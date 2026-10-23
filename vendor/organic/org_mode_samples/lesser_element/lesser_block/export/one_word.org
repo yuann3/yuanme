@@ -1,0 +1,3 @@
+#+begin_export latex
+This would be LaTeX code.
+#+end_export

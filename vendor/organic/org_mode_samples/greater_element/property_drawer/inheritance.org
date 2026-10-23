@@ -1,0 +1,19 @@
+:PROPERTIES:
+:foo: bar
+:foo+: baz
+:cat: dog
+:END:
+
+# Even though these are inheriting the properties and overwriting and/or appending to them, this is not represented in the parser AST so Organic does not do any special handling of this.
+
+* Overwrite
+:PROPERTIES:
+:foo:      lorem
+:bat:      car
+:END:
+
+* Append
+:PROPERTIES:
+:foo+:      ipsum
+:cake:      lie
+:END:

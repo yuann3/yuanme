@@ -1,0 +1,19 @@
+#+begin_comment
+This is a comment.
+#+end_comment
+
+#+begin_example
+This is an example.
+#+end_example
+
+#+begin_export latex
+This would be LaTeX code.
+#+end_export
+
+#+begin_src sh
+  echo "this is a source block."
+#+end_src
+
+#+begin_verse
+This is a verse block.
+#+end_verse

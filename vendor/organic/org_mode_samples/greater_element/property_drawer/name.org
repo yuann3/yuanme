@@ -1,0 +1,5 @@
+* Overwrite
+  #+NAME: foo
+  :PROPERTIES:
+  :header-args: :var foo="lorem"
+  :END:
