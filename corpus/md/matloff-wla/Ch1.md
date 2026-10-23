@@ -1,0 +1,1162 @@
+
+
+```{r}
+#| include: false
+library(dsld)
+library(qeML)
+```
+
+{{< pagebreak >}}
+
+# Matrices and Vectors
+
+::: {.callout-note}
+
+## Goals of this chapter:
+
+The two main structures in linear algebra are *matrices* and *vector
+spaces*. We begin the book with the former, introduced in this chapter,
+motivating matrix multiplication and presenting several applications.
+
+:::
+
+In this chapter, we will take as our main application *Markov chains*, a
+statistical model having wide applications in medicine, economics and so
+on. The notion is very simple to explain, thus making it a good choice
+for introducing matrices.
+
+## A Random Walk Model
+
+Let's consider a *random walk* on {1,2,3,4,5} in the number line. Time
+is numbered 1,2,3,... Our current position is termed our *state*. The
+notation X~k~ = i means that at time k we are in state/position i.
+
+Our rule will be that at any time k, we flip a coin. If we are currently
+at position i, we move to either i+1 or i-1, depending on whether the
+coin landed heads or tails. The exceptions are k = 1 and k = 5, in which
+case we stay put if tails or move to the adjacent position if heads.
+
+We can summarize the probabilities with a *matrix*, a two-dimensional
+array:
+
+$$
+P_1 =
+\left (
+\begin{array}{rrrrr}
+0.5 & 0.5 & 0 & 0 & 0\\
+0.5 & 0 & 0.5 & 0 & 0\\
+0 & 0.5 & 0 & 0.5 & 0\\
+0 & 0 & 0.5 & 0 & 0.5\\
+0 & 0 & 0 & 0.5 & 0.5 \\
+\end{array}
+\right )
+$${#eq-myfirstmatrix}
+
+For instance, look at row 2. There are 0.5 values in columns 1 and 3,
+meaning there is a 0.5 chance of a move 2 $\rightarrow$ 1, and a 0.5
+chance of a move 2 $\rightarrow$ 3.
+
+We use a subscript 1 here in $P_1$, meaning "one step." We go from, say,
+state 2 to state 1 in one step with probability 0.5. $P_1$ is called the
+*one-step transition matrix* (or simply the *transition matrix*) for
+this process.  
+
+Note that each row in a transition matrix must sum to 1.  After all,
+from state i we must go *somewhere*.
+
+What about the two-step transition matrix $P_2$? For instance, what
+should be in the row 3, column 1 position in that matrix?  In other
+words, if we start at position 3, what is the probability that we go to
+position 1 in two steps? This would happen via two tails
+flips of the coin.  The probability of that is $0.5^2 = 0.25$. So the
+row 3, column 1 element in $P_2$ is 0.25. On the other hand, if from
+state 3 we flip tails then heads, or heads then tails, we are back to
+state 3. So, the row 3, column 3 element in  $P_2$ is 0.25 + 0.25 = 0.5.
+
+The reader should verify the correctness here:
+
+
+$$
+P_2 =
+\left (
+\begin{array}{rrrrr}
+0.5 & 0.25 & 0.25 & 0 & 0\\
+0.25 & 0.5 & 0 & 0.25 & 0\\
+0.25 & 0 & 0.5 & 0 & 0.25\\
+0 & 0.25 & 0 & 0.5 & 0.25\\
+0 & 0 & 0.25 & 0.25 & 0.5 \\
+\end{array}
+\right )
+$$
+
+Well, finding two-step transition probabilities would be tedious in
+general, but it turns out that is a wonderful shortcut: Matrix
+multiplication. We will cover this in the next section, but first a
+couple of preliminaries.
+
+The above random walk is a *Markov chain*. The Markov Property says that
+the system "has no memory." If say we land at position 2, we will go to
+1 or 3 with probability 1/2 *no matter what the previous history of the
+system was*; it doesn't matter *how* we got to state 3. That in turn
+comes in this example from the independence of the successive coin flips.
+
+**Notation:** Individual elements of a matrix are usually written with
+double subscripts. For instance, a~25~ will mean the row 2,
+column 5 element of the matrix $A$. If say $A$ has more than 9 rows, 
+its row 11, column 5 element is denoted by a~11,5~, using the comma to
+avoid ambiguity.
+
+## Vectors
+
+Matrices are two-dimensional arrays. One-dimensional arrays are called
+*vectors*, either in row or column form, e.g.
+
+$$
+u = (12,5,13)
+$$
+
+and
+
+$$
+u = 
+\left (
+\begin{array}{r}
+12 \\
+5 \\
+13 \\
+\end{array}
+\right )
+$$
+
+Please note:
+
+* Vectors may also be viewed as one-row or one-column matrices.
+
+* When not otherwise stated, the term "vector" will mean column form.
+
+* The term *scalar* simply means a number, rather than a matrix or
+vector. It will be used quite frequently in this book.
+
+## Addition and Scalar Multiplication{#sec-easyops}
+
+Vectors of the same length may be summed, in elementwise form, e.g.
+
+$$
+\left (
+\begin{array}{r}
+12 \\
+5 \\
+13 \\
+\end{array}
+\right )
++
+\left (
+\begin{array}{r}
+-3 \\
+6 \\
+18.2 \\
+\end{array}
+\right ) =
+\left (
+\begin{array}{r}
+9 \\
+11 \\
+31.2 \\
+\end{array}
+\right )
+$$
+
+Similarly, two matrices may be added, again in elementwise fashion,
+provided the number of rows is the same for both, as well as the same
+condition for number of columns.
+
+Vectors and matrices can be multiplied by scalars, again elementwise,
+e.g.
+
+$$
+0.3
+\left (
+\begin{array}{r}
+6 \\
+15 \\
+\end{array}
+\right ) =
+\left (
+\begin{array}{r}
+1.8 \\
+4.5 \\
+\end{array}
+\right ) 
+$$
+
+## Matrix-Matrix Multiplication
+
+This is the most fundamental operation in linear algebra. It is defined
+as follows:
+
+
+> Given matrix $A$ of $k$ rows and $m$ columns and
+> matrix $B$ of $m$ rows and $r$ columns, the product $C = AB$ is
+> a $k \times r$ matrix, whose row $i$, column $j$ element is
+> 
+> $$
+> a_{i1} b_{1j} +
+> a_{i2} b_{2j} + ... +
+> a_{im} b_{mj} 
+> $$
+> 
+>[The notion of a dot product will arise often in this book.]{.column-margin}
+> *This is the "dot product" of row $i$ of A and column $j$ of B:  Find the
+> products of the paired elements in the two vectors, then sum.*
+
+For example, set 
+
+$$
+A = \left (
+\begin{array}{rrr}
+5 & 2 & 6 \\
+1 & 1 & 1 \\
+\end{array}
+\right )
+$$
+
+and
+
+$$
+B = \left (
+\begin{array}{rr}
+5 & -1 \\
+1 & 0 \\
+0 & 8 \\
+\end{array}
+\right )
+$$
+
+Let's find the row 2, column 2 element of $C = AB$.  Again, that means
+taking the dot product of row 2 of $A$ and column 2 of $B$, which we've
+highlighted below.
+
+$$
+A = \left (
+\begin{array}{rrr}
+5 & 2 & 6 \\
+\color{red}{1} & \color{red}{1} & \color{red}{1} \\
+\end{array}
+\right )
+$$
+
+and
+
+$$
+B = \left (
+\begin{array}{rr}
+5 & \color{red}{-1} \\
+1 & \color{red}{0} \\
+0 & \color{red}{8} \\
+\end{array}
+\right )
+$$
+
+The value in question is then
+
+1 (-1) + 1 (0) + 1 (8) = 7
+
+Let's check it, with R:
+
+```{r}
+a <- rbind(c(5,2,6),c(1,1,1))
+b <- cbind(c(5,1,0),c(-1,0,8))
+a %*% b
+```
+
+The **rbind** and **cbind** functions ("row bind" and "column bind") are
+very handy tools for creating matrices.
+The reader should make sure to check the other elements by hand.
+
+::: {#tip-conformable .callout-tip}  
+
+Always keep in mind that in the matrix product $AB$, the number of rows
+of $B$ must equal the number of columns of $A$. The two matrices are
+then said to be *conformable*.
+
+::: 
+
+## The Identity Matrix
+
+The *identity matrix* $I$ of size $n$ is the $n \times n$ matrix
+with 1s on the diagonal and 0s elsewhere. Here is the one for $n = 2$:
+
+$$
+\left (
+\begin{array}{rr}
+1 & 0 \\
+0 & 1  \\
+\end{array}
+\right )
+$$
+
+Identity matrices are *multiplicative* identities, i.e. they simply copy
+the companion factor when multiplied: $IB = B$ and $AI = A$ for any
+conformable $A$ and $B$.
+
+## Application to Markov Chain Transition Matrices {#sec-introMCs}
+
+Now let's return to the question of how to easily compute $P_2$,
+the two-step transition matrix. It turns out that:
+
+> Let P denote the transition matrix of a (finite-state) Markov chain. The
+> k-step transition matrix is $P^k$.
+
+At first, this may seem amazingly fortuitous, but it makes sense in
+light of the "and/or" nature of the probability computations involved.
+Recall our computation for the row 1, column 2 element of $P_2$ above.
+From state 1, we could either stay at 1 for one flip, then move to 2 on
+the second flip, or we could go to 2 then return to 1. Each of these has
+probability 0.5, so the total probability is
+
+$$
+(0.5)(0.5) + (0.5)(0.5)
+$$
+
+But this is exactly the form of our "dot product" computation
+in the definition of matrix multiplication,
+
+$$
+a_{i1} b_{i1} +
+a_{i2} b_{i1} + ... +
+a_{m1} b_{m1} 
+$$
+
+Then $P^3$ stores the 3-step probabilities and so on.
+
+
+Statisticians and computer scientists like to look at the *asymptotic*
+behavior of systems, meaning what happens to a quantity when time or
+size or some other value grows.  Let's see where we might be after say, 6
+steps:
+
+```{r}
+matpow <- function(m,k) {
+   nr <- nrow(m)
+   tmp <- diag(nr)  # identity matrix
+   for (i in 1:k) tmp <- tmp %*% m
+   tmp
+}
+
+p1 <- rbind(c(0.5,0.5,0,0,0), c(0.5,0,0.5,0,0), c(0,0.5,0,0.5,0), 
+   c(0,0,0.5,0,0.5), c(0,0,0,0.5,0.5))
+matpow(p1,6) 
+```
+
+So for instance if we start at position 2, there is about an 11% chance
+that we will be at position 3 at time 6. What about time 25?
+
+```{r}
+matpow(p1,25)
+```
+
+So, no matter which state we start in, at time 25 we are about 20%
+likely to be at any of the states. In fact, as time $n$ goes to infinity,
+this probability vector becomes exactly (0.20,0.20,0.20,0.20,0.20).
+It will be shown below that the vector of long-run state probabilities $\nu$ is
+the solution of 
+
+$$
+P \nu = \nu
+$${#eq-stationMarkov}
+
+where $P$ is the transition matrix for the Markov chain.
+
+## Network Graph Models
+
+There has always been lots of analysis of "Who is connected to whom,"
+but activity soared after the advent of Facebook and the film, *A Social
+Network.*  See for instance *Statistical Analysis of Network Data with R*
+by Eric Kolaczy and Gábor Csárdi. As the authors say, 
+
+> The oft-repeated statement that “we live in a connected world” perhaps
+> best captures, in its simplicity why networks have come to hold 
+> such interest in recent years. From on-line social networks like
+> Facebook to the World Wide Web and the Internet itself, we are
+> surrounded by examples of ways in which we interact with each other.
+> Similarly, we are connected as well at the level of various human
+> institutions (e.g., governments), processes (e.g., economies), and
+> infrastructures (e.g., the global airline network). And, of course,
+> humans are surely not unique in being members of various complex,
+> inter-connected systems.  Looking at the natural world around us, we see
+> a wealth of examples of such systems, from entire eco-systems, to
+> biological food webs, to collections of inter-acting genes or
+> communicating neurons.
+
+And of course, at the center of it all is a matrix! Here is why:
+
+## Example: Karate Club
+
+Let's consider the famous Karate Club dataset:
+
+```{r}
+# remotes::install_github("schochastics/networkdata") 
+library(networkdata)
+data(karate)
+library(igraph)
+```
+
+Calling 
+
+``` r
+plot(karate)
+```
+
+then yields
+
+![Karate Club network](Karate.png)
+
+There is a link between node 13 and node 4, meaning that club members 13
+and 4 are friends.[This graph is *undirected*, as friendship is mutual.
+Many graphs are *directed*, but we will assume undirected
+here.]{.column-margin}
+
+The *adjacency matrix* has row i, column j element as 1 or
+0, according to whether a link exists between nodes i and j.
+
+```{r}
+adjK <- as_adjacency_matrix(karate)
+adjK
+adjK[13,4]
+```
+
+Accordingly, row 13, column 4 does have a 1 entry, consistent with what
+we saw in the picture.
+
+## The Role of Matrix Multiplication in Network Graph Models
+
+As is the case with Markov transition matrices, powers of an adjacency
+matrix can yield valuable information. In the Markov case,
+multiplication gives us sums of paired products, computing
+probabilities. What about the network graph case? 
+
+Here products are of the form $0 \times 0$, $0 \times 1$, $1 \times 1$,
+If there is a nonzero entry $m$ in row $i$, column $j$ of the square of
+the adjacency matrix, that means there were $m$ $1 \times 1$ products in
+that sum, which would correspond to $m$ paths. Let's look into this.
+
+```{r}
+adjK2 <- adjK %*% adjK
+```
+
+We see that **adjK2[11,1]** is 2. Inspection of **adjK** shows that its
+row 11, columns 6 and 7 are 1s, and that rows 6 and 7, column 1 are 1s
+as well. So there are indeed two two-hop paths from node 11 to node 1,
+specifically $11 \rightarrow 6 \rightarrow 1$ and 
+$11 \rightarrow 7 \rightarrow 1$. Thus the 2 we see in **adjK2[11,1]**
+was correct.
+
+In other words, $A^k$ for a network adjacency matrix $A$ shows the
+number of paths from each node to each of the others.
+
+Actually, what is typically of interest is *connectivity* rather than
+number of paths. For any given pair of nodes, is there a multihop path
+between them?  Or does the graph break down to several "islands" of
+connected nodes?
+
+Again consider the Karate Club data. Since there are 34 nodes in this
+graph, if the graph is connected, there should be a path that hits all
+of them with at most 33 hops.  Let's see what paths of this length give
+us.
+
+```{r}
+u <- matpow(adjK,33)
+sum(u == 0)
+```
+
+So, in that graph representing paths of 33 links, there are no 0s.
+In this graph, every pair of nodes has a path between them. The graph
+is connected.
+
+In general, determining whether a graph is connected requires paying
+attention to things such as cycles.  The details are beyond the scope of
+this book.
+
+## Recommender Systems{#sec-recsys}
+
+If you inquire about some item at an online store, the software will
+also present you with some related items that it thinks would be of
+interest to you.  How does the software make this guess?
+
+Clearly, the full answer is quite complex. But we can begin to see the
+process by looking at some real data.
+
+```{r}
+site <- 'http://files.grouplens.org/datasets/movielens/ml-100k/u.data'
+q <- read.table(site)
+names(q) <- c('user','movie','rating','userinfo')
+head(q)
+```
+
+We see for instance that user 22 gave movie 377 a rating of 1. If we
+want to know some characteristics of this user, his/her ID is 878887116,
+which we can find in the file **u.user** at the above URL. Other files
+tell us more about this movie, e.g. its genre, and so on.
+
+Let's explore the data a bit:
+
+How many users and movies are in this dataset?
+
+```{r}
+length(unique(q$user))
+length(unique(q$movie))
+```
+
+How many other users rated movie number 242?
+
+```{r}
+sum(q$movie == 242)
+```
+
+Did user 22 rate movie 234, for instance?
+
+```{r}
+which(q$user == 22 & q$movie == 234)
+```
+
+Now we can begin to see a solution to the recommender problem. Say we
+wish to guess whether user 22 would like movie 234. We could look for
+other users who have rated many of the same movies as user 22, and whose
+ratings of those movies were generally similar to those of user 22. We
+would then focus on the ones who rated movie 234.  We could average
+those ratings to obtain a predicted rating for movie 234 by user 22.[We
+could also incorporate the characteristics of user 22 and the others,
+which may improve our prediction accuracy, but we will not pursue that
+here.]{.column-margin}
+
+In order to assess interuser similarity of the nature described above,
+we might form a matrix $S$, as follows. There would be 943 rows, one
+for each user, and 1682 columns, one for each movie. The element in row
+$i$, column $j$ would be the rating user $i$ gave to movie $j$. Most of
+the matrix would be 0s.
+
+The point of constructing $S$ is that determining the similarity of
+users becomes a matter of measuring similarity of rows of $S$. This
+paves the way to exploiting the wealth of matrix-centric methodology we
+will develop in this book.
+
+## Matrix Algebra
+
+### Other basic operations
+
+Matrix multiplication may seem odd at first, but other operations are
+straightforward.
+
+**Addition:** We just add corresponding elements. For instance,
+
+$$
+A = \left (
+\begin{array}{rrr}
+5 & 2 & 6 \\
+1 & 2.6 & -1.2 \\
+\end{array}
+\right )
+$$
+
+$$
+B = \left (
+\begin{array}{rrr}
+0 & 20 & 6 \\
+3 & 5.8 & 1 \\
+\end{array}
+\right )
+$$
+
+$$
+A+B = \left (
+\begin{array}{rrr}
+5 & 22 & 12 \\
+4 & 8.4 & -0.2 \\
+\end{array}
+\right )
+$$
+
+We do have to make sure the addends match in terms of numbers of rows
+and columns, 2 and 3 in the example here.
+
+**Scalar multiplication:** Again, this is simply elementwise. E.g. with
+A as above,
+
+$$
+1.5 ~ A = \left (
+\begin{array}{rrr}
+7.5 & 3 & 9 \\
+1.5 & 3.9 & -1.8 \\
+\end{array}
+\right )
+$$
+
+**Distributive property:**
+
+For matrices A, B and C of suitable conformability (A and B match in
+numbers of rows and columns, and their common number of columns matches
+the number of rows in C), we have
+
+(A+B) C = AC + BC
+
+### Matrix transpose{#sec-transpose}
+
+This is a very simple but very important operation: We merely exchange
+rows and columns of the given matrix. For instance, with A as above, its
+transpose (signified with "'"), is
+
+$$
+A' = \left (
+\begin{array}{rr}
+5 & 1 \\
+2 & 2.6 \\
+6 & -1.2 \\
+\end{array}
+\right )
+$$
+
+Some books use the notation $A^t$ or $A^T$ instead of $A'$.
+The R function for transpose is **t()**.
+
+It can be shown that if $A$ and $B$ are conformable, then
+
+$$
+(AB)' = B'A'
+$$
+
+For some matrices $C$, we have $C' = C$. We then say that $C$ is *symmetric*.
+
+We will often write a row vector in the form (a,b,c,...). So (5,1,88)
+means the 1x3 matrix with those elements. If we wish to write a column
+vector within some text, we use transpose, so that for instance
+(5,1,88)' means a 3x1 matrix.
+
+### Trace of a square matrix{#sec-trace}
+
+The *trace* of a square matrix $A$ is the sum of its diagonal elements,
+$tr(A) = \sum_{i=1}^n A_{ii}$. This measure has various properties, some
+obvious (the trace of the sum of two matrices is the sum of their
+traces), and some less so, such as:
+
+::: {#thm-trabba}
+
+Suppose $A$ and $B$ are square matrices of the same size. Then
+
+$$
+tr(AB) = tr(BA)
+$${#eq-traceab}
+
+:::
+
+::: {.proof} 
+
+See Your Turn problem below.
+
+:::
+
+
+And furthermore:
+
+::: {#cor-trinvar}
+
+Trace is invariant under *circular
+shifts*, e.g. $UVW$, $VWU$ and $WUV$ all have the same trace.
+
+:::
+
+## Partitioned Matrices: an Invaluable Visualization Tool
+
+Here, "visualization" is not a reference to graphics but rather to
+highlighting certain submatrices.
+
+::: {#tip-partitioned .callout-tip}  
+
+## A Crucial Tool
+
+Matrix partitioning is amazingly powerful, given its utter simplicity.
+It compactifies matrix algebra, making complex expressions easier to
+visualize and discuss.
+
+The techniques introduced in this section will be used repeatedly
+throughout the book. **Readers should spend extra time here,** making
+sure the compact representations make sense.
+
+:::
+
+Specifics now follow:
+
+### How partitioning works
+
+Consider a matrix-matrix product $MQ$. The use of partitioning works on
+"pretending":
+
+> Matrix Partitioning
+> 
+> 1. Partition $M$ and $Q$ into groups of contiguous rows or columns,
+>    respectively. Let $g_m$ and $g_q$ denote the number of groups.
+>    (A group size of 1 is permissible.)
+> 
+> 2. Enter Pretend Mode: Pretend that each group is a number. Now $M$ 
+>    and $Q$ look like vectors, of lengths $g_m$ and $g_q$.
+> 
+> 3. Go ahead and "multiply" the two "vectors."
+> 
+> 4. Re-enter Reality Mode. Replace the elements of the "product" in step
+>    3 by the groups' actual rows and columns.
+> 
+> 4. Marvel at the fact that this bit of "alchemy" actually produces the
+>    correct matrix equation.
+
+
+
+It will be easier to see how this works by considering the special case
+of $Q$ being a vector $v$.  Of course, that means that $v$ is a column
+vector $(v_1,v_2,...,v_n)'$.  Say $M$ is of size $m \times n$.
+
+Now, we ask for the reader's patience here, as we will move back and
+forth between a symbolic "pretend world" and reality. We promise, it
+will be worth it.
+
+Let's denote column $j$ of $M$ by $c_{j}$. Write $M$ symbolically as
+
+$$
+M = (c_1,c_2,...,c_n) 
+$$
+
+so the group size in this case is 1, with $n$ groups of columns.
+Treating the $c_j$ as "numbers," again symbolically, $M$ looks like a $1
+\times n$ matrix.  We temporarily pretend it's $1 \times n$
+even though it's actually $m \times n$, and that the $c_j$ are
+numbers, even though they are vectors. Then the "product"
+
+$$
+Mv =
+(c_1,c_2,...,c_n) %*% 
+\left (
+\begin{array}{r}
+v_1 \\
+v_2 \\
+... \\
+v_n \\
+\end{array}
+\right ) =
+v_1 c_{1} +
+v_2 c_{2} + ... +
+v_n c_{n}  
+$$
+
+looks, once again symbolically like the product of $1 \times n$ and $n
+\times 1$ vectors, a dot product, resulting in a $1 \times 1$, i.e. a
+number.
+
+The wonderful thing about all this is that if we now stop pretending, we
+get the right answer! If we now treat the $c_j$ for what they really
+are, column vectors, then the relation
+
+$$
+Mv =
+v_1 c_{1} +
+v_2 c_{2} + ... +
+v_n c_{n}  
+$$
+
+$M$ is indeed equal to this sum of scalars times its columns. Let's
+check with a specific example.
+
+For instance, take 
+
+$$
+A = \left (
+\begin{array}{rrr}
+5 & 2 & 6 \\
+1 & 2.6 & -1.2 \\
+\end{array}
+\right )
+$${#eq-matrixA}
+
+and 
+
+$$
+v = \left (
+\begin{array}{r}
+10 \\
+2 \\
+1 \\
+\end{array}
+\right )
+$${#eq-vInAv}
+
+The reader should check that
+
+$$
+10 \left (
+\begin{array}{r}
+5 \\
+1 \\
+\end{array}
+\right )
++
+2 \left (
+\begin{array}{r}
+2 \\
+2.6 \\
+\end{array}
+\right )
++
+1 \left (
+\begin{array}{r}
+6 \\
+-1.2 \\
+\end{array}
+\right )
+$${#eq-lincomb1}
+
+so that e.g. $v_1 = 10$ and $c_1 = (5,1)'$,
+does indeed work out to 
+
+$$
+\left (
+\begin{array}{r}
+60 \\
+14  \\
+\end{array}
+\right )
+$$
+
+i.e. to $Av$. It works!
+
+Note that *we choose the partitioning*; there is no inherent partition
+structure. In some settings, there is a structure that fits our needs,
+and we use that.
+
+### Linear combinations of rows and columns of a matrix
+
+Note that the above expression @eq-lincomb1,
+
+$$
+10 \left (
+\begin{array}{r}
+5 \\
+1 \\
+\end{array}
+\right )
++
+2 \left (
+\begin{array}{r}
+2 \\
+2.6 \\
+\end{array}
+\right )
++
+1 \left (
+\begin{array}{r}
+6 \\
+-1.2 \\
+\end{array}
+\right ),
+$$
+
+is a sum of scalar products of vectors, which is called a *linear
+combination* of those vectors. The quantities 10, 2 and 1 are the
+*coefficients* in that linear combination.
+
+In view of the fact that that linear combination worked out to be $Av$,
+we have that:
+
+::: {#thm-lincombRows}
+
+The product $Av$ of a matrix times a column vector is equal to a linear
+combination of the columns of the matrix, with coefficients equal to the
+column vector.
+
+:::
+
+Similarly,
+
+::: {#thm-lincombCols}
+
+The product $wA$ of a row vector and a matrix is equal to a linear
+combination of the rows of the matrix, with the coefficients coming from
+the row vector.
+
+:::
+
+To further illustrate all this, write the above matrix in @eq-matrixA as 
+
+$$
+A = 
+\left (
+\begin{array}{rr}
+A_{11} & A_{12} \\
+\end{array}
+\right )
+$${#eq-matrixApart}
+
+where 
+
+$$
+A_{11} = 
+ \left (
+ \begin{array}{rr}
+ 5 & 2 \\
+ 1 & 2.6 \\
+ \end{array}
+ \right )
+$$
+
+and  
+
+
+$$
+A_{12} = 
+ \left (
+ \begin{array}{r}
+ 6 \\
+ -1.2 \\
+ \end{array}
+ \right )
+$$
+
+Symbolically, in @eq-matrixApart, $A$ now looks like a 1x2 "matrix."
+Similarly, rewriting @eq-vInAv, we have
+
+$$
+v = 
+ \left (
+ \begin{array}{r}
+ v_{11} \\
+ v_{21} \\
+ \end{array}
+ \right )
+$$
+
+where 
+
+$$
+ v_{11} = 
+ \left (
+ \begin{array}{r}
+ 10 \\
+ 2 \\
+ \end{array}
+ \right )
+ $$
+
+and $v_{21} = 1$ (a 1x1 matrix); $v$ looks to be 2x1, though it is
+actually $3 \times 1$.
+
+So, again pretending, treat the product $Av$ as the multiplication of a
+1 x 2 "matrix" and a 2 x 1 "vector", yielding a 1 x 1 result, another
+"dot product,"
+
+$$
+A_{11} v_{11} + A_{12} v_{21}
+$$
+
+But all that pretending actually does give the correct answer!
+
+$$
+A_{11} v_{11} + A_{12} v_{21} =
+ \left (
+ \begin{array}{rr}
+ 5 & 2 \\
+ 1 & 2.6 \\
+ \end{array}
+ \right ) 
+ \left (
+ \begin{array}{r}
+ 10 \\
+ 2 \\
+ \end{array}
+ \right )
++
+ \left (
+ \begin{array}{r}
+ 6 \\
+ -1.2 \\
+ \end{array}
+ \right )
+1 
+=
+ \left (
+ \begin{array}{r}
+ 60 \\
+ 14 \\
+ \end{array}
+ \right )
+$$
+
+which is the true value of $Av$.
+
+We can extend that reasoning further. Say $A$ and $B$ are matrices of
+sizes $m \times n$ and $n \times k$, and consider the product
+$AB$. Partition $B$ by its columns,
+
+$$
+B = (B^{(1)}|B^{(2)}|...| B^{(k)})
+$$ 
+
+Now pretending that $A$ is a $1 \times 1$ "matrix" and $B$ is 
+a  $1 \times k$ "matrix", we have
+
+$$
+AB = (AB^{(1)}|AB^{(2)}|...| AB^{(k)})
+$$
+
+In other words, making use of @thm-lincombRows,
+
+::: {#thm-abPart}
+
+In the product $AB$, column $j$ is a linear combination of the columns
+of $A$, and the coefficients in that linear combination are the elements
+of column $j$ of $B$.
+
+A similar result holds for the rows of the product.
+
+:::
+
+## Your Turn
+
+❄️  **Your Turn:** Fill in the blank with a term from this chapter: 
+The adjacency matrix of an undirected graph is necessarily ________.
+
+❄️  **Your Turn:** Consider the Karate Club dataset.
+
+* Which members is member 6 linked with?
+
+* Which member is linked to the most number of members? How about the
+  least number?
+
+* Find an example of a *triad*, i.e. a set of 3 members who are all
+  linked to each other.
+
+❄️  **Your Turn:** We say a square matrix is *upper-triangular* if its
+below-diagonal elements are all 0s. (There is a similar concept of
+*lower-triangular*.) Explain why, given two upper-triangular matrices
+$A$ and $B$ of the same size, the product $AB$ is also upper-triangular.
+
+❄️  **Your Turn:** Write an R function with call form
+
+``` r
+outLinks(adj)
+```
+
+where **adj** is the adjacency matrix of some network graph, possibly
+directed. The function will return an R list, whose $i^{th}$ element is
+a vector of all the nodes that have exactly $i$ outgoing links.
+
+
+❄️  **Your Turn:** Consider the matrix 
+
+$$
+A =
+\left (
+\begin{array}{rr}
+3 & -1 \\
+0 & 8  \\
+4 & 5  \\
+1 & 0  \\
+0 & 1  \\
+\end{array}
+\right )
+$$
+
+Say we decide to partition it as
+
+$$
+A = 
+\left (
+\begin{array}{r}
+B \\
+I \\
+\end{array}
+\right )
+$$
+
+Now consider the product $AA'$. Using partitioning, we would 
+treat $B$ and $I$ numbers and the product as having factors of size $2
+\times 1$ and $1 \times 2$. That would give us a 
+$2 \times 2$ "matrix"
+
+$$
+AA' =
+\left (
+\begin{array}{r}
+B \\
+I \\
+\end{array}
+\right ) 
+(B',I) =
+\left (
+\begin{array}{rr}
+BB' & B \\
+B' & I  \\
+\end{array}
+\right )
+$${#eq-yt1}
+
+Evaluate $AA'$ and the far-right side of @eq-yt1 to verify that the
+partitioning did indeed give us the right answer.
+
+
+❄️  **Your Turn:** The long-run probabilities in @sec-introMCs turned out to be
+uniform, with value 0.20 for all five states. In fact, that is usually
+not the case.  Make a small change to $P_1$ -- remember to keep the row
+sums to 1 -- and compute a high power to check whether the long-run
+distribution seems nonuniform.
+
+❄️  **Your Turn:** Not every Markov chain, even ones with finitely
+many states, have long-run distributions. Some chains have *periodic*
+states. It may be, for instance, that after leaving state $i$, once can
+return only after an even number of hops. Modify our example chain here
+so that states 1 and 5 (and all the others) have that property. Then
+compute $P^n$ for various large values of $n$ and observe oscillatory
+behavior, rather than long-run convergence.
+
+❄️  **Your Turn:** Consider the following Markov model of a discrete-time,
+single-server queue:
+
+* Model parameters are $p$ (probability of job completion in a
+  particular time epoch), $q$ (probability of new job arriving) and $m$
+  (size of the customer waiting area).
+
+* Jobs arrive, are served (possibly after queuing) and leave.
+
+* Only one job can be in service at a time.
+
+* At each time epoch:
+
+    * The job currently in service, if any, will complete with
+      probability $p$.
+
+    * After a job completion, a job in the queue,
+      if any, will start service.
+
+    * A new job will arrive with probability $q$. If the server is free,
+      this new job will start service, rather than going to the waiting
+      room.  If the queue is not full when this job arrives,
+      it will join the queue; otherwise, the job is discarded.
+
+* The system is memoryless in the Markov sense. If a job has been in
+  service for many epochs now, the probability that it finishes in the
+  next epoch is still $p$.
+
+* The current state is the number of jobs in the system, taking on the
+values 0,1,2,..,m+1; that last state means m jobs in the queue and 1 in
+service.
+
+For instance, say p = 0.4, q = 0.2, m = 5, Suppose the current state is
+3, so there is a job in service and two jobs in the queue. Our next
+state will be 2 with probability (0.4) (0.8); it will be 3 with
+probability (0.4) (0.2), and so on.
+
+Analyze this system for the case given above. Find the approximate
+long-run distribution, and also the proportion of jobs that get
+discarded.
+
+❄️  **Your Turn:** Prove @eq-traceab.  Hint: Write out the left-hand side
+as a double sum.  Reverse the order of summation, and work toward the
+right-hand side.
+
+❄️  **Your Turn:** Write out the details of the "similar result" in the
+statement of @thm-abPart.

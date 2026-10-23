@@ -1,0 +1,779 @@
+#+options: ':nil -:nil ^:{} num:nil toc:t
+#+author: Kristian Alexander P
+#+creator: Emacs 29.2 (Org mode 9.6.15 + ox-hugo)
+#+hugo_section: posts
+#+hugo_base_dir: ../../
+#+date: <2024-03-14 Thu>
+#+title: Org Mode Workflow
+#+description: Getting Things Done with /Emacs/
+#+hugo_draft: false
+#+hugo_tags: emacs org-mode org GTD
+#+hugo_categories: emacs
+#+startup: inlineimages
+
+* How I mapped my brain to /org-mode/
+Lately I found that I am in dire need of an effective task management system as an /IT/ support. There are some days where everything is hectic and I'm lost prioritizing my assignments. There's moment where I was in the middle of doing one task, and suddenly another request / assignment came out of nowhere (not exactly nowhere, but you get the idea). Task management system is also useful for creating some kind of reporting, although this is not the main goal.
+
+Initially, this post was titled /Getting Things Done in Emacs/. But as I keep adding more information into this post, and how I interact with /org-mode/ and /Emacs/ in general, it was about capturing my thought process. Tasks is one thing, and the important one since that's what I'm paid for. But there are stuffs floating around in my brain that I want to keep on exploring. By storing all that /impulses/ into text, hopefully I could understand more on how my thought process work.
+
+I've known about the /Getting Things Done/ method for a while now, even though I don't actively trying to mimic the workflow. subconsciously I created my own workflow that (more and less) similar.
+
+The more I try to update this post the more I realised that my mind operates in such a non-linear way. I was thinking of updating a section of this post, but suddenly an idea came into my mind about tweaking other sections of the post, I don't know if this is a good thing or not...
+
+I promise one day this post will make sense (to me most especially).
+** Basically what I want is
+- [X] daily planner.
+- [X] Simple UI for task highlighting or focusing.
+- [X] automation or templating for capturing tasks.
+- [X] reviewing
+- [X] Sync between Laptop, PC, and android
+
+** The 5 Steps from David Allen's GTD Method
+- Capture :: Empty your mind
+- Clarify :: Describe
+- Organize :: Place it where it belongs
+- Reflect :: Reflect on your progress
+- Engage :: Take action
+*** Capture
+#+begin_quote
+Our minds are for having ideas, not for holding them.
+#+end_quote
+
+Each capture should produce just /one/ headline. Try not to use the word *and* and *or* into a headline. Put a line below write every thing that's on my head at the time of capturing process.
+
+- Dumping every ideas into text should be avoided. Not everything should go into the system, only add what I really need.
+- Separate each capture into categories, tasks, notes, ideas, or other information that I took interest of.
+- Since it's necessary to me, I also separate my personal tasks/notes/ideas using /tag/.
+
+This is the first step of my workflow, and this is not necessarily about /Emacs/. I try to capture everything that interest me, or things that need my attention.
+- A request came via /E-mail/, /messaging apps/, /phone calls/, or in person.
+- An interesting book about meditation that requires a dedicated time to read.
+- A topic about /GNU/Linux/ from a /debian/ mailing list (yes, silent reader here, but I still read it).
+
+As it seems, I don't really need to capture it immediately into my /inbox/ file, though it's better, as long as I have some kind of media to note them.
+- Mail messages have their received date and time.
+- So do every messaging apps known to man.
+- In-person requests / inquiries time doesn't have to be precise to the minutes.
+*** Clarify
+Create sub tasks if needed. Reading a hierarchy of lists is better than reading a long line of text. Since I made these notes for me, I should understand it just by looking at them. But still every details count, especially product-related information (type, serial numbers, conditions etc).
+
+Another important details are date, time, and location. These are usually tasks related to meetings, appointments and such.
+
+This is also the first step to decide whether a tasks is considered a project. When I encounter tasks that take prolonged time of actions, and would create another task, I put it in the =:project:= category.
+
+For every other captures that doesn't require any actions, I tried to collect as much information as possible. It could be a link to some internet articles that I've already collected, but somehow I forgot, it'd be nice if I knew the reason why I capture it in the first place. So the second time I encounter it I can immediately decide if it worth keeping.
+*** Organize
+Use =org-refile= to organize your inbox file.
+
+A further sorting of all the lists I've acquired. Including all that I've captured previously. This phase is where I separate my tasks (actionable) with information, notes, links etc (non-actionable).
+
+I usually don't trash any of my notes, if I made mistakes, it was my mistakes and I can (hopefully) learn from it.
+*** Reflect
+A deeper inspection of my =org-agenda= view. I should have an /agenda view/ that shows everything happening for the current day, all the tasks that hasn't yet completed, and all prioritized tasks for the upcoming week. Within the =org-agenda=, I can decide what tasks should I do first and mark them in-progress (=PROG=), what should I do next (=:schedule:= or =:deadline:= them if necessary).
+
+I'm still contemplating on having a separate =org-agenda= view for weekly. The problem is it really took a mental energy to view them and make decisions about a large inventory of open loops. Ath the moment I only set them for prioritized / scheduled / deadline tasks.
+*** Engage
+
+Take action. Useful questions:
+- Context :: is this the right context for this action?
+- Priority :: Is this the most important / impactful activity?
+- Energy :: Do I have enough energy to do this?
+- Time :: Do I have enough time to do this?
+ 
+*** What I will need
+- Time :: This is basically building a habit, fortunately since I've used /Emacs/ for a while now, this is nothing strange to me.
+- Keep It Simple :: My /Emacs/ configuration is already bloated enough, also the reason why I use /vanilla Emacs/ to build this system.
+*** References
+- https://medium.com/praxis-blog/building-a-second-brain-in-emacs-and-org-mode-faa20ae06fc
+- https://fortelabs.com/blog/para/
+- https://fortelabs.com/blog/progressive-summarization-a-practical-technique-for-designing-discoverable-notes/
+- https://www.float.com/resources/getting-things-done-method/
+* Using /org-mode/
+#+begin_src plantuml :file ./task-flow.svg :exports results
+!include <archimate/Archimate>
+
+sprite $bProcess jar:archimate/business-process
+sprite $bValue jar:archimate/business-value
+sprite $aService jar:archimate/application-service
+sprite $aComponent jar:archimate/application-component
+sprite $Meaning jar:archimate/meaning
+sprite $Goal jar:archimate/goal
+sprite $GoalFilled jar:archimate/goal-filled
+sprite $StrategyResource jar:archimate/strategy-resource
+
+rectangle "notes, thought, ideas, links" as A1 <<$Meaning>> #ebcb8b
+rectangle "Is it **actionable?**" as A2 <<$Meaning>> #8fbcbb
+rectangle "YES\n**TODO**" as A3 <<$GoalFilled>> #a3be8c
+rectangle "What is the\n**next action**?" as A4 <<$StrategyResource>> #81a1c1
+rectangle "**Do it**\nIf I can start this immediately\nor can be finished within acceptable time" as A5 #bf616a
+rectangle "**Defer it**\nDo other higher priority tasks when possible" as A6 #8fbcbb
+rectangle "**Delegate it**\nWho is the right person\nto do this?" as A7 #8fbcbb
+rectangle "**WAIT**\nWill I have to process this\nagain in the future?" as A8 #ebcb8b
+rectangle "**DELEGATE**\nMeans my contributions in this item is finished" as A9 #8fbcbb
+rectangle "**Project**\nIdentified with **:project:** tag" as B1 <<$bValue>> #ccffeedd
+rectangle "**Project Plans**\n- //Sub Tasks//\n- //Delegations//\n- //Project Notes//" as B2 <<$bValue>> #ccffeedd
+rectangle "**DONE**\nCongrats!" as B3 #b48ead
+rectangle "**:schedule:** / **:deadline:**\nContextual tagging(places, occasions)" as C1 #8fbcbb
+rectangle "**NO**" as C2 <<$Goal>> #bf616a
+rectangle "**:archive:**\nTry to organize neatly for easier access" as C3 #ebcb8b
+rectangle "**Review**\n**org-agenda**\n* //Notes//, //ideas//, or //links//\ncould potentially become **actionable**\n* **DONE** items that become **actionable**\n* Tracking **PROG** items state via synchronization" as C4 <<$Meaning>> #88c0d0
+rectangle "**refile**\nKeep the main **inbox** file clean" as C5 #b48ead
+rectangle "//project file//\n**projects.org**" as D1 <<$bValue>> #ccffeedd
+rectangle "//note file//\n**notes.org**" as D2 #b48ead
+rectangle "//roam node//\n**org-roam**" as D3 #b48ead
+rectangle "Mark it **NEXT** (no schedule)" as D4 #81a1c1
+rectangle "**PROG**\nKeep track of items state" as D5 #5e81ac
+
+A1 -down-> A2
+A2 -down-> A3
+A4 -right-> A5
+A4 -down-> A6
+A3 -down-> A4
+A4 -down-> A7
+A7 -down-> A8
+A7 -down-> A9
+A3 -left-> B1
+B1 -up-> B2
+B2 -right-> A2
+A6 -down-> C1
+
+A6 -right-> D4
+D4 -up-> C4
+A8 -up-> C4
+A9 -up-> C4
+C1 -up-> C4
+
+A2 -right-> C2
+B3 -right-> C4
+
+A5 -right-> B3
+C4 -up-> C3
+C4 -up-> C5
+
+C2 -down-> C4
+
+C4 -up-> A2
+
+C5 -up-> D3
+C5 -up-> D2
+C5 -up-> D1
+
+C4 -right-> D5
+D5 -left-> C4
+#+end_src
+
+#+RESULTS:
+[[file:./task-flow.svg]]
+
+An /Emacs/ nerd as I am, of course the first stop is =org-mode=. Please forgive this messy chart since I'm still learning on /[[https://plantuml.com/][plantuml]]/.
+
+I really want to try from the ground up, using a /vanilla/ /Emacs/ with no interference from my actual configuration file[fn:1]. First of all, we need to set the minimal keybinding suggested by the [[https://orgmode.org/manual/Activation.html][manual]]:
+
+** Keybindings
+#+caption: suggested keybindings
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-c l") #'org-store-link)
+(global-set-key (kbd "C-c a") #'org-agenda)
+(global-set-key (kbd "C-c c") #'org-capture)
+(global-set-key (kbd "C-c C") #'org-capture-goto-last-stored)
+#+end_src
+
+** Specific =org-mode= variables
+:PROPERTIES:
+:ID:       705c247a-a878-46fc-aff6-3fc1d3b548a6
+:END:
+
+*** =org-directory= and =org-agenda-files=
+Next is set the =org-directory=, this directory is going to be the location of =org-mode= files, well, you are free to place an =org-mode= files anywhere, but think of this as the /root/ location, so every customizations we'll be making will refers to this location, for example, if we want to define our =org-agenda-files= as =agenda.org= inside the =org-directory=, we'll use:
+#+caption: set the location of =org-directory= inside =user-emacs-directory=
+#+begin_src emacs-lisp
+  (setq org-directory (expand-file-name "org" user-emacs-directory))
+#+end_src
+Usually you'll want your =org-directory= to be separated from your =user-emacs-directory=, which mostly be under some kind of version control system (such as /git/). The simplest location is just on the root of your =home-directory=
+
+#+caption: set the location of =org-directory= on the root of your home directory
+#+begin_src emacs-lisp
+  (setq org-directory (expand-file-name "org" (getenv "HOME"))) ;; ~/org/
+#+end_src
+
+Assuming your =user-emacs-directory= is in =~/.emacs.d~=, then your =org-directory= is =~/.emacs.d/org=
+
+#+caption: set the location of =org-agenda-files=
+#+begin_src emacs-lisp
+  (setq org-agenda-files (list org-directory))
+#+end_src
+
+*** =org-archive-location=
+=org-archive-location= is another variable that I should consider, will I want an archiving method? If I do, where should I put it? Is storing archived task (the done, cancelled etc) in a designated file necessary?
+#+caption: An example of setting the =org-archive-location= to a file /archives.org/ inside the =org-directory=
+#+begin_src emacs-lisp
+(setq org-archive-location (concat (expand-file-name "archives.org" org-directory) "::datetree/* Archived Tasks"))
+#+end_src
+
+*** =org-todo-keywords=
+:PROPERTIES:
+:ID:       6edcb547-3712-45a8-a665-8f1e7f05cd37
+:END:
+The =org-todo-keywords= also need to be customized, the default keywords are just =TODO=, and =DONE=. I've thought of this for a while, and perhaps this will suffice:
+
+#+caption: my todo keywords
+| TODO Keyword | What it is                                                                                                                                                                                                     |
+|--------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| =TODO=       | Tasks that are not started, also not planned. There can be many of them.                                                                                                                                       |
+| =NEXT=       | Tasks that are planned to do immediately.                                                                                                                                                                      |
+| =WAIT=       | Tasks that needs other form of interaction in order for it to be set as =PROG= or =DONE= or =KILL=.                                                                                                            |
+| =PROG=       | Tasks that are actively in working progress, these are usually the kind of tasks that can be done by myself, or have gone through the =WAIT= phase. Which also means that this can also revert back to =WAIT=. |
+| =HOLD=       | The kind of tasks that suspended without an escalation (these things happens im my workplace).                                                                                                                 |
+These =TODO= keywords are the ones that (supposed) to have further actions. I only have three keywords with no further actions:
+
+#+caption: keywords with no further actions
+| TODO keyword | What it is                                              |
+|--------------+---------------------------------------------------------|
+| =DONE=       | GG, well played!                                        |
+| =DELEGATED=  | I got someone else doing my job, GG, well played!       |
+| =KILL=       | Cancelled, or my boss gave me a task beyond my paygrade |
+
+Translate these into /Emacs Lisp/:
+
+#+caption: defining my own =org-todo-keywords=
+#+begin_src emacs-lisp
+  (setq org-todo-keywords
+        '((sequence "TODO(t!)" "NEXT(n!)" "PROG(p!)" "WAIT(w!)" "HOLD(h!)" "|" "DONE(d!)" "DELEGATED(l!)" "KILL(k!)")))
+#+end_src
+- each character inside the parentheses are the fast state selection, when you use ~C-c C-t~ in a heading, you only have to type the character to select the keyword.
+- =~~= means to record the time of state changes.
+  #+caption: example of state changes log
+  #+begin_src org
+    ,* TODO test
+    - State "TODO"       from              [2024-03-14 Thu 22:10]
+  #+end_src
+*** Priority
+Prioritizing tasks is important in my daily routines. And I would like to quickly identify the priority of all the tasks I have in my hand.
+
+#+caption: org-priority setup
+#+begin_src emacs-lisp
+  (setq org-priority-highest ?A
+        org-priority-lowest ?D
+        org-priority-default ?B)
+
+  (setq org-priority-faces
+        '((?A . (:foreground "#bf616a" :weight bold :underline t))
+          (?B . (:foreground "#d08770" :weight bold :underline t))
+          (?C . (:foreground "#4c566a" :weight bold :underline t))
+          (?D . (:foreground "#3b4252" :weight bold :underline t))))
+#+end_src
+This will set a list of priority from =A= to =D=, the default keybinding is ~C-c ,~.
+*** Tags
+Another useful way to implement labels and contexts for headlines, in =org-mode= tags must be preceeded and followed by a single colon (=:=), for example =:work:=, several tags can be specified, as in =:work:urgent=. Although I don't use tags that often, there are several variables that I should customize:
+#+begin_src emacs-lisp
+(setq org-use-tag-inheritance t
+      org-tags-exclude-from-inheritance '("crypt"))
+#+end_src
+The first one should be obvious, I want my sub-level headlines to inherit the tags from their parent headline. the second one is the tag that should not be inherited. The =:crypt:= tag is usually used for tagging headlines that contains password etc. The default keybinding for inserting tag is ~C-c C-c~ when the point is in the headline, or ~C-c C-q~ when under a headline.
+** Deadlines and Schedules
+*** Time-stamp
+In =org-mode= it's a timestamp with a special keywords. Adding timestamp can be done with ~C-c .~ inside a heading, to insert an inactive timestamp (that doesn't show in org-agenda) use ~C-c !~. This will only insert date, to also insert time, use a ~C-u~ prefix (e.g. ~C-u C-c .~ or ~C-u C-c !~).
+*** Deadline
+The default keybinding is ~C-c C-d~. Meaning the heading, with a keyword (can be =TODO= or any other), is supposed to be finished at that date. Use ~C-u C- C-d~ to remove a deadline from the heading.
+#+caption: TODO task with a deadline
+#+begin_src org
+  ,* TODO test
+  DEADLINE: <2024-03-14 Thu>
+  - State "TODO"       from              [2024-03-14 Thu 22:10]
+#+end_src
+There are also different syntax for the date:
+- ~DEADLINE: <2024-03-14 Thu -3d>~
+  means a warning with the period of 3 days,
+*** Schedule
+Meaning that I'm planning to start doing the tasks at that date. The default keybinding is ~C-c C-s~, use ~C-u C-c C-s~ to remove a schedule from a heading.
+#+caption: TODO task with a schedule
+#+begin_src org
+  ,* TODO test
+  SCHEDULED: <2024-03-16 Sat 09:00>
+  - State "TODO"       from              [2024-03-14 Thu 22:10]
+#+end_src
+Just as deadline, a different syntax also available:
+- ~SCHEDULED: <2024-03-16 Sat 10:00 -2d>~
+  means to delay the display of this task in the agenda for 2 day. The task is still scheduled on the 16th.
+** The Agenda view.
+=org-mode= has a builtin /agenda/. The default /Agenda views/ will show informations of:
+- Agenda for the current week or day, with the default key ~a~.
+- List of all =TODO= entries, key ~t~.
+- Matching queries of /tags/, /properties/, or =TODO= keywords. With the key ~m~.
+- ~s~, search for keywords.
+- ~/~ for multi-occur (never tried this).
+- ~?~ for finding flagged entries.
+- ~*~ for toggling sticky agenda views.
+- ~n~ for all agendas and =TODOs=.
+
+The agenda view is what I use the most for reviewing all my tasks, luckily there's a package called [[https://github.com/emacs-dashboard/emacs-dashboard][dashboard]] that also display several items from your agenda.
+#+caption: my /dashboard/
+[[./emacs-dashboard.png][file:emacs-dashboard.png]]
+
+#+caption: Vanilla Emacs =org-agenda=
+[[./vanilla-emacs-org-agenda.png][file:vanilla-emacs-org-agenda.png]]
+
+*** Configuring =org-agenda-custom-commands=
+This is the meat of my workflow, so I should have the information I want with just pressing each keyword.
+**** Viewing the custom agenda
+***** today's section
+This will show on the top of my custom agenda view, showing today's tasks.
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))))))
+#+end_src
+- =org-agenda-span= :: number of days to include in overview display, default to ='week=.
+- =org-deadline-warning-days= :: Number of days before expiration during which a deadline becomes active, default to =14=.
+- =org-agenda-use-time-grid= :: Non-nil means show a time grid in agenda schedule.
+- =org-scheduled-past-days= :: Number of days to continue listing scheduled items not marked =DONE=.
+- =org-agenda-format-date= :: formatting for the date. 
+This Will create a custom view ~w~, with the first section marked "Today", the =\n= is for inserting new line:
+#+caption: today's view
+[[./org-agenda-custom-today.png][file:org-agenda-custom-today.png]]
+***** Incomplete tasks section
+Useful to remind me for tasks that has not yet completed.
+#+caption: Incomplete tasks section addition
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))
+          (tags-todo "*"
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-if-todo 'nottodo 'done))
+                      (org-agenda-use-time-grid nil)
+                      (org-agenda-overriding-header "\nIncomplete\n")))))))
+#+end_src
+This second section is filtered by /tags/ (though it matches everything from /tags/, /properties/, and /TODO keywords/). The expression ~"*"~ means match all keywords.
+
+The other notable filter is the =org-agenda-skip-function=, this will only show tasks that matches from the function ='(org-agenda-skip-entry-if'nottodo 'done)=, which as its name suggest, skip entry if =TODO= keyword is not the type ='done= (the keywords on the right side of the =|= as defined [[id:6edcb547-3712-45a8-a665-8f1e7f05cd37][here]]).
+
+#+caption: =incomplete= section
+[[./org-agenda-custom-incomplete.png][file:org-agenda-custom-incomplete.png]]
+***** Next three days section
+Useful to get a head start of tasks for the coming days. I used to set it for the coming week, but I'd like to stay focused.
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (tags-todo "*"
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-if-todo 'nottodo 'done))
+                      (org-agenda-use-time-grid nil)
+                      (org-agenda-overriding-header "\nIncomplete\n")))))))
+#+end_src
+I inserted the "Next three days" section in between the "Incomplete".
+#+caption: next 3 days
+[[./org-agenda-custom-next-three-days.png][file:org-agenda-custom-next-three-days.png]]
+***** Section for upcoming deadlines
+This will show all the tasks with a deadline for the next 14 days, but starting at the 4th day, since the next three days already has it section.
+#+caption: upcoming deadlines
+#+begin_src emacs-lisp
+(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (tags-todo "*"
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-if-todo 'nottodo 'done))
+                      (org-agenda-use-time-grid nil)
+                      (org-agenda-overriding-header "\nIncomplete\n")))
+          (agenda "" ((org-agenda-time-grid nil)
+                      (org-agenda-start-on-weekday nil)
+                      ;; We don't want to replicate the previous section's
+                      ;; three days, so we start counting from the day after.
+                      (org-agenda-start-day "+4d")
+                      (org-agenda-span 14)
+                      (org-agenda-show-all-dates nil)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-entry-types '(:deadline))
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n")))))))
+#+end_src
+
+#+caption: the modified =org-agenda-custom-commands=
+[[./org-agenda-custom-commands-work.png][file:org-agenda-custom-commands-work.png]]
+
+Now I have a view of my daily, weekly agenda, and list of incomplete tasks. I can easily move into each tasks with pressing ~RET~ (~ENTER~) at each task.
+***** Separation of work and personal tasks
+I personally don't use /org-agenda/ for anything else beside my work stuffs. But occasionally there's things that I put in my org files that are not work-related. For me, the easiest solution is just to use =org-tags= for all my personal tasks and use =org-agenda-tag-filter= in my agenda.
+
+#+caption: filter by tag
+#+begin_src emacs-lisp
+
+(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (tags-todo "*"
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-if-todo 'nottodo 'done))
+                      (org-agenda-use-time-grid nil)
+                      (org-agenda-overriding-header "\nIncomplete\n")))
+          (agenda "" ((org-agenda-time-grid nil)
+                      (org-agenda-start-on-weekday nil)
+                      ;; We don't want to replicate the previous section's
+                      ;; three days, so we start counting from the day after.
+                      (org-agenda-start-day "+4d")
+                      (org-agenda-span 14)
+                      (org-agenda-show-all-dates nil)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-entry-types '(:deadline))
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n"))))
+         ((org-agenda-tag-filter-preset '("-personal" "-home"))))))
+#+end_src
+the ="-personal"= and ="-home"= means to filter out every headlines with the tag =personal=, and =home=, if you have many of them, just create another /agenda view/ with that filter in reverse, using =+personal= or =+home=
+
+#+caption: upcoming deadlines
+[[./org-agenda-custom-commands-upcoming.png][file:org-agenda-custom-commands-upcoming.png]]
+***** Stuck Projects
+In =org-mode= term, a /stuck project/ is a project (identified as a header) that has no defined next action, so it never shows up in the TODO list. The default value is:
+
+#+caption: default =org-stuck-projects=
+#+begin_src emacs-lisp
+  (setq org-stuck-projects
+        '("+LEVEL=2/-DONE"
+          ("TODO" "NEXT" "NEXTACTION")
+          nil ""))
+#+end_src
+
+It is a list with four items:
+- a tag/todo/property matching a project.
+- a list of todo keywords identifying non-stuck projects.
+- a list of tags identifying non-stuck projects.
+- a regular expression matching non stuck projects.
+
+The default means that a project is a level 2 headlines with the tag =PROJECT= but not if it has a todo keyword =MAYBE= and =DONE=, and will not be considered a stuck project if it has a todo keyword =TODO=, =NEXT=, or =NEXTACTION=, the third and fourth item is =nil= so it has no tag filter and no regular expression matcher for non-stuck projects. 
+
+So I simply just use the tag =project= for tasks that I considered as a project. Using the =org-todo-keywords= that I already setup earlier, my =org-stuck-projects= is:
+
+#+caption: my =org-stuck-projects=
+#+begin_src emacs-lisp
+(setq org-stuck-projects '("+{project*}-killed-Archives/-DONE-KILL-DELEGATED"
+                      ("TODO" "NEXT" "IDEA" "PROG")
+                      nil ""))
+#+end_src
+
+Then you can use org agenda to list all the stuck project with the key =#=, or with the command ~M-x org-agenda #~.
+** Refiling and archiving
+Eventually, the =org-files= used in my workflow will grow larger. So I will also need to move the previous tasks, refiling them into separate categories or even separate file. And also archiving them so they won't clutter my agenda views, and also keep my =org-agenda= faster without having to check all those completed tasks.
+*** Archiving
+The main goal is to keep my main inbox file (the first entry of tasks) empty as soon as possible. This is where /org-archive/ comes handy. The flow that I have in mind is to create a monthly file, perhaps in a headline consisting of =YYYY/MM= structure. The refiled entries are still monitored by /org-agenda/. I'd like to have some kind of /agenda view/ for these files for reviewing purpose, perhaps maybe exporting them to different formats.
+
+#+caption: my =org-archive= setup
+#+begin_src emacs-lisp
+  (setq org-archive-location  (concat org-directory  "/archive.org::datetree/* Archived Tasks"))
+#+end_src
+This will set the archive location to a file named =archives.org= inside my =org-directory=, and within a first level headline named "Archived Tasks"
+*** Refiling
+Still with the goal of having an unclutter inbox file, I'm using =org-refile= feature to move tasks from my inbox into another file, mainly for tasks that need (or waiting for) several steps to complete. Mostly though, I use =org-refile= in order to categorize my tasks, for examples I prefer to put tasks that are related to projects (in term of my work project), into a file named =projects.org= inside my =org-directory=, and routine tasks into =routines.org=, and my personal stuffs in =personal.org=
+
+#+caption: my =org-refile= setup
+#+begin_src emacs-lisp
+  (setq org-refile-targets
+        `((,(expand-file-name "projects.org" org-directory) :maxlevel . 1)
+          (,(expand-file-name "routines.org" org-directory) :maxlevel . 1)
+          (,(expand-file-name "personal.org" org-directory) :maxlevel . 1))
+        org-refile-use-outline-path 'file
+        org-outline-path-complete-in-steps nil)
+#+end_src
+- =org-refile-use-outline-path= :: this is set to ='file= to provide the file name as the refile target. Necessary since I'm using multiple files.
+- =org-outline-path-complete-in-steps= :: set to =nil= so the completions won't be set per step (filename -> headlines). Just to speed up the process.
+- =:maxlevel= :: limits the level of headlines considered to be a target. A max level of 1 means only the top-level headlines. This also means that all the targets above can be set into one file (e.g. =refile.org=), and create a top-level headlines as the categories.
+
+We'll also need to add a [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html][hook]] to make sure that the target buffer is saved after the refiling process.
+
+#+caption: refile hook
+#+begin_src emacs-lisp
+  (add-hook 'org-after-refile-insert-hook #'save-buffer)
+#+end_src
+*** Things of interest
+- [[https://200ok.ch/posts/2022-02-13_integrating_org_mode_agenda_into_other_calendar_apps.html][Exporting /org-agenda/ to /thunderdbird/]] :: I use /thunderbird/, and also have setup my /thunderbird/ calendar to sync my /Outlook/ calendars using /[[https://davmail.sourceforge.net/][davmail]]/.
+** Using =org-capture=
+Of course all of the above would be useless if I have to manually create a task. At least I would like to have an /org-capture/ template to make this easier.
+
+#+caption: org-capture-templates
+#+begin_src emacs-lisp
+  (require 'org-capture)
+  (setq org-capture-templates
+        `(("i" "Inbox" entry
+           (file+headline ,(expand-file-name "inbox.org" org-directory) "Inbox")
+           "** %?\n%i\n%a" :prepend t :jump-to-captured t)))
+#+end_src
+
+#+caption: org-capture in process
+[[./org-capture-1.png][file:org-capture-1.png]]
+[[./org-capture-2.png][file:org-capture-2.png]]
+*** Capturing with templates
+
+Let say there are some entries that usually have a similar format, we can provide a template for those entries. Name this =request.template= and put it inside the =org-directory=.
+#+begin_example
+,** TODO %?
+:PROPERTIES:
+:USER: %^{User}
+:UNIT: %^{Unit|MKN|GMN|STN}
+:DATE: %T
+:LOCATION:
+:CATEGORY: %^{Category|Meeting|Purchase|Repair|Assistance|Tech Issue|Complaints|Account Management}
+:REQUEST_VIA: %^{Request via|In Person|Phone/Messaging|Mail}
+:ITEM: %^{Item}
+:QTY: %^{Quantity|1}
+:LINK: %a
+:END:
+:LOGBOOK:
+- State "TODO"		from		%U
+:END:
+
+,*** Requirements
+- [ ] Escalation
+- [ ] Approval
+- [ ] Vendor 
+#+end_example
+This will create a template for a 2nd level heading, with org [[https://orgmode.org/manual/Properties-and-Columns.html][properties]] and a logbook [[https://orgmode.org/manual/Drawers.html][drawer]]. But we also need some inputs:
+- =%^{User}= :: prompt for /User/.
+- =%^{Category|Meeting|Purchage|Repair|Assistance}= :: Prompt for input with predefined values.
+- =%a= :: Annotation, normally the link created with =org-store-link=.
+- =%U= :: inactive timestamp for state tracking, only needed for the first time, will be updated automatically every time there's a state change.
+- list started with =[ ]= means that it's a checkbox list, we can change the state to =[x]= using ~C-c C-c~.
+
+#+caption: the org-capture-templates
+#+begin_src emacs-lisp
+  (add-to-list 'org-capture-templates
+               `("r" "Request" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "Request")
+                 (file ,(expand-file-name "request.template" org-directory))))
+#+end_src
+
+#+caption: /org-capture/ with a predefined template
+[[./org-capture-with-template-1.png][file:org-capture-with-template-1.png]]
+
+#+caption: the content of the template
+[[./org-capture-with-template-2.png][file:org-capture-with-template-2.png]]
+
+#+caption: Prompt with completion
+[[./org-capture-with-template-3.png][file:org-capture-with-template-3.png]]
+
+#+caption: content of the capture target
+[[./org-capture-with-template-4.png][file:org-capture-with-template-4.png]]
+
+*** Things of interest
+- [[https://bzg.fr/en/some-emacs-org-mode-features-you-may-not-know/][Using context-aware capture-templates]] :: the link is not just about =org-capture=.
+* Synchronization, Capture Methods and everything else
+I mainly use /[[https://syncthing.net/][syncthing]]/ for synchronizing my =org-directory= across my devices. It has support for /android/, on which I use [[https://orgzly.com/][orgzly]] mostly for viewing the org files. Once you've set the repository inside /orgzly/ to point to =org-directory= (which already synced by /syncthing/), you're ready to go. Also don't forget to match the todo keywords with the one you've set in /Emacs/. The downside is you cannot attach to the org-file while in /orgzly/.
+
+And, depending on your /android/ version, /syncthing/ cannot sync properly on some filesystems. So it's better to store your sync directory on the device internal storage than the external one. With that being said, I am still exploring other possibilities:
+- /google's keep/ :: I never got the comfort of typing or navigating with my finger on a touchscreen. And to me, /Android/ is such a mess by trying to pick comfort over functionality. Google Keep is the one app that (was) very simple and the only one app that I still consider a /Google App/. I can sync a note between my phone and my pc, I can also attach media to it (try taking photos of 41 printers of the same model, and guess each location, etc). But here comes the new UI updates...
+- Firefox :: There used to be an editor war, now it just plain war. Now I just use Firefox just because I choose to use Firefox.
+  #+caption: =org-protocol= in Firefox
+  [[./org-capture-firefox.png][file:org-capture-firefox.png]]
+  =org-protocol= allows me to capture a link in Firefox into =org-mode= just by using a bookmark.
+
+  #+caption: =org-protocol= capture
+  [[./org-protocol-capture-firefox.png][file:org-protocol-capture-firefox.png]]
+
+  This allows me to easily insert links into my =org-capture=.
+* /org-mode/ extensions
+Although all the configuration listed above is enough for my /task management/ workflow, there are many packages for /Emacs/ (builtin or external) to enhance your /org-mode/ experience. Here are some of them:
+** =Evil-mode=
+I made a separate post for this package. If you're coming from /Vim/, this is mandatory. If you're not, try the default /Emacs/ keybindings first, if your pinky fingers are not long enough, try this package.
+
+#+caption: recommended /evil/ configuration
+#+begin_src emacs-lisp
+  (use-package evil
+    :ensure t
+    :init
+    (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+    (setq evil-want-keybinding nil)
+    :config
+    (evil-mode 1))
+
+  (use-package evil-collection
+    :after evil
+    :ensure t
+    :config
+    (evil-collection-init)
+    (with-eval-after-load 'org-agenda
+      (evil-set-initial-state #'org-agenda-mode 'normal)
+      (evil-define-key '(normal visual) org-agenda-mode-map
+        "q" 'org-agenda-quit
+        "Q" 'org-agenda-quit
+        (kbd "<return>") 'org-agenda-switch-to
+        "t" 'org-agenda-todo
+        "gr" 'org-agenda-redo-all)))
+
+#+end_src
+** =org-fancy-priorities=
+#+begin_src emacs-lisp
+  (use-package org-fancy-priorities
+    :ensure t
+    :hook
+    (org-mode . org-fancy-priorities-mode)
+    :config
+    (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
+#+end_src
+
+#+caption: image from [[https://github.com/harrybournis/org-fancy-priorities][their readme page]]
+[[https://github.com/harrybournis/org-fancy-priorities/raw/master/screenshots/screenshot1.png]]
+** =org-modern=
+
+#+caption: org-modern
+[[./org-modern.png][file:org-modern.png]]
+This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks. The styling is configurable, you can enable, disable or modify the style of each syntax element individually via the org-modern customization group.
+#+caption: org-modern configuration (mainly from their [[https://github.com/minad/org-modern/][github page]])
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :ensure t
+    :init
+    (menu-bar-mode -1)
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
+    (load-theme 'modus-vivendi t)
+    :config
+    (set-face-attribute 'org-modern-symbol nil :family "Iosevka Nerd Font")
+    (set-face-attribute 'default nil :family "Iosevka Nerd Font Mono")
+    (set-face-attribute 'variable-pitch nil :family "Iosevka Nerd Font Mono")
+    (modify-all-frames-parameters
+     '((right-divider-width . 40)
+       (internal-border-width . 40)))
+    (dolist (face '(window-divider
+                    window-divider-first-pixel
+                    window-divider-last-pixel))
+      (face-spec-reset-face face)
+      (set-face-foreground face (face-attribute 'default :background)))
+    (set-face-background 'fringe (face-attribute 'default :background))
+    (setq
+     ;; Edit settings
+     org-auto-align-tags nil
+     org-tags-column 0
+     org-catch-invisible-edits 'show-and-error
+     org-special-ctrl-a/e t
+     org-insert-heading-respect-content t
+
+     ;; Org styling, hide markup etc.
+     org-hide-emphasis-markers t
+     org-pretty-entities t
+     org-ellipsis "…"
+
+     ;; Agenda styling
+     org-agenda-tags-column 0
+     org-agenda-block-separator ?─
+     org-agenda-time-grid
+     '((daily today require-timed)
+       (800 1000 1200 1400 1600 1800 2000)
+       " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+     org-agenda-current-time-string
+     "◀── now ─────────────────────────────────────────────────")
+    (global-org-modern-mode))
+#+end_src
+
+#+caption: org-modern agenda
+[[./org-modern-agenda.png][file:org-modern-agenda.png]]
+** builtin packages
+*** =saveplace=
+#+begin_src emacs-lisp
+  (use-package saveplace
+    :init
+    (save-place-mode 1)
+    :custom
+    (save-place-file (expand-file-name "places" user-emacs-directory)))
+#+end_src
+When you visit a file, point goes to the last place where it was when you previously visited the save file.
+*** =savehist=
+Save the minibuffer history
+#+begin_src emacs-lisp
+  (use-package savehist
+    :init
+    (savehist-mode 1)
+    :custom
+    (savehist-file (expand-file-name "history" user-emacs-directory))
+    (savehist-coding-system 'utf-8)
+    (savehist-additional-variables
+     '(evil-jumps-history
+       kill-ring
+       register-alist
+       mark-ring
+       global-mark-ring
+       search-ring
+       regexp-search-ring)))
+#+end_src
+*** various =files= configuration
+#+begin_src emacs-lisp
+  (use-package files
+    :custom
+    (find-file-visit-truename t)
+    (version-control t)
+    (backup-by-copying t)
+    (delete-old-versions t)
+    (kept-new-versions 6)
+    (kept-old-versions 2)
+    (auto-save-include-big-deletions t)
+    (auto-save-list-file-prefix (expand-file-name ".autosave/" user-emacs-directory))
+    (backup-directory-alist `(("." . ,(expand-file-name ".backup" user-emacs-directory)))))
+#+end_src
+- =find-file-visit-truename= :: if the visited file is a symlink, it will find the truename of the file instead.
+- =version-control= :: make numeric backup versions unconditionally.
+- =backup-by-copying= :: always use copying to create backup files.
+- =delete-old-versions= :: delete excess backup versions silently
+* Footnotes
+[fn:1] By using another instance of /Emacs/, but with a specific command arguments:
+#+begin_src sh
+  emacs --init-directory=/dev/null
+#+end_src
+This will ensure /Emacs/ is started with no user configuration.
+

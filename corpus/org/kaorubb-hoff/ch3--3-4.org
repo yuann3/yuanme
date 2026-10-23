@@ -1,0 +1,387 @@
+#+TITLE: Exercise 3.4 Solution Example - Hoff, A First Course in Bayesian Statistical Methods
+#+SUBTITLE: 標準ベイズ統計学 演習問題 3.4 解答例
+#+SETUPFILE: ../setup.org
+* question :noexport:
+Mixtures of beta priors:
+Estimate the probability \(\theta\) of teen recidivism based on a study in which there were \(n = 43\) individuals released from incarceration and \(y = 15\) re-offenders within 36 months.
+* Answer :ignore:
+** a
+:PROPERTIES:
+:ID:       7ca3e17b-cb8f-4b98-90df-0d77ce181a12
+:END:
+*** question :noexport:
+Using a beta(2,8) prior for \(\theta\), plot \(p(\theta)\), \(p(y|\theta)\) adn \(p(\theta|y)\) as functions of \(\theta\).
+Find the posterior mean, mode, and standard deviation of \(\theta\).
+Find a 95% quantile-based confidence interval.
+
+*** answer :ignore:
+#+begin_src julia :exports code
+using Distributions
+using Plots
+using StatsPlots
+using LaTeXStrings
+a₀ = 2
+b₀ = 8
+n = 43
+y = 15
+#+end_src
+
+#+RESULTS:
+: 15
+
+#+begin_src julia
+# prior
+plot(
+    Beta(a₀, b₀),
+    title=L"p(\theta)",
+    xlabel=L"\theta",
+    ylabel=L"p(\theta)",
+    legend=false,
+)
+#+end_src
+
+#+ATTR_HTML: :width 500
+[[file:../../fig/ch3/exercise3.4aplot1.jpg]]
+
+#+begin_src julia
+θ = 0:0.01:1.0
+pdf_for_θs = map(θ -> pdf(Binomial(n, θ), y), θ)
+
+# plot p(y|θ)
+plot(
+    θ, pdf_for_θs,
+    xlabel = "θ", ylabel = "p(y|θ)",
+    title = "p(y=$y|θ) as a function of θ",
+    legend = false,
+    size = (600, 400)
+    , margin = 5mm
+    , xticks = 0:0.1:1.0
+)
+#+end_src
+
+#+ATTR_HTML: :width 500
+[[file:../../fig/ch3/exercise3.4aplot2.jpg]]
+
+\begin{align*}
+p(\theta \mid y)
+&= \frac{1}{p(y)} p(y \mid \theta) p(\theta) \\
+&= \frac{1}{p(y)} \begin{pmatrix} 43 \\ 15 \end{pmatrix} \theta^{15} (1-\theta)^{28} \frac{\Gamma(2+8)}{\Gamma(2)\Gamma(8)} \theta^{2-1} (1-\theta)^{8-1} \\
+&= \frac{1}{p(y)} \begin{pmatrix} 43 \\ 15 \end{pmatrix}
+\frac{\Gamma(2+8)}{\Gamma(2)\Gamma(8)} \theta^{17-1} (1-\theta)^{36-1} \\
+&= const \times \theta^{17-1} (1-\theta)^{36-1} \\
+&= dbeta(\theta, 17, 36)
+\end{align*}
+
+#+begin_src julia
+# posterior
+posterior_dist = Beta(a₀ + y, b₀ + n - y)
+plot(
+    posterior_dist,
+    title=L"p(\theta|y)",
+    xlabel=L"\theta",
+    ylabel=L"p(\theta|y)",
+    legend=false,
+)
+#+end_src
+
+#+ATTR_HTML: :width 500
+[[file:../../fig/ch3/exercise3.4aposterior.jpg]]
+
+#+begin_src julia :exports both
+# posterior mean
+mean(posterior_dist)
+μ = (a₀ + y)/(a₀ + b₀ + n)
+#+end_src
+
+#+RESULTS:
+: 0.32075471698113206
+
+#+begin_src julia :exports both
+# posterior mode
+mode(posterior_dist)
+(a₀ + y - 1)/(a₀ + b₀ + n - 2)
+#+end_src
+
+#+RESULTS:
+: 0.3137254901960784
+
+#+begin_src julia :exports both
+# posterior standard deviation
+std(posterior_dist)
+var = (μ*(1 - μ))/(a₀ + b₀ + n + 1)
+sqrt(var)
+#+end_src
+
+#+RESULTS:
+: 0.0635188989834093
+
+#+begin_src julia :exports both :results output
+# posterior 95% interval
+quantile(posterior_dist, [0.025, 0.975])
+#+end_src
+
+#+RESULTS:
+:
+: 2-element Vector{Float64}:
+:  0.2032977878191033
+:  0.45102398221663165
+
+** b
+:PROPERTIES:
+:ID:       3654b4ad-59d8-4c15-bcf8-8d30fbaf64c5
+:END:
+*** question :noexport:
+Repeat a), but using a beta(8,2) prior for \(\theta\).
+
+*** answer :ignore:
+
+#+begin_src julia :exports code
+a₀_b = 8
+b₀_b = 2
+#+end_src
+
+#+RESULTS:
+: 2
+
+
+#+begin_src julia
+# prior
+plot(
+    Beta(a₀_b, b₀_b),
+    title=L"p(\theta)",
+    xlabel=L"\theta",
+    ylabel=L"p(\theta)",
+    legend=false,
+)
+#+end_src
+
+
+#+ATTR_HTML: :width 500
+[[file:../../fig/ch3/exercise3.4bprior.jpg]]
+
+
+\begin{align*}
+p(\theta \mid y)
+&= \frac{1}{p(y)} p(y \mid \theta) p(\theta) \\
+&= \frac{1}{p(y)} \begin{pmatrix} 43 \\ 15 \end{pmatrix} \theta^{15} (1-\theta)^{28} \frac{\Gamma(2+8)}{\Gamma(2)\Gamma(8)} \theta^{8-1} (1-\theta)^{2-1} \\
+&= \frac{1}{p(y)} \begin{pmatrix} 43 \\ 15 \end{pmatrix}
+\frac{\Gamma(2+8)}{\Gamma(2)\Gamma(8)} \theta^{23-1} (1-\theta)^{30-1} \\
+&= const \times \theta^{23-1} (1-\theta)^{30-1} \\
+&= dbeta(\theta, 23, 30)
+\end{align*}
+
+#+begin_src julia
+# posterior
+posterior_dist_b = Beta(a₀_b + y, b₀_b + n - y)
+plot(
+    posterior_dist_b,
+    title=L"p(\theta|y)",
+    xlabel=L"\theta",
+    ylabel=L"p(\theta|y)",
+    legend=false,
+)
+#+end_src
+
+#+RESULTS:
+
+#+ATTR_HTML: :width 500
+[[file:../../fig/ch3/exercise3.4bposterior.jpg]]
+
+#+begin_src julia :exports both
+# posterior mean
+mean(posterior_dist_b)
+μ_b = (a₀_b + y)/(a₀_b + b₀_b + n)
+#+end_src
+
+#+RESULTS:
+: 0.4339622641509434
+
+#+begin_src julia :exports both
+# posterior mode
+mode(posterior_dist_b)
+(a₀_b + y - 1)/(a₀_b + b₀_b + n - 2)
+#+end_src
+
+#+RESULTS:
+: 0.43137254901960786
+
+#+begin_src julia :exports both
+# posterior standard deviation
+std(posterior_dist_b)
+var_b = (μ_b*(1 - μ_b))/(a₀_b + b₀_b + n + 1)
+sqrt(var_b)
+#+end_src
+
+#+RESULTS:
+: 0.06744531631926798
+
+#+begin_src julia :exports both :results output
+# posterior 95% interval
+quantile(posterior_dist_b, [0.025, 0.975])
+#+end_src
+
+#+RESULTS:
+:
+: 2-element Vector{Float64}:
+:  0.30469562471174694
+:  0.5679527959964581
+
+** c
+:PROPERTIES:
+:ID:       02109ca5-ab30-448e-94ce-678e2b8540d1
+:END:
+
+*** question :noexport:
+Consider the following prior distribution for \(\theta\):
+\[p(\theta) = \frac{1}{4} \frac{\Gamma(10)}{\Gamma(2)\Gamma(8)} [3 \theta (1-\theta)^7 + \theta^7 (1-\theta)],\]
+which is a 75-25% mixture of a beta (2,8) and a beta (8,2) prior distribution.
+Plot this prior distribution and compare it to the priors in a) and b).
+Describe what sort of prior opinion this may represent.
+
+*** answer :ignore:
+#+begin_src julia
+using SpecialFunctions
+prior_mix = θ -> 1//4 * gamma(10) / (gamma(2) * gamma(8)) * (3 * θ * (1 - θ)^7 + θ^7 * (1 - θ))
+#+end_src
+
+#+RESULTS:
+
+#+begin_src julia
+xs = 0:0.01:1.0
+plot(
+    xs, prior_mix.(xs),
+    xlabel = "θ", ylabel = "p(θ)",
+    title = "mixture of a beta(2,8) and a beta(8,2) prior distribution",
+    titlefontsize = 12,
+    legend = false,
+    size = (600, 400)
+    , margin = 5mm
+    , xticks = 0:0.1:1.0
+)
+#+end_src
+
+#+ATTR_HTML: :width 500
+[[file:../../fig/ch3/exercise3.4cmixprior.jpg]]
+
+[[id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12][a)]]や[[id:3654b4ad-59d8-4c15-bcf8-8d30fbaf64c5][b)]]の事前分布と異なり、上の分布は 2 つの山を持った形状になっている。
+この事前分布は、再犯率は高いか低いかのどちらかに偏っているという信念を表している。
+
+This prior distribution has two peaks, indicating a belief that the recidivism rate is either high or low, rather than being centered around a moderate value like the priors in [[id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12][a)]] and [[id:3654b4ad-59d8-4c15-bcf8-8d30fbaf64c5][b)]].
+
+** d
+*** question :noexport:
+For the prior in c):
+*** i
+**** question :noexport:
+Write out mathematically \(p(\theta) \times p(y \mid \theta)\) and simplify as much as possible.
+
+**** answer :ignore:
+
+\begin{align*}
+p(\theta) \times p(y \mid \theta)
+&= \frac{1}{4} \frac{\Gamma(10)}{\Gamma(2)\Gamma(8)} [3 \theta (1-\theta)^7 + \theta^7 (1-\theta)] \times \begin{pmatrix} 43 \\ 15 \end{pmatrix} \theta^{15} (1-\theta)^{28} \\
+&= \frac{1}{4} \frac{\Gamma(10)}{\Gamma(2)\Gamma(8)} \begin{pmatrix} 43 \\ 15 \end{pmatrix} \left[3 \theta^{1+15} (1-\theta)^{7+28} + \theta^{7+15} (1-\theta)^{1+28}\right] \\
+&= \frac{1}{4} \frac{\Gamma(10) \Gamma(44)}{\Gamma(2)\Gamma(8) \Gamma(16) \Gamma(29)} \left[3 \theta^{16} (1-\theta)^{35} + \theta^{22} (1-\theta)^{29}\right] \\
+\end{align*}
+*** ii
+:PROPERTIES:
+:ID:       de979953-989c-4e64-b67f-57f4443d2d39
+:END:
+
+**** question :noexport:
+
+The posterior distribution is a mixture of two distributions you know.
+Identify these distributions.
+
+**** answer :ignore:
+
+Beta(17, 36) and Beta(23, 30)
+*** iii
+:PROPERTIES:
+:ID:       67191524-e772-4522-9b70-ecaae9260902
+:END:
+**** question :noexport:
+On a computer, calculate and plot \(p(\theta) \times p(y \mid \theta)\)
+for a variety of \(\theta\) values.
+Also find (approximately) the posterior mode, and discuss its relation to the modes in [[id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12][a)]] and [[id:3654b4ad-59d8-4c15-bcf8-8d30fbaf64c5][b)]].
+
+**** answer :ignore:
+
+#+begin_src julia
+cond_prob = θ -> pdf(Binomial(n, θ), y)
+prior_times_cond_prob = θ -> prior_mix(θ) * cond_prob(θ)
+xs = 0:0.001:1.0
+plot(
+    xs, prior_times_cond_prob.(xs),
+    xlabel = "θ", ylabel = "p(θ) × p(θ|y)",
+    title = "p(θ) × p(θ|y)",
+    legend = false,
+)
+#+end_src
+
+#+RESULTS:
+
+#+ATTR_HTML: :width 500
+[[file:../../fig/ch3/exercise3.4diiiplot.jpg]]
+
+#+begin_src julia
+# prior_times_cond_probが最大になるθ
+xs[argmax(prior_times_cond_prob.(xs))]
+#+end_src
+
+#+RESULTS:
+: 0.314
+
+The mode of [[id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12][a)]] is 0.313 and the mode of [[id:3654b4ad-59d8-4c15-bcf8-8d30fbaf64c5][b)]] is 0.431, so this posterior mode is located in between, closer to [[id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12][a)]].
+
+** e
+*** question :noexport:
+Find a general formula for the weights of the mixture distribution in [[id:de979953-989c-4e64-b67f-57f4443d2d39][d)ii]],
+and provide an interpretation for their values.
+
+*** answer :ignore:
+The posterior distribution is calculated as follows:
+\begin{align*}
+p(\theta \mid y)
+&= \frac{p(y \mid \theta) p(\theta)}{p(y)} \\
+& \propto p(y \mid \theta) p(\theta) \\
+&= \begin{pmatrix} n \\ y \end{pmatrix} \theta^y (1-\theta)^{n-y} \times
+\frac{1}{4} \frac{\Gamma(10)}{\Gamma(2)\Gamma(8)} \left[3 \theta (1-\theta)^7 + \theta^7 (1-\theta)\right] \\
+& \propto 3 \theta^{y+1} (1-\theta)^{n-y+7} + \theta^{y+7} (1-\theta)^{n-y+1} \\
+\end{align*}
+
+
+As the normalizing constant \(C\) is given by:
+\begin{align*}
+C &= \int_0^1 \left[ 3 \theta^{y+1} (1-\theta)^{n-y+7} + \theta^{y+7} (1-\theta)^{n-y+1} \right] d\theta \\
+&= 3 \int_0^1 \theta^{(y+2)-1} (1-\theta)^{(n-y+8)-1} d\theta + \int_0^1 \theta^{(y+8)-1} (1-\theta)^{(n-y+2)-1} d\theta \\
+&= 3 \cdot \frac{\Gamma(y+2) \Gamma(n-y+8)}{\Gamma(n+10)} + \frac{\Gamma(y+8) \Gamma(n-y+2)}{\Gamma(n+10)} \\
+&= \frac{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)}{\Gamma(n+10)} \\
+\end{align*}
+the posterior distribution can be expressed as:
+\begin{align*}
+p(\theta \mid y)
+&= \frac{1}{C} \left[ 3 \theta^{y+1} (1-\theta)^{n-y+7} + \theta^{y+7} (1-\theta)^{n-y+1} \right] \\
+&= \frac{\Gamma(n+10) \cdot \Gamma(y+2) \Gamma(n-y+8)}{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)} \cdot \frac{3 \theta^{y+1} (1-\theta)^{n-y+7}}{\Gamma(y+2) \Gamma(n-y+8)} \\
+&\quad+ \frac{\Gamma(n+10) \cdot \Gamma(y+8) \Gamma(n-y+2)}{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)} \cdot \frac{\theta^{y+7} (1-\theta)^{n-y+1}}{\Gamma(y+8) \Gamma(n-y+2)} \\
+&= \frac{3 \Gamma(y+2) \Gamma(n-y+8)}{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)} \cdot \mathrm{dbeta}(\theta, y+2, n-y+8) \\
+&\quad+ \frac{\Gamma(y+8) \Gamma(n-y+2)}{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)} \cdot \mathrm{dbeta}(\theta, y+8, n-y+2) \\
+\end{align*}
+
+
+The posterior weights represent the updated probability of each model being correct after observing the data \((y, n)\).
+The formula embodies the principle: Posterior Belief ∝ Prior Belief × Evidence.
+
+Each weight's numerator is a product of two key components:
+
+1. Prior Belief: The coefficients 3 and 1 reflect our initial assumption that beta(2,8) was three times more likely to be correct than beta(8,2).
+2. Evidence from Data: The Gamma function terms \(\Gamma(y+2) \Gamma(n-y+8)\) and \(\Gamma(y+8) \Gamma(n-y+2)\) are the decisive parts that determine which distribution gains more support from the data. A distribution that better aligns with the data will have a larger value.
+
+In short, the posterior weight for each distribution is determined by its initial credibility combined with the strength of support it receives from the data.
+
+* nav :ignore:
+#+ATTR_HTML: :class nav-prev
+[[./3-3.org][3.3]]
+
+#+ATTR_HTML: :class nav-next
+[[./3-5.org][3.5]]

@@ -1,0 +1,1572 @@
+[
+  {
+    "path": "md/al-folio/_posts--2015-10-20-math.md",
+    "format": "md",
+    "source": "al-folio Jekyll theme example posts",
+    "source_url": "https://github.com/alshedivat/al-folio/blob/40c06007dab344970b681ba63b2241b1a8209ec1/_posts/2015-10-20-math.md",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/alshedivat/al-folio/blob/40c06007dab344970b681ba63b2241b1a8209ec1/LICENSE",
+    "math": true,
+    "notes": "dialect: kramdown (Jekyll) $$; \\begin{equation}\\label + \\eqref with MathJax"
+  },
+  {
+    "path": "md/cs228-notes/inference--variational.md",
+    "format": "md",
+    "source": "CS228 Probabilistic Graphical Models notes (Kuleshov, Ermon Group)",
+    "source_url": "https://github.com/ermongroup/cs228-notes/blob/b608bab345ec5e5d9949c8f015869a61a440484e/inference/variational/index.md",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/ermongroup/cs228-notes/blob/b608bab345ec5e5d9949c8f015869a61a440484e/LICENSE",
+    "math": true,
+    "notes": "dialect: kramdown (Jekyll) $$/$"
+  },
+  {
+    "path": "md/cs228-notes/preliminaries--probabilityreview.md",
+    "format": "md",
+    "source": "CS228 Probabilistic Graphical Models notes (Kuleshov, Ermon Group)",
+    "source_url": "https://github.com/ermongroup/cs228-notes/blob/b608bab345ec5e5d9949c8f015869a61a440484e/preliminaries/probabilityreview/index.md",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/ermongroup/cs228-notes/blob/b608bab345ec5e5d9949c8f015869a61a440484e/LICENSE",
+    "math": true,
+    "notes": "dialect: kramdown (Jekyll) $$/$"
+  },
+  {
+    "path": "md/cs228-notes/representation--directed.md",
+    "format": "md",
+    "source": "CS228 Probabilistic Graphical Models notes (Kuleshov, Ermon Group)",
+    "source_url": "https://github.com/ermongroup/cs228-notes/blob/b608bab345ec5e5d9949c8f015869a61a440484e/representation/directed/index.md",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/ermongroup/cs228-notes/blob/b608bab345ec5e5d9949c8f015869a61a440484e/LICENSE",
+    "math": true,
+    "notes": "dialect: kramdown (Jekyll) $$/$"
+  },
+  {
+    "path": "md/d2l/chapter_appendix-mathematics-for-deep-learning--single-variable-calculus.md",
+    "format": "md",
+    "source": "Dive into Deep Learning (d2l.ai)",
+    "source_url": "https://github.com/d2l-ai/d2l-en/blob/23d7a5aecceee57d1292c56e90cce307f183bb0a/chapter_appendix-mathematics-for-deep-learning/single-variable-calculus.md",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/d2l-ai/d2l-en/blob/23d7a5aecceee57d1292c56e90cce307f183bb0a/LICENSE-SUMMARY",
+    "math": true,
+    "notes": "dialect: d2lbook (Markdown + Sphinx-style roles); docs CC-BY-SA-4.0, sample code modified MIT (LICENSE-SAMPLECODE)"
+  },
+  {
+    "path": "md/d2l/chapter_linear-regression--linear-regression.md",
+    "format": "md",
+    "source": "Dive into Deep Learning (d2l.ai)",
+    "source_url": "https://github.com/d2l-ai/d2l-en/blob/23d7a5aecceee57d1292c56e90cce307f183bb0a/chapter_linear-regression/linear-regression.md",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/d2l-ai/d2l-en/blob/23d7a5aecceee57d1292c56e90cce307f183bb0a/LICENSE-SUMMARY",
+    "math": true,
+    "notes": "dialect: d2lbook (Markdown + Sphinx-style roles); docs CC-BY-SA-4.0, sample code modified MIT (LICENSE-SAMPLECODE); $$…$$:eqlabel:`…`, :eqref:, :label:, :numref:, tab directives"
+  },
+  {
+    "path": "md/halo2-book/book--src--background--fields.md",
+    "format": "md",
+    "source": "The halo2 Book (Electric Coin Company)",
+    "source_url": "https://github.com/zcash/halo2/blob/4afa97f221b439450626f2fd03b390e252341e67/book/src/background/fields.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/zcash/halo2/blob/4afa97f221b439450626f2fd03b390e252341e67/COPYING.md",
+    "math": true,
+    "notes": "dialect: mdBook + KaTeX ($…$, $$…$$)"
+  },
+  {
+    "path": "md/halo2-book/book--src--background--polynomials.md",
+    "format": "md",
+    "source": "The halo2 Book (Electric Coin Company)",
+    "source_url": "https://github.com/zcash/halo2/blob/4afa97f221b439450626f2fd03b390e252341e67/book/src/background/polynomials.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/zcash/halo2/blob/4afa97f221b439450626f2fd03b390e252341e67/COPYING.md",
+    "math": true,
+    "notes": "dialect: mdBook + KaTeX ($…$, $$…$$)"
+  },
+  {
+    "path": "md/halo2-book/book--src--design--proving-system--permutation.md",
+    "format": "md",
+    "source": "The halo2 Book (Electric Coin Company)",
+    "source_url": "https://github.com/zcash/halo2/blob/4afa97f221b439450626f2fd03b390e252341e67/book/src/design/proving-system/permutation.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/zcash/halo2/blob/4afa97f221b439450626f2fd03b390e252341e67/COPYING.md",
+    "math": true,
+    "notes": "dialect: mdBook + KaTeX ($…$, $$…$$)"
+  },
+  {
+    "path": "md/hugo-docs/content--en--content-management--mathematics.md",
+    "format": "md",
+    "source": "Hugo documentation",
+    "source_url": "https://github.com/gohugoio/hugoDocs/blob/6784c2133f08ebaf992b4c3241c35f90e663396f/content/en/content-management/mathematics.md",
+    "licence": "Apache-2.0",
+    "licence_evidence": "https://github.com/gohugoio/hugoDocs/blob/6784c2133f08ebaf992b4c3241c35f90e663396f/content/LICENSE.md",
+    "math": true,
+    "notes": "dialect: Hugo/Goldmark; Hugo passthrough math delimiters, shortcodes"
+  },
+  {
+    "path": "md/ichunyu/content--posts--math--quaternion.md",
+    "format": "md",
+    "source": "iChunyu blog (Hugo)",
+    "source_url": "https://github.com/iChunyu/iChunyu.github.io/blob/d18f058692e3db6d12d1a969cd817c377a4814b9/content/posts/math/quaternion/index.md",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/iChunyu/iChunyu.github.io/blob/d18f058692e3db6d12d1a969cd817c377a4814b9/LICENSE",
+    "math": true,
+    "notes": "dialect: Hugo/Goldmark with math shortcodes; Chinese; {{< math >}} shortcode wrapping $…$"
+  },
+  {
+    "path": "md/ichunyu/content--posts--signal--iir-design.md",
+    "format": "md",
+    "source": "iChunyu blog (Hugo)",
+    "source_url": "https://github.com/iChunyu/iChunyu.github.io/blob/d18f058692e3db6d12d1a969cd817c377a4814b9/content/posts/signal/iir-design/index.md",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/iChunyu/iChunyu.github.io/blob/d18f058692e3db6d12d1a969cd817c377a4814b9/LICENSE",
+    "math": true,
+    "notes": "dialect: Hugo/Goldmark with math shortcodes; Chinese"
+  },
+  {
+    "path": "md/marc-b-reynolds/_posts--2017-08-08-QuatRotMatrix.md",
+    "format": "md",
+    "source": "Marc B. Reynolds blog (Jekyll)",
+    "source_url": "https://github.com/Marc-B-Reynolds/Marc-B-Reynolds.github.io/blob/cb370d9a7f05a2a0d57f9bb2eb0ab405dae645ac/_posts/2017-08-08-QuatRotMatrix.md",
+    "licence": "Unlicense",
+    "licence_evidence": "https://github.com/Marc-B-Reynolds/Marc-B-Reynolds.github.io/blob/cb370d9a7f05a2a0d57f9bb2eb0ab405dae645ac/LICENSE",
+    "math": true,
+    "notes": "dialect: kramdown (Jekyll) + MathJax; math blog posts"
+  },
+  {
+    "path": "md/marc-b-reynolds/_posts--2019-12-10-GammaRamp.md",
+    "format": "md",
+    "source": "Marc B. Reynolds blog (Jekyll)",
+    "source_url": "https://github.com/Marc-B-Reynolds/Marc-B-Reynolds.github.io/blob/cb370d9a7f05a2a0d57f9bb2eb0ab405dae645ac/_posts/2019-12-10-GammaRamp.md",
+    "licence": "Unlicense",
+    "licence_evidence": "https://github.com/Marc-B-Reynolds/Marc-B-Reynolds.github.io/blob/cb370d9a7f05a2a0d57f9bb2eb0ab405dae645ac/LICENSE",
+    "math": true,
+    "notes": "dialect: kramdown (Jekyll) + MathJax; math blog posts"
+  },
+  {
+    "path": "md/matloff-wla/Ch1.md",
+    "format": "md",
+    "source": "Norm Matloff, Linear Algebra for Data Science (Quarto book)",
+    "source_url": "https://github.com/matloff/WackyLinearAlgebra/blob/808753ac8245676b5a36594e1e1b23d521b0473b/Ch1.qmd",
+    "licence": "CC0-1.0",
+    "licence_evidence": "https://github.com/matloff/WackyLinearAlgebra/blob/808753ac8245676b5a36594e1e1b23d521b0473b/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto; R chunks, callouts, $$ math, shortcodes {{< pagebreak >}}; original extension .qmd"
+  },
+  {
+    "path": "md/matloff-wla/Projections.md",
+    "format": "md",
+    "source": "Norm Matloff, Linear Algebra for Data Science (Quarto book)",
+    "source_url": "https://github.com/matloff/WackyLinearAlgebra/blob/808753ac8245676b5a36594e1e1b23d521b0473b/Projections.qmd",
+    "licence": "CC0-1.0",
+    "licence_evidence": "https://github.com/matloff/WackyLinearAlgebra/blob/808753ac8245676b5a36594e1e1b23d521b0473b/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto; original extension .qmd"
+  },
+  {
+    "path": "md/mdbook/guide--src--format--mathjax.md",
+    "format": "md",
+    "source": "mdBook guide (Rust project)",
+    "source_url": "https://github.com/rust-lang/mdBook/blob/22cce19e14eecd3a4695a84d4173f994d739c3d2/guide/src/format/mathjax.md",
+    "licence": "MPL-2.0",
+    "licence_evidence": "https://github.com/rust-lang/mdBook/blob/22cce19e14eecd3a4695a84d4173f994d739c3d2/LICENSE",
+    "math": true,
+    "notes": "dialect: mdBook MathJax; documents mdBook's \\\\( \\\\[ escaping rules"
+  },
+  {
+    "path": "md/pandoc/MANUAL.md",
+    "format": "md",
+    "source": "Pandoc User's Guide (John MacFarlane)",
+    "source_url": "https://github.com/jgm/pandoc/blob/1c81b5196430aa7d520f990b13d45a6901e38802/MANUAL.txt",
+    "licence": "GPL-2.0-or-later",
+    "licence_evidence": "https://github.com/jgm/pandoc/blob/1c81b5196430aa7d520f990b13d45a6901e38802/README.md",
+    "math": true,
+    "notes": "dialect: Pandoc Markdown; full Pandoc manual (~300 KB): every Pandoc Markdown extension incl. tex_math_dollars, raw_tex, fenced divs, footnotes, tables; original extension .txt"
+  },
+  {
+    "path": "md/quarto-cli/tests--docs--crossrefs--all.md",
+    "format": "md",
+    "source": "Quarto CLI test documents (Posit)",
+    "source_url": "https://github.com/quarto-dev/quarto-cli/blob/04e334159fc4651f8524814352fc194ce7d54217/tests/docs/crossrefs/all.qmd",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/quarto-dev/quarto-cli/blob/04e334159fc4651f8524814352fc194ce7d54217/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto (Pandoc + crossref divs); test fixture with _quarto test metadata; fig/tbl/eq/thm cross-refs; original extension .qmd"
+  },
+  {
+    "path": "md/quarto-cli/tests--docs--smoke-all--2023--01--31--asciidoc-theorems.md",
+    "format": "md",
+    "source": "Quarto CLI test documents (Posit)",
+    "source_url": "https://github.com/quarto-dev/quarto-cli/blob/04e334159fc4651f8524814352fc194ce7d54217/tests/docs/smoke-all/2023/01/31/asciidoc-theorems.qmd",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/quarto-dev/quarto-cli/blob/04e334159fc4651f8524814352fc194ce7d54217/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto (Pandoc + crossref divs); test fixture with _quarto test metadata; all theorem-like types ::: {#thm-…} {#lem-…} {#cor-…}, proofs; original extension .qmd"
+  },
+  {
+    "path": "md/quarto-cli/tests--docs--smoke-all--crossrefs--equations--equations-alt.md",
+    "format": "md",
+    "source": "Quarto CLI test documents (Posit)",
+    "source_url": "https://github.com/quarto-dev/quarto-cli/blob/04e334159fc4651f8524814352fc194ce7d54217/tests/docs/smoke-all/crossrefs/equations/equations-alt.qmd",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/quarto-dev/quarto-cli/blob/04e334159fc4651f8524814352fc194ce7d54217/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto (Pandoc + crossref divs); test fixture with _quarto test metadata; $$ … $$ {#eq-…} and @eq- refs; original extension .qmd"
+  },
+  {
+    "path": "md/quarto-cli/tests--docs--smoke-all--crossrefs--theorem--theorem-1.md",
+    "format": "md",
+    "source": "Quarto CLI test documents (Posit)",
+    "source_url": "https://github.com/quarto-dev/quarto-cli/blob/04e334159fc4651f8524814352fc194ce7d54217/tests/docs/smoke-all/crossrefs/theorem/theorem-1.qmd",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/quarto-dev/quarto-cli/blob/04e334159fc4651f8524814352fc194ce7d54217/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto (Pandoc + crossref divs); test fixture with _quarto test metadata; ::: {#thm-…} with @thm- ref; original extension .qmd"
+  },
+  {
+    "path": "md/schcs-algebra/AlgebraLinearI--02_alglin1.md",
+    "format": "md",
+    "source": "Csaba Schneider, AlgebraNotesPt (Quarto lecture notes)",
+    "source_url": "https://github.com/schcs/AlgebraNotesPt/blob/a80fd604223d439c3aa12148d9d8c9d404a38dee/AlgebraLinearI/02_alglin1.qmd",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/schcs/AlgebraNotesPt/blob/a80fd604223d439c3aa12148d9d8c9d404a38dee/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto; Portuguese; :::{#def-} :::{#thm-} unnamed theorem divs, custom macros \\R \\ul; original extension .qmd"
+  },
+  {
+    "path": "md/schcs-algebra/AlgebraLinearII--tensor.md",
+    "format": "md",
+    "source": "Csaba Schneider, AlgebraNotesPt (Quarto lecture notes)",
+    "source_url": "https://github.com/schcs/AlgebraNotesPt/blob/a80fd604223d439c3aa12148d9d8c9d404a38dee/AlgebraLinearII/tensor.qmd",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/schcs/AlgebraNotesPt/blob/a80fd604223d439c3aa12148d9d8c9d404a38dee/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto; Portuguese; tensor products; original extension .qmd"
+  },
+  {
+    "path": "md/schcs-algebra/GruposECorpos--fieldauts.md",
+    "format": "md",
+    "source": "Csaba Schneider, AlgebraNotesPt (Quarto lecture notes)",
+    "source_url": "https://github.com/schcs/AlgebraNotesPt/blob/a80fd604223d439c3aa12148d9d8c9d404a38dee/GruposECorpos/fieldauts.qmd",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/schcs/AlgebraNotesPt/blob/a80fd604223d439c3aa12148d9d8c9d404a38dee/LICENSE",
+    "math": true,
+    "notes": "dialect: quarto; Portuguese; Galois theory; original extension .qmd"
+  },
+  {
+    "path": "md/sphinx-proof/docs--source--syntax.md",
+    "format": "md",
+    "source": "sphinx-proof documentation (Executable Books)",
+    "source_url": "https://github.com/executablebooks/sphinx-proof/blob/d1113a8299fc9ec4abbf8e032d8097642d96fb65/docs/source/syntax.md",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/executablebooks/sphinx-proof/blob/d1113a8299fc9ec4abbf8e032d8097642d96fb65/LICENSE",
+    "math": true,
+    "notes": "dialect: MyST Markdown; ```{prf:theorem} … :label: …``` directives, {prf:ref}, proofs, lemmas"
+  },
+  {
+    "path": "org/agarbuno-ae/notas--02-regresion.org",
+    "format": "org",
+    "source": "Alfredo Garbuno Iñigo, Aprendizaje Estadístico course notes (ITAM)",
+    "source_url": "https://github.com/agarbuno/aprendizaje-estadistico/blob/b4eea7cccb14e601175da731c55606a2936aaed3/notas/02-regresion.org",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/agarbuno/aprendizaje-estadistico/blob/b4eea7cccb14e601175da731c55606a2936aaed3/LICENSE",
+    "math": true,
+    "notes": "Spanish; math; math; course notes under repo-wide MIT LICENSE"
+  },
+  {
+    "path": "org/agarbuno-ae/notas--05-regularizacion.org",
+    "format": "org",
+    "source": "Alfredo Garbuno Iñigo, Aprendizaje Estadístico course notes (ITAM)",
+    "source_url": "https://github.com/agarbuno/aprendizaje-estadistico/blob/b4eea7cccb14e601175da731c55606a2936aaed3/notas/05-regularizacion.org",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/agarbuno/aprendizaje-estadistico/blob/b4eea7cccb14e601175da731c55606a2936aaed3/LICENSE",
+    "math": true,
+    "notes": "Spanish; LATEX_HEADER macros, NOTES special block, R babel, math; math; course notes under repo-wide MIT LICENSE"
+  },
+  {
+    "path": "org/alessandrostr95/org--AR--04.org",
+    "format": "org",
+    "source": "Alessandro Straziota, Appunti Magistrale (lecture notes)",
+    "source_url": "https://github.com/Alessandrostr95/Appunti-Magistrale/blob/65d28499779f6407c46e029b9f44f67d45d01bba/org/AR/04.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/Alessandrostr95/Appunti-Magistrale/blob/65d28499779f6407c46e029b9f44f67d45d01bba/LICENSE",
+    "math": true,
+    "notes": "Italian; math; math"
+  },
+  {
+    "path": "org/alessandrostr95/org--CP2--markov_chains.org",
+    "format": "org",
+    "source": "Alessandro Straziota, Appunti Magistrale (lecture notes)",
+    "source_url": "https://github.com/Alessandrostr95/Appunti-Magistrale/blob/65d28499779f6407c46e029b9f44f67d45d01bba/org/CP2/markov_chains.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/Alessandrostr95/Appunti-Magistrale/blob/65d28499779f6407c46e029b9f44f67d45d01bba/LICENSE",
+    "math": true,
+    "notes": "Italian; #+NAME on equation, inline \\( \\) and $; math"
+  },
+  {
+    "path": "org/alessandrostr95/org-template--appunti.org",
+    "format": "org",
+    "source": "Alessandro Straziota, Appunti Magistrale (lecture notes)",
+    "source_url": "https://github.com/Alessandrostr95/Appunti-Magistrale/blob/65d28499779f6407c46e029b9f44f67d45d01bba/org-template/appunti.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/Alessandrostr95/Appunti-Magistrale/blob/65d28499779f6407c46e029b9f44f67d45d01bba/LICENSE",
+    "math": true,
+    "notes": "SETUPFILE target, custom #+teacher keyword; math"
+  },
+  {
+    "path": "org/alexforsale/content-org--emacs-vertico--emacs-vertico.org",
+    "format": "org",
+    "source": "Kristian Alexander P, alexforsale.github.io (ox-hugo)",
+    "source_url": "https://github.com/alexforsale/alexforsale.github.io/blob/ab2f515bcdd66c1d207f2a633afb728387bfafc2/content-org/emacs-vertico/emacs-vertico.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/alexforsale/alexforsale.github.io/blob/ab2f515bcdd66c1d207f2a633afb728387bfafc2/LICENSE.md",
+    "math": true,
+    "notes": "repo-wide GPL-3.0 LICENSE.md, no version-or-later notice"
+  },
+  {
+    "path": "org/alexforsale/content-org--learning-rust--learning-rust.org",
+    "format": "org",
+    "source": "Kristian Alexander P, alexforsale.github.io (ox-hugo)",
+    "source_url": "https://github.com/alexforsale/alexforsale.github.io/blob/ab2f515bcdd66c1d207f2a633afb728387bfafc2/content-org/learning-rust/learning-rust.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/alexforsale/alexforsale.github.io/blob/ab2f515bcdd66c1d207f2a633afb728387bfafc2/LICENSE.md",
+    "math": false,
+    "notes": "repo-wide GPL-3.0 LICENSE.md, no version-or-later notice"
+  },
+  {
+    "path": "org/alexforsale/content-org--org-mode-workflow--org-mode-workflow.org",
+    "format": "org",
+    "source": "Kristian Alexander P, alexforsale.github.io (ox-hugo)",
+    "source_url": "https://github.com/alexforsale/alexforsale.github.io/blob/ab2f515bcdd66c1d207f2a633afb728387bfafc2/content-org/org-mode-workflow/org-mode-workflow.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/alexforsale/alexforsale.github.io/blob/ab2f515bcdd66c1d207f2a633afb728387bfafc2/LICENSE.md",
+    "math": false,
+    "notes": "Org workflow post, ox-hugo front matter; repo-wide GPL-3.0 LICENSE.md, no version-or-later notice"
+  },
+  {
+    "path": "org/denote/README.org",
+    "format": "org",
+    "source": "Denote manual (Protesilaos Stavrou)",
+    "source_url": "https://github.com/protesilaos/denote/blob/0235c24249a6ab665ecab9565bdb0ddfe76ace22/README.org",
+    "licence": "GFDL-1.3-or-later",
+    "licence_evidence": "https://github.com/protesilaos/denote/blob/0235c24249a6ab665ecab9565bdb0ddfe76ace22/README.org (COPYING section)",
+    "math": true,
+    "notes": "Denote manual: texinfo keywords, #+macro, long prose"
+  },
+  {
+    "path": "org/hamacs/ha-org.org",
+    "format": "org",
+    "source": "Howard Abrams, hamacs literate Emacs config",
+    "source_url": "https://github.com/howardabrams/hamacs/blob/d30ae9a78b91b23cf98cd840bb579af07400bcda/ha-org.org",
+    "licence": "CC0-1.0",
+    "licence_evidence": "https://github.com/howardabrams/hamacs/blob/d30ae9a78b91b23cf98cd840bb579af07400bcda/LICENSE",
+    "math": true,
+    "notes": "literate Emacs config, prose-heavy, noweb, tangle; literate config"
+  },
+  {
+    "path": "org/include-yy/posts--2020-03-19-common-linear-diff-eq-solution.org",
+    "format": "org",
+    "source": "include-yy, egh0bww1 blog (Org, custom ox-w3ctr exporter)",
+    "source_url": "https://github.com/include-yy/egh0bww1/blob/3cb799b2e4de43bb2a5668292dce5fc3098329bc/posts/2020-03-19-common-linear-diff-eq-solution/index.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/include-yy/egh0bww1/blob/3cb799b2e4de43bb2a5668292dce5fc3098329bc/README.org",
+    "math": true,
+    "notes": "Chinese; ODE math; README: posts/ and projecteuler/ are CC-BY-SA 4.0"
+  },
+  {
+    "path": "org/include-yy/posts--2021-12-01-FFT-notes.org",
+    "format": "org",
+    "source": "include-yy, egh0bww1 blog (Org, custom ox-w3ctr exporter)",
+    "source_url": "https://github.com/include-yy/egh0bww1/blob/3cb799b2e4de43bb2a5668292dce5fc3098329bc/posts/2021-12-01-FFT-notes/index.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/include-yy/egh0bww1/blob/3cb799b2e4de43bb2a5668292dce5fc3098329bc/README.org",
+    "math": true,
+    "notes": "Chinese; math-heavy FFT notes; README: posts/ and projecteuler/ are CC-BY-SA 4.0"
+  },
+  {
+    "path": "org/include-yy/posts--2022-02-01-16-emacs-abbrev.org",
+    "format": "org",
+    "source": "include-yy, egh0bww1 blog (Org, custom ox-w3ctr exporter)",
+    "source_url": "https://github.com/include-yy/egh0bww1/blob/3cb799b2e4de43bb2a5668292dce5fc3098329bc/posts/2022-02-01-16-emacs-abbrev/index.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/include-yy/egh0bww1/blob/3cb799b2e4de43bb2a5668292dce5fc3098329bc/README.org",
+    "math": false,
+    "notes": "Chinese; README: posts/ and projecteuler/ are CC-BY-SA 4.0"
+  },
+  {
+    "path": "org/include-yy/posts--2023-01-17-24-org-mode-org-macro.org",
+    "format": "org",
+    "source": "include-yy, egh0bww1 blog (Org, custom ox-w3ctr exporter)",
+    "source_url": "https://github.com/include-yy/egh0bww1/blob/3cb799b2e4de43bb2a5668292dce5fc3098329bc/posts/2023-01-17-24-org-mode-org-macro/index.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/include-yy/egh0bww1/blob/3cb799b2e4de43bb2a5668292dce5fc3098329bc/README.org",
+    "math": true,
+    "notes": "Chinese; about Org macros, many #+MACRO; README: posts/ and projecteuler/ are CC-BY-SA 4.0"
+  },
+  {
+    "path": "org/kaorubb-hoff/ch10--10-3.org",
+    "format": "org",
+    "source": "Kaoru Babasaki, Hoff exercise solutions (ox-publish site)",
+    "source_url": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/ch10/10-3.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/README.org",
+    "math": true,
+    "notes": "math"
+  },
+  {
+    "path": "org/kaorubb-hoff/ch10--10-5.org",
+    "format": "org",
+    "source": "Kaoru Babasaki, Hoff exercise solutions (ox-publish site)",
+    "source_url": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/ch10/10-5.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/README.org",
+    "math": true,
+    "notes": "julia src + math; math"
+  },
+  {
+    "path": "org/kaorubb-hoff/ch2--2-6.org",
+    "format": "org",
+    "source": "Kaoru Babasaki, Hoff exercise solutions (ox-publish site)",
+    "source_url": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/ch2/2-6.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/README.org",
+    "math": true,
+    "notes": "equation+\\label, \\eqref, aligned; math"
+  },
+  {
+    "path": "org/kaorubb-hoff/ch3--3-4.org",
+    "format": "org",
+    "source": "Kaoru Babasaki, Hoff exercise solutions (ox-publish site)",
+    "source_url": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/ch3/3-4.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/README.org",
+    "math": true,
+    "notes": "math"
+  },
+  {
+    "path": "org/kaorubb-hoff/ch6--6-2.org",
+    "format": "org",
+    "source": "Kaoru Babasaki, Hoff exercise solutions (ox-publish site)",
+    "source_url": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/ch6/6-2.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/README.org",
+    "math": true,
+    "notes": "math"
+  },
+  {
+    "path": "org/kaorubb-hoff/setup.org",
+    "format": "org",
+    "source": "Kaoru Babasaki, Hoff exercise solutions (ox-publish site)",
+    "source_url": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/setup.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/KaoruBB/Hoff_AFCBSM/blob/acc45c3a8ed2ce5db67b88cccdb0a84b3d03040d/README.org",
+    "math": false,
+    "notes": "SETUPFILE target: LATEX_HEADER, BEGIN_EXPORT latex; math"
+  },
+  {
+    "path": "org/libreim-pac/introduccion.org",
+    "format": "org",
+    "source": "LibreIM, PAC learning notes (Ignacio Cordón)",
+    "source_url": "https://github.com/libreim/PAC-learning/blob/efbbeb3f4b855b761a9cea37d064ed272c125ace/introduccion.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/libreim/PAC-learning/blob/efbbeb3f4b855b761a9cea37d064ed272c125ace/LICENSE",
+    "math": true,
+    "notes": "Spanish; LATEX_HEADER \\newtheorem, #+begin_theorem/lemma/proof, cite: links; math"
+  },
+  {
+    "path": "org/nanzhong/posts--better-email-with-mu4e.org",
+    "format": "org",
+    "source": "Nan Zhong, nanzho.ng (weblorg)",
+    "source_url": "https://github.com/nanzhong/nanzho.ng/blob/28c7b8c534034e406763e3f8957fdaa4e02cc4b3/posts/better-email-with-mu4e/index.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/nanzhong/nanzho.ng/blob/28c7b8c534034e406763e3f8957fdaa4e02cc4b3/LICENSE",
+    "math": false,
+    "notes": "blog post"
+  },
+  {
+    "path": "org/nanzhong/posts--dvorak-day-1.org",
+    "format": "org",
+    "source": "Nan Zhong, nanzho.ng (weblorg)",
+    "source_url": "https://github.com/nanzhong/nanzho.ng/blob/28c7b8c534034e406763e3f8957fdaa4e02cc4b3/posts/dvorak-day-1.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/nanzhong/nanzho.ng/blob/28c7b8c534034e406763e3f8957fdaa4e02cc4b3/LICENSE",
+    "math": false,
+    "notes": "blog post"
+  },
+  {
+    "path": "org/nanzhong/posts--typeracer-stats.org",
+    "format": "org",
+    "source": "Nan Zhong, nanzho.ng (weblorg)",
+    "source_url": "https://github.com/nanzhong/nanzho.ng/blob/28c7b8c534034e406763e3f8957fdaa4e02cc4b3/posts/typeracer-stats.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/nanzhong/nanzho.ng/blob/28c7b8c534034e406763e3f8957fdaa4e02cc4b3/LICENSE",
+    "math": false,
+    "notes": "blog post"
+  },
+  {
+    "path": "org/nanzhong/posts--why-you-should-not-ditch-your-mac-for-an-ipad-pro-for-development-yet.org",
+    "format": "org",
+    "source": "Nan Zhong, nanzho.ng (weblorg)",
+    "source_url": "https://github.com/nanzhong/nanzho.ng/blob/28c7b8c534034e406763e3f8957fdaa4e02cc4b3/posts/why-you-should-not-ditch-your-mac-for-an-ipad-pro-for-development-yet/index.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/nanzhong/nanzho.ng/blob/28c7b8c534034e406763e3f8957fdaa4e02cc4b3/LICENSE",
+    "math": false,
+    "notes": "blog post"
+  },
+  {
+    "path": "org/ncordon-dissertation/main.org",
+    "format": "org",
+    "source": "Ignacio Cordón, graduate dissertation on Markov chains",
+    "source_url": "https://github.com/ncordon/graduate-dissertation/blob/80f73dce63feafb699d752caf62b6a12830bcb94/main.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/ncordon/graduate-dissertation/blob/80f73dce63feafb699d752caf62b6a12830bcb94/LICENSE",
+    "math": true,
+    "notes": "thesis (~110 KB): ~84 theorem/lemma/proof/definition special blocks, LATEX_HEADER newtheorem; math"
+  },
+  {
+    "path": "org/org-mode-testing/attachments.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/attachments.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "attachment: links, DIR property; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/babel.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/babel.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "babel: noweb, named blocks, header args, results; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/include.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/include.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "#+INCLUDE keyword, CUSTOM_ID; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/include2.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/include2.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "target of include.org; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/link-in-heading.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/link-in-heading.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "link inside heading; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/links.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/links.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "many link types (plain, bracket, file::search, mailto, id); no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/macro-templates.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/macro-templates.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "#+MACRO definitions; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/no-heading.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/no-heading.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "document with no headings; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/normal.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/normal.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "typical file: OPTIONS, STARTUP, properties, src blocks, targets; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/ob-C-test.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/ob-C-test.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "C/C++ src blocks, tables as variables; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/ob-header-arg-defaults.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/ob-header-arg-defaults.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "#+PROPERTY header-args inheritance and += accumulation; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/ob-maxima-test.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/ob-maxima-test.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": true,
+    "notes": "maxima src blocks (math CAS); no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/org-exp.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/org-exp.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "export edge cases: comma-escaping in blocks; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/property-inheritance.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/property-inheritance.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "file-level property drawer before first heading; no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode-testing/setupfile3.org",
+    "format": "org",
+    "source": "Org mode test suite examples (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/testing/examples/setupfile3.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GPL-3.0-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/README.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'License'); https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/COPYING?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "math": false,
+    "notes": "export keywords (BIND, SELECT_TAGS, PROPERTY); no per-file header, repo-level GPL-3.0-or-later"
+  },
+  {
+    "path": "org/org-mode/org-guide.org",
+    "format": "org",
+    "source": "Org mode compact guide (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/doc/org-guide.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GFDL-1.3-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/doc/org-guide.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'Copying')",
+    "math": true,
+    "notes": "Compact guide; texinfo export conventions"
+  },
+  {
+    "path": "org/org-mode/org-manual.org",
+    "format": "org",
+    "source": "Org mode manual (GNU Org mode)",
+    "source_url": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/doc/org-manual.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d",
+    "licence": "GFDL-1.3-or-later",
+    "licence_evidence": "https://git.savannah.gnu.org/cgit/emacs/org-mode.git/plain/doc/org-manual.org?id=596a59b0f28a86d190d0f040da29256b1e90f77d (section 'Copying')",
+    "math": true,
+    "notes": "Full Org manual (~890 KB); texinfo-oriented keywords, macros {{{kbd}}}, #+cindex, description lists, attr_texinfo, LaTeX fragments"
+  },
+  {
+    "path": "org/org-ref/examples--basic.org",
+    "format": "org",
+    "source": "org-ref examples (John Kitchin)",
+    "source_url": "https://github.com/jkitchin/org-ref/blob/734b232df60fe0f1eb5567825c57c203bff8c217/examples/basic.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/jkitchin/org-ref/blob/734b232df60fe0f1eb5567825c57c203bff8c217/LICENSE",
+    "math": true,
+    "notes": "cite/ref links, equation labels; math refs"
+  },
+  {
+    "path": "org/org-ref/examples--refproc.org",
+    "format": "org",
+    "source": "org-ref examples (John Kitchin)",
+    "source_url": "https://github.com/jkitchin/org-ref/blob/734b232df60fe0f1eb5567825c57c203bff8c217/examples/refproc.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/jkitchin/org-ref/blob/734b232df60fe0f1eb5567825c57c203bff8c217/LICENSE",
+    "math": true,
+    "notes": "org-ref: theorem blocks, \\label/ref: links; math refs"
+  },
+  {
+    "path": "org/org-special-block-extras/org-special-block-extras.org",
+    "format": "org",
+    "source": "org-special-block-extras (Musa Al-hassy)",
+    "source_url": "https://github.com/alhassy/org-special-block-extras/blob/1a236c783958782a4027e29dafc1efe488f443f1/org-special-block-extras.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/alhassy/org-special-block-extras/blob/1a236c783958782a4027e29dafc1efe488f443f1/LICENSE",
+    "math": true,
+    "notes": "literate package doc (~300 KB): custom special blocks incl. theorem-like, link types"
+  },
+  {
+    "path": "org/ox-hugo/doc--ox-hugo-manual.org",
+    "format": "org",
+    "source": "ox-hugo (Kaushal Modi)",
+    "source_url": "https://github.com/kaushalmodi/ox-hugo/blob/b7dc44dc28911b9d8e3055a18deac16c3b560b03/doc/ox-hugo-manual.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/kaushalmodi/ox-hugo/blob/b7dc44dc28911b9d8e3055a18deac16c3b560b03/LICENSE",
+    "math": true,
+    "notes": "ox-hugo manual, single-file many-posts subtree export, EXPORT_* properties; repo LICENSE GPL-3.0"
+  },
+  {
+    "path": "org/ox-hugo/test--site--content-org--all-posts.org",
+    "format": "org",
+    "source": "ox-hugo (Kaushal Modi)",
+    "source_url": "https://github.com/kaushalmodi/ox-hugo/blob/b7dc44dc28911b9d8e3055a18deac16c3b560b03/test/site/content-org/all-posts.org",
+    "licence": "GPL-3.0-only",
+    "licence_evidence": "https://github.com/kaushalmodi/ox-hugo/blob/b7dc44dc28911b9d8e3055a18deac16c3b560b03/LICENSE",
+    "math": true,
+    "notes": "ox-hugo test suite: ~300 KB of every construct incl. math, footnotes, special blocks; repo LICENSE GPL-3.0"
+  },
+  {
+    "path": "org/sqrtminusone/org--2021-05-01-org-python.org",
+    "format": "org",
+    "source": "Pavel Korytov, sqrtminusone.xyz blog (ox-hugo)",
+    "source_url": "https://github.com/SqrtMinusOne/sqrtminusone.github.io/blob/39374984408a1cb4365bc677ac4befdb993d8cf9/org/2021-05-01-org-python.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/SqrtMinusOne/sqrtminusone.github.io/blob/39374984408a1cb4365bc677ac4befdb993d8cf9/README.org",
+    "math": false,
+    "notes": "babel python, results; blog post; README: contents CC-BY 4.0, theme code GPL-3.0"
+  },
+  {
+    "path": "org/sqrtminusone/org--2022-02-12-literate.org",
+    "format": "org",
+    "source": "Pavel Korytov, sqrtminusone.xyz blog (ox-hugo)",
+    "source_url": "https://github.com/SqrtMinusOne/sqrtminusone.github.io/blob/39374984408a1cb4365bc677ac4befdb993d8cf9/org/2022-02-12-literate.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/SqrtMinusOne/sqrtminusone.github.io/blob/39374984408a1cb4365bc677ac4befdb993d8cf9/README.org",
+    "math": false,
+    "notes": "literate config post; blog post; README: contents CC-BY 4.0, theme code GPL-3.0"
+  },
+  {
+    "path": "org/sqrtminusone/org--2022-05-09-pdf.org",
+    "format": "org",
+    "source": "Pavel Korytov, sqrtminusone.xyz blog (ox-hugo)",
+    "source_url": "https://github.com/SqrtMinusOne/sqrtminusone.github.io/blob/39374984408a1cb4365bc677ac4befdb993d8cf9/org/2022-05-09-pdf.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/SqrtMinusOne/sqrtminusone.github.io/blob/39374984408a1cb4365bc677ac4befdb993d8cf9/README.org",
+    "math": true,
+    "notes": "blog post; README: contents CC-BY 4.0, theme code GPL-3.0"
+  },
+  {
+    "path": "org/sqrtminusone/org--2023-01-02-gource.org",
+    "format": "org",
+    "source": "Pavel Korytov, sqrtminusone.xyz blog (ox-hugo)",
+    "source_url": "https://github.com/SqrtMinusOne/sqrtminusone.github.io/blob/39374984408a1cb4365bc677ac4befdb993d8cf9/org/2023-01-02-gource.org",
+    "licence": "CC-BY-4.0",
+    "licence_evidence": "https://github.com/SqrtMinusOne/sqrtminusone.github.io/blob/39374984408a1cb4365bc677ac4befdb993d8cf9/README.org",
+    "math": false,
+    "notes": "blog post; README: contents CC-BY 4.0, theme code GPL-3.0"
+  },
+  {
+    "path": "org/tecosaur/config.org",
+    "format": "org",
+    "source": "TEC (tecosaur), emacs-config literate config",
+    "source_url": "https://github.com/tecosaur/emacs-config/blob/24f99de77306a802885cd3d853bd61cfb473e655/config.org",
+    "licence": "MIT",
+    "licence_evidence": "https://github.com/tecosaur/emacs-config/blob/24f99de77306a802885cd3d853bd61cfb473e655/LICENSE",
+    "math": true,
+    "notes": "huge literate Doom config (~590 KB): babel, noweb, src heavy, some LaTeX; literate config"
+  },
+  {
+    "path": "org/winny/posts--2019-01-11-publishing-with-org-static-blog.org",
+    "format": "org",
+    "source": "Winston Weinert, blog.winny.tech (org-static-blog)",
+    "source_url": "https://github.com/winny-/blog.winny.tech/blob/5ac1243cb190366bed596295dcde4bd48c9bec2e/posts/2019-01-11-publishing-with-org-static-blog.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/winny-/blog.winny.tech/blob/5ac1243cb190366bed596295dcde4bd48c9bec2e/LICENSE.txt",
+    "math": false,
+    "notes": "about org-static-blog; blog post"
+  },
+  {
+    "path": "org/winny/posts--2019-11-01-track-down-basic-emacs-bugs-hangs.org",
+    "format": "org",
+    "source": "Winston Weinert, blog.winny.tech (org-static-blog)",
+    "source_url": "https://github.com/winny-/blog.winny.tech/blob/5ac1243cb190366bed596295dcde4bd48c9bec2e/posts/2019-11-01-track-down-basic-emacs-bugs-hangs.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/winny-/blog.winny.tech/blob/5ac1243cb190366bed596295dcde4bd48c9bec2e/LICENSE.txt",
+    "math": false,
+    "notes": "blog post"
+  },
+  {
+    "path": "org/winny/posts--2019-12-25-how-to-fix-early-framebuffer-problems,-or-can-i-type-my-disk-password-yet.org",
+    "format": "org",
+    "source": "Winston Weinert, blog.winny.tech (org-static-blog)",
+    "source_url": "https://github.com/winny-/blog.winny.tech/blob/5ac1243cb190366bed596295dcde4bd48c9bec2e/posts/2019-12-25-how-to-fix-early-framebuffer-problems%2C-or-can-i-type-my-disk-password-yet.org",
+    "licence": "CC-BY-SA-4.0",
+    "licence_evidence": "https://github.com/winny-/blog.winny.tech/blob/5ac1243cb190366bed596295dcde4bd48c9bec2e/LICENSE.txt",
+    "math": false,
+    "notes": "blog post"
+  },
+  {
+    "path": "org/worg/dev--org-element-api.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/dev/org-element-api.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "org-element API docs; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/dev--org-export-reference.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/dev/org-export-reference.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "exporter dev reference; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/exporters--beamer--tutorial.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/exporters/beamer/tutorial.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "beamer export; LaTeX math; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/exporters--filter-markup.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/exporters/filter-markup.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "export filters; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/exporters--koma-letter-export.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/exporters/koma-letter-export.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "#+INCLUDE with src org; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/exporters--koma-letter-new-example.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/exporters/koma-letter-new-example.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "letter; LATEX_CLASS, LATEX_HEADER; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/exporters--ox-overview.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/exporters/ox-overview.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "exporter overview table; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/index.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/index.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "front page; dynamic block, many OPTIONS; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/library-of-babel.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/library-of-babel.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "named reusable blocks; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-blog-wiki.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-blog-wiki.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "list of blogging tools; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--examples--drift.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/examples/drift.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "reproducible research doc; equations, \\label; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--examples--finances.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/examples/finances.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--examples--short-report.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/examples/short-report.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "LaTeX report via Org, \\label on sections, citations; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--header-args.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/header-args.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--how-to-use-Org-Babel-for-R.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/how-to-use-Org-Babel-for-R.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "#+INCLUDE ... example; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--intro.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/intro.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "Babel intro: many languages, :var, :results, tables; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--languages--ob-doc-LaTeX.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/languages/ob-doc-LaTeX.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "LaTeX src blocks, LATEX_HEADER; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--languages--ob-doc-gnuplot.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/languages/ob-doc-gnuplot.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--languages--ob-doc-maxima.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/languages/ob-doc-maxima.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "maxima, math output; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--languages--ob-doc-python.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/languages/ob-doc-python.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--test-for-how-to-use-Org-Babel-for-R.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/test-for-how-to-use-Org-Babel-for-R.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "include target; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--babel--uses.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/babel/uses.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--org-drill.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/org-drill.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-contrib--org-special-blocks.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-contrib/org-special-blocks.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "special blocks #+begin_theorem / #+begin_proof examples; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-faq.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-faq.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "large FAQ (160 KB); many src/example blocks, LaTeX bits, setupfile macros; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-glossary.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-glossary.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "definitions, description lists; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-hacks.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-hacks.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "large blog-like collection of hacks (155 KB), lots of elisp, some math; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-quotes.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-quotes.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "quote blocks; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-symbols.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-symbols.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "entities table (\\alpha etc.), big tables; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-syntax.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-syntax.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "Org syntax spec (prose + examples); prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--advanced-searching.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/advanced-searching.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--images-and-xhtml-export.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/images-and-xhtml-export.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "images, ATTR_HTML, setupfile macros; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--multitarget-tables.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/multitarget-tables.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "orgtbl radio tables; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--non-beamer-presentations.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/non-beamer-presentations.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-column-view-tutorial.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-column-view-tutorial.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "COLUMNS, property drawers; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-custom-agenda-commands.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-custom-agenda-commands.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-dot-diagrams.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-dot-diagrams.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "dot src blocks producing tables; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-jekyll.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-jekyll.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "Org for Jekyll blogging; front matter via BEGIN_EXPORT html; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-jsmath.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-jsmath.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "inline math, \\label in display math; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-latex-export.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-latex-export.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "LaTeX export, LATEX_HEADER, LaTeX environments; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-latex-preview.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-latex-preview.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "LaTeX fragments preview tutorial; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-lookups.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-lookups.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "table lookups; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-meeting-tasks.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-meeting-tasks.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-outside-org.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-outside-org.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-plot.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-plot.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "#+PLOT, tables; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-publish-html-tutorial.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-publish-html-tutorial.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": true,
+    "notes": "ox-publish; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-reference-guide-es.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-reference-guide-es.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "Spanish; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-spreadsheet-intro.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-spreadsheet-intro.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "tables with TBLFM formulas; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org-spreadsheet-lisp-formulas.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org-spreadsheet-lisp-formulas.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "TBLFM lisp formulas; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--org4beginners.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/org4beginners.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--orgtutorial_dto-fr.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/orgtutorial_dto-fr.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "French; non-ASCII; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--orgtutorial_dto.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/orgtutorial_dto.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--tables.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/tables.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "tables; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--tracking-habits.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/tracking-habits.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "STYLE habit, repeaters, timestamps; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/org-tutorials--weaving-a-budget.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/org-tutorials/weaving-a-budget.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "literate budget: tables, babel; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/topics--planning-timestamps.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/topics/planning-timestamps.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "SCHEDULED/DEADLINE, timestamps; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/users--rpr.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/users/rpr.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "user page; prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/worg/worg-about.org",
+    "format": "org",
+    "source": "Worg (Org-mode community wiki)",
+    "source_url": "https://git.sr.ht/~bzg/worg/blob/22fc063138eb48facd235093bb7e20fe3c53a0bd/worg-about.org",
+    "licence": "GFDL-1.3-or-later AND GPL-3.0-or-later",
+    "licence_evidence": "https://git.sr.ht/~bzg/worg/tree/22fc063138eb48facd235093bb7e20fe3c53a0bd/item/LICENSE.org",
+    "math": false,
+    "notes": "prose GFDL-1.3-or-later, code examples GPL-3.0-or-later per LICENSE.org"
+  },
+  {
+    "path": "org/zhangxingong/content--post--novice-to-expert.org",
+    "format": "org",
+    "source": "zhangxingong blog (Hugo, Org content)",
+    "source_url": "https://github.com/zhangxingong/blog/blob/9c92ccae8ec20b3dca90791c6f0fbe01731b731d/content/post/novice-to-expert.org",
+    "licence": "CC0-1.0",
+    "licence_evidence": "https://github.com/zhangxingong/blog/blob/9c92ccae8ec20b3dca90791c6f0fbe01731b731d/LICENSE",
+    "math": false,
+    "notes": "Chinese"
+  },
+  {
+    "path": "org/zhangxingong/content--post--org-mode.org",
+    "format": "org",
+    "source": "zhangxingong blog (Hugo, Org content)",
+    "source_url": "https://github.com/zhangxingong/blog/blob/9c92ccae8ec20b3dca90791c6f0fbe01731b731d/content/post/org-mode.org",
+    "licence": "CC0-1.0",
+    "licence_evidence": "https://github.com/zhangxingong/blog/blob/9c92ccae8ec20b3dca90791c6f0fbe01731b731d/LICENSE",
+    "math": false,
+    "notes": "Chinese"
+  },
+  {
+    "path": "md/eyuan-me/blog--extending_c_stdlib.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/blog/extending_c_stdlib.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site blog entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/blog--so_here_we_go_again.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/blog/so_here_we_go_again.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site blog entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--Pew.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/Pew.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--RayRust.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/RayRust.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--Ruskey.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/Ruskey.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--emaclaude.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/emaclaude.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--hrust.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/hrust.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--linear-app.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/linear-app.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--lrle.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/lrle.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--mra.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/mra.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--rego.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/rego.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--sequel.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/sequel.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--shaderview.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/shaderview.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--shell.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/shell.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  },
+  {
+    "path": "md/eyuan-me/project--ylib.md",
+    "format": "md",
+    "source": "eyuan.me (the Author's own writing)",
+    "source_url": "https://github.com/yuann3/eyuan.me/blob/6567e0162330fdf6effa97b5e61353d32ab17a50/src/content/project/ylib.md",
+    "licence": "MIT OR Apache-2.0",
+    "licence_evidence": "https://github.com/yuann3/yuanme/issues/14 (the Author's grant for this corpus; the eyuan.me repo itself is GPL-3.0)",
+    "math": false,
+    "notes": "Reference site project entry; Astro content-collection front matter"
+  }
+]

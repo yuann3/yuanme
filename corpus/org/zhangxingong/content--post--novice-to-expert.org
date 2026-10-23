@@ -1,0 +1,202 @@
+#+title: 思维锻炼
+#+DATE: 2023-08-30T16:07:58+0800
+#+author: zhangxingong
+#+SLUG: novice-to-expert
+#+HUGO_AUTO_SET_LASTMOD: t
+#+HUGO_CUSTOM_FRONT_MATTER: :toc true
+#+categories: subject
+#+tags: 学习 笔记
+#+weight: 2001
+#+draft: false
+#+STARTUP: noptag
+#+STARTUP: logdrawer
+#+STARTUP: indent
+#+STARTUP: overview
+#+STARTUP: showeverything
+
+* 新手与专家思维区别
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:11:26
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-11-26_3_screenshot.png]]
+
+
+》》从总体出发
+
+
+* Stage 1: Novice
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:17:14
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-17-14_3_screenshot.png]]
+
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:13:55
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-13-55_3_screenshot.png]]
+
+** 特点
+
+#+begin_quote
+Novices don’t particularly want to\\
+learn; they just want to accomplish an immediate goal. They do\\
+not know how to respond to mistakes and so are fairly vulnerable\\
+to confusion when things go awry.
+#+end_quote
+
+
+* Stage 2: Improved Beginner
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:16:33
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-16-33_3_screenshot.png]]
+
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:18:25
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-18-25_3_screenshot.png]]
+
+
+
+* Stage 3: Competent
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:19:13
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-19-13_3_screenshot.png]]
+
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:19:39
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-19-39_3_screenshot.png]]
+
+* Stage 4: Proficient
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:20:18
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-20-18_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:20:58
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-20-58_3_screenshot.png]]
+
+
+* Stage 5: Expert
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:29:52
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-29-52_3_screenshot.png]]
+
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:21:41
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-21-41_3_screenshot.png]]
+
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:22:15
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-22-15_3_screenshot.png]]
+
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:30:41
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-30-41_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:32:38
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-32-38_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:33:13
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-33-13_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:33:55
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-33-55_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:34:47
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-34-47_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:35:23
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-35-23_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:36:05
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-36-05_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:36:50
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-36-50_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:37:16
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-37-16_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:40:47
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-40-47_3_screenshot.png]]
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:50:36
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-50-36_3_screenshot.png]]
+
+#+begin_quote
+Software isn’t designed in an IDE or other tool. It’s imagined and\\
+created in our heads.
+#+end_quote
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:51:31
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-51-31_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:51:58
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-51-58_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:53:39
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-53-39_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:54:06
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-54-06_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:54:28
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-54-28_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:54:51
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-54-51_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:54:58
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-54-58_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:56:28
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-56-28_3_screenshot.png]]
+
+#+begin_quote
+“I was only following orders” did not work in WWII,\\
+it did not work for the nursing profession, and it does not work in\\
+software development.
+#+end_quote
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:57:33
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-57-33_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 16:59:05
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-59-05_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 17:00:31
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/17-00-31_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 17:00:58
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/17-00-58_3_screenshot.png]]
+
+
+#+DOWNLOADED: screenshot @ 2023-08-30 17:01:25
+[[https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/17-01-25_3_screenshot.png]]
+
