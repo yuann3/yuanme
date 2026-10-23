@@ -12,13 +12,17 @@
 //! fails with the opener that ran away.
 //!
 //! Calibrated on an M4 Max, in release (#48):
-//! - The corpus needs at most 20.5 units a byte in a large file (ox-hugo's
-//!   manual) and 9,656 in a small one (worg's babel finances example); the
-//!   limits below are 1.8 and 2.1 times that.
-//! - Inputs that run out spend 7–23 ns a unit, among them every slow input
-//!   the fuzz targets found, so running out takes at most about 0.8 µs a
-//!   byte plus 0.5 ms. An ubuntu-latest GitHub runner parses at about the
-//!   same speed, which fuzz CI checks.
+//! - The corpus needs at most 20.5 units a byte, in ox-hugo's manual (the
+//!   next file needs 15.9), and no file needs more than 72 units on top of
+//!   36 a byte. The limits below are 1.75 times the first and far above the
+//!   second.
+//! - Inputs that run out spend up to about 20 ns a unit, among them every
+//!   slow input the fuzz targets found, so running out takes at most about
+//!   0.7 µs a byte plus 0.2 ms there.
+//! - An ubuntu-latest GitHub runner parses 2 to 2.7 times slower, so there
+//!   running out can take longer than the bound. Fuzz CI scales the bound
+//!   by how much slower the machine parses a reference document; see
+//!   `slowdown` in the fuzz crate.
 //!
 //! The limits can't sit much further above the corpus: its slowest file
 //! already parses at a quarter of the bound.
@@ -34,7 +38,7 @@ use crate::error::CustomError;
 /// Fuel per byte of input.
 const PER_BYTE: u64 = 36;
 /// Fuel every parse gets on top, so a small input has room.
-const BASE: u64 = 20_000;
+const BASE: u64 = 10_000;
 
 /// Spent per exit matcher run.
 pub(crate) const EXIT_MATCHER: u64 = 2;
