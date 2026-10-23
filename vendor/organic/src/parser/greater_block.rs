@@ -39,10 +39,6 @@ use crate::types::Keyword;
 use crate::types::QuoteBlock;
 use crate::types::SpecialBlock;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn greater_block<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     input: OrgSource<'s>,
@@ -87,10 +83,6 @@ where
     Ok((remaining, element))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 fn center_block<'b, 'g, 'r, 's, AK>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -122,10 +114,6 @@ where
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 fn quote_block<'b, 'g, 'r, 's, AK>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -182,10 +170,6 @@ where
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 fn _special_block<'c, 'b, 'g, 'r, 's, AK>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -230,10 +214,6 @@ struct GreaterBlockBody<'s> {
     post_blank: Option<&'s str>,
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn greater_block_body<'c, 'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -301,12 +281,10 @@ fn greater_block_body<'c, 'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn name<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     is_not(" \t\r\n")(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn parameters<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     recognize(many_till(anychar, peek(tuple((space0, line_ending)))))(input)
 }
@@ -315,10 +293,6 @@ fn greater_block_end(name: &str) -> impl ContextMatcher + '_ {
     move |context, input: OrgSource<'_>| _greater_block_end(context, input, name)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _greater_block_end<'b, 'g, 'r, 's, 'c>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -335,11 +309,7 @@ fn _greater_block_end<'b, 'g, 'r, 's, 'c>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
-pub(crate) fn leading_blank_lines_end<'b, 'g, 'r, 's, 'c>(
+pub(crate) fn leading_blank_lines_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {

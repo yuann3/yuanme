@@ -28,10 +28,6 @@ use crate::parser::util::WORD_CONSTITUENT_CHARACTERS;
 use crate::types::CitationReference;
 use crate::types::Object;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn citation_reference<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -56,10 +52,6 @@ pub(crate) fn citation_reference<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn citation_reference_key<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -83,10 +75,6 @@ pub(crate) fn citation_reference_key<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn key_prefix<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -107,10 +95,6 @@ fn key_prefix<'b, 'g, 'r, 's>(
     Ok((remaining, children))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn key_suffix<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -135,10 +119,6 @@ fn key_prefix_end(starting_bracket_depth: BracketDepth) -> impl ContextMatcher {
     move |context, input: OrgSource<'_>| _key_prefix_end(context, input, starting_bracket_depth)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _key_prefix_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -165,10 +145,6 @@ fn key_suffix_end(starting_bracket_depth: BracketDepth) -> impl ContextMatcher {
     move |context, input: OrgSource<'_>| _key_suffix_end(context, input, starting_bracket_depth)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _key_suffix_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

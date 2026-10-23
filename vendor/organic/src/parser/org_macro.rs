@@ -19,10 +19,6 @@ use crate::parser::util::exit_matcher_parser;
 use crate::parser::util::get_consumed;
 use crate::types::OrgMacro;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn org_macro<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -52,10 +48,6 @@ pub(crate) fn org_macro<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn org_macro_name<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -68,10 +60,6 @@ fn org_macro_name<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn org_macro_args<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -84,10 +72,6 @@ fn org_macro_args<'b, 'g, 'r, 's>(
     Ok((remaining, args))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn org_macro_arg<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

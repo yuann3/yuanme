@@ -22,10 +22,6 @@ use crate::parser::util::exit_matcher_parser;
 use crate::parser::util::get_consumed;
 use crate::types::LatexFragment;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn latex_fragment<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -52,10 +48,6 @@ pub(crate) fn latex_fragment<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn raw_latex_fragment<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -68,10 +60,6 @@ fn raw_latex_fragment<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn name<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -79,10 +67,6 @@ fn name<'b, 'g, 'r, 's>(
     alpha1(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn brackets<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -114,10 +98,6 @@ fn brackets<'b, 'g, 'r, 's>(
     Ok((remaining, body))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn escaped_parenthesis_fragment<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -136,10 +116,6 @@ fn escaped_parenthesis_fragment<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn escaped_bracket_fragment<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -158,10 +134,6 @@ fn escaped_bracket_fragment<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn double_dollar_fragment<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -181,10 +153,6 @@ fn double_dollar_fragment<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn dollar_char_fragment<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -199,10 +167,6 @@ fn dollar_char_fragment<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn pre<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -216,10 +180,6 @@ fn pre<'b, 'g, 'r, 's>(
     Ok((input, ()))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn post<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -231,10 +191,6 @@ fn post<'b, 'g, 'r, 's>(
     Ok((remaining, ()))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn bordered_dollar_fragment<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -260,10 +216,6 @@ fn bordered_dollar_fragment<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn open_border<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -271,10 +223,6 @@ fn open_border<'b, 'g, 'r, 's>(
     recognize(verify(none_of(".,;$"), |c| !c.is_whitespace()))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn close_border<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -282,10 +230,8 @@ fn close_border<'b, 'g, 'r, 's>(
     let preceding_character = input.get_preceding_character();
     match preceding_character {
         Some(c) if !c.is_whitespace() && !".,;$".contains(c) => Ok((input, ())),
-        _ => {
-            return Err(nom::Err::Error(CustomError::Static(
-                "Not a valid pre character for dollar char fragment.",
-            )));
-        }
+        _ => Err(nom::Err::Error(CustomError::Static(
+            "Not a valid pre character for dollar char fragment.",
+        ))),
     }
 }

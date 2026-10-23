@@ -25,10 +25,6 @@ use crate::parser::util::immediate_in_section;
 use crate::parser::util::start_of_line;
 use crate::types::Comment;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn comment<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -72,10 +68,6 @@ pub(crate) fn comment<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn comment_line<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -90,7 +82,6 @@ fn comment_line<'b, 'g, 'r, 's>(
     Ok((remaining, value))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn detect_comment<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ()> {
     tuple((
         start_of_line,

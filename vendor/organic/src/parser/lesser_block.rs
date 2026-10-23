@@ -47,10 +47,6 @@ use crate::types::SrcBlock;
 use crate::types::SwitchNumberLines;
 use crate::types::VerseBlock;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn verse_block<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -120,10 +116,6 @@ where
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn comment_block<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -169,10 +161,6 @@ where
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn example_block<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -251,10 +239,6 @@ where
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn export_block<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -308,10 +292,6 @@ where
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn src_block<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -388,12 +368,10 @@ where
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn name<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     is_not(" \t\r\n")(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn data<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     is_not("\r\n")(input)
 }
@@ -404,10 +382,6 @@ fn lesser_block_end(current_name: &str) -> impl ContextMatcher + '_ {
     move |context, input: OrgSource<'_>| _lesser_block_end(context, input, current_name)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _lesser_block_end<'b, 'g, 'r, 's, 'c>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -433,10 +407,6 @@ const fn lesser_block_begin(current_name: &str) -> impl ContextMatcher + '_ {
     move |context, input: OrgSource<'_>| _lesser_block_begin(context, input, current_name)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _lesser_block_begin<'b, 'g, 'r, 's, 'c>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -471,7 +441,6 @@ enum SwitchState {
     LabelFormat,
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn src_parameters<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     verify(
         recognize(many_till(anychar, peek(tuple((space0, line_ending))))),
@@ -479,7 +448,6 @@ fn src_parameters<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>>
     )(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn src_switches<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ExampleSrcSwitches<'s>> {
     let (remaining, leading_spaces) = space1(input)?;
     let offset = Into::<&str>::into(leading_spaces).chars().count();
@@ -488,7 +456,6 @@ fn src_switches<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ExampleSrcSwitch
     example_src_switches(true, offset)(remaining)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn example_switches<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ExampleSrcSwitches<'s>> {
     let (remaining, switches) = example_src_switches(false, 0)(input)?;
     Ok((remaining, switches))
@@ -501,7 +468,6 @@ fn example_src_switches(
     move |input| _example_src_switches(input, stop_at_parameters, additional_char_offset)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn _example_src_switches<'s>(
     input: OrgSource<'s>,
     stop_at_parameters: bool,
@@ -652,7 +618,6 @@ fn _example_src_switches<'s>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn switch_word<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     alt((
         map(

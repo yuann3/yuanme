@@ -53,10 +53,6 @@ use crate::types::PlainListItemCounter;
 use crate::types::PlainListItemPreBlank;
 use crate::types::PlainListType;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, _affiliated_keywords))
-)]
 pub(crate) fn detect_plain_list<'b, 'g, 'r, 's, AK>(
     _affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -81,13 +77,9 @@ where
     {
         return Ok((input, ()));
     }
-    return Err(nom::Err::Error(CustomError::Static("No element detected.")));
+    Err(nom::Err::Error(CustomError::Static("No element detected.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn detect_not_plain_list_item_indent<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -121,13 +113,9 @@ pub(crate) fn detect_not_plain_list_item_indent<'b, 'g, 'r, 's>(
     {
         return Ok((input, indent));
     }
-    return Err(nom::Err::Error(CustomError::Static("No element detected.")));
+    Err(nom::Err::Error(CustomError::Static("No element detected.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn plain_list<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -217,10 +205,6 @@ where
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn plain_list_item<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -322,7 +306,7 @@ fn plain_list_item<'b, 'g, 'r, 's>(
         maybe_consume_trailing_whitespace_if_not_exiting(&final_whitespace_context, remaining)?;
 
     let source = get_consumed(input, remaining);
-    return Ok((
+    Ok((
         remaining,
         (
             list_type,
@@ -348,7 +332,7 @@ fn plain_list_item<'b, 'g, 'r, 's>(
                 post_blank: post_blank.map(Into::<&str>::into),
             },
         ),
-    ));
+    ))
 }
 
 #[derive(Debug)]
@@ -357,10 +341,6 @@ enum BulletType {
     Unordered,
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn bullet<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -384,10 +364,6 @@ fn bullet<'b, 'g, 'r, 's>(
     Ok((remaining, (bullet_type, with_space)))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn counter<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -404,7 +380,6 @@ fn counter<'b, 'g, 'r, 's>(
     }
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn counter_set_value<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PlainListItemCounter> {
     alt((
         map(
@@ -433,10 +408,6 @@ const fn final_item_whitespace_cutoff(indent_level: IndentationLevel) -> impl Co
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn impl_final_item_whitespace_cutoff<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -473,10 +444,6 @@ fn impl_final_item_whitespace_cutoff<'b, 'g, 'r, 's>(
     )))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn plain_list_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -496,10 +463,6 @@ const fn plain_list_item_end(indent_level: IndentationLevel) -> impl ContextMatc
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, line_indented_lte_matcher))
-)]
 fn _plain_list_item_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -516,10 +479,6 @@ const fn line_indented_lte(indent_level: IndentationLevel) -> impl ContextMatche
     move |context, input: OrgSource<'_>| _line_indented_lte(context, input, indent_level)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _line_indented_lte<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -537,10 +496,6 @@ fn _line_indented_lte<'b, 'g, 'r, 's>(
     Ok(matched)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn item_tag<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -562,10 +517,6 @@ fn item_tag<'b, 'g, 'r, 's>(
     Ok((remaining, children))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn item_tag_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -573,7 +524,6 @@ fn item_tag_end<'b, 'g, 'r, 's>(
     alt((item_tag_divider, line_ending))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn item_tag_divider<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     recognize(tuple((
         one_of(" \t"),
@@ -588,10 +538,6 @@ fn item_tag_divider<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s
     )))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn item_tag_post_gap<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -612,7 +558,6 @@ fn item_tag_post_gap<'b, 'g, 'r, 's>(
     )(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn item_checkbox<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, (CheckboxType, OrgSource<'s>)> {
     alt((
         map(
@@ -624,10 +569,6 @@ fn item_checkbox<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, (CheckboxType, 
     ))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn detect_contentless_item_contents<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

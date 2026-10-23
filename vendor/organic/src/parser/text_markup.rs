@@ -16,8 +16,6 @@ use nom::combinator::verify;
 use nom::multi::many1;
 use nom::multi::many_till;
 use nom::sequence::terminated;
-#[cfg(feature = "tracing")]
-use tracing::span;
 
 use super::object_parser::standard_set_object;
 use super::org_source::OrgSource;
@@ -49,10 +47,6 @@ use crate::types::StrikeThrough;
 use crate::types::Underline;
 use crate::types::Verbatim;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn text_markup<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -70,10 +64,6 @@ pub(crate) fn text_markup<'b, 'g, 'r, 's>(
     ))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn bold<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -91,10 +81,6 @@ fn bold<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn italic<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -112,10 +98,6 @@ fn italic<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn underline<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -133,10 +115,6 @@ fn underline<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn strike_through<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -154,10 +132,6 @@ fn strike_through<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn verbatim<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -174,10 +148,6 @@ fn verbatim<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn code<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -194,27 +164,24 @@ fn code<'b, 'g, 'r, 's>(
     ))
 }
 
+/// The opening marker, the contents and the closing marker.
+type Markup<'s> = (OrgSource<'s>, Vec<Object<'s>>, Option<OrgSource<'s>>);
+
 fn text_markup_object(
     marker_symbol: &str,
 ) -> impl for<'b, 'g, 'r, 's> Fn(
     RefContext<'b, 'g, 'r, 's>,
     OrgSource<'s>,
-) -> Res<
-    OrgSource<'s>,
-    (OrgSource<'s>, Vec<Object<'s>>, Option<OrgSource<'s>>),
-> + '_ {
+) -> Res<OrgSource<'s>, Markup<'s>>
+       + '_ {
     move |context, input: OrgSource<'_>| _text_markup_object(context, input, marker_symbol)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _text_markup_object<'b, 'g, 'r, 's, 'c>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
     marker_symbol: &'c str,
-) -> Res<OrgSource<'s>, (OrgSource<'s>, Vec<Object<'s>>, Option<OrgSource<'s>>)> {
+) -> Res<OrgSource<'s>, Markup<'s>> {
     let (remaining, _) = pre(context, input)?;
     let (remaining, open) = tag(marker_symbol)(remaining)?;
     let (remaining, _peek_not_whitespace) =
@@ -242,10 +209,6 @@ fn _text_markup_object<'b, 'g, 'r, 's, 'c>(
     ))(remaining)?;
 
     {
-        #[cfg(feature = "tracing")]
-        let span = span!(tracing::Level::DEBUG, "Checking parent exit.");
-        #[cfg(feature = "tracing")]
-        let _enter = span.enter();
         if exit_matcher_parser(context, remaining).is_ok() {
             return Err(nom::Err::Error(CustomError::Static(
                 "Parent exit matcher is triggering.",
@@ -269,10 +232,6 @@ fn text_markup_string(
     move |context, input: OrgSource<'_>| _text_markup_string(context, input, marker_symbol)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _text_markup_string<'b, 'g, 'r, 's, 'c>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -298,10 +257,6 @@ fn _text_markup_string<'b, 'g, 'r, 's, 'c>(
     ))(remaining)?;
 
     {
-        #[cfg(feature = "tracing")]
-        let span = span!(tracing::Level::DEBUG, "Checking parent exit.");
-        #[cfg(feature = "tracing")]
-        let _enter = span.enter();
         if exit_matcher_parser(context, remaining).is_ok() {
             return Err(nom::Err::Error(CustomError::Static(
                 "Parent exit matcher is triggering.",
@@ -315,10 +270,6 @@ fn _text_markup_string<'b, 'g, 'r, 's, 'c>(
     Ok((remaining, (contents, post_blank)))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn pre<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -343,10 +294,6 @@ fn pre<'b, 'g, 'r, 's>(
     Ok((input, ()))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn post<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -362,10 +309,6 @@ fn text_markup_end(marker_symbol: &str, contents_start_offset: usize) -> impl Co
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _text_markup_end<'b, 'g, 'r, 's, 'c>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -387,10 +330,6 @@ fn _text_markup_end<'b, 'g, 'r, 's, 'c>(
 }
 
 impl<'x> RematchObject<'x> for Bold<'x> {
-    #[cfg_attr(
-        feature = "tracing",
-        tracing::instrument(ret, level = "debug", skip(_context))
-    )]
     fn rematch_object<'b, 'g, 'r, 's>(
         &'x self,
         _context: RefContext<'b, 'g, 'r, 's>,
@@ -412,10 +351,6 @@ impl<'x> RematchObject<'x> for Bold<'x> {
 }
 
 impl<'x> RematchObject<'x> for Italic<'x> {
-    #[cfg_attr(
-        feature = "tracing",
-        tracing::instrument(ret, level = "debug", skip(_context))
-    )]
     fn rematch_object<'b, 'g, 'r, 's>(
         &'x self,
         _context: RefContext<'b, 'g, 'r, 's>,
@@ -437,10 +372,6 @@ impl<'x> RematchObject<'x> for Italic<'x> {
 }
 
 impl<'x> RematchObject<'x> for Underline<'x> {
-    #[cfg_attr(
-        feature = "tracing",
-        tracing::instrument(ret, level = "debug", skip(_context))
-    )]
     fn rematch_object<'b, 'g, 'r, 's>(
         &'x self,
         _context: RefContext<'b, 'g, 'r, 's>,
@@ -462,10 +393,6 @@ impl<'x> RematchObject<'x> for Underline<'x> {
 }
 
 impl<'x> RematchObject<'x> for StrikeThrough<'x> {
-    #[cfg_attr(
-        feature = "tracing",
-        tracing::instrument(ret, level = "debug", skip(_context))
-    )]
     fn rematch_object<'b, 'g, 'r, 's>(
         &'x self,
         _context: RefContext<'b, 'g, 'r, 's>,
@@ -486,16 +413,12 @@ impl<'x> RematchObject<'x> for StrikeThrough<'x> {
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _rematch_text_markup_object<'b, 'g, 'r, 's, 'x>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
     marker_symbol: &'static str,
     original_match_children: &'x Vec<Object<'x>>,
-) -> Res<OrgSource<'s>, (OrgSource<'s>, Vec<Object<'s>>, Option<OrgSource<'s>>)> {
+) -> Res<OrgSource<'s>, Markup<'s>> {
     let (remaining, _) = pre(context, input)?;
     let (remaining, open) = tag(marker_symbol)(remaining)?;
     let (remaining, _peek_not_whitespace) = peek(not(multispace1))(remaining)?;
@@ -512,10 +435,6 @@ fn _rematch_text_markup_object<'b, 'g, 'r, 's, 'x>(
         rematch_target(&parser_context, original_match_children, remaining)?;
 
     {
-        #[cfg(feature = "tracing")]
-        let span = span!(tracing::Level::DEBUG, "Checking parent exit.");
-        #[cfg(feature = "tracing")]
-        let _enter = span.enter();
         if exit_matcher_parser(context, remaining).is_ok() {
             return Err(nom::Err::Error(CustomError::Static(
                 "Parent exit matcher is triggering.",

@@ -31,7 +31,6 @@ use crate::types::AffiliatedKeywordValue;
 use crate::types::AffiliatedKeywords;
 use crate::types::Keyword;
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn affiliated_keywords<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, Vec<Keyword<'s>>> {

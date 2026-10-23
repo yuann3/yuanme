@@ -14,10 +14,6 @@ use crate::parser::util::start_of_line;
 use crate::types::DiarySexp;
 use crate::types::Keyword;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn diary_sexp<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -48,10 +44,6 @@ where
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context, _affiliated_keywords))
-)]
 pub(crate) fn detect_diary_sexp<'b, 'g, 'r, 's, AK>(
     _affiliated_keywords: AK,
     remaining: OrgSource<'s>,

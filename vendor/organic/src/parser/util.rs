@@ -60,22 +60,16 @@ pub(crate) fn get_consumed<'s>(input: OrgSource<'s>, remaining: OrgSource<'s>) -
 /// A line containing only whitespace and then a line break
 ///
 /// It is up to the caller to ensure this is called at the start of a line.
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn blank_line(input: OrgSource<'_>) -> Res<OrgSource<'_>, OrgSource<'_>> {
     not(eof)(input)?;
     recognize(tuple((space0, alt((line_ending, eof)))))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn element_trailing_whitespace<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     start_of_line(input)?;
     alt((eof, recognize(many0(blank_line))))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn maybe_consume_object_trailing_whitespace_if_not_exiting<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -98,10 +92,6 @@ pub(crate) fn maybe_consume_object_trailing_whitespace_if_not_exiting<'b, 'g, 'r
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn maybe_consume_trailing_whitespace_if_not_exiting<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -114,10 +104,6 @@ pub(crate) fn maybe_consume_trailing_whitespace_if_not_exiting<'b, 'g, 'r, 's>(
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn maybe_consume_trailing_whitespace<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -130,7 +116,6 @@ pub(crate) fn maybe_consume_trailing_whitespace<'b, 'g, 'r, 's>(
 }
 
 /// Check that we are at the start of a line
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn start_of_line<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ()> {
     if input.is_at_start_of_line() {
         Ok((input, ()))
@@ -146,7 +131,6 @@ pub(crate) fn preceded_by_whitespace(
 }
 
 /// Check that we are at the start of a line
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn _preceded_by_whitespace<'s>(
     allow_start_of_file: bool,
     input: OrgSource<'s>,
@@ -166,16 +150,11 @@ fn _preceded_by_whitespace<'s>(
 /// Pull one non-whitespace character.
 ///
 /// This function only operates on spaces, tabs, carriage returns, and line feeds. It does not handle fancy unicode whitespace.
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn non_whitespace_character(input: OrgSource<'_>) -> Res<OrgSource<'_>, char> {
     none_of(" \t\r\n")(input)
 }
 
 /// Check that we are at the start of a line
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn exit_matcher_parser<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -183,10 +162,6 @@ pub(crate) fn exit_matcher_parser<'b, 'g, 'r, 's>(
     peek(|i| context.check_exit_matcher(i))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn text_until_exit<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -203,11 +178,10 @@ fn not_yet_implemented() -> Res<OrgSource<'static>, ()> {
 }
 
 #[allow(dead_code)]
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 /// Text from the current point until the next line break or end of file
 ///
 /// Useful for debugging.
-fn text_until_eol<'r, 's>(input: OrgSource<'s>) -> Result<&'s str, nom::Err<CustomError>> {
+fn text_until_eol<'s>(input: OrgSource<'s>) -> Result<&'s str, nom::Err<CustomError>> {
     let line = recognize(many_till(anychar, alt((line_ending, eof))))(input)
         .map(|(_remaining, line)| Into::<&str>::into(line))?;
     Ok(line.trim())
@@ -250,10 +224,6 @@ pub(crate) fn org_line_ending(input: OrgSource<'_>) -> Res<OrgSource<'_>, OrgSou
 }
 
 /// Match the whitespace at the beginning of a line and give it an indentation level.
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn indentation_level<'s>(
     context: RefContext<'_, '_, '_, 's>,
     input: OrgSource<'s>,
@@ -282,10 +252,6 @@ pub(crate) fn confine_context<'s, O: Debug, I: Fn(OrgSource<'s>) -> Res<OrgSourc
 /// Reset the input OrgSource as if it was starting a fresh document.
 ///
 /// This is important for making start-of-document, end-of-document, and other context-dependent tests succeed.
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(inner))
-)]
 fn impl_confine_context<'s, O: Debug, I: Fn(OrgSource<'s>) -> Res<OrgSource<'s>, O>>(
     input: OrgSource<'s>,
     inner: I,

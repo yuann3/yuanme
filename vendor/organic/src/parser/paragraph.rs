@@ -28,10 +28,6 @@ use crate::parser::util::start_of_line;
 use crate::types::Keyword;
 use crate::types::Paragraph;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn paragraph<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -75,10 +71,6 @@ where
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn empty_paragraph<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -126,10 +118,6 @@ pub(crate) fn empty_paragraph<'b, 'g, 'r, 's>(
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn paragraph_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

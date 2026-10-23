@@ -25,7 +25,6 @@ use crate::types::AstNode;
 use crate::types::Document;
 use crate::types::Keyword;
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn scan_for_in_buffer_settings<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, Vec<Keyword<'s>>> {
@@ -65,7 +64,6 @@ pub(crate) fn scan_for_in_buffer_settings<'s>(
     Ok((remaining, keywords))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn in_buffer_settings_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     alt((
         tag_no_case("archive"),
@@ -84,10 +82,6 @@ fn in_buffer_settings_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSou
     ))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(level = "debug", skip(original_settings))
-)]
 pub(crate) fn apply_in_buffer_settings<'g, 's, 'sf>(
     keywords: Vec<Keyword<'sf>>,
     original_settings: &'g GlobalSettings<'g, 's>,
@@ -154,8 +148,7 @@ pub(crate) fn apply_in_buffer_settings<'g, 's, 'sf>(
 }
 
 /// Apply in-buffer settings that do not impact parsing and therefore can be applied after parsing.
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
-pub(crate) fn apply_post_parse_in_buffer_settings<'g, 's, 'sf>(document: &mut Document<'s>) {
+pub(crate) fn apply_post_parse_in_buffer_settings<'s>(document: &mut Document<'s>) {
     document.category = Into::<AstNode>::into(&*document)
         .iter_all_ast_nodes()
         .filter_map(|ast_node| {
@@ -170,8 +163,7 @@ pub(crate) fn apply_post_parse_in_buffer_settings<'g, 's, 'sf>(document: &mut Do
         .map(|kw| kw.value.to_owned());
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
-fn link_template<'s>(input: &'s str) -> Res<&'s str, (&'s str, &'s str)> {
+fn link_template(input: &str) -> Res<&str, (&str, &str)> {
     let (remaining, key) = map(
         tuple((
             space0,

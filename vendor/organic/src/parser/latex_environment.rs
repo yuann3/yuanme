@@ -27,10 +27,6 @@ use crate::parser::util::start_of_line;
 use crate::types::Keyword;
 use crate::types::LatexEnvironment;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn latex_environment<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -75,7 +71,6 @@ where
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn name<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     take_while1(|c: char| c.is_alphanumeric() || c == '*')(input)
 }
@@ -84,10 +79,6 @@ fn contents<F: ContextMatcher>(end_matcher: F) -> impl ContextMatcher {
     move |context, input| _contents(&end_matcher, context, input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, end_matcher))
-)]
 fn _contents<'b, 'g, 'r, 's, F: ContextMatcher>(
     end_matcher: F,
     context: RefContext<'b, 'g, 'r, 's>,
@@ -111,10 +102,6 @@ fn latex_environment_end(current_name: &str) -> impl ContextMatcher {
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _latex_environment_end<'b, 'g, 'r, 's, 'c>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

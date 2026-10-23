@@ -17,10 +17,6 @@ use crate::error::Res;
 use crate::parser::util::get_consumed;
 use crate::types::Entity;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn entity<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -48,10 +44,6 @@ pub(crate) fn entity<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn name<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -75,7 +67,6 @@ fn name<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("NoEntity")))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn entity_end<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ()> {
     let (remaining, _) = alt((eof, recognize(satisfy(|c| !c.is_alphabetic()))))(input)?;
 

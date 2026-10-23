@@ -26,10 +26,6 @@ use crate::parser::util::org_line_ending;
 use crate::types::BabelCall;
 use crate::types::Keyword;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn babel_call<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -79,7 +75,6 @@ struct BabelCallValue<'s> {
     end_header: Option<OrgSource<'s>>,
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn babel_call_value<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, BabelCallValue<'s>> {
     alt((
         babel_call_value_without_headers,
@@ -87,7 +82,6 @@ fn babel_call_value<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, BabelCallVal
     ))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn babel_call_value_without_headers<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, BabelCallValue<'s>> {
@@ -106,7 +100,6 @@ fn babel_call_value_without_headers<'s>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn babel_call_value_with_headers<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, BabelCallValue<'s>> {
@@ -128,7 +121,6 @@ fn babel_call_value_with_headers<'s>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn babel_call_call_with_headers<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     // When babel call contains no arguments or headers (for example: "#+call: lorem ipsum\n") then the trailing line break is part of the call. Otherwise, it is not.
     verify(
@@ -143,7 +135,6 @@ fn babel_call_call_with_headers<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, 
     )(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn inside_header<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, contents) = balanced_bracket(
         |i| tag("[")(i),
@@ -156,7 +147,6 @@ fn inside_header<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> 
     Ok((remaining, contents.unwrap_or(contents_start.take(0))))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn arguments<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, Option<OrgSource<'s>>> {
     balanced_bracket(
         |i| tag("(")(i),
@@ -167,7 +157,6 @@ fn arguments<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, Option<OrgSource<'s
     )(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn end_header<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, _) = space0(input)?;
     verify(

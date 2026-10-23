@@ -18,10 +18,6 @@ use crate::parser::macros::element;
 use crate::types::Object;
 use crate::types::Paragraph;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn bullshitium<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -32,10 +28,6 @@ pub(crate) fn bullshitium<'b, 'g, 'r, 's>(
     ))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn detect_bullshitium<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -45,10 +37,6 @@ pub(crate) fn detect_bullshitium<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No bullshitium.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn broken_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -91,10 +79,6 @@ pub(crate) fn broken_end<'b, 'g, 'r, 's>(
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 pub(crate) fn detect_broken_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -106,10 +90,6 @@ pub(crate) fn detect_broken_end<'b, 'g, 'r, 's>(
     Ok((input, ()))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn broken_dynamic_block<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -152,10 +132,6 @@ pub(crate) fn broken_dynamic_block<'b, 'g, 'r, 's>(
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 pub(crate) fn detect_broken_dynamic_block<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

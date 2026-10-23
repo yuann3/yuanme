@@ -11,12 +11,26 @@ mod list;
 mod parser_with_context;
 
 pub(crate) type RefContext<'b, 'g, 'r, 's> = &'b Context<'g, 'r, 's>;
-pub(crate) trait ContextMatcher = for<'b, 'g, 'r, 's> Fn(
+pub(crate) trait ContextMatcher:
+    for<'b, 'g, 'r, 's> Fn(
     RefContext<'b, 'g, 'r, 's>,
     OrgSource<'s>,
-) -> Res<OrgSource<'s>, OrgSource<'s>>;
+) -> Res<OrgSource<'s>, OrgSource<'s>>
+{
+}
+impl<T> ContextMatcher for T where
+    T: for<'b, 'g, 'r, 's> Fn(
+        RefContext<'b, 'g, 'r, 's>,
+        OrgSource<'s>,
+    ) -> Res<OrgSource<'s>, OrgSource<'s>>
+{
+}
 type DynContextMatcher<'c> = dyn ContextMatcher + 'c;
-pub(crate) trait Matcher = for<'s> Fn(OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>>;
+pub(crate) trait Matcher:
+    for<'s> Fn(OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>>
+{
+}
+impl<T> Matcher for T where T: for<'s> Fn(OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {}
 #[allow(dead_code)]
 type DynMatcher<'c> = dyn Matcher + 'c;
 

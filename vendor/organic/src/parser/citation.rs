@@ -31,10 +31,6 @@ use crate::parser::util::get_consumed;
 use crate::types::Citation;
 use crate::types::Object;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn citation<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -76,7 +72,6 @@ pub(crate) fn citation<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn citestyle<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     map(
         tuple((
@@ -87,24 +82,18 @@ fn citestyle<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     )(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn style<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     recognize(many1(verify(anychar, |c| {
         c.is_alphanumeric() || "_-".contains(*c)
     })))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn variant<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     recognize(many1(verify(anychar, |c| {
         c.is_alphanumeric() || "_-/".contains(*c)
     })))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn global_prefix<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -130,10 +119,6 @@ fn global_prefix_end(starting_bracket_depth: BracketDepth) -> impl ContextMatche
     move |context, input: OrgSource<'_>| _global_prefix_end(context, input, starting_bracket_depth)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _global_prefix_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -156,10 +141,6 @@ fn _global_prefix_end<'b, 'g, 'r, 's>(
     ))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn global_suffix<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -184,10 +165,6 @@ fn global_suffix_end(starting_bracket_depth: BracketDepth) -> impl ContextMatche
     move |context, input: OrgSource<'_>| _global_suffix_end(context, input, starting_bracket_depth)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _global_suffix_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

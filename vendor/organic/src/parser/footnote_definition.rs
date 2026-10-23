@@ -33,10 +33,6 @@ use crate::parser::util::start_of_line;
 use crate::types::FootnoteDefinition;
 use crate::types::Keyword;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn footnote_definition<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -111,15 +107,10 @@ where
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn label<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     take_while(|c| WORD_CONSTITUENT_CHARACTERS.contains(c) || "-_".contains(c))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn footnote_definition_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -140,10 +131,6 @@ fn footnote_definition_end<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context, _affiliated_keywords))
-)]
 pub(crate) fn detect_footnote_definition<'b, 'g, 'r, 's, AK>(
     _affiliated_keywords: AK,
     remaining: OrgSource<'s>,

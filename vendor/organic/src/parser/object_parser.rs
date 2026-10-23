@@ -27,10 +27,6 @@ use crate::parser::text_markup::text_markup;
 use crate::parser::timestamp::timestamp;
 use crate::types::Object;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn standard_set_object<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -45,10 +41,6 @@ pub(crate) fn standard_set_object<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn minimal_set_object<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -63,10 +55,6 @@ pub(crate) fn minimal_set_object<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn standard_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -105,10 +93,6 @@ fn standard_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn minimal_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -121,10 +105,6 @@ fn minimal_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn detect_standard_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -136,13 +116,9 @@ pub(crate) fn detect_standard_set_object_sans_plain_text<'b, 'g, 'r, 's>(
         return Ok((input, ()));
     }
 
-    return Err(nom::Err::Error(CustomError::Static("No object detected.")));
+    Err(nom::Err::Error(CustomError::Static("No object detected.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn detect_minimal_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -154,13 +130,9 @@ fn detect_minimal_set_object_sans_plain_text<'b, 'g, 'r, 's>(
         return Ok((input, ()));
     }
 
-    return Err(nom::Err::Error(CustomError::Static("No object detected.")));
+    Err(nom::Err::Error(CustomError::Static("No object detected.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn regular_link_description_set_object<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -180,10 +152,6 @@ pub(crate) fn regular_link_description_set_object<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn regular_link_description_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -203,10 +171,6 @@ fn regular_link_description_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn detect_regular_link_description_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -221,10 +185,6 @@ fn detect_regular_link_description_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object detected.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn table_cell_set_object<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -239,10 +199,6 @@ pub(crate) fn table_cell_set_object<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn table_cell_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -267,10 +223,6 @@ fn table_cell_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No object.")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn detect_table_cell_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -282,5 +234,5 @@ fn detect_table_cell_set_object_sans_plain_text<'b, 'g, 'r, 's>(
         return Ok((input, ()));
     }
 
-    return Err(nom::Err::Error(CustomError::Static("No object detected.")));
+    Err(nom::Err::Error(CustomError::Static("No object detected.")))
 }

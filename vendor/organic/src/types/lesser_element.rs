@@ -623,7 +623,6 @@ enum ContentState {
     Modified(String),
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn lesser_block_content<'s>(input: &'s str) -> Result<Cow<'s, str>, CustomError> {
     let mut state = ContentState::Normal;
     let mut remaining = input;
@@ -660,8 +659,7 @@ fn lesser_block_content<'s>(input: &'s str) -> Result<Cow<'s, str>, CustomError>
     }
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
-fn content_line<'s>(input: &'s str) -> Res<&'s str, (Option<&'s str>, &'s str)> {
+fn content_line(input: &str) -> Res<&str, (Option<&str>, &str)> {
     let (remaining, pre_escape_whitespace) = opt(map(
         tuple((
             recognize(tuple((
@@ -679,7 +677,6 @@ fn content_line<'s>(input: &'s str) -> Res<&'s str, (Option<&'s str>, &'s str)> 
     Ok((remaining, (pre_escape_whitespace, line_post_escape)))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 /// Check if the child string slice is a slice of the parent string slice.
 pub(crate) fn is_slice_of(parent: &str, child: &str) -> bool {
     let parent_start = parent.as_ptr() as usize;
@@ -689,7 +686,6 @@ pub(crate) fn is_slice_of(parent: &str, child: &str) -> bool {
     child_start >= parent_start && child_end <= parent_end
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn get_str_until<'s>(parent: &'s str, child: &'s str) -> &'s str {
     debug_assert!(is_slice_of(parent, child));
     let parent_start = parent.as_ptr() as usize;

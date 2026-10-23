@@ -106,10 +106,6 @@ fn document<'s>(context: RefContext<'_, '_, '_, 's>, input: &'s str) -> Res<&'s 
     Ok((Into::<&str>::into(remaining), doc))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 #[allow(dead_code)]
 fn document_org_source<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
@@ -171,10 +167,6 @@ fn document_org_source<'b, 'g, 'r, 's>(
     Ok((remaining.into(), document))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _document<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -202,18 +194,4 @@ fn _document<'b, 'g, 'r, 's>(
             },
         },
     ))
-}
-
-#[cfg(test)]
-mod tests {
-    use test::Bencher;
-
-    use super::*;
-
-    #[bench]
-    fn bench_full_document(b: &mut Bencher) {
-        let input = include_str!("../../org_mode_samples/element_container_priority/README.org");
-
-        b.iter(|| assert!(parse(input).is_ok()));
-    }
 }

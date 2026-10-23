@@ -58,7 +58,7 @@ pub(crate) const DEFAULT_ORG_LINK_PARAMETERS: [&str; 23] = [
     "elisp",
 ];
 
-pub(crate) const DEFAULT_ORG_ENTITIES: [EntityDefinition<'static>; 414] = [
+pub(crate) static DEFAULT_ORG_ENTITIES: [EntityDefinition<'static>; 414] = [
 EntityDefinition {name: "_                    ", latex_math_mode: false, latex: "\\hspace*{10.0em}", html: "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;", ascii: "                    ", utf8: "                    "},
 EntityDefinition {name: "_                   ", latex_math_mode: false, latex: "\\hspace*{9.5em}", html: "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;", ascii: "                   ", utf8: "                   "},
 EntityDefinition {name: "_                  ", latex_math_mode: false, latex: "\\hspace*{9.0em}", html: "&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;", ascii: "                  ", utf8: "                  "},

@@ -50,10 +50,6 @@ pub(crate) const fn heading(
     move |context, input: OrgSource<'_>| _heading(context, input, parent_level)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _heading<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -130,7 +126,6 @@ fn _heading<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn detect_headline<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ()> {
     tuple((start_of_line, many1(tag("*")), space1))(input)?;
     Ok((input, ()))
@@ -151,10 +146,6 @@ struct PreHeadline<'s> {
     is_footnote_section: bool,
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn headline<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -225,10 +216,6 @@ fn headline<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn headline_title_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -236,24 +223,18 @@ fn headline_title_end<'b, 'g, 'r, 's>(
     recognize(tuple((space0, opt(tuple((tags, space0))), org_line_ending)))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn tags<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, Vec<OrgSource<'s>>> {
     let (remaining, (_open, tags, _close)) =
         tuple((tag(":"), separated_list1(tag(":"), single_tag), tag(":")))(input)?;
     Ok((remaining, tags))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
-fn single_tag<'r, 's>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
+fn single_tag<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     recognize(many1(verify(anychar, |c| {
         c.is_alphanumeric() || "_@#%".contains(*c)
     })))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn heading_keyword<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -305,24 +286,14 @@ fn priority_cookie(input: OrgSource<'_>) -> Res<OrgSource<'_>, PriorityCookie> {
     Ok((remaining, cookie))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn headline_level<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, (HeadlineLevel, HeadlineLevel, OrgSource<'s>)> {
     let (remaining, stars) = is_a("*")(input)?;
-    let count = stars.len().try_into().unwrap();
+    let count: HeadlineLevel = stars.len().try_into().unwrap();
     let level = match context.get_global_settings().odd_levels_only {
-        crate::context::HeadlineLevelFilter::Odd => {
-            if count % 2 == 0 {
-                (count + 2) / 2
-            } else {
-                (count + 1) / 2
-            }
-        }
+        crate::context::HeadlineLevelFilter::Odd => count / 2 + 1,
         crate::context::HeadlineLevelFilter::OddEven => count,
     };
     Ok((remaining, (level, count, stars)))

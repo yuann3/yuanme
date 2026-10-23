@@ -39,10 +39,6 @@ where
     move |context, input| _plain_text(&end_condition, context, input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, end_condition))
-)]
 fn _plain_text<'b, 'g, 'r, 's, F>(
     end_condition: F,
     context: RefContext<'b, 'g, 'r, 's>,
@@ -74,10 +70,6 @@ where
 }
 
 impl<'x> RematchObject<'x> for PlainText<'x> {
-    #[cfg_attr(
-        feature = "tracing",
-        tracing::instrument(ret, level = "debug", skip(_context))
-    )]
     fn rematch_object<'b, 'g, 'r, 's>(
         &'x self,
         _context: RefContext<'b, 'g, 'r, 's>,

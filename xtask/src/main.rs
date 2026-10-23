@@ -26,10 +26,12 @@ fn package_check() -> ExitCode {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .expect("xtask is inside the workspace");
-    // Every published crate lives in crates/; xtask sits outside it because it never ships.
-    let mut crates: Vec<_> = std::fs::read_dir(root.join("crates"))
-        .expect("read crates/")
-        .map(|entry| entry.expect("read crates/ entry").path())
+    // Every published crate lives in crates/ or vendor/; xtask sits outside
+    // them because it never ships.
+    let mut crates: Vec<_> = ["crates", "vendor"]
+        .iter()
+        .flat_map(|dir| std::fs::read_dir(root.join(dir)).expect("read the crates' directory"))
+        .map(|entry| entry.expect("read a crate's directory").path())
         .collect();
     crates.sort();
 
@@ -50,7 +52,12 @@ fn package_check() -> ExitCode {
             continue;
         }
         for file in String::from_utf8_lossy(&output.stdout).lines() {
-            if !(CARGO_FILES.contains(&file) || file.starts_with("src/") || file == "build.rs") {
+            // A vendored crate ships its licence.
+            if !(CARGO_FILES.contains(&file)
+                || file.starts_with("src/")
+                || file == "build.rs"
+                || file == "LICENSE")
+            {
                 eprintln!("{}: would publish {file}", dir.display());
                 ok = false;
             }

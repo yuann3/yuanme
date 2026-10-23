@@ -43,10 +43,6 @@ use crate::parser::util::WORD_CONSTITUENT_CHARACTERS;
 use crate::types::LinkType;
 use crate::types::PlainLink;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn plain_link<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -80,10 +76,6 @@ struct PathPlain<'s> {
     application: Option<&'s str>,
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn pre<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -103,10 +95,6 @@ fn pre<'b, 'g, 'r, 's>(
     Ok((input, ()))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn post<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -115,10 +103,6 @@ fn post<'b, 'g, 'r, 's>(
     Ok((remaining, ()))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn parse_path_plain<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -129,7 +113,6 @@ fn parse_path_plain<'b, 'g, 'r, 's>(
     ))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn parse_file_and_application<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, Option<OrgSource<'s>>> {
@@ -141,7 +124,6 @@ pub(crate) fn parse_file_and_application<'s>(
     Ok((remaining, application))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn parse_path_and_search_option<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, (OrgSource<'s>, Option<OrgSource<'s>>)> {
@@ -151,7 +133,6 @@ pub(crate) fn parse_path_and_search_option<'s>(
     ))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn parse_path_and_search_option_with_search_option<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, (OrgSource<'s>, Option<OrgSource<'s>>)> {
@@ -172,17 +153,12 @@ pub(crate) fn parse_path_and_search_option_with_search_option<'s>(
     Ok((remaining, (path, search_option)))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn parse_path_and_search_option_without_search_option<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, (OrgSource<'s>, Option<OrgSource<'s>>)> {
     map(rest, |path| (path, None))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn file_path_plain<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -222,10 +198,6 @@ fn file_path_plain<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn protocol_path_plain<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -253,10 +225,6 @@ fn protocol_path_plain<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn protocol<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -271,10 +239,6 @@ pub(crate) fn protocol<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("NoLinkProtocol")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn path_plain<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -303,10 +267,6 @@ fn path_plain_end(
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn impl_path_plain_end<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -342,10 +302,6 @@ fn impl_path_plain_end<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("No path plain end")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn path_plain_no_parenthesis<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -364,7 +320,6 @@ fn path_plain_no_parenthesis<'b, 'g, 'r, 's>(
     Ok((remaining, path))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn path_plain_no_parenthesis_disallowed_character<'s>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
@@ -373,10 +328,6 @@ fn path_plain_no_parenthesis_disallowed_character<'s>(
     }))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn path_plain_parenthesis<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -404,7 +355,6 @@ fn path_plain_parenthesis_end(starting_parenthesis_depth: BracketDepth) -> impl 
     move |input: OrgSource<'_>| _path_plain_parenthesis_end(input, starting_parenthesis_depth)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn _path_plain_parenthesis_end<'s>(
     input: OrgSource<'s>,
     starting_parenthesis_depth: BracketDepth,

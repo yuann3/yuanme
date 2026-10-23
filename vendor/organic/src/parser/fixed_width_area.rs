@@ -25,10 +25,6 @@ use crate::parser::util::start_of_line;
 use crate::types::FixedWidthArea;
 use crate::types::Keyword;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn fixed_width_area<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -75,7 +71,6 @@ where
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn fixed_width_area_line<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     start_of_line(input)?;
     let (remaining, _) = tuple((space0, tag(":")))(input)?;
@@ -87,10 +82,6 @@ fn fixed_width_area_line<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSour
     Ok((remaining, value))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context, _affiliated_keywords))
-)]
 pub(crate) fn detect_fixed_width_area<'b, 'g, 'r, 's, AK>(
     _affiliated_keywords: AK,
     remaining: OrgSource<'s>,

@@ -34,7 +34,6 @@ use crate::types::PlainText;
 use crate::types::Subscript;
 use crate::types::Superscript;
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn detect_subscript_or_superscript<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ()> {
     // This does not have to detect all valid subscript/superscript but all that it detects must be valid.
     let (remaining, _) = one_of("_^")(input)?;
@@ -47,10 +46,6 @@ pub(crate) fn detect_subscript_or_superscript<'s>(input: OrgSource<'s>) -> Res<O
     Ok((input, ()))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn subscript<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -83,10 +78,6 @@ pub(crate) fn subscript<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn superscript<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -120,7 +111,6 @@ pub(crate) fn superscript<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn pre<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, ()> {
     not(preceded_by_whitespace(true))(input)?;
     Ok((input, ()))
@@ -132,10 +122,6 @@ enum ScriptBody<'s> {
     WithBraces(&'s str, Vec<Object<'s>>),
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn script_body<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -158,10 +144,6 @@ fn script_body<'b, 'g, 'r, 's>(
     ))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn script_asterisk<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -169,10 +151,6 @@ fn script_asterisk<'b, 'g, 'r, 's>(
     tag("*")(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn script_alphanum<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -184,14 +162,12 @@ fn script_alphanum<'b, 'g, 'r, 's>(
     Ok((remaining, source))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn script_alphanum_character<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     recognize(verify(anychar, |c| {
         c.is_alphanumeric() || r",.\".contains(*c)
     }))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn end_script_alphanum_character<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, final_char) = recognize(verify(anychar, |c| c.is_alphanumeric()))(input)?;
     peek(tuple((
@@ -201,10 +177,6 @@ fn end_script_alphanum_character<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>,
     Ok((remaining, final_char))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn script_with_braces<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -232,10 +204,6 @@ fn script_with_braces_end(starting_brace_depth: BracketDepth) -> impl ContextMat
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _script_with_braces_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -255,10 +223,6 @@ fn _script_with_braces_end<'b, 'g, 'r, 's>(
     tag("}")(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn script_with_parenthesis<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -283,7 +247,6 @@ fn script_with_parenthesis_end(starting_parenthesis_depth: BracketDepth) -> impl
     move |input: OrgSource<'_>| _script_with_parenthesis_end(input, starting_parenthesis_depth)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn _script_with_parenthesis_end<'s>(
     input: OrgSource<'s>,
     starting_parenthesis_depth: BracketDepth,

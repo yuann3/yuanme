@@ -21,7 +21,7 @@ pub struct AffiliatedKeyword<'s> {
 
 #[derive(Debug, Default)]
 pub struct AffiliatedKeywords<'s> {
-    pub(crate) keywords: BTreeMap<String, AffiliatedKeywordValue<'s>>,
+    pub keywords: BTreeMap<String, AffiliatedKeywordValue<'s>>,
 }
 
 pub trait GetAffiliatedKeywords<'s> {

@@ -48,10 +48,6 @@ use crate::types::LinkType;
 use crate::types::Object;
 use crate::types::RegularLink;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn regular_link<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -62,10 +58,6 @@ pub(crate) fn regular_link<'b, 'g, 'r, 's>(
     ))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn regular_link_without_description<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -92,10 +84,6 @@ fn regular_link_without_description<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn regular_link_with_description<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -134,10 +122,6 @@ struct PathReg<'s> {
     application: Option<Cow<'s, str>>,
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn pathreg<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -149,10 +133,6 @@ fn pathreg<'b, 'g, 'r, 's>(
     Ok((remaining, path))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn parse_path_reg<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -204,10 +184,6 @@ enum ParserState {
     Percent,
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn apply_link_templates<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -264,10 +240,6 @@ fn apply_link_templates<'b, 'g, 'r, 's>(
     Some(ret)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn file_path_reg<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -321,7 +293,6 @@ fn file_path_reg<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn id_path_reg<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PathReg<'s>> {
     let (remaining, (raw_link, (_, path))) = consumed(tuple((tag("id:"), rest)))(input)?;
     Ok((
@@ -336,7 +307,6 @@ fn id_path_reg<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PathReg<'s>> {
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn custom_id_path_reg<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PathReg<'s>> {
     let (remaining, (raw_link, (_, path))) = consumed(tuple((tag("#"), rest)))(input)?;
     Ok((
@@ -351,7 +321,6 @@ fn custom_id_path_reg<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PathReg<'s
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn code_ref_path_reg<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PathReg<'s>> {
     let (remaining, (raw_link, (_, path, _))) = consumed(tuple((
         tag("("),
@@ -370,10 +339,6 @@ fn code_ref_path_reg<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PathReg<'s>
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn protocol_path_reg<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -395,7 +360,6 @@ fn protocol_path_reg<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn fuzzy_path_reg<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PathReg<'s>> {
     let (remaining, body) = rest(input)?;
     Ok((
@@ -410,10 +374,6 @@ fn fuzzy_path_reg<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PathReg<'s>> {
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn description<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -441,10 +401,6 @@ fn description<'b, 'g, 'r, 's>(
     Ok((remaining, children))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn description_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -466,10 +422,6 @@ fn path_reg_end(
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn impl_path_reg_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

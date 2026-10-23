@@ -24,10 +24,6 @@ use crate::types::Clock;
 use crate::types::ClockStatus;
 use crate::types::Timestamp;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn clock<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -59,10 +55,6 @@ pub(crate) fn clock<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn clock_timestamp<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -88,7 +80,6 @@ fn clock_timestamp<'b, 'g, 'r, 's>(
     ))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn duration<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, _) = tuple((tag("=>"), space1))(input)?;
     let (remaining, duration) = recognize(tuple((digit1, tag(":"), digit1)))(remaining)?;

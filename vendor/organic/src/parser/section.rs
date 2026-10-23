@@ -24,10 +24,6 @@ use crate::parser::util::maybe_consume_trailing_whitespace_if_not_exiting;
 use crate::types::Element;
 use crate::types::Section;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn zeroth_section<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -86,10 +82,6 @@ pub(crate) fn zeroth_section<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn section<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     mut input: OrgSource<'s>,
@@ -143,10 +135,6 @@ pub(crate) fn section<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn section_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

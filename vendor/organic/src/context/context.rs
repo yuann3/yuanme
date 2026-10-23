@@ -90,10 +90,6 @@ impl<'g, 'r, 's> Context<'g, 'r, 's> {
         }
     }
 
-    #[cfg_attr(
-        feature = "tracing",
-        tracing::instrument(ret, level = "debug", skip(self))
-    )]
     pub(crate) fn check_exit_matcher(
         &'r self,
         i: OrgSource<'s>,
@@ -112,7 +108,7 @@ impl<'g, 'r, 's> Context<'g, 'r, 's> {
             }
         }
         // TODO: Make this a specific error instead of just a generic MyError
-        return Err(nom::Err::Error(CustomError::Static("NoExit")));
+        Err(nom::Err::Error(CustomError::Static("NoExit")))
     }
 
     /// Indicates if elements should consume the whitespace after them.
@@ -132,10 +128,6 @@ impl<'g, 'r, 's> Context<'g, 'r, 's> {
     }
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn document_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

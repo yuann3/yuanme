@@ -8,8 +8,6 @@ use nom::combinator::opt;
 use nom::combinator::recognize;
 use nom::combinator::verify;
 use nom::multi::many_till;
-#[cfg(feature = "tracing")]
-use tracing::span;
 
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
@@ -26,10 +24,6 @@ use crate::parser::util::exit_matcher_parser;
 use crate::parser::util::get_consumed;
 use crate::types::InlineSourceBlock;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn inline_source_block<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -53,10 +47,6 @@ pub(crate) fn inline_source_block<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn lang<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -73,10 +63,6 @@ fn lang<'b, 'g, 'r, 's>(
     Ok((remaining, lang))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn lang_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -84,10 +70,6 @@ fn lang_end<'b, 'g, 'r, 's>(
     recognize(one_of("[{"))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn header<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -113,10 +95,6 @@ fn header_end(starting_bracket_depth: BracketDepth) -> impl ContextMatcher {
     move |context, input: OrgSource<'_>| _header_end(context, input, starting_bracket_depth)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _header_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -134,10 +112,6 @@ fn _header_end<'b, 'g, 'r, 's>(
     alt((tag("]"), line_ending))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn body<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -155,17 +129,7 @@ fn body<'b, 'g, 'r, 's>(
         anychar,
         parser_with_context!(exit_matcher_parser)(&parser_context),
     ))(remaining)?;
-    let (remaining, _) = {
-        #[cfg(feature = "tracing")]
-        let span = span!(
-            tracing::Level::DEBUG,
-            "outside end body",
-            remaining = Into::<&str>::into(remaining)
-        );
-        #[cfg(feature = "tracing")]
-        let _enter = span.enter();
-        tag("}")(remaining)?
-    };
+    let (remaining, _) = { tag("}")(remaining)? };
     Ok((remaining, body_contents))
 }
 
@@ -173,10 +137,6 @@ fn body_end(starting_brace_depth: BracketDepth) -> impl ContextMatcher {
     move |context, input: OrgSource<'_>| _body_end(context, input, starting_brace_depth)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _body_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

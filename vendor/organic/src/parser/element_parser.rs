@@ -27,10 +27,6 @@ use super::table::detect_table;
 use crate::context::RefContext;
 use crate::error::CustomError;
 use crate::error::Res;
-#[cfg(feature = "event_count")]
-use crate::event_count::record_event;
-#[cfg(feature = "event_count")]
-use crate::event_count::EventType;
 use crate::parser::affiliated_keyword::affiliated_keywords;
 use crate::parser::bullshitium::bullshitium;
 use crate::parser::bullshitium::detect_bullshitium;
@@ -48,17 +44,11 @@ pub(crate) const fn element(
     move |context, input: OrgSource<'_>| _element(context, input, can_be_paragraph)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _element<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
     can_be_paragraph: bool,
 ) -> Res<OrgSource<'s>, Element<'s>> {
-    #[cfg(feature = "event_count")]
-    record_event(EventType::ElementStart, input);
     let (post_affiliated_keywords_input, affiliated_keywords) = affiliated_keywords(input)?;
 
     let mut affiliated_keywords = affiliated_keywords.into_iter();
@@ -267,10 +257,6 @@ pub(crate) const fn detect_element(
     move |context, input: OrgSource<'_>| _detect_element(context, input, can_be_paragraph)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn _detect_element<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

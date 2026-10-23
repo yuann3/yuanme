@@ -27,10 +27,6 @@ use crate::types::Object;
 use crate::types::RadioLink;
 use crate::types::RadioTarget;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn radio_link<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -59,10 +55,6 @@ pub(crate) fn radio_link<'b, 'g, 'r, 's>(
     Err(nom::Err::Error(CustomError::Static("NoRadioLink")))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn rematch_target<'x, 'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     target: &'x Vec<Object<'x>>,
@@ -109,10 +101,6 @@ pub(crate) fn rematch_target<'x, 'b, 'g, 'r, 's>(
     Ok((remaining, new_matches))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn radio_target<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -153,10 +141,6 @@ pub(crate) fn radio_target<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn radio_target_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

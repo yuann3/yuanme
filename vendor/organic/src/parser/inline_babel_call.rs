@@ -24,10 +24,6 @@ use crate::parser::util::exit_matcher_parser;
 use crate::parser::util::get_consumed;
 use crate::types::InlineBabelCall;
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 pub(crate) fn inline_babel_call<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -59,10 +55,6 @@ pub(crate) fn inline_babel_call<'b, 'g, 'r, 's>(
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn name<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -79,10 +71,6 @@ fn name<'b, 'g, 'r, 's>(
     Ok((remaining, name))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn name_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -90,10 +78,6 @@ fn name_end<'b, 'g, 'r, 's>(
     recognize(one_of("[("))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn header<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -119,10 +103,6 @@ fn header_end(starting_bracket_depth: BracketDepth) -> impl ContextMatcher {
     move |context, input: OrgSource<'_>| _header_end(context, input, starting_bracket_depth)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _header_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -140,10 +120,6 @@ fn _header_end<'b, 'g, 'r, 's>(
     alt((tag("]"), line_ending))(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context))
-)]
 fn argument<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -169,10 +145,6 @@ fn argument_end(starting_parenthesis_depth: BracketDepth) -> impl ContextMatcher
     move |context, input: OrgSource<'_>| _argument_end(context, input, starting_parenthesis_depth)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 fn _argument_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,

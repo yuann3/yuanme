@@ -37,10 +37,6 @@ pub(crate) fn filtered_keyword<'s, F: Fn(OrgSource<'s>) -> Res<OrgSource<'s>, Or
     move |input| _filtered_keyword(&key_parser, input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(key_parser))
-)]
 fn _filtered_keyword<'s, F: Fn(OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>>>(
     key_parser: F,
     input: OrgSource<'s>,
@@ -77,10 +73,6 @@ fn _filtered_keyword<'s, F: Fn(OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s
     ))
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(context, affiliated_keywords))
-)]
 pub(crate) fn keyword<'b, 'g, 'r, 's, AK>(
     affiliated_keywords: AK,
     remaining: OrgSource<'s>,
@@ -101,15 +93,10 @@ where
     Ok((remaining, kw))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 pub(crate) fn affiliated_keyword<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, Keyword<'s>> {
     filtered_keyword(affiliated_key)(input)
 }
 
-#[cfg_attr(
-    feature = "tracing",
-    tracing::instrument(ret, level = "debug", skip(_context))
-)]
 pub(crate) fn table_formula_keyword<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
@@ -119,12 +106,10 @@ pub(crate) fn table_formula_keyword<'b, 'g, 'r, 's>(
     })(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn table_formula_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     tag_no_case("tblfm")(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn regular_keyword_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     not(peek(alt((tag_no_case("call"), tag_no_case("begin")))))(input)?;
     recognize(many_till(
@@ -137,7 +122,6 @@ fn regular_keyword_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource
     ))(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn affiliated_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     element!(dual_affiliated_key, input);
     element!(plain_affiliated_key, input);
@@ -145,7 +129,6 @@ fn affiliated_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>>
     Err(nom::Err::Error(CustomError::Static("No affiliated key.")))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn plain_affiliated_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     for keyword in ORG_ELEMENT_AFFILIATED_KEYWORDS {
         let result = map(
@@ -160,7 +143,6 @@ fn plain_affiliated_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSourc
     Err(nom::Err::Error(CustomError::Static("NoKeywordKey")))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn dual_affiliated_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     for keyword in ORG_ELEMENT_DUAL_KEYWORDS {
         let result = recognize(tuple((
@@ -178,7 +160,6 @@ fn dual_affiliated_key<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource
     Err(nom::Err::Error(CustomError::Static("NoKeywordKey")))
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn optval<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     recognize(many_till(
         anychar,
@@ -192,7 +173,6 @@ const fn optval_end(
     move |input: OrgSource<'_>| _optval_end(input, starting_bracket_depth)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn _optval_end<'s>(
     input: OrgSource<'s>,
     starting_bracket_depth: BracketDepth,
@@ -211,24 +191,9 @@ fn _optval_end<'s>(
     tag("\n")(input)
 }
 
-#[cfg_attr(feature = "tracing", tracing::instrument(ret, level = "debug"))]
 fn export_keyword<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
     recognize(tuple((
         tag_no_case("attr_"),
         take_while1(|c: char| c.is_alphanumeric() || "-_".contains(c)),
     )))(input)
-}
-
-#[cfg(test)]
-mod tests {
-    use test::Bencher;
-
-    use super::*;
-
-    #[bench]
-    fn bench_affiliated_keyword(b: &mut Bencher) {
-        let input = OrgSource::new("#+CAPTION[*foo*]: bar *baz*");
-
-        b.iter(|| assert!(affiliated_keyword(input).is_ok()));
-    }
 }
