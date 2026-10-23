@@ -1,5 +1,14 @@
 use super::*;
 
+const CONFIG: &[u8] = b"[site]\nurl = \"https://example.com\"\n";
+
+/// The smallest project: Site config and nothing else.
+fn project() -> Inputs {
+    let mut inputs = Inputs::default();
+    inputs.insert("yuanme.toml", CONFIG);
+    inputs
+}
+
 fn key(cache: &Cache, kind: &str, part: &str) -> blake3::Hash {
     let mut hasher = cache.key(kind);
     hasher.update(part.as_bytes());
@@ -15,12 +24,11 @@ fn text(body: &Body) -> &str {
 
 #[test]
 fn static_files_are_copied_to_the_same_path_and_nothing_else_is() {
-    let mut inputs = Inputs::default();
+    let mut inputs = project();
     inputs.insert("static/robots.txt", b"User-agent: *".as_slice());
     inputs.insert("static/static/x.css", b"a{}".as_slice());
     inputs.insert_streamed("static/img/cat.jpg", blake3::hash(b"cat"));
     inputs.insert("content/posts/pew.md", b"# Pew".as_slice());
-    inputs.insert("yuanme.toml", b"".as_slice());
 
     let build = build(&inputs, &mut Cache::memory("v"), Mode::Build);
 
@@ -36,6 +44,63 @@ fn static_files_are_copied_to_the_same_path_and_nothing_else_is() {
     let cat = &build.files["img/cat.jpg"];
     assert_eq!(cat.body, Body::Input("static/img/cat.jpg".into()));
     assert_eq!(cat.hash, blake3::hash(b"cat"));
+}
+
+#[test]
+fn a_config_error_fails_the_build_with_nothing_to_write() {
+    let mut inputs = project();
+    inputs.insert("static/robots.txt", b"User-agent: *".as_slice());
+    inputs.insert(
+        "yuanme.toml",
+        b"[site]\nurl = \"https://e.com\"\ntitel = \"x\"\n".as_slice(),
+    );
+
+    let build = build(&inputs, &mut Cache::memory("1.0.0"), Mode::Build);
+
+    assert!(build.failed());
+    assert!(build.files.is_empty());
+    let [d] = build.diagnostics.as_slice() else {
+        panic!("{:#?}", build.diagnostics)
+    };
+    assert_eq!(d.code.name, "config/unknown-key");
+    assert_eq!(build.sources.path(d.primary().file), "yuanme.toml");
+    assert_eq!(
+        &build.sources.text(d.primary().file)[d.primary().range.clone()],
+        "titel"
+    );
+
+    // The version check reads the Engine version the cache is keyed by,
+    // including a git build's.
+    inputs.insert(
+        "yuanme.toml",
+        [b"yuanme = \"0.4\"\n".as_slice(), CONFIG].concat(),
+    );
+    let codes = |version| {
+        let build = super::build(&inputs, &mut Cache::memory(version), Mode::Build);
+        build
+            .diagnostics
+            .iter()
+            .map(|d| d.code.name)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(codes("0.4.1+403e56e.dirty"), [] as [&str; 0]);
+    assert_eq!(codes("0.3.0"), ["config/engine-version"]);
+}
+
+#[test]
+fn site_config_that_is_not_utf8_is_an_error_not_a_lossy_guess() {
+    let mut inputs = project();
+    // Valid TOML once the bad byte becomes U+FFFD in a comment.
+    inputs.insert("yuanme.toml", [CONFIG, b"# caf\xe9\n".as_slice()].concat());
+
+    let build = build(&inputs, &mut Cache::memory("1.0.0"), Mode::Build);
+
+    let [d] = build.diagnostics.as_slice() else {
+        panic!("{:#?}", build.diagnostics)
+    };
+    assert_eq!(d.code.name, "config/syntax");
+    assert_eq!(d.primary().range, CONFIG.len() + 5..CONFIG.len() + 5);
+    assert!(build.failed() && build.files.is_empty());
 }
 
 #[test]
@@ -114,7 +179,7 @@ fn entries_unread_for_ten_successful_builds_are_deleted() {
         cache.insert("entry", small, b"x".as_slice());
         cache.insert_large(large, b"x").unwrap();
         for _ in 0..builds {
-            build(&Inputs::default(), &mut cache, Mode::Build);
+            build(&project(), &mut cache, Mode::Build);
         }
         cache.save().unwrap();
         let cache = Cache::open(path.clone(), "v").unwrap();
@@ -148,7 +213,7 @@ fn a_pack_is_rewritten_only_when_it_changed() {
 
     // A build that reads nothing from the pack leaves the file alone.
     let mut cache = Cache::open(dir.path().into(), "v").unwrap();
-    build(&Inputs::default(), &mut cache, Mode::Build);
+    build(&project(), &mut cache, Mode::Build);
     cache.save().unwrap();
     assert_eq!(inode(), written);
 

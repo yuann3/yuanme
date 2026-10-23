@@ -3,11 +3,12 @@ use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-use yuanme_diag::{Diagnostic, Files, Span, codes};
 use yuanme_engine::{Build, Cache, Mode};
 
 use crate::load::load;
 use crate::sync::{Report, sync};
+
+const CONFIG: &str = "[site]\nurl = \"https://example.com\"\n";
 
 fn write(path: &Path, bytes: impl AsRef<[u8]>) {
     fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -107,7 +108,7 @@ fn sync_writes_only_what_changed_in_ten_thousand_files() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
     let out = root.join("dist");
-    write(&root.join("yuanme.toml"), "");
+    write(&root.join("yuanme.toml"), CONFIG);
     let file = |i: usize| format!("d{:02}/f{i}.txt", i / 100);
     for i in 0..10_000 {
         write(&root.join("static").join(file(i)), format!("file {i}"));
@@ -172,31 +173,30 @@ fn sync_writes_only_what_changed_in_ten_thousand_files() {
 fn a_failed_build_leaves_the_output_untouched() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
-    write(&root.join("yuanme.toml"), "");
+    write(&root.join("yuanme.toml"), CONFIG);
     write(&root.join("static/a.txt"), "a");
     write(&root.join("static/b.txt"), "b");
     sync_build(root, &build(root)).unwrap();
     let before = snapshot(&root.join("dist"));
 
-    // A build that would change one file, add one and delete one, but has an error.
+    // A build that would change one file, add one and delete one, but whose
+    // Site config has an error.
     write(&root.join("static/a.txt"), "a, edited");
     write(&root.join("static/c.txt"), "c");
     fs::remove_file(root.join("static/b.txt")).unwrap();
-    let mut failed = build(root);
-    let mut sources = Files::default();
-    let file = sources.add("content/posts/pew.md", "");
-    failed.diagnostics.push(Diagnostic::error(
-        &codes::INTERNAL_PANIC,
-        "yuanme crashed",
-        Span { file, range: 0..0 },
-    ));
-    failed.sources = sources;
+    write(
+        &root.join("yuanme.toml"),
+        format!("{CONFIG}titel = \"x\"\n"),
+    );
+    let failed = build(root);
 
+    assert!(failed.failed());
     assert!(sync_build(root, &failed).is_err());
     assert_eq!(snapshot(&root.join("dist")), before);
 
     // The next good build still sees every change, since the manifest
     // wasn't touched either.
+    write(&root.join("yuanme.toml"), CONFIG);
     let report = sync_build(root, &build(root)).unwrap();
     assert_eq!(report.written, ["a.txt", "c.txt"]);
     assert_eq!(report.deleted, ["b.txt"]);

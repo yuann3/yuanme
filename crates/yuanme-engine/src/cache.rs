@@ -91,6 +91,12 @@ impl Cache {
         Ok(cache)
     }
 
+    /// The version every key starts with, which is also the one
+    /// `yuanme = "X.Y"` in Site config is checked against.
+    pub fn engine_version(&self) -> &str {
+        &self.version
+    }
+
     /// Starts the key of a `kind` entry. Every key begins with the Engine
     /// version, so a new Engine never reads an old Engine's results.
     pub fn key(&self, kind: &str) -> blake3::Hasher {

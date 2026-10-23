@@ -568,7 +568,9 @@ dependencies = [
  "blake3",
  "ignore",
  "rayon",
+ "serde_json",
  "tempfile",
+ "yuanme-content",
  "yuanme-diag",
  "yuanme-engine",
 ]

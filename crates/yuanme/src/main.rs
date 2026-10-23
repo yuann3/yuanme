@@ -30,6 +30,7 @@ fn run() -> io::Result<ExitCode> {
     let out = root.join("dist");
     let cache_dir = root.join(".yuanme/cache");
 
+    write_schema(&root.join(".yuanme/schemas/yuanme.toml.json"))?;
     let inputs = load::load(&root, &out)?;
     let mut cache = Cache::open(cache_dir.clone(), ENGINE_VERSION)?;
     let build = yuanme_engine::build(&inputs, &mut cache, Mode::Build);
@@ -49,4 +50,15 @@ fn run() -> io::Result<ExitCode> {
         }
     }
     Ok(ExitCode::SUCCESS)
+}
+
+/// Editors and agents read Site config's schema from here (#21). It is
+/// rewritten only when it changed, so editors watching it aren't woken.
+fn write_schema(path: &std::path::Path) -> io::Result<()> {
+    let schema = serde_json::to_string_pretty(&yuanme_content::config::json_schema())? + "\n";
+    if std::fs::read_to_string(path).is_ok_and(|old| old == schema) {
+        return Ok(());
+    }
+    std::fs::create_dir_all(path.parent().expect("in .yuanme/schemas"))?;
+    std::fs::write(path, schema)
 }

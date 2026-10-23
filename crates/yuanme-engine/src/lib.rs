@@ -10,7 +10,8 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use yuanme_diag::{Diagnostic, Files, Level};
+use yuanme_content::config::{self, Config};
+use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
 
 pub use cache::Cache;
 use link::link;
@@ -90,10 +91,21 @@ impl Build {
     }
 }
 
+/// `inputs` must hold `yuanme.toml`: finding it is what makes a folder a project.
 pub fn build(inputs: &Inputs, cache: &mut Cache, _mode: Mode) -> Build {
-    // parse (#46–#49) and resolve (#46) go here, ahead of render; until they
-    // arrive a Site is its Static files. `_mode` is for what dev does
-    // differently: Drafts (#46), images on request (#62), the unsubset font (#52).
+    let mut sources = Files::default();
+    let (config, diagnostics) = site_config(inputs, cache.engine_version(), &mut sources);
+    let Some(_config) = config else {
+        return Build {
+            files: BTreeMap::new(),
+            diagnostics,
+            sources,
+        };
+    };
+    // parse (#46–#49) and resolve (#46) go here, ahead of render, reading
+    // `_config`; until they arrive a Site is its Static files. `_mode` is for
+    // what dev does differently: Drafts (#46), images on request (#62), the
+    // unsubset font (#52).
     let (pages, statics) = rayon::join(render, || static_files(inputs));
     // The assets stage (#56) runs here alongside render and hands link its
     // bundles.
@@ -102,13 +114,45 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, _mode: Mode) -> Build {
 
     let build = Build {
         files,
-        diagnostics: Vec::new(),
-        sources: Files::default(),
+        diagnostics,
+        sources,
     };
     if !build.failed() {
         cache.sweep();
     }
     build
+}
+
+fn site_config(
+    inputs: &Inputs,
+    engine: &str,
+    sources: &mut Files,
+) -> (Option<Config>, Vec<Diagnostic>) {
+    const PATH: &str = "yuanme.toml";
+    let input = inputs.files.get(PATH).expect("a project has yuanme.toml");
+    let bytes = input
+        .bytes
+        .as_deref()
+        .expect("yuanme.toml is read, not streamed");
+    match std::str::from_utf8(bytes) {
+        Ok(text) => {
+            let file = sources.add(PATH, text);
+            config::parse(sources, file, engine)
+        }
+        Err(e) => {
+            // TOML is UTF-8, and a lossy copy could parse as something the
+            // Author never wrote.
+            // The lossy copy matches the bytes up to the first bad one.
+            let file = sources.add(PATH, String::from_utf8_lossy(bytes));
+            let at = e.valid_up_to();
+            let span = Span {
+                file,
+                range: at..at,
+            };
+            let d = Diagnostic::error(&codes::CONFIG_SYNTAX, "yuanme.toml is not UTF-8", span);
+            (None, vec![d])
+        }
+    }
 }
 
 /// Pages with asset placeholders, by output path. Templates arrive with #54.
