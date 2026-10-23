@@ -14,6 +14,7 @@ use nom::combinator::recognize;
 use nom::multi::many0;
 use nom::multi::many_till;
 use nom::sequence::tuple;
+use nom::InputTake;
 
 use super::org_source::OrgSource;
 use crate::context::parser_with_context;
@@ -221,6 +222,19 @@ pub(crate) fn org_space_or_line_ending(input: OrgSource<'_>) -> Res<OrgSource<'_
 /// In org-mode syntax, the end of the file can serve the same purpose as a line break syntactically.
 pub(crate) fn org_line_ending(input: OrgSource<'_>) -> Res<OrgSource<'_>, OrgSource<'_>> {
     alt((line_ending, eof))(input)
+}
+
+/// The rest of the line, up to `org_line_ending`. A `\r` not followed by
+/// `\n` belongs to the line, as in Emacs; stopping at it left a line that
+/// no parser could finish.
+pub(crate) fn rest_of_line(input: OrgSource<'_>) -> Res<OrgSource<'_>, OrgSource<'_>> {
+    let text: &str = input.into();
+    let end = match text.find('\n') {
+        Some(newline) if text[..newline].ends_with('\r') => newline - 1,
+        Some(newline) => newline,
+        None => text.len(),
+    };
+    Ok(input.take_split(end))
 }
 
 /// Match the whitespace at the beginning of a line and give it an indentation level.

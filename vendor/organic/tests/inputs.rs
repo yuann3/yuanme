@@ -237,3 +237,14 @@ fn a_runaway_parse_runs_out_of_fuel_at_its_opener() {
         other => panic!("expected OutOfFuel, got {:?}", other.map(|_| ())),
     }
 }
+
+/// Upstream failed the whole parse on each of these.
+#[test]
+fn a_diary_sexp_runs_to_the_end_of_its_line() {
+    assert_eq!(shape_of("%%("), ["DiarySexp"]);
+    assert_eq!(shape_of("a\n%%(\n"), ["Paragraph PlainText", "DiarySexp"]);
+    assert_eq!(
+        shape_of("%%(a\rb)\nc\n"),
+        ["DiarySexp", "Paragraph PlainText"]
+    );
+}
