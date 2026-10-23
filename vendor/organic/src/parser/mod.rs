@@ -5,6 +5,7 @@ mod bullshitium;
 mod citation;
 mod citation_reference;
 mod clock;
+mod closer;
 mod comment;
 mod diary_sexp;
 mod document;

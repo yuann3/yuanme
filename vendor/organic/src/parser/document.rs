@@ -5,6 +5,7 @@ use nom::combinator::opt;
 use nom::multi::many0;
 use nom::InputTake;
 
+use super::closer;
 use super::headline::heading;
 use super::in_buffer_settings::apply_in_buffer_settings;
 use super::in_buffer_settings::apply_post_parse_in_buffer_settings;
@@ -76,6 +77,7 @@ pub fn parse_file_with_settings<'g, 's, P: AsRef<Path>>(
     let initial_context = ContextElement::document_context();
     let initial_context = Context::new(global_settings, List::new(&initial_context));
     let wrapped_input = OrgSource::new(input);
+    closer::reset();
     let mut doc =
         all_consuming(bind_context!(document_org_source, &initial_context))(wrapped_input)
             .map_err(|err| err.to_string())

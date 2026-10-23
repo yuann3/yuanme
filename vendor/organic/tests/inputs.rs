@@ -112,3 +112,31 @@ fn a_document_can_hold_more_unclosed_brackets_than_an_i16() {
     let input = format!("{}\n", "[ ".repeat(33_000));
     assert_eq!(shape_of(&input), ["Paragraph PlainText"]);
 }
+
+/// Openers that never close. Upstream took exponential or quadratic time
+/// over these (#30); Emacs reads each as one run of plain text.
+#[test]
+fn unclosed_openers_are_plain_text() {
+    let inputs = [
+        "*a /b ".repeat(12),
+        "char *p, *q, *r, *s, *t, *u, *v, *w, *x, *y;".to_owned(),
+        "+a _b =c ~d ".repeat(12),
+    ];
+    for input in inputs {
+        assert_eq!(
+            shape_of(&format!("{input}\n")),
+            ["Paragraph PlainText"],
+            "{input:?}"
+        );
+    }
+}
+
+#[test]
+fn markup_in_a_verse_block_can_span_a_blank_line() {
+    let document = parse("#+begin_verse\n~/\n\nc~\n#+end_verse\n").unwrap();
+    let section = document.zeroth_section.unwrap();
+    let Element::VerseBlock(verse) = &section.children[0] else {
+        panic!("not a verse block: {:?}", section.children[0]);
+    };
+    assert_eq!(kind(&verse.children[0]), "Code");
+}

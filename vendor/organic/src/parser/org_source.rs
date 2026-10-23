@@ -60,6 +60,11 @@ impl<'s> OrgSource<'s> {
         self.end - self.start
     }
 
+    /// The whole input this is part of, and where this starts in it.
+    pub(crate) fn full_source_and_offset(&self) -> (&'s str, usize) {
+        (self.full_source, self.start)
+    }
+
     pub(crate) fn get_byte_offset(&self) -> usize {
         self.start
     }

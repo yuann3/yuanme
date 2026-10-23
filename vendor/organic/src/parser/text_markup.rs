@@ -17,6 +17,8 @@ use nom::multi::many1;
 use nom::multi::many_till;
 use nom::sequence::terminated;
 
+use super::closer::closes;
+use super::closer::Closer;
 use super::object_parser::standard_set_object;
 use super::org_source::OrgSource;
 use super::radio_link::RematchObject;
@@ -186,6 +188,15 @@ fn _text_markup_object<'b, 'g, 'r, 's, 'c>(
     let (remaining, open) = tag(marker_symbol)(remaining)?;
     let (remaining, _peek_not_whitespace) =
         peek(verify(anychar, |c| !c.is_whitespace() && *c != '\u{200B}'))(remaining)?;
+    if !closes(
+        context,
+        remaining,
+        Closer::Markup(marker_symbol.as_bytes()[0]),
+    ) {
+        return Err(nom::Err::Error(CustomError::Static(
+            "Text markup never closes.",
+        )));
+    }
     let text_markup_end_specialized = text_markup_end(open.into(), remaining.get_byte_offset());
     let contexts = [ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Gamma,
@@ -241,6 +252,15 @@ fn _text_markup_string<'b, 'g, 'r, 's, 'c>(
     let (remaining, open) = tag(marker_symbol)(remaining)?;
     let (remaining, _peek_not_whitespace) =
         peek(verify(anychar, |c| !c.is_whitespace() && *c != '\u{200B}'))(remaining)?;
+    if !closes(
+        context,
+        remaining,
+        Closer::Markup(marker_symbol.as_bytes()[0]),
+    ) {
+        return Err(nom::Err::Error(CustomError::Static(
+            "Text markup never closes.",
+        )));
+    }
     let text_markup_end_specialized = text_markup_end(open.into(), remaining.get_byte_offset());
     let contexts = [ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Gamma,
