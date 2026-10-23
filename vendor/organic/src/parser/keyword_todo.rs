@@ -1,99 +1,85 @@
-use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::bytes::complete::take_till;
-use nom::character::complete::line_ending;
-use nom::character::complete::space0;
-use nom::character::complete::space1;
-use nom::combinator::eof;
-use nom::combinator::opt;
-use nom::combinator::verify;
-use nom::multi::separated_list0;
-use nom::sequence::tuple;
-
-use crate::error::Res;
-
 // ref https://orgmode.org/manual/Per_002dfile-keywords.html
 // ref https://orgmode.org/manual/Workflow-states.html
 // Case is significant.
 
-/// Parses the text in the value of a #+TODO keyword.
+/// Reads the value of a #+TODO keyword as Org 9.8.7's
+/// `org-set-regexps-and-options` does: words split on whitespace, the
+/// first `|` word between the states in progress and the done ones (or the
+/// last word done when there is none), and a `(key)` suffix dropped.
+/// Upstream parsed it with a grammar that failed the whole document on a
+/// value Org accepts, such as `(` or `A(b)c`.
 ///
 /// Example input: "foo bar baz | lorem ipsum"
-pub(crate) fn todo_keywords(input: &str) -> Res<&str, (Vec<&str>, Vec<&str>)> {
-    let (remaining, mut before_pipe_words) = separated_list0(space1, todo_keyword_word)(input)?;
-    let (remaining, after_pipe_words) = opt(tuple((
-        tuple((space0, tag("|"), space0)),
-        separated_list0(space1, todo_keyword_word),
-    )))(remaining)?;
-    let (remaining, _eol) = alt((line_ending, eof))(remaining)?;
-    if let Some((_pipe, after_pipe_words)) = after_pipe_words {
-        Ok((remaining, (before_pipe_words, after_pipe_words)))
-    } else if !before_pipe_words.is_empty() {
-        // If there was no pipe, then the last word becomes a completion state instead.
-        let after_pipe_words = vec![before_pipe_words
-            .pop()
-            .expect("If-statement proves this is Some.")];
-        Ok((remaining, (before_pipe_words, after_pipe_words)))
-    } else {
-        // No words founds
-        Ok((remaining, (Vec::new(), Vec::new())))
+pub(crate) fn todo_keywords(input: &str) -> (Vec<&str>, Vec<&str>) {
+    let words: Vec<&str> = input.split_whitespace().collect();
+    let (in_progress, done) = match words.iter().position(|word| *word == "|") {
+        Some(pipe) => (&words[..pipe], &words[pipe + 1..]),
+        None => match words.split_last() {
+            Some((last, rest)) => (rest, std::slice::from_ref(last)),
+            None => (&words[..], &words[..]),
+        },
+    };
+    (names(in_progress), names(done))
+}
+
+fn names<'s>(words: &[&'s str]) -> Vec<&'s str> {
+    words
+        .iter()
+        .filter(|word| **word != "|")
+        .map(|word| without_key(word))
+        .collect()
+}
+
+/// What `^\\(.*?\\)\\(?:(\\([^!@/]\\)?.*?)\\)?$` captures first: the word
+/// before a final parenthesised suffix, such as `WAIT` in `WAIT(w@/!)`.
+fn without_key(word: &str) -> &str {
+    match word.find('(') {
+        Some(open) if word.ends_with(')') && open < word.len() - 1 => &word[..open],
+        _ => word,
     }
 }
 
-fn todo_keyword_word(input: &str) -> Res<&str, &str> {
-    let (remaining, keyword) = verify(take_till(|c| "( \t\r\n|".contains(c)), |result: &str| {
-        !result.is_empty()
-    })(input)?;
-
-    let (remaining, _) = opt(tuple((
-        tag("("),
-        take_till(|c| "() \t\r\n|".contains(c)),
-        tag(")"),
-    )))(remaining)?;
-
-    Ok((remaining, keyword))
-}
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn before_and_after() -> Result<(), Box<dyn std::error::Error>> {
-        let input = "foo bar baz | lorem ipsum";
-        let (remaining, (before_pipe_words, after_pipe_words)) = todo_keywords(input)?;
-        assert_eq!(remaining, "");
-        assert_eq!(before_pipe_words, vec!["foo", "bar", "baz"]);
-        assert_eq!(after_pipe_words, vec!["lorem", "ipsum"]);
-        Ok(())
+    fn before_and_after() {
+        assert_eq!(
+            todo_keywords("foo bar baz | lorem ipsum"),
+            (vec!["foo", "bar", "baz"], vec!["lorem", "ipsum"])
+        );
     }
 
     #[test]
-    fn no_pipe() -> Result<(), Box<dyn std::error::Error>> {
-        let input = "foo bar baz";
-        let (remaining, (before_pipe_words, after_pipe_words)) = todo_keywords(input)?;
-        assert_eq!(remaining, "");
-        assert_eq!(before_pipe_words, vec!["foo", "bar"]);
-        assert_eq!(after_pipe_words, vec!["baz"]);
-        Ok(())
+    fn no_pipe() {
+        assert_eq!(
+            todo_keywords("foo bar baz"),
+            (vec!["foo", "bar"], vec!["baz"])
+        );
     }
 
     #[test]
-    fn early_pipe() -> Result<(), Box<dyn std::error::Error>> {
-        let input = "| foo bar baz";
-        let (remaining, (before_pipe_words, after_pipe_words)) = todo_keywords(input)?;
-        assert_eq!(remaining, "");
-        assert_eq!(before_pipe_words, Vec::<&str>::new());
-        assert_eq!(after_pipe_words, vec!["foo", "bar", "baz"]);
-        Ok(())
+    fn early_pipe() {
+        assert_eq!(
+            todo_keywords("| foo bar baz"),
+            (vec![], vec!["foo", "bar", "baz"])
+        );
     }
 
     #[test]
-    fn late_pipe() -> Result<(), Box<dyn std::error::Error>> {
-        let input = "foo bar baz |";
-        let (remaining, (before_pipe_words, after_pipe_words)) = todo_keywords(input)?;
-        assert_eq!(remaining, "");
-        assert_eq!(before_pipe_words, vec!["foo", "bar", "baz"]);
-        assert_eq!(after_pipe_words, Vec::<&str>::new());
-        Ok(())
+    fn late_pipe() {
+        assert_eq!(
+            todo_keywords("foo bar baz |"),
+            (vec!["foo", "bar", "baz"], vec![])
+        );
+    }
+
+    #[test]
+    fn keys_are_dropped_and_odd_words_kept() {
+        assert_eq!(
+            todo_keywords("TODO(t) WAIT(w@/!) ( A(b)c || | DONE(d!) |"),
+            (vec!["TODO", "WAIT", "(", "A(b)c", "||"], vec!["DONE"])
+        );
     }
 }

@@ -215,3 +215,11 @@ fn an_object_past_its_parents_closer_does_not_panic() {
 fn a_table_can_end_the_input_without_a_line_break() {
     assert_eq!(shape_of("a\n| b | c"), ["Paragraph PlainText", "Table"]);
 }
+
+#[test]
+fn any_todo_keyword_value_parses() {
+    for value in ["(", "||", "A(b)c", "TODO(t) | DONE(d!) |"] {
+        let input = format!("#+TODO: {value}\n* TODO x\n");
+        assert!(parse(&input).is_ok(), "{input:?}");
+    }
+}

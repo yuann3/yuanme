@@ -94,12 +94,7 @@ pub(crate) fn apply_in_buffer_settings<'g, 's, 'sf>(
             || kw.key.eq_ignore_ascii_case("seq_todo")
             || kw.key.eq_ignore_ascii_case("typ_todo")
     }) {
-        let (_, (in_progress_words, complete_words)) =
-            todo_keywords(kw.value).map_err(|err| match err {
-                nom::Err::Incomplete(_) => panic!("This parser does not support streaming."),
-                nom::Err::Error(e) => e,
-                nom::Err::Failure(e) => e,
-            })?;
+        let (in_progress_words, complete_words) = todo_keywords(kw.value);
         new_settings
             .in_progress_todo_keywords
             .extend(in_progress_words.into_iter().map(str::to_string));
