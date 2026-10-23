@@ -12,6 +12,7 @@ use nom::multi::separated_list1;
 use nom::sequence::tuple;
 
 use super::citation_reference::must_balance_bracket;
+use super::closer;
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_object_trailing_whitespace_if_not_exiting;
@@ -37,6 +38,7 @@ pub(crate) fn citation<'b, 'g, 'r, 's>(
 ) -> Res<OrgSource<'s>, Citation<'s>> {
     // TODO: Despite being a standard object, citations cannot exist inside the global prefix/suffix for other citations because citations must contain something that matches @key which is forbidden inside the global prefix/suffix. This TODO is to evaluate if its worth putting in an explicit check for this (which can be easily accomplished by checking the output of `get_bracket_depth()`). I suspect its not worth it because I expect, outside of intentionally crafted inputs, this parser will exit immediately inside a citation since it is unlikely to find the "[cite" substring inside a citation global prefix/suffix.
     let (remaining, _) = tag_no_case("[cite")(input)?;
+    closer::expect(context, remaining, "]")?;
     let (remaining, style) = opt(citestyle)(remaining)?;
     let (remaining, _) = tag(":")(remaining)?;
     let (remaining, prefix) =

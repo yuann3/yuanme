@@ -121,6 +121,19 @@ fn unclosed_openers_are_plain_text() {
         "*a /b ".repeat(12),
         "char *p, *q, *r, *s, *t, *u, *v, *w, *x, *y;".to_owned(),
         "+a _b =c ~d ".repeat(12),
+        "[fn:: ".repeat(14),
+        "See[fn:: a note ".repeat(10),
+        "[fn:x: ".repeat(14),
+        "a_{b ".repeat(20),
+        "a^{b ".repeat(20),
+        "x^{a_{b ".repeat(20),
+        "Let x_{i be y and ".repeat(20),
+        "[[a][".repeat(800),
+        "[[a]".repeat(800),
+        "[cite:@a ".repeat(800),
+        "{{{m(".repeat(800),
+        "<%%(a".repeat(800),
+        "\\(a".repeat(800),
     ];
     for input in inputs {
         assert_eq!(
@@ -139,4 +152,24 @@ fn markup_in_a_verse_block_can_span_a_blank_line() {
         panic!("not a verse block: {:?}", section.children[0]);
     };
     assert_eq!(kind(&verse.children[0]), "Code");
+}
+
+/// The `]` of a labelled footnote is no closer for an anonymous one that
+/// opened before it.
+#[test]
+fn an_unclosed_footnote_ignores_closed_ones_after_it() {
+    let input = format!("x{}\n", " [fn:a] [fn:: ".repeat(14));
+    let mut expected = "Paragraph PlainText".to_owned();
+    for _ in 0..14 {
+        expected.push_str(" FootnoteReference PlainText");
+    }
+    assert_eq!(shape_of(&input), [expected]);
+}
+
+#[test]
+fn a_link_ends_at_a_blank_line() {
+    assert_eq!(
+        shape_of("x [[a][b\n\nc]] y\n"),
+        ["Paragraph PlainText", "Paragraph PlainText"]
+    );
 }

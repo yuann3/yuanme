@@ -25,6 +25,7 @@ use nom::multi::many_till;
 use nom::sequence::tuple;
 use nom::InputTake;
 
+use super::closer;
 use super::object_parser::regular_link_description_set_object;
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
@@ -63,6 +64,7 @@ fn regular_link_without_description<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, RegularLink<'s>> {
     let (remaining, _opening_bracket) = tag("[[")(input)?;
+    closer::expect(context, remaining, "]]")?;
     let (remaining, path) = pathreg(context, remaining)?;
     let (remaining, _closing_bracket) = tag("]]")(remaining)?;
     let (remaining, post_blank) =
@@ -89,6 +91,7 @@ fn regular_link_with_description<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, RegularLink<'s>> {
     let (remaining, _opening_bracket) = tag("[[")(input)?;
+    closer::expect(context, remaining, "]]")?;
     let (remaining, path) = pathreg(context, remaining)?;
     let (remaining, _closing_bracket) = tag("][")(remaining)?;
     let (remaining, (contents, description)) =

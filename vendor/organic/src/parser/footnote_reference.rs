@@ -7,6 +7,7 @@ use nom::combinator::map_parser;
 use nom::combinator::verify;
 use nom::multi::many1;
 
+use super::closer;
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
 use super::util::confine_context;
@@ -43,6 +44,7 @@ fn anonymous_footnote<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, FootnoteReference<'s>> {
     let (remaining, _) = tag_no_case("[fn::")(input)?;
+    closer::expect_balanced(context, remaining, b'[', b']')?;
     let exit_with_depth = footnote_definition_end(remaining.get_bracket_depth());
     let parser_context = ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Gamma,
@@ -88,6 +90,7 @@ fn inline_footnote<'b, 'g, 'r, 's>(
     let (remaining, _) = tag_no_case("[fn:")(input)?;
     let (remaining, label_contents) = label(remaining)?;
     let (remaining, _) = tag(":")(remaining)?;
+    closer::expect_balanced(context, remaining, b'[', b']')?;
     let exit_with_depth = footnote_definition_end(remaining.get_bracket_depth());
     let parser_context = ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Gamma,

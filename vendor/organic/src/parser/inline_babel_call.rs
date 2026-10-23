@@ -9,6 +9,7 @@ use nom::combinator::recognize;
 use nom::combinator::verify;
 use nom::multi::many_till;
 
+use super::closer;
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_object_trailing_whitespace_if_not_exiting;
@@ -83,6 +84,7 @@ fn header<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, _) = tag("[")(input)?;
+    closer::expect(context, remaining, "]")?;
 
     let exit_with_depth = header_end(remaining.get_bracket_depth());
     let parser_context = ContextElement::ExitMatcherNode(ExitMatcherNode {
@@ -125,6 +127,7 @@ fn argument<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, _) = tag("(")(input)?;
+    closer::expect(context, remaining, ")")?;
 
     let exit_with_depth = argument_end(remaining.get_parenthesis_depth());
     let parser_context = ContextElement::ExitMatcherNode(ExitMatcherNode {

@@ -9,6 +9,7 @@ use nom::multi::many0;
 use nom::multi::separated_list0;
 use nom::sequence::tuple;
 
+use super::closer;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_object_trailing_whitespace_if_not_exiting;
 use crate::context::parser_with_context;
@@ -24,6 +25,7 @@ pub(crate) fn org_macro<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgMacro<'s>> {
     let (remaining, _) = tag("{{{")(input)?;
+    closer::expect(context, remaining, "}}}")?;
     let (remaining, macro_name) = org_macro_name(context, remaining)?;
     let (remaining, macro_args) = opt(parser_with_context!(org_macro_args)(context))(remaining)?;
     let (remaining, _) = tag("}}}")(remaining)?;

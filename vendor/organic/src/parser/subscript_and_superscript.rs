@@ -13,6 +13,7 @@ use nom::combinator::verify;
 use nom::multi::many_till;
 use nom::sequence::tuple;
 
+use super::closer;
 use super::object_parser::standard_set_object;
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
@@ -182,6 +183,7 @@ fn script_with_braces<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, (OrgSource<'s>, Vec<Object<'s>>)> {
     let (remaining, _) = tag("{")(input)?;
+    closer::expect_balanced(context, remaining, b'{', b'}')?;
     let exit_with_depth = script_with_braces_end(remaining.get_brace_depth());
     let parser_context = ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Gamma,
@@ -228,6 +230,7 @@ fn script_with_parenthesis<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, _) = tag("(")(input)?;
+    closer::expect_balanced(context, remaining, b'(', b')')?;
     let exit_with_depth = script_with_parenthesis_end(remaining.get_parenthesis_depth());
 
     let (remaining, _) = many_till(

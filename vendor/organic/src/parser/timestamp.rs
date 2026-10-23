@@ -11,6 +11,7 @@ use nom::combinator::verify;
 use nom::multi::many_till;
 use nom::sequence::tuple;
 
+use super::closer;
 use super::org_source::OrgSource;
 use super::util::exit_matcher_parser;
 use super::util::maybe_consume_object_trailing_whitespace_if_not_exiting;
@@ -59,6 +60,7 @@ fn diary_timestamp<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, Timestamp<'s>> {
     let (remaining, _) = tag("<%%(")(input)?;
+    closer::expect(context, remaining, ")>")?;
     let (remaining, _body) = sexp(context, remaining)?;
     let (remaining, _) = tag(")>")(remaining)?;
     let (remaining, post_blank) =
@@ -125,6 +127,7 @@ fn impl_active_timestamp<'b, 'g, 'r, 's>(
     allow_post_blank: bool,
 ) -> Res<OrgSource<'s>, Timestamp<'s>> {
     let (remaining, _) = tag("<")(input)?;
+    closer::expect(context, remaining, ">")?;
     let (remaining, start) = date(context, remaining)?;
     let time_context = ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Gamma,
@@ -189,6 +192,7 @@ fn impl_inactive_timestamp<'b, 'g, 'r, 's>(
     allow_post_blank: bool,
 ) -> Res<OrgSource<'s>, Timestamp<'s>> {
     let (remaining, _) = tag("[")(input)?;
+    closer::expect(context, remaining, "]")?;
     let (remaining, start) = date(context, remaining)?;
     let time_context = ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Gamma,

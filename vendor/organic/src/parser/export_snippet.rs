@@ -7,6 +7,7 @@ use nom::multi::many1;
 use nom::multi::many_till;
 use nom::sequence::tuple;
 
+use super::closer;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_object_trailing_whitespace_if_not_exiting;
 use crate::context::parser_with_context;
@@ -24,6 +25,7 @@ pub(crate) fn export_snippet<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, ExportSnippet<'s>> {
     let (remaining, _) = tag("@@")(input)?;
+    closer::expect(context, remaining, "@@")?;
     let (remaining, backend_name) = backend(context, remaining)?;
     let parser_context = ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Gamma,

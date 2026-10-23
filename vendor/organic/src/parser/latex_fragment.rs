@@ -12,6 +12,7 @@ use nom::multi::many0;
 use nom::multi::many_till;
 use nom::sequence::tuple;
 
+use super::closer;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_object_trailing_whitespace_if_not_exiting;
 use crate::context::parser_with_context;
@@ -103,6 +104,7 @@ fn escaped_parenthesis_fragment<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, _) = tag("\\(")(input)?;
+    closer::expect(context, remaining, "\\)")?;
     let (remaining, _) = recognize(many_till(
         anychar,
         peek(alt((
@@ -121,6 +123,7 @@ fn escaped_bracket_fragment<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let (remaining, _) = tag("\\[")(input)?;
+    closer::expect(context, remaining, "\\]")?;
     let (remaining, _) = recognize(many_till(
         anychar,
         peek(alt((
@@ -140,6 +143,7 @@ fn double_dollar_fragment<'b, 'g, 'r, 's>(
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     // TODO: The documentation on the dollar sign versions is incomplete. Test to figure out what the real requirements are. For example, can this span more than 3 lines and can this contain a single $ since its terminated by $$?
     let (remaining, _) = tag("$$")(input)?;
+    closer::expect(context, remaining, "$$")?;
     let (remaining, _) = recognize(many_till(
         anychar,
         peek(alt((
