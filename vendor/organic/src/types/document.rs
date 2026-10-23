@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use super::Element;
 use super::NodeProperty;
 use super::Object;
@@ -14,7 +12,6 @@ pub type HeadlineLevel = u16;
 pub struct Document<'s> {
     pub source: &'s str,
     pub category: Option<String>,
-    pub path: Option<PathBuf>,
     pub zeroth_section: Option<Section<'s>>,
     pub children: Vec<Heading<'s>>,
     pub contents: &'s str,

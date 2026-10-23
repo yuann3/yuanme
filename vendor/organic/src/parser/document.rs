@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use nom::combinator::all_consuming;
 use nom::combinator::opt;
 use nom::multi::many0;
@@ -27,74 +25,45 @@ use crate::types::AstNode;
 use crate::types::Document;
 use crate::types::Object;
 
-/// Parse a full org-mode document.
-///
-/// This is a main entry point for Organic. It will parse the full contents of the input string as an org-mode document without an underlying file attached.
-#[allow(dead_code)]
-pub fn parse(input: &str) -> Result<Document<'_>, Box<dyn std::error::Error>> {
-    parse_file_with_settings::<&Path>(input, &GlobalSettings::default(), None)
+/// Why a document didn't parse.
+#[derive(Debug)]
+pub enum ParseError {
+    /// Org has no syntax errors, so this is a bug in the parser, or a
+    /// `#+SETUPFILE` the settings' `FileAccessInterface` failed to read.
+    Failed(String),
 }
 
-/// Parse a full org-mode document.
-///
-/// This is a main entry point for Organic. It will parse the full contents of the input string as an org-mode document at the file_path.
-///
-/// file_path is not used for reading the file contents. It is only used for determining the document category and filling in the path attribute on the Document.
-#[allow(dead_code)]
-pub fn parse_file<P: AsRef<Path>>(
-    input: &str,
-    file_path: Option<P>,
-) -> Result<Document<'_>, Box<dyn std::error::Error>> {
-    parse_file_with_settings(input, &GlobalSettings::default(), file_path)
+impl std::fmt::Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ParseError::Failed(message) => f.write_str(message),
+        }
+    }
+}
+
+impl std::error::Error for ParseError {}
+
+/// Parse a full org-mode document with the default settings.
+pub fn parse(input: &str) -> Result<Document<'_>, ParseError> {
+    parse_with_settings(input, &GlobalSettings::default())
 }
 
 /// Parse a full org-mode document with starting settings.
 ///
-/// This is a secondary entry point for Organic. It will parse the full contents of the input string as an org-mode document starting with the settings you supplied without an underlying file attached.
-///
 /// This will not prevent additional settings from being learned during parsing, for example when encountering a "#+TODO".
-#[allow(dead_code)]
 pub fn parse_with_settings<'g, 's>(
     input: &'s str,
     global_settings: &'g GlobalSettings<'g, 's>,
-) -> Result<Document<'s>, Box<dyn std::error::Error>> {
-    parse_file_with_settings::<&Path>(input, global_settings, None)
-}
-
-/// Parse a full org-mode document with starting settings.
-///
-/// This is the secondary entry point for Organic. It will parse the full contents of the input string as an org-mode document at the file_path starting with the settings you supplied.
-///
-/// This will not prevent additional settings from being learned during parsing, for example when encountering a "#+TODO".
-///
-/// file_path is not used for reading the file contents. It is only used for determining the document category and filling in the path attribute on the Document.
-#[allow(dead_code)]
-pub fn parse_file_with_settings<'g, 's, P: AsRef<Path>>(
-    input: &'s str,
-    global_settings: &'g GlobalSettings<'g, 's>,
-    file_path: Option<P>,
-) -> Result<Document<'s>, Box<dyn std::error::Error>> {
+) -> Result<Document<'s>, ParseError> {
     let initial_context = ContextElement::document_context();
     let initial_context = Context::new(global_settings, List::new(&initial_context));
     let wrapped_input = OrgSource::new(input);
     closer::reset();
-    let mut doc =
-        all_consuming(bind_context!(document_org_source, &initial_context))(wrapped_input)
-            .map_err(|err| err.to_string())
-            .map(|(_remaining, parsed_document)| parsed_document)?;
-    if let Some(file_path) = file_path {
-        let full_path = file_path.as_ref().canonicalize()?;
-        if doc.category.is_none() {
-            let category = full_path
-                .file_stem()
-                .expect("File should have a name.")
-                .to_str()
-                .expect("File name should be valid utf-8.");
-            doc.category = Some(category.to_owned());
-        }
-        doc.path = Some(full_path);
-    }
-    Ok(doc)
+    let document =
+        all_consuming(bind_context!(document_org_source, &initial_context))(wrapped_input);
+    document
+        .map(|(_remaining, document)| document)
+        .map_err(|error| ParseError::Failed(error.to_string()))
 }
 
 /// Parse a full org-mode document.
@@ -186,7 +155,6 @@ fn _document<'b, 'g, 'r, 's>(
         Document {
             source: source.into(),
             category: None,
-            path: None,
             zeroth_section,
             children,
             contents: if contents.len() > 0 {

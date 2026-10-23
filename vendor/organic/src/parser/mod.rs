@@ -50,7 +50,6 @@ mod text_markup;
 mod timestamp;
 mod util;
 pub use document::parse;
-pub use document::parse_file;
-pub use document::parse_file_with_settings;
 pub use document::parse_with_settings;
+pub use document::ParseError;
 pub(crate) use org_source::OrgSource;
