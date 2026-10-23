@@ -254,14 +254,13 @@ fn detect_table_cell_set_object_sans_plain_text<'b, 'g, 'r, 's>(
 /// character, and upstream answered by trying every object parser (P3 and
 /// P4 in #30). A false here must mean every parser would fail.
 fn could_start_object(context: RefContext<'_, '_, '_, '_>, input: OrgSource<'_>) -> bool {
-    // A radio link starts wherever its target's text does.
-    if !context.get_global_settings().radio_targets.is_empty() {
-        return true;
-    }
     let rest: &str = input.into();
     let Some(first) = rest.chars().next() else {
         return false;
     };
+    if could_start_radio_link(context, first) {
+        return true;
+    }
     match first {
         '<' | '[' | '_' | '^' | '\\' | '@' | '$' | '{' | '*' | '/' | '=' | '~' | '+' => true,
         // The Kelvin sign lowercases to `k`, so a case-insensitive protocol
@@ -299,4 +298,23 @@ fn could_start_object(context: RefContext<'_, '_, '_, '_>, input: OrgSource<'_>)
         }
         _ => false,
     }
+}
+
+/// A radio link starts wherever its target's text does, compared without
+/// case. Upstream skipped the whole check in a document with any radio
+/// target.
+fn could_start_radio_link(context: RefContext<'_, '_, '_, '_>, first: char) -> bool {
+    context
+        .get_global_settings()
+        .radio_targets
+        .iter()
+        .any(|target| match target.first() {
+            Some(Object::PlainText(text)) => match text.source.chars().next() {
+                Some(target_first) if target_first.is_ascii() && first.is_ascii() => {
+                    target_first.eq_ignore_ascii_case(&first)
+                }
+                _ => true,
+            },
+            _ => true,
+        })
 }
