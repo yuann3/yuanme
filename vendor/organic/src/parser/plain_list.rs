@@ -1,6 +1,5 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
-use nom::character::complete::anychar;
 use nom::character::complete::digit1;
 use nom::character::complete::line_ending;
 use nom::character::complete::multispace1;
@@ -22,6 +21,7 @@ use nom::sequence::tuple;
 use nom::InputTake;
 
 use super::affiliated_keyword::parse_affiliated_keywords;
+use super::closer;
 use super::element_parser::element;
 use super::object_parser::standard_set_object;
 use super::org_source::OrgSource;
@@ -539,18 +539,15 @@ fn item_tag_end<'b, 'g, 'r, 's>(
     alt((item_tag_divider, line_ending))(input)
 }
 
+/// The ` ::` that ends a tag: the last one on the line that is followed by
+/// whitespace or the line's end, as Emacs's greedy `.*` finds it. Upstream
+/// asked whether a later one ended the tag by calling itself on each, which
+/// took time exponential in their number.
 fn item_tag_divider<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, OrgSource<'s>> {
-    recognize(tuple((
-        one_of(" \t"),
-        tag("::"),
-        peek(tuple((
-            opt(tuple((
-                peek(one_of(" \t")),
-                many_till(anychar, peek(alt((item_tag_divider, line_ending, eof)))),
-            ))),
-            alt((line_ending, eof)),
-        ))),
-    )))(input)
+    if !closer::is_last_tag_divider(input) {
+        return Err(nom::Err::Error(CustomError::Static("Not a tag divider.")));
+    }
+    Ok(input.take_split(3))
 }
 
 fn item_tag_post_gap<'b, 'g, 'r, 's>(

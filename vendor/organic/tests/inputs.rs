@@ -173,3 +173,12 @@ fn a_link_ends_at_a_blank_line() {
         ["Paragraph PlainText", "Paragraph PlainText"]
     );
 }
+
+/// A tag ends at the last ` :: ` on its line. Upstream found it in time
+/// exponential in the number of dividers.
+#[test]
+fn a_tag_ends_at_the_last_divider_on_its_line() {
+    let input = format!("- a{} last\n", " :: b".repeat(30));
+    let (_, _, paragraph) = first_item(&input);
+    assert_eq!(paragraph, "b last\n");
+}

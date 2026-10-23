@@ -15,6 +15,7 @@
 //! in thread-locals because `OrgSource` is a `Copy` value with nowhere to
 //! keep them.
 
+use std::cell::Cell;
 use std::cell::RefCell;
 
 use super::org_source::OrgSource;
@@ -58,18 +59,66 @@ struct Brackets {
 
 const NONE: u32 = u32::MAX;
 
+/// For one input, a line's start and the last tag divider on that line.
+#[derive(Clone, Copy)]
+struct LastDivider {
+    source: (usize, usize),
+    line_start: usize,
+    at: Option<usize>,
+}
+
 /// Inputs re-parsed inside objects each get a table; this many are kept.
 const KEEP_TABLES: usize = 8;
 
 thread_local! {
     static SCANS: RefCell<Vec<Scan>> = const { RefCell::new(Vec::new()) };
     static TABLES: RefCell<Vec<Brackets>> = const { RefCell::new(Vec::new()) };
+    static LAST_DIVIDER: Cell<Option<LastDivider>> = const { Cell::new(None) };
 }
 
 /// Forgets every scan. A new document may sit at an old one's address.
 pub(crate) fn reset() {
     SCANS.with_borrow_mut(Vec::clear);
     TABLES.with_borrow_mut(Vec::clear);
+    LAST_DIVIDER.set(None);
+}
+
+/// Whether `input` starts the last list-item tag divider on its line: a
+/// space or tab, `::`, then a space, a tab or the line's end. Plain text
+/// asks at every character of a tag, so the line's last divider is found
+/// once and remembered.
+pub(crate) fn is_last_tag_divider(input: OrgSource<'_>) -> bool {
+    let (text, at) = input.full_source_and_offset();
+    let source = (text.as_ptr() as usize, text.len());
+    let line_start = at - input.text_since_line_break().len();
+    let last = match LAST_DIVIDER.get() {
+        Some(last) if last.source == source && last.line_start == line_start => last.at,
+        _ => {
+            let line_end = text[at..].find('\n').map_or(text.len(), |end| at + end);
+            let line = &text.as_bytes()[line_start..line_end];
+            let followed_by_newline = line_end < text.len();
+            let last = (0..line.len())
+                .rev()
+                .find(|&i| is_tag_divider(&line[i..], followed_by_newline))
+                .map(|i| line_start + i);
+            LAST_DIVIDER.set(Some(LastDivider {
+                source,
+                line_start,
+                at: last,
+            }));
+            last
+        }
+    };
+    last == Some(at)
+}
+
+fn is_tag_divider(rest: &[u8], followed_by_newline: bool) -> bool {
+    rest.len() >= 3
+        && matches!(rest[0], b' ' | b'\t')
+        && &rest[1..3] == b"::"
+        && (rest.len() == 3
+            || matches!(rest[3], b' ' | b'\t')
+            || (rest[3..] == *b"\r" && followed_by_newline))
 }
 
 /// Whether there is a `close` ahead of `input` that returns to its bracket
