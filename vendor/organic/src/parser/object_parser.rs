@@ -267,7 +267,18 @@ fn could_start_object(context: RefContext<'_, '_, '_, '_>, input: OrgSource<'_>)
         return true;
     }
     match first {
-        '<' | '[' | '_' | '^' | '\\' | '@' | '$' | '{' | '*' | '/' | '=' | '~' | '+' => true,
+        // Only an export snippet starts with `@`, and only a macro with `{`.
+        // Text such as an email address, or a run of them, would otherwise
+        // try every parser at each one.
+        '@' => {
+            let mut after = rest.chars().skip(1);
+            after.next() == Some('@')
+                && after
+                    .next()
+                    .is_some_and(|c| c.is_alphanumeric() || c == '-')
+        }
+        '{' => rest.starts_with("{{{"),
+        '<' | '[' | '_' | '^' | '\\' | '$' | '*' | '/' | '=' | '~' | '+' => true,
         // The Kelvin sign lowercases to `k`, so a case-insensitive protocol
         // can start with it.
         letter if letter.is_ascii_alphabetic() || letter == '\u{212A}' => {
