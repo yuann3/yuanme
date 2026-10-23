@@ -41,7 +41,7 @@ pub struct PlainListItem<'s> {
     pub post_blank: Option<&'s str>,
 }
 
-pub type PlainListItemCounter = u16;
+pub type PlainListItemCounter = u64;
 pub type PlainListItemPreBlank = u8;
 
 #[derive(Debug)]

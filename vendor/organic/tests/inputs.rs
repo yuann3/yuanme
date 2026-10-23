@@ -63,3 +63,46 @@ fn a_lone_bar_is_a_table() {
         ["Paragraph PlainText", "Table", "Paragraph PlainText"]
     );
 }
+
+/// The first list item's counter, whether it has a checkbox, and the text
+/// of its paragraph.
+fn first_item(input: &str) -> (Option<u64>, bool, String) {
+    let document = parse(input).unwrap_or_else(|error| panic!("{input:?}: {error}"));
+    let section = document.zeroth_section.unwrap();
+    let Element::PlainList(list) = &section.children[0] else {
+        panic!("not a list: {:?}", section.children[0]);
+    };
+    let item = &list.children[0];
+    let Element::Paragraph(paragraph) = &item.children[0] else {
+        panic!("not a paragraph: {:?}", item.children[0]);
+    };
+    (
+        item.counter,
+        item.checkbox.is_some(),
+        paragraph.source.to_owned(),
+    )
+}
+
+#[test]
+fn a_list_counter_can_be_a_large_number() {
+    assert_eq!(
+        first_item("999999997. [@999999997] x\n"),
+        (Some(999_999_997), false, "x\n".to_owned())
+    );
+}
+
+#[test]
+fn text_can_follow_a_counter_but_not_a_checkbox_directly() {
+    assert_eq!(
+        first_item("3. [@10]Blue\n"),
+        (Some(10), false, "Blue\n".to_owned())
+    );
+    assert_eq!(
+        first_item("- [X]Blue\n"),
+        (None, false, "[X]Blue\n".to_owned())
+    );
+    assert_eq!(
+        first_item("- [X] Blue\n"),
+        (None, true, "Blue\n".to_owned())
+    );
+}

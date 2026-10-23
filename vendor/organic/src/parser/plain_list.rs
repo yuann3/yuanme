@@ -220,7 +220,14 @@ fn plain_list_item<'b, 'g, 'r, 's>(
         opt(tuple((space1, tag("[@"), counter_set_value, tag("]"))))(remaining)?;
     let maybe_counter_set = maybe_counter_set.map(|(_, _, val, _)| val);
 
-    let (remaining, maybe_checkbox) = opt(tuple((space1, item_checkbox)))(remaining)?;
+    // Emacs needs a space or the end of the line after a checkbox, or the
+    // checkbox is text. Upstream took it anyway and then failed the document.
+    let (remaining, maybe_checkbox) = opt(tuple((
+        space1,
+        item_checkbox,
+        peek(alt((space1, line_ending, eof))),
+    )))(remaining)?;
+    let maybe_checkbox = maybe_checkbox.map(|(space, checkbox, _)| (space, checkbox));
 
     let (remaining, maybe_tag) = if let BulletType::Unordered = bullet_type {
         opt(tuple((space1, bind_context!(item_tag, context))))(remaining)?
@@ -290,7 +297,14 @@ fn plain_list_item<'b, 'g, 'r, 's>(
             ),
         ));
     }
-    let (remaining, pre_blank) = item_tag_post_gap(&parser_context, remaining)?;
+    // Text can follow a counter directly, as in `3. [@10]Blue`, where
+    // upstream failed the document.
+    let (remaining, pre_blank) = if maybe_counter_set.is_some() && maybe_checkbox.is_none() {
+        let (rest, gap) = opt(bind_context!(item_tag_post_gap, &parser_context))(remaining)?;
+        (rest, gap.unwrap_or(remaining.take(0)))
+    } else {
+        item_tag_post_gap(&parser_context, remaining)?
+    };
     let pre_blank = Into::<&str>::into(pre_blank)
         .bytes()
         .filter(|b| *b == b'\n')
@@ -390,14 +404,15 @@ fn counter_set_value<'s>(input: OrgSource<'s>) -> Res<OrgSource<'s>, PlainListIt
                     'A'..='Z' => (letter as u32) - ('A' as u32) + 1,
                     _ => unreachable!(),
                 };
-                PlainListItemCounter::try_from(num)
-                    .expect("Counter set value should be between 1 and 26 inclusive.")
+                PlainListItemCounter::from(num)
             },
         ),
+        // Emacs keeps any number of digits as a bignum. Upstream panicked
+        // past u16; a counter past u64 now saturates.
         map(digit1, |num: OrgSource<'_>| {
             Into::<&str>::into(num)
                 .parse()
-                .expect("digit1 must parse to a number.")
+                .unwrap_or(PlainListItemCounter::MAX)
         }),
     ))(input)
 }

@@ -38,7 +38,7 @@ fn fnv1a(text: &str) -> u64 {
     })
 }
 
-/// One line per file with a hash of its tree. The snapshot began as the
+/// Every file parses, and each gets one line with a hash of its tree. The snapshot began as the
 /// trees organic e44be41 produced, so a changed line is a change in how
 /// that file reads, and needs a reason.
 #[test]
@@ -55,19 +55,25 @@ fn every_file_parses_to_the_tree_in_the_snapshot() {
         ..GlobalSettings::default()
     };
     let mut trees = String::new();
+    let mut failed = Vec::new();
     for path in files {
         let text = std::fs::read_to_string(&path).expect("read an Org file");
         // The settings hold a &dyn, so they aren't UnwindSafe; nothing is reused after a panic.
         let tree = std::panic::catch_unwind(AssertUnwindSafe(|| {
             parse_with_settings(&text, &settings).map(|document| fnv1a(&format!("{document:?}")))
         }));
+        let parsed = matches!(tree, Ok(Ok(_)));
         let outcome = match tree {
             Ok(Ok(hash)) => format!("{hash:016x}"),
             Ok(Err(error)) => format!("error: {error}"),
             Err(_) => "panic".to_owned(),
         };
-        let name = path.strip_prefix(crate_dir).unwrap_or(&path);
-        writeln!(trees, "{} {outcome}", name.display()).unwrap();
+        let name = path.strip_prefix(crate_dir).unwrap_or(&path).display();
+        if !parsed {
+            failed.push(format!("{name} {outcome}"));
+        }
+        writeln!(trees, "{name} {outcome}").unwrap();
     }
     insta::assert_snapshot!(trees);
+    assert!(failed.is_empty(), "{failed:#?}");
 }
