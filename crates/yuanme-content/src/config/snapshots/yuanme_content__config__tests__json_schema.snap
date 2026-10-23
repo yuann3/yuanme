@@ -1,0 +1,752 @@
+---
+source: crates/yuanme-content/src/config/tests.rs
+expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
+---
+{
+  "$defs": {
+    "field": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Text.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "max": {
+              "description": "The most characters.",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "min": {
+              "description": "The fewest characters.",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "string",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A whole number.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "max": {
+              "description": "The largest value.",
+              "type": "integer"
+            },
+            "min": {
+              "description": "The smallest value.",
+              "type": "integer"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "int",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A number.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "max": {
+              "description": "The largest value.",
+              "type": "number"
+            },
+            "min": {
+              "description": "The smallest value.",
+              "type": "number"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "float",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "true or false.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "bool",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A calendar date, such as 2025-12-12.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "date",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A date and time. Without an offset it is in `site.timezone`.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "datetime",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "An absolute URL.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "url",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "One of a fixed set of strings.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "enum",
+              "description": "The field's type."
+            },
+            "values": {
+              "description": "The strings allowed.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "type",
+            "values"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A list of values of one type.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "items": {
+              "$ref": "#/$defs/item",
+              "description": "The type of each item."
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "list",
+              "description": "The field's type."
+            },
+            "unique": {
+              "description": "No item may appear twice.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "items"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A table with named fields.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "fields": {
+              "additionalProperties": {
+                "$ref": "#/$defs/field"
+              },
+              "description": "The object's fields.",
+              "type": "object"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "object",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type",
+            "fields"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A path to an image beside the Entry or in the project, or a remote URL.",
+          "properties": {
+            "default": {
+              "description": "The value an Entry that leaves the field out gets. A field with a default is optional."
+            },
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "optional": {
+              "description": "Entries may leave the field out.",
+              "type": "boolean"
+            },
+            "type": {
+              "const": "image",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "item": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Text.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "max": {
+              "description": "The most characters.",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "min": {
+              "description": "The fewest characters.",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "type": {
+              "const": "string",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A whole number.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "max": {
+              "description": "The largest value.",
+              "type": "integer"
+            },
+            "min": {
+              "description": "The smallest value.",
+              "type": "integer"
+            },
+            "type": {
+              "const": "int",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A number.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "max": {
+              "description": "The largest value.",
+              "type": "number"
+            },
+            "min": {
+              "description": "The smallest value.",
+              "type": "number"
+            },
+            "type": {
+              "const": "float",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "true or false.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "type": {
+              "const": "bool",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A calendar date, such as 2025-12-12.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "type": {
+              "const": "date",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A date and time. Without an offset it is in `site.timezone`.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "type": {
+              "const": "datetime",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "An absolute URL.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "type": {
+              "const": "url",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "One of a fixed set of strings.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "type": {
+              "const": "enum",
+              "description": "The field's type."
+            },
+            "values": {
+              "description": "The strings allowed.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "type",
+            "values"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A list of values of one type.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "items": {
+              "$ref": "#/$defs/item",
+              "description": "The type of each item."
+            },
+            "type": {
+              "const": "list",
+              "description": "The field's type."
+            },
+            "unique": {
+              "description": "No item may appear twice.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "items"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A table with named fields.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "fields": {
+              "additionalProperties": {
+                "$ref": "#/$defs/field"
+              },
+              "description": "The object's fields.",
+              "type": "object"
+            },
+            "type": {
+              "const": "object",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type",
+            "fields"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A path to an image beside the Entry or in the project, or a remote URL.",
+          "properties": {
+            "description": {
+              "description": "What the field is for.",
+              "type": "string"
+            },
+            "type": {
+              "const": "image",
+              "description": "The field's type."
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Site config for yuanme.",
+  "properties": {
+    "collections": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "dir": {
+            "description": "The folder of the Collection's Entries. Defaults to \"content/<name>\".",
+            "type": "string"
+          },
+          "fields": {
+            "additionalProperties": {
+              "$ref": "#/$defs/field"
+            },
+            "description": "Fields Entries have beyond the built-in `title`, `date`, `updated`, `slug`, `draft` and `unlisted`. Declaring `date` makes it required.",
+            "type": "object"
+          },
+          "list_route": {
+            "description": "The URL of the page listing the Collection, such as \"/blog/\". Page N ≥ 2 is at \"<list_route>N/\".",
+            "pattern": "^/[^{}]*$",
+            "type": "string"
+          },
+          "paginate": {
+            "description": "Entries per list page. Needs `list_route`.",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "route": {
+            "description": "The URL of each Entry, with `{slug}` where its Slug goes, such as \"/blog/{slug}/\".",
+            "pattern": "^/[^{}]*\\{slug\\}[^{}]*$",
+            "type": "string"
+          },
+          "sort": {
+            "description": "Field names to sort Entries by, each prefixed with `-` for descending. Entries missing a key sort last; ties break by Slug. Defaults to [\"-date\"].",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "route"
+        ],
+        "type": "object"
+      },
+      "description": "Named groups of Entries sharing one schema, such as posts or projects.",
+      "type": "object"
+    },
+    "data": {
+      "additionalProperties": {
+        "$ref": "#/$defs/item"
+      },
+      "description": "Schemas for Data files: `[data.nav]` checks `data/nav.toml`, `.yaml` or `.json`. A Data file without one is not checked.",
+      "type": "object"
+    },
+    "site": {
+      "additionalProperties": false,
+      "description": "The Site's metadata.",
+      "properties": {
+        "author": {
+          "description": "The Author's name.",
+          "type": "string"
+        },
+        "description": {
+          "description": "One or two sentences about the Site, for feeds and search engines.",
+          "type": "string"
+        },
+        "extra": {
+          "description": "Anything else Templates need, under keys of your own.",
+          "type": "object"
+        },
+        "language": {
+          "description": "The language of the Site's content, as a BCP 47 tag such as \"en\" or \"zh-Hans\".",
+          "type": "string"
+        },
+        "timezone": {
+          "description": "The IANA time zone, such as \"Asia/Singapore\", for datetimes written without an offset. Defaults to \"UTC\", never the machine's zone.",
+          "type": "string"
+        },
+        "title": {
+          "description": "The Site's name.",
+          "type": "string"
+        },
+        "url": {
+          "description": "The address the Site is served from, such as \"https://example.com\". Feeds, sitemaps and canonical links are built from it.",
+          "format": "uri",
+          "pattern": "^https?://[^/\\s]+",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "type": "object"
+    },
+    "taxonomies": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "collections": {
+            "description": "The Collections whose Entries it groups. Each gets a field with the Taxonomy's name.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "lowercase": {
+            "description": "Show every Term in lowercase. Otherwise a Term shows as first spelled.",
+            "type": "boolean"
+          },
+          "paginate": {
+            "description": "Entries per Term page.",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "route": {
+            "description": "The URL of each Term's page, with `{term}` where its Slug goes, such as \"/tags/{term}/\".",
+            "pattern": "^/[^{}]*\\{term\\}[^{}]*$",
+            "type": "string"
+          },
+          "single": {
+            "description": "Each Entry has at most one Term, written as a string rather than a list.",
+            "type": "boolean"
+          },
+          "slugs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Slugs that override the ones yuanme derives, by Term: { \"C++\" = \"cpp\" }.",
+            "type": "object"
+          },
+          "sort": {
+            "description": "How Entries sort on a Term's page, as for a Collection.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "collections",
+          "route"
+        ],
+        "type": "object"
+      },
+      "description": "Named ways of grouping Entries by a shared value, such as tags or series.",
+      "type": "object"
+    },
+    "yuanme": {
+      "description": "The oldest yuanme release this project works with, as \"X.Y\". A newer minor release in the same major builds it; before 1.0, only the same 0.Y does.",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "site"
+  ],
+  "title": "yuanme.toml",
+  "type": "object"
+}

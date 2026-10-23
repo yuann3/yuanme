@@ -9,4 +9,10 @@ repository.workspace = true
 include = ["/src"]
 
 [dependencies]
+serde_json = "1.0.154"
+strsim = "0.11.1"
+toml = { version = "1", default-features = false, features = ["std", "parse", "serde"] }
 yuanme-diag.workspace = true
+
+[dev-dependencies]
+insta = "1.49.0"
