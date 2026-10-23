@@ -9,7 +9,6 @@ use nom::combinator::peek;
 use nom::combinator::recognize;
 use nom::combinator::verify;
 use nom::multi::many1;
-use nom::multi::many_till;
 use nom::sequence::tuple;
 
 use super::org_source::OrgSource;
@@ -17,7 +16,6 @@ use super::radio_link::RematchObject;
 use super::util::exit_matcher_parser;
 use super::util::get_consumed;
 use super::util::org_space_or_line_ending;
-use crate::context::parser_with_context;
 use crate::context::RefContext;
 use crate::error::CustomError;
 use crate::error::Res;
@@ -50,16 +48,29 @@ where
         OrgSource<'ss>,
     ) -> Res<OrgSource<'ss>, ()>,
 {
-    let (remaining, source) = recognize(verify(
-        many_till(
-            anychar,
-            peek(alt((
-                parser_with_context!(exit_matcher_parser)(context),
-                recognize(parser_with_context!(end_condition)(context)),
-            ))),
-        ),
-        |(children, _exit_contents)| !children.is_empty(),
-    ))(input)?;
+    let mut remaining = input;
+    loop {
+        // No exit matcher fires between two ASCII alphanumerics, so the walk
+        // over every one in the context is skipped there (P5 in #30). This
+        // is checked on the corpus and generated documents, not proved.
+        let inside_word = remaining
+            .get_preceding_character()
+            .is_some_and(|c| c.is_ascii_alphanumeric())
+            && Into::<&str>::into(remaining)
+                .bytes()
+                .next()
+                .is_some_and(|b| b.is_ascii_alphanumeric());
+        if (!inside_word && exit_matcher_parser(context, remaining).is_ok())
+            || end_condition(context, remaining).is_ok()
+        {
+            break;
+        }
+        (remaining, _) = anychar(remaining)?;
+    }
+    if remaining.get_byte_offset() == input.get_byte_offset() {
+        return Err(nom::Err::Error(CustomError::Static("Empty plain text.")));
+    }
+    let source = get_consumed(input, remaining);
 
     Ok((
         remaining,
