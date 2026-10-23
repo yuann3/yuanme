@@ -115,9 +115,16 @@ pub(crate) fn radio_target<'b, 'g, 'r, 's>(
     let initial_context = Context::new(context.get_global_settings(), List::new(&initial_context));
 
     let (remaining, (raw_value, children)) = consumed(map_parser(
+        // Org's radio targets neither start nor end with whitespace. Upstream
+        // took `<<<a >>>`, whose radio links then ran across line ends.
         verify(
             parser_with_context!(text_until_exit)(&parser_context),
-            |text| text.len() > 0,
+            |text: &OrgSource<'_>| {
+                let text: &str = (*text).into();
+                !text.starts_with(char::is_whitespace)
+                    && !text.ends_with(char::is_whitespace)
+                    && !text.is_empty()
+            },
         ),
         confine_context(|i| {
             all_consuming(many1(parser_with_context!(minimal_set_object)(

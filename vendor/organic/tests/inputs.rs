@@ -248,3 +248,22 @@ fn a_diary_sexp_runs_to_the_end_of_its_line() {
         ["DiarySexp", "Paragraph PlainText"]
     );
 }
+
+/// Upstream took `<<<a >>>` for a radio target, then failed the whole parse
+/// when its link ran from a table cell into the next line.
+#[test]
+fn a_radio_target_does_not_end_with_whitespace() {
+    assert_eq!(shape_of("|<<<a >>>a\nb"), ["Table", "Paragraph PlainText"]);
+}
+
+#[test]
+fn a_radio_link_spans_lines_only_inside_a_paragraph() {
+    let links = |input: &str| {
+        format!("{:?}", parse(input).unwrap())
+            .matches("RadioLink {")
+            .count()
+    };
+    assert_eq!(links("<<<a b>>>\n\nx a\nb c"), 1);
+    assert_eq!(links("<<<a b>>>\n\n|x a\nb"), 0);
+    assert_eq!(links("<<<a b>>>\n\n- x a\nb"), 0);
+}

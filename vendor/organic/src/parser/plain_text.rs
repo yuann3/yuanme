@@ -5,10 +5,13 @@ use nom::character::complete::anychar;
 use nom::character::complete::line_ending;
 use nom::character::complete::one_of;
 use nom::combinator::eof;
+use nom::combinator::not;
 use nom::combinator::peek;
 use nom::combinator::recognize;
 use nom::combinator::verify;
 use nom::multi::many1;
+use nom::sequence::preceded;
+use nom::sequence::terminated;
 use nom::sequence::tuple;
 
 use super::org_source::OrgSource;
@@ -16,6 +19,7 @@ use super::radio_link::RematchObject;
 use super::util::exit_matcher_parser;
 use super::util::get_consumed;
 use super::util::org_space_or_line_ending;
+use crate::context::parser_with_context;
 use crate::context::RefContext;
 use crate::error::CustomError;
 use crate::error::Res;
@@ -83,7 +87,7 @@ where
 impl<'x> RematchObject<'x> for PlainText<'x> {
     fn rematch_object<'b, 'g, 'r, 's>(
         &'x self,
-        _context: RefContext<'b, 'g, 'r, 's>,
+        context: RefContext<'b, 'g, 'r, 's>,
         input: OrgSource<'s>,
     ) -> Res<OrgSource<'s>, Object<'s>> {
         let mut remaining = input;
@@ -114,7 +118,14 @@ impl<'x> RematchObject<'x> for PlainText<'x> {
                 line_ending,
             ))))(goal);
             if let Ok((new_goal, _)) = is_whitespace {
-                let (new_remaining, _) = many1(org_space_or_line_ending)(remaining)?;
+                // Whitespace can't carry a match past where its container
+                // ends: a table cell at the end of its line, or a list item
+                // at the start of a line that isn't its own.
+                let exit = || not(parser_with_context!(exit_matcher_parser)(context));
+                let (new_remaining, _) = terminated(
+                    many1(preceded(exit(), org_space_or_line_ending)),
+                    exit(),
+                )(remaining)?;
                 remaining = new_remaining;
                 goal = new_goal;
                 continue;
