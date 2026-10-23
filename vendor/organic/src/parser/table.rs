@@ -15,6 +15,7 @@ use nom::multi::many_till;
 use nom::sequence::tuple;
 
 use super::affiliated_keyword::parse_affiliated_keywords;
+use super::fuel;
 use super::keyword::table_formula_keyword;
 use super::object_parser::table_cell_set_object;
 use super::org_source::OrgSource;
@@ -168,6 +169,9 @@ fn org_mode_table_cell<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, TableCell<'s>> {
+    // A cell costs about what an object does, and an empty one spends
+    // nothing else.
+    fuel::spend(fuel::OBJECT, input)?;
     let parser_context = ContextElement::ExitMatcherNode(ExitMatcherNode {
         class: ExitClass::Beta,
         exit_matcher: &org_mode_table_cell_end,

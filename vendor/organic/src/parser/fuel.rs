@@ -4,34 +4,44 @@
 //! nested in each other, and closing each such path one at a time can't
 //! prove none is left. Fuel bounds them all: a parse gets fuel in
 //! proportion to its input's length, and spends it on each exit matcher it
-//! runs and each element or object it tries to parse. Once it is spent,
-//! every exit matcher matches, so each parser in progress ends at once and
-//! the parse fails with the opener that ran away.
+//! runs and each element, list item, table cell or object it tries to
+//! parse. Once it is spent, every exit matcher matches and every attempt
+//! fails with a nom `Failure`, which `alt`, `opt` and `many0` pass straight
+//! up instead of trying an alternative; exits alone left nested openers
+//! backtracking through exponentially many alternatives. The parse then
+//! fails with the opener that ran away.
 //!
-//! The weights make a unit cost about the same everywhere: 20–29 ns on an
-//! M4 Max across the corpus, adversarial openers repeated to 100 KB, and
-//! inputs that run away. Spending all the fuel therefore takes at most
-//! about 0.7 µs per byte plus 0.6 ms, inside the bound even on an ubuntu-latest
-//! GitHub runner, which parses at about the same speed (#48).
+//! Calibrated on an M4 Max, in release (#48):
+//! - The corpus needs at most 20.5 units a byte in a large file (ox-hugo's
+//!   manual) and 9,656 in a small one (worg's babel finances example); the
+//!   limits below are 1.8 and 2.1 times that.
+//! - Inputs that run out spend 7–23 ns a unit, among them every slow input
+//!   the fuzz targets found, so running out takes at most about 0.8 µs a
+//!   byte plus 0.5 ms. An ubuntu-latest GitHub runner parses at about the
+//!   same speed, which fuzz CI checks.
+//!
+//! The limits can't sit much further above the corpus: its slowest file
+//! already parses at a quarter of the bound.
 //!
 //! The fuel lives in a thread-local because `OrgSource`, which every parser
 //! advances through, is a plain `Copy` value with nowhere to keep it.
 
 use std::cell::Cell;
 
-/// Fuel per byte of input: twice what the corpus's densest large file
-/// needs (12.2, ox-hugo's manual).
-const PER_BYTE: u64 = 24;
-/// Fuel every parse gets on top: three times what the corpus's neediest
-/// small file spends in total (about 6,200).
+use super::OrgSource;
+use crate::error::CustomError;
+
+/// Fuel per byte of input.
+const PER_BYTE: u64 = 36;
+/// Fuel every parse gets on top, so a small input has room.
 const BASE: u64 = 20_000;
 
 /// Spent per exit matcher run.
-pub(crate) const EXIT_MATCHER: u64 = 1;
-/// Spent per attempt to parse an element. Each tries some twenty parsers,
-/// which mostly fail without running an exit matcher.
+pub(crate) const EXIT_MATCHER: u64 = 2;
+/// Spent per attempt to parse an element or list item. An element tries
+/// some twenty parsers, which mostly fail without running an exit matcher.
 pub(crate) const ELEMENT: u64 = 24;
-/// Spent per attempt to parse an object, for the same reason.
+/// Spent per attempt to parse an object or table cell, for the same reason.
 pub(crate) const OBJECT: u64 = 16;
 
 #[derive(Clone, Copy)]
@@ -49,17 +59,16 @@ impl Tank {
         if self.opener.is_some() {
             return;
         }
-        match self.left.checked_sub(units) {
-            Some(left) => self.left = left,
-            None => {
-                self.left = 0;
-                self.opener = Some(if self.attempt_depth > 0 {
-                    self.attempt_start
-                } else {
-                    offset
-                });
-            }
+        if let Some(left) = self.left.checked_sub(units) {
+            self.left = left;
+            return;
         }
+        self.left = 0;
+        self.opener = Some(if self.attempt_depth > 0 {
+            self.attempt_start
+        } else {
+            offset
+        });
     }
 }
 
@@ -95,6 +104,19 @@ pub(crate) fn burn(units: u64, offset: usize) -> bool {
     tank.opener.is_some()
 }
 
+/// Spends `units` on an attempt to parse something at `input`, and fails it
+/// once the fuel is spent.
+pub(crate) fn spend(units: u64, input: OrgSource<'_>) -> Result<(), nom::Err<CustomError>> {
+    if burn(units, input.get_byte_offset()) {
+        return Err(out_of_fuel());
+    }
+    Ok(())
+}
+
+fn out_of_fuel() -> nom::Err<CustomError> {
+    nom::Err::Failure(CustomError::Static("Out of fuel."))
+}
+
 pub(crate) fn is_spent() -> bool {
     TANK.get().opener.is_some()
 }
@@ -111,7 +133,9 @@ pub(crate) fn opener() -> Option<usize> {
 pub(crate) struct Attempt;
 
 impl Attempt {
-    pub(crate) fn start(offset: usize) -> Attempt {
+    /// Starts an attempt at `input`, or fails it once the fuel is spent.
+    pub(crate) fn start(input: OrgSource<'_>) -> Result<Attempt, nom::Err<CustomError>> {
+        let offset = input.get_byte_offset();
         let mut tank = TANK.get();
         if tank.attempt_depth == 0 {
             tank.attempt_start = offset;
@@ -119,7 +143,12 @@ impl Attempt {
         tank.attempt_depth += 1;
         tank.burn(ELEMENT, offset);
         TANK.set(tank);
-        Attempt
+        // Built first, so its drop ends the attempt when this one fails.
+        let attempt = Attempt;
+        if tank.opener.is_some() {
+            return Err(out_of_fuel());
+        }
+        Ok(attempt)
     }
 }
 

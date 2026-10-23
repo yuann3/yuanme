@@ -50,7 +50,7 @@ fn _element<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
     can_be_paragraph: bool,
 ) -> Res<OrgSource<'s>, Element<'s>> {
-    let _attempt = fuel::Attempt::start(input.get_byte_offset());
+    let _attempt = fuel::Attempt::start(input)?;
     let (post_affiliated_keywords_input, affiliated_keywords) = affiliated_keywords(input)?;
 
     let mut affiliated_keywords = affiliated_keywords.into_iter();
@@ -264,7 +264,7 @@ fn _detect_element<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
     can_be_paragraph: bool,
 ) -> Res<OrgSource<'s>, ()> {
-    fuel::burn(fuel::ELEMENT, input.get_byte_offset());
+    fuel::spend(fuel::ELEMENT, input)?;
     let (post_affiliated_keywords_input, affiliated_keywords) = affiliated_keywords(input)?;
 
     let mut affiliated_keywords = affiliated_keywords.into_iter();

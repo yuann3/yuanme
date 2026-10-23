@@ -23,6 +23,7 @@ use nom::InputTake;
 use super::affiliated_keyword::parse_affiliated_keywords;
 use super::closer;
 use super::element_parser::element;
+use super::fuel;
 use super::object_parser::standard_set_object;
 use super::org_source::OrgSource;
 use super::util::include_input;
@@ -209,6 +210,9 @@ fn plain_list_item<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, (PlainListType, PlainListItem<'s>)> {
+    // An item costs about what an element does, and one with no contents
+    // runs no exit matcher through the context.
+    fuel::spend(fuel::ELEMENT, input)?;
     start_of_line(input)?;
     let (remaining, (indent_level, _leading_whitespace)) = indentation_level(context, input)?;
     let (remaining, (bullet_type, bull)) =

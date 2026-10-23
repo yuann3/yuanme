@@ -96,6 +96,13 @@ impl<'g, 'r, 's> Context<'g, 'r, 's> {
         &'r self,
         i: OrgSource<'s>,
     ) -> IResult<OrgSource<'s>, OrgSource<'s>, CustomError> {
+        // Once the fuel is spent every exit matcher matches, so each parser
+        // in progress ends where it is. This comes before running any:
+        // citations' exit matchers parse citation keys, which run the exit
+        // matchers of every citation around them.
+        if fuel::is_spent() {
+            return Ok((i, i.take(0)));
+        }
         let mut ran = 0;
         let mut exit = Err(nom::Err::Error(CustomError::Static("NoExit")));
         let mut current_class_filter = ExitClass::Gamma;
@@ -113,8 +120,6 @@ impl<'g, 'r, 's> Context<'g, 'r, 's> {
                 }
             }
         }
-        // Once the fuel is spent every exit matcher matches, so each parser
-        // in progress ends where it is.
         if fuel::burn(ran * fuel::EXIT_MATCHER, i.get_byte_offset()) {
             return Ok((i, i.take(0)));
         }

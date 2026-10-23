@@ -26,6 +26,7 @@ use nom::multi::many_till;
 use nom::sequence::tuple;
 use nom::InputTake;
 
+use super::fuel;
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_object_trailing_whitespace_if_not_exiting;
@@ -289,6 +290,13 @@ fn impl_path_plain_end<'b, 'g, 'r, 's>(
     let (remaining, _leading_punctuation) = many0(verify(anychar, |c| {
         !" \t\r\n[]<>()/".contains(*c) && c.is_ascii_punctuation()
     }))(input)?;
+    // This runs at each character of a path and scans the punctuation
+    // ahead, so a long run of it is quadratic. Charging the scan lets fuel
+    // stop that (#15).
+    let scanned = remaining.get_byte_offset() - input.get_byte_offset();
+    if scanned > 1 && fuel::burn(scanned as u64, input.get_byte_offset()) {
+        return Ok((input, input.take(0)));
+    }
 
     let disallowed_character = alt((recognize(one_of(" \t\r\n[]<>")), eof))(remaining);
     if disallowed_character.is_ok() {
