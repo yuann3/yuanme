@@ -17,6 +17,7 @@ use crate::error::Res;
 use crate::parser::macros::element;
 use crate::types::Object;
 use crate::types::Paragraph;
+use crate::types::PlainText;
 
 pub(crate) fn bullshitium<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
@@ -48,18 +49,7 @@ pub(crate) fn broken_end<'b, 'g, 'r, 's>(
     if let Ok((remaining, mut paragraph)) =
         paragraph(std::iter::empty(), lead_in_remaining, context, input)
     {
-        match paragraph.children.first_mut() {
-            Some(Object::PlainText(plain_text)) => {
-                plain_text.source = input.get_until_end_of_str(plain_text.source).into();
-                paragraph.contents = Some(input.get_until_end_of_str(plain_text.source).into());
-            }
-            Some(obj) => {
-                panic!("Unhandled first object type inside bullshitium {:?}", obj);
-            }
-            None => {
-                unreachable!("Paragraph must have children.");
-            }
-        };
+        take_lead_in(input, lead_in_remaining, &mut paragraph);
         Ok((remaining, paragraph))
     } else {
         let (remaining, post_blank) =
@@ -76,6 +66,33 @@ pub(crate) fn broken_end<'b, 'g, 'r, 's>(
                 post_blank.map(Into::<&str>::into),
             ),
         ))
+    }
+}
+
+/// Makes the line that starts a bullshitium part of the paragraph after it.
+fn take_lead_in<'s>(
+    input: OrgSource<'s>,
+    lead_in_remaining: OrgSource<'s>,
+    paragraph: &mut Paragraph<'s>,
+) {
+    match paragraph.children.first_mut() {
+        Some(Object::PlainText(plain_text)) => {
+            plain_text.source = input.get_until_end_of_str(plain_text.source).into();
+            paragraph.contents = Some(input.get_until_end_of_str(plain_text.source).into());
+        }
+        // Upstream panicked here. Emacs reads the line as plain text before
+        // the paragraph's first object, such as a timestamp or a link.
+        Some(_) => {
+            let lead_in = PlainText {
+                source: input.get_until(lead_in_remaining).into(),
+            };
+            paragraph.children.insert(0, Object::PlainText(lead_in));
+            let contents = paragraph
+                .contents
+                .expect("a paragraph with children has contents");
+            paragraph.contents = Some(input.get_until_end_of_str(contents).into());
+        }
+        None => unreachable!("Paragraph must have children."),
     }
 }
 
@@ -101,18 +118,7 @@ pub(crate) fn broken_dynamic_block<'b, 'g, 'r, 's>(
     if let Ok((remaining, mut paragraph)) =
         paragraph(std::iter::empty(), lead_in_remaining, context, input)
     {
-        match paragraph.children.first_mut() {
-            Some(Object::PlainText(plain_text)) => {
-                plain_text.source = input.get_until_end_of_str(plain_text.source).into();
-                paragraph.contents = Some(input.get_until_end_of_str(plain_text.source).into());
-            }
-            Some(obj) => {
-                panic!("Unhandled first object type inside bullshitium {:?}", obj);
-            }
-            None => {
-                unreachable!("Paragraph must have children.");
-            }
-        };
+        take_lead_in(input, lead_in_remaining, &mut paragraph);
         Ok((remaining, paragraph))
     } else {
         let (remaining, post_blank) =

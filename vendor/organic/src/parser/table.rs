@@ -10,7 +10,6 @@ use nom::combinator::peek;
 use nom::combinator::recognize;
 use nom::combinator::verify;
 use nom::multi::many0;
-use nom::multi::many1;
 use nom::multi::many_till;
 use nom::sequence::tuple;
 
@@ -144,8 +143,10 @@ fn org_mode_table_row_regular<'b, 'g, 'r, 's>(
 ) -> Res<OrgSource<'s>, TableRow<'s>> {
     start_of_line(input)?;
     let (remaining, _) = tuple((space0, tag("|")))(input)?;
+    // A row can have no cells: upstream required one, so a lone `|` line
+    // failed the whole document, where Emacs reads it as an empty row.
     let (remaining, (contents, children)) =
-        consumed(many1(parser_with_context!(org_mode_table_cell)(context)))(remaining)?;
+        consumed(many0(parser_with_context!(org_mode_table_cell)(context)))(remaining)?;
     let (remaining, _tail) = recognize(tuple((space0, org_line_ending)))(remaining)?;
     let source = get_consumed(input, remaining);
     Ok((
