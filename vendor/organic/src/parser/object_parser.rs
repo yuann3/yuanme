@@ -25,6 +25,7 @@ use crate::parser::subscript_and_superscript::superscript;
 use crate::parser::target::target;
 use crate::parser::text_markup::text_markup;
 use crate::parser::timestamp::timestamp;
+use crate::parser::util::WORD_CONSTITUENT_CHARACTERS;
 use crate::types::Object;
 
 pub(crate) fn standard_set_object<'b, 'g, 'r, 's>(
@@ -109,6 +110,9 @@ pub(crate) fn detect_standard_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, ()> {
+    if !could_start_object(context, input) {
+        return Err(nom::Err::Error(CustomError::Static("No object detected.")));
+    }
     if detect_subscript_or_superscript(input).is_ok() {
         return Ok((input, ()));
     }
@@ -123,6 +127,9 @@ fn detect_minimal_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, ()> {
+    if !could_start_object(context, input) {
+        return Err(nom::Err::Error(CustomError::Static("No object detected.")));
+    }
     if detect_subscript_or_superscript(input).is_ok() {
         return Ok((input, ()));
     }
@@ -175,6 +182,9 @@ fn detect_regular_link_description_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, ()> {
+    if !could_start_object(context, input) {
+        return Err(nom::Err::Error(CustomError::Static("No object detected.")));
+    }
     if detect_subscript_or_superscript(input).is_ok() {
         return Ok((input, ()));
     }
@@ -227,6 +237,9 @@ fn detect_table_cell_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, ()> {
+    if !could_start_object(context, input) {
+        return Err(nom::Err::Error(CustomError::Static("No object detected.")));
+    }
     if detect_subscript_or_superscript(input).is_ok() {
         return Ok((input, ()));
     }
@@ -235,4 +248,44 @@ fn detect_table_cell_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     }
 
     Err(nom::Err::Error(CustomError::Static("No object detected.")))
+}
+
+/// Whether any object can start at `input`. Plain text asks this at every
+/// character, and upstream answered by trying every object parser (P3 and
+/// P4 in #30). A false here must mean every parser would fail.
+fn could_start_object(context: RefContext<'_, '_, '_, '_>, input: OrgSource<'_>) -> bool {
+    // A radio link starts wherever its target's text does.
+    if !context.get_global_settings().radio_targets.is_empty() {
+        return true;
+    }
+    let rest: &str = input.into();
+    let Some(first) = rest.chars().next() else {
+        return false;
+    };
+    match first {
+        '<' | '[' | '_' | '^' | '\\' | '@' | '$' | '{' | '*' | '/' | '=' | '~' | '+' => true,
+        // The Kelvin sign lowercases to `k`, so a case-insensitive protocol
+        // can start with it.
+        letter if letter.is_ascii_alphabetic() || letter == '\u{212A}' => {
+            let bytes = rest.as_bytes();
+            let starts_with = |prefix: &str| {
+                bytes.len() >= prefix.len()
+                    && bytes[..prefix.len()].eq_ignore_ascii_case(prefix.as_bytes())
+            };
+            if starts_with("src_") || starts_with("call_") {
+                return true;
+            }
+            // Otherwise only a plain link's protocol: after a non-word
+            // character, and followed by `:` before any whitespace.
+            let after_word = input
+                .get_preceding_character()
+                .is_some_and(|c| WORD_CONSTITUENT_CHARACTERS.contains(c));
+            !after_word
+                && rest
+                    .split(char::is_whitespace)
+                    .next()
+                    .is_some_and(|word| word.contains(':'))
+        }
+        _ => false,
+    }
 }
