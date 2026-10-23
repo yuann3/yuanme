@@ -10,7 +10,9 @@ use nom::InputTakeAtPosition;
 use nom::Offset;
 use nom::Slice;
 
-pub(crate) type BracketDepth = i16;
+// Upstream used i16, which overflowed past 32,767 unclosed brackets in one
+// document and panicked in debug builds.
+pub(crate) type BracketDepth = i32;
 
 #[derive(Copy, Clone)]
 pub(crate) struct OrgSource<'s> {

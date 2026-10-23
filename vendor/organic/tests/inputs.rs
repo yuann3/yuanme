@@ -106,3 +106,9 @@ fn text_can_follow_a_counter_but_not_a_checkbox_directly() {
         (None, true, "Blue\n".to_owned())
     );
 }
+
+#[test]
+fn a_document_can_hold_more_unclosed_brackets_than_an_i16() {
+    let input = format!("{}\n", "[ ".repeat(33_000));
+    assert_eq!(shape_of(&input), ["Paragraph PlainText"]);
+}
