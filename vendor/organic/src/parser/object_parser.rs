@@ -276,15 +276,24 @@ fn could_start_object(context: RefContext<'_, '_, '_, '_>, input: OrgSource<'_>)
                 return true;
             }
             // Otherwise only a plain link's protocol: after a non-word
-            // character, and followed by `:` before any whitespace.
+            // character, and followed by `:` before any whitespace. The `:`
+            // ends a protocol, so it is no further than the longest one.
             let after_word = input
                 .get_preceding_character()
                 .is_some_and(|c| WORD_CONSTITUENT_CHARACTERS.contains(c));
+            let longest = context
+                .get_global_settings()
+                .link_parameters
+                .iter()
+                .map(|protocol| protocol.chars().count())
+                .max()
+                .unwrap_or(0);
             !after_word
                 && rest
-                    .split(char::is_whitespace)
-                    .next()
-                    .is_some_and(|word| word.contains(':'))
+                    .chars()
+                    .take(longest + 1)
+                    .take_while(|c| !c.is_whitespace())
+                    .any(|c| c == ':')
         }
         _ => false,
     }
