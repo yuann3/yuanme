@@ -210,3 +210,8 @@ fn an_object_past_its_parents_closer_does_not_panic() {
         assert!(parse(input).is_ok(), "{input:?}");
     }
 }
+
+#[test]
+fn a_table_can_end_the_input_without_a_line_break() {
+    assert_eq!(shape_of("a\n| b | c"), ["Paragraph PlainText", "Table"]);
+}

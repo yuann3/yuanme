@@ -4,6 +4,7 @@ use nom::bytes::complete::tag;
 use nom::character::complete::line_ending;
 use nom::character::complete::space0;
 use nom::combinator::consumed;
+use nom::combinator::eof;
 use nom::combinator::not;
 use nom::combinator::opt;
 use nom::combinator::peek;
@@ -201,5 +202,7 @@ fn org_mode_table_cell_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
-    recognize(tuple((space0, alt((tag("|"), peek(line_ending))))))(input)
+    // The end of the input ends a cell too: upstream failed the whole
+    // document on a last line like `| a` with no line break.
+    recognize(tuple((space0, alt((tag("|"), peek(line_ending), eof)))))(input)
 }
