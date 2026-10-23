@@ -1,3 +1,4 @@
+use super::fuel;
 use super::org_source::OrgSource;
 use super::plain_text::plain_text;
 use super::regular_link::regular_link;
@@ -60,6 +61,7 @@ fn standard_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, Object<'s>> {
+    fuel::burn(fuel::OBJECT, input.get_byte_offset());
     element!(timestamp, context, input, Object::Timestamp);
     element!(subscript, context, input, Object::Subscript);
     element!(superscript, context, input, Object::Superscript);
@@ -98,6 +100,7 @@ fn minimal_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, Object<'s>> {
+    fuel::burn(fuel::OBJECT, input.get_byte_offset());
     element!(subscript, context, input, Object::Subscript);
     element!(superscript, context, input, Object::Superscript);
     element!(entity, context, input, Object::Entity);
@@ -163,6 +166,7 @@ fn regular_link_description_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, Object<'s>> {
+    fuel::burn(fuel::OBJECT, input.get_byte_offset());
     // TODO: It can also contain another link, but only when it is a plain or angle link. It can contain square brackets, but not ]]
     element!(export_snippet, context, input, Object::ExportSnippet);
     element!(statistics_cookie, context, input, Object::StatisticsCookie);
@@ -213,6 +217,7 @@ fn table_cell_set_object_sans_plain_text<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, Object<'s>> {
+    fuel::burn(fuel::OBJECT, input.get_byte_offset());
     element!(citation, context, input, Object::Citation);
     element!(export_snippet, context, input, Object::ExportSnippet);
     element!(

@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use nom::combinator::eof;
 use nom::IResult;
+use nom::InputTake;
 
 use super::exiting::ExitClass;
 use super::global_settings::GlobalSettings;
@@ -10,6 +11,7 @@ use super::DynContextMatcher;
 use super::RefContext;
 use crate::error::CustomError;
 use crate::error::Res;
+use crate::parser::fuel;
 use crate::parser::OrgSource;
 
 pub(crate) enum ContextElement<'r, 's> {
@@ -94,21 +96,29 @@ impl<'g, 'r, 's> Context<'g, 'r, 's> {
         &'r self,
         i: OrgSource<'s>,
     ) -> IResult<OrgSource<'s>, OrgSource<'s>, CustomError> {
+        let mut ran = 0;
+        let mut exit = Err(nom::Err::Error(CustomError::Static("NoExit")));
         let mut current_class_filter = ExitClass::Gamma;
         for current_node in self.iter_context() {
             let context_element = current_node.get_data();
             if let ContextElement::ExitMatcherNode(exit_matcher) = context_element {
                 if exit_matcher.class as u32 <= current_class_filter as u32 {
                     current_class_filter = exit_matcher.class;
+                    ran += 1;
                     let local_result = (exit_matcher.exit_matcher)(&current_node, i);
                     if local_result.is_ok() {
-                        return local_result;
+                        exit = local_result;
+                        break;
                     }
                 }
             }
         }
-        // TODO: Make this a specific error instead of just a generic MyError
-        Err(nom::Err::Error(CustomError::Static("NoExit")))
+        // Once the fuel is spent every exit matcher matches, so each parser
+        // in progress ends where it is.
+        if fuel::burn(ran * fuel::EXIT_MATCHER, i.get_byte_offset()) {
+            return Ok((i, i.take(0)));
+        }
+        exit
     }
 
     /// Indicates if elements should consume the whitespace after them.

@@ -14,6 +14,7 @@ use nom::multi::many0;
 use nom::multi::many_till;
 use nom::sequence::tuple;
 
+use super::fuel;
 use super::keyword::affiliated_keyword;
 use super::object_parser::standard_set_object;
 use super::util::confine_context;
@@ -127,11 +128,17 @@ where
                 .expect("Object parser should always succeed.");
 
                 // TODO: This should be omitting footnote references
-                let (_remaining, objects) = all_consuming(many0(bind_context!(
+                let objects = match all_consuming(many0(bind_context!(
                     standard_set_object,
                     &initial_context
                 )))(kw.value.into())
-                .expect("Object parser should always succeed.");
+                {
+                    Ok((_remaining, objects)) => objects,
+                    // Once the fuel is spent every exit matcher matches, so
+                    // objects stop short, and the whole parse fails anyway.
+                    Err(_) if fuel::is_spent() => Vec::new(),
+                    Err(error) => panic!("Object parser should always succeed: {error:?}"),
+                };
 
                 let entry_per_keyword_list = ret
                     .entry(translated_name)

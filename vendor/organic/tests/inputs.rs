@@ -3,6 +3,7 @@
 //! Org 9.8.7 (Emacs 31.1).
 
 use yuanme_org::parser::parse;
+use yuanme_org::parser::ParseError;
 use yuanme_org::types::Document;
 use yuanme_org::types::Element;
 
@@ -221,5 +222,18 @@ fn any_todo_keyword_value_parses() {
     for value in ["(", "||", "A(b)c", "TODO(t) | DONE(d!) |"] {
         let input = format!("#+TODO: {value}\n* TODO x\n");
         assert!(parse(&input).is_ok(), "{input:?}");
+    }
+}
+
+/// Unclosed blocks nested in each other take polynomial time, each block
+/// re-parsing the rest, so the parse runs out of fuel and names the first
+/// block (#15).
+#[test]
+fn a_runaway_parse_runs_out_of_fuel_at_its_opener() {
+    let prose = "Some prose.\n\n";
+    let input = format!("{prose}{}text\n", "#+BEGIN_QUOTE\n#+BEGIN: x\n".repeat(8));
+    match parse(&input) {
+        Err(ParseError::OutOfFuel { opener }) => assert_eq!(opener, prose.len()),
+        other => panic!("expected OutOfFuel, got {:?}", other.map(|_| ())),
     }
 }

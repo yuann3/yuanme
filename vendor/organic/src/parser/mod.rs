@@ -17,6 +17,7 @@ mod export_snippet;
 mod fixed_width_area;
 mod footnote_definition;
 mod footnote_reference;
+pub(crate) mod fuel;
 mod greater_block;
 mod headline;
 mod horizontal_rule;

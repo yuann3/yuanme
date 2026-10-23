@@ -10,6 +10,7 @@ use super::fixed_width_area::detect_fixed_width_area;
 use super::fixed_width_area::fixed_width_area;
 use super::footnote_definition::detect_footnote_definition;
 use super::footnote_definition::footnote_definition;
+use super::fuel;
 use super::greater_block::greater_block;
 use super::horizontal_rule::horizontal_rule;
 use super::keyword::keyword;
@@ -49,6 +50,7 @@ fn _element<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
     can_be_paragraph: bool,
 ) -> Res<OrgSource<'s>, Element<'s>> {
+    let _attempt = fuel::Attempt::start(input.get_byte_offset());
     let (post_affiliated_keywords_input, affiliated_keywords) = affiliated_keywords(input)?;
 
     let mut affiliated_keywords = affiliated_keywords.into_iter();
@@ -262,6 +264,7 @@ fn _detect_element<'b, 'g, 'r, 's>(
     input: OrgSource<'s>,
     can_be_paragraph: bool,
 ) -> Res<OrgSource<'s>, ()> {
+    fuel::burn(fuel::ELEMENT, input.get_byte_offset());
     let (post_affiliated_keywords_input, affiliated_keywords) = affiliated_keywords(input)?;
 
     let mut affiliated_keywords = affiliated_keywords.into_iter();

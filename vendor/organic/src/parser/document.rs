@@ -4,6 +4,7 @@ use nom::multi::many0;
 use nom::InputTake;
 
 use super::closer;
+use super::fuel;
 use super::headline::heading;
 use super::in_buffer_settings::apply_in_buffer_settings;
 use super::in_buffer_settings::apply_post_parse_in_buffer_settings;
@@ -28,6 +29,11 @@ use crate::types::Object;
 /// Why a document didn't parse.
 #[derive(Debug)]
 pub enum ParseError {
+    /// The parse spent more work than the input's length allows (#15).
+    /// `opener` is the byte offset where the outermost element being parsed
+    /// when the fuel ran out began: a top-level paragraph whose objects ran
+    /// away, or the first of several unclosed blocks nested in each other.
+    OutOfFuel { opener: usize },
     /// Org has no syntax errors, so this is a bug in the parser, or a
     /// `#+SETUPFILE` the settings' `FileAccessInterface` failed to read.
     Failed(String),
@@ -36,6 +42,9 @@ pub enum ParseError {
 impl std::fmt::Display for ParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            ParseError::OutOfFuel { opener } => {
+                write!(f, "parsing ran out of fuel at byte {opener}")
+            }
             ParseError::Failed(message) => f.write_str(message),
         }
     }
@@ -59,8 +68,12 @@ pub fn parse_with_settings<'g, 's>(
     let initial_context = Context::new(global_settings, List::new(&initial_context));
     let wrapped_input = OrgSource::new(input);
     closer::reset();
+    fuel::fill(input.len());
     let document =
         all_consuming(bind_context!(document_org_source, &initial_context))(wrapped_input);
+    if let Some(opener) = fuel::opener() {
+        return Err(ParseError::OutOfFuel { opener });
+    }
     document
         .map(|(_remaining, document)| document)
         .map_err(|error| ParseError::Failed(error.to_string()))
