@@ -1,0 +1,33 @@
+[package]
+name = "yuanme-org-fuzz"
+version = "0.0.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+arbitrary = { version = "1.4", features = ["derive"] }
+libfuzzer-sys = "0.4"
+yuanme-org = { path = ".." }
+
+# Its own workspace, so the main one, its lockfile and its checks never see
+# libFuzzer.
+[workspace]
+
+[[bin]]
+name = "adversarial"
+path = "fuzz_targets/adversarial.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "bytes"
+path = "fuzz_targets/bytes.rs"
+test = false
+doc = false
+bench = false
+
