@@ -48,7 +48,14 @@ fn name<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, (&'g EntityDefinition<'s>, OrgSource<'s>, bool)> {
+    let text: &str = input.into();
+    let first = text.as_bytes().first();
     for entity in context.get_global_settings().entities {
+        // A failed `tag`, or even a memcmp, for each of Org's ~400 entities
+        // made every backslash cost a microsecond (#15).
+        if entity.name.as_bytes().first() != first || !text.starts_with(entity.name) {
+            continue;
+        }
         let result = tuple((
             tag::<_, _, CustomError>(entity.name),
             cond(
