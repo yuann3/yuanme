@@ -14,6 +14,7 @@ use nom::sequence::preceded;
 use nom::sequence::terminated;
 use nom::sequence::tuple;
 
+use super::fuel;
 use super::org_source::OrgSource;
 use super::radio_link::RematchObject;
 use super::util::exit_matcher_parser;
@@ -98,8 +99,23 @@ impl<'x> RematchObject<'x> for PlainText<'x> {
                 break;
             }
 
+            // Radio links are tried at every character of every paragraph,
+            // and reading the target's word first made a long target cost
+            // its length at each one (#15). A first character that differs
+            // fails at once; a word compared in full is charged for.
+            let text: &str = remaining.into();
+            let first = |text: &str| text.chars().next().map(char::to_lowercase);
+            let starts_word = !goal.starts_with([' ', '\t', '\r', '\n']);
+            if starts_word
+                && !first(goal).is_some_and(|goal| first(text).is_some_and(|text| goal.eq(text)))
+            {
+                return Err(nom::Err::Error(CustomError::Static(
+                    "Target does not match.",
+                )));
+            }
             let is_not_whitespace = is_not::<_, _, CustomError>(" \t\r\n")(goal);
             if let Ok((new_goal, payload)) = is_not_whitespace {
+                fuel::spend(payload.len() as u64 / 16, remaining)?;
                 let (new_remaining, _) = tuple((
                     tag_no_case(payload),
                     // TODO: Test to see what the REAL condition is. Checking for not-alphabetic works fine for now, but the real criteria might be something like the plain text exit matcher.
