@@ -16,6 +16,7 @@ use nom::multi::many1;
 use nom::multi::separated_list1;
 use nom::sequence::tuple;
 
+use super::closer::ends_headline_title;
 use super::org_source::OrgSource;
 use super::section::section;
 use super::util::exit_matcher_parser;
@@ -220,6 +221,9 @@ fn headline_title_end<'b, 'g, 'r, 's>(
     _context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
+    if !ends_headline_title(input) {
+        return Err(nom::Err::Error(CustomError::Static("The title goes on.")));
+    }
     recognize(tuple((space0, opt(tuple((tags, space0))), org_line_ending)))(input)
 }
 

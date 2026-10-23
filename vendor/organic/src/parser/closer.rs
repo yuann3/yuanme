@@ -86,6 +86,7 @@ pub(crate) fn reset() {
     TABLES.with_borrow_mut(Vec::clear);
     LAST_DIVIDER.set(None);
     ENDS.with_borrow_mut(Vec::clear);
+    TITLE_ENDS.set(None);
 }
 
 /// Whether `input` starts the last list-item tag divider on its line: a
@@ -444,4 +445,93 @@ pub(crate) fn expect_end<'s>(input: OrgSource<'s>, end: End<'_>) -> Res<OrgSourc
     } else {
         Err(nom::Err::Error(CustomError::Static("Never ends.")))
     }
+}
+
+/// For one input, a line's start and which of its positions end a
+/// headline's title.
+struct TitleEnds {
+    source: (usize, usize),
+    line_start: usize,
+    end: usize,
+    /// By byte offset from `line_start`, up to where the line ending starts.
+    ends: Vec<bool>,
+}
+
+thread_local! {
+    static TITLE_ENDS: RefCell<Option<TitleEnds>> = const { RefCell::new(None) };
+}
+
+/// Whether a headline's title ends at `input`: blanks, then maybe tags
+/// such as `:a:b:` and blanks, then the line's end. Plain text asks at every
+/// character of a title, and the tags parser ran to the line's end each
+/// time, so a title of many `:`-separated words took quadratic time (#15).
+/// Each line's answers are found in one pass from its end and remembered.
+pub(crate) fn ends_headline_title(input: OrgSource<'_>) -> bool {
+    let (text, at) = input.full_source_and_offset();
+    let source = (text.as_ptr() as usize, text.len());
+    let line_start = at - input.text_since_line_break().len();
+    // Contents parsed again inside an object end before the full source.
+    let end = at + input.len();
+    TITLE_ENDS.with_borrow_mut(|memo| {
+        let ends = match memo {
+            Some(memo)
+                if memo.source == source && memo.line_start == line_start && memo.end == end =>
+            {
+                &memo.ends
+            }
+            _ => {
+                let line = &text[line_start..end];
+                let line = match line.find('\n') {
+                    Some(newline) => line[..newline]
+                        .strip_suffix('\r')
+                        .unwrap_or(&line[..newline]),
+                    None => line,
+                };
+                &memo
+                    .insert(TitleEnds {
+                        source,
+                        line_start,
+                        end,
+                        ends: title_ends(line),
+                    })
+                    .ends
+            }
+        };
+        // Past the ends is the line ending, which ends the title too.
+        ends.get(at - line_start).copied().unwrap_or(true)
+    })
+}
+
+fn title_ends(line: &str) -> Vec<bool> {
+    let chars: Vec<(usize, char)> = line.char_indices().collect();
+    let n = chars.len();
+    let is_blank = |c: char| c == ' ' || c == '\t';
+    let is_tag = |c: char| c.is_alphanumeric() || "_@#%".contains(c);
+    // By char index: whether only blanks follow; whether `(TAG:)+` and
+    // blanks follow; the first non-blank at or after it.
+    let mut blank_to_end = vec![true; n + 1];
+    let mut tags_to_end = vec![false; n + 1];
+    let mut non_blank = vec![n; n + 1];
+    let mut run_end = vec![n; n + 1];
+    let mut ends = vec![false; line.len() + 1];
+    ends[line.len()] = true;
+    for i in (0..n).rev() {
+        let c = chars[i].1;
+        blank_to_end[i] = is_blank(c) && blank_to_end[i + 1];
+        non_blank[i] = if is_blank(c) { non_blank[i + 1] } else { i };
+        if is_tag(c) {
+            run_end[i] = if i + 1 < n && is_tag(chars[i + 1].1) {
+                run_end[i + 1]
+            } else {
+                i + 1
+            };
+            let colon = run_end[i];
+            tags_to_end[i] = colon < n
+                && chars[colon].1 == ':'
+                && (blank_to_end[colon + 1] || tags_to_end[colon + 1]);
+        }
+        let first = non_blank[i];
+        ends[chars[i].0] = first == n || (chars[first].1 == ':' && tags_to_end[first + 1]);
+    }
+    ends
 }
