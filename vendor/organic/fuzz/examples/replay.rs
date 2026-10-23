@@ -1,5 +1,6 @@
 //! Times every input in a fuzz corpus against the parse-time bound (#15),
-//! outside libFuzzer, whose instrumentation slows parsing down:
+//! scaled to this machine's speed, outside libFuzzer, whose instrumentation
+//! slows parsing down:
 //! `cargo run --release --example replay -- adversarial|bytes DIR...`. It is
 //! an example so that `cargo fuzz build`, which instruments every binary,
 //! leaves it alone.
@@ -9,6 +10,7 @@ use std::process::ExitCode;
 
 use yuanme_org_fuzz::adversarial;
 use yuanme_org_fuzz::bound;
+use yuanme_org_fuzz::slowdown;
 use yuanme_org_fuzz::time;
 
 fn main() -> ExitCode {
@@ -22,6 +24,10 @@ fn main() -> ExitCode {
 
     // The first parse in a process pays for cold caches.
     time("* A heading\nSome *bold* text.\n");
+    let slowdown = slowdown();
+    println!(
+        "This machine parses {slowdown:.2} times as slow as the M4 Max the bound is set on, so the bound scales by that."
+    );
 
     let mut slowest = (0.0, PathBuf::new());
     let mut over = 0;
@@ -35,7 +41,7 @@ fn main() -> ExitCode {
             },
             _ => panic!("no fuzz target {target}"),
         };
-        let bound = bound(&text);
+        let bound = bound(&text).mul_f64(slowdown);
         let mut took = time(&text);
         // A runner can stall for longer than a small input's whole bound,
         // so a parse over it is timed up to twenty more times, and the best

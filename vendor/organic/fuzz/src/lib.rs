@@ -1,6 +1,8 @@
 //! Fuzzing for the Org parser's guarantees (#15): no input panics, none
 //! fails except by running out of fuel or nesting too deep, and none parses
-//! slower than 1 ms/KB + 1 ms. From vendor/organic, on stable Rust:
+//! slower than 1 ms/KB + 1 ms on the M4 Max the fuel was calibrated on, or
+//! as many times longer as the machine is slower. From vendor/organic, on
+//! stable Rust:
 //!
 //! ```text
 //! cargo fuzz run --sanitizer none adversarial fuzz/corpus/adversarial fuzz/seeds/adversarial
@@ -73,9 +75,63 @@ pub fn check(text: &str) {
     }
 }
 
-/// How long #15 lets `text` take to parse.
+/// How long #15 lets `text` take to parse on the machine the fuel was
+/// calibrated on, an M4 Max (#48).
 pub fn bound(text: &str) -> Duration {
     Duration::from_millis(1) + Duration::from_secs_f64(text.len() as f64 / 1024.0 / 1000.0)
+}
+
+/// The best time to parse `reference_document` on that M4 Max, in release.
+const REFERENCE: Duration = Duration::from_micros(14_200);
+
+/// How many times slower than the M4 Max this machine parses, at least 1.
+///
+/// The fuel has to sit above what the corpus needs, and the corpus's
+/// slowest file parses at a quarter of the bound on the M4 Max. An
+/// ubuntu-latest runner parses 2 to 2.7 times slower, so there running out
+/// of fuel takes longer than the bound itself. The bound is there to catch
+/// superlinear paths (#15), so fuzz CI scales it by how much slower the
+/// machine parses a corpus-like document. That also scales it with the
+/// parser's own speed: a parser slower at everything gets a longer bound,
+/// which only the benchmark catches. Measure `REFERENCE` again when the
+/// benchmark moves.
+pub fn slowdown() -> f64 {
+    let document = reference_document();
+    let best = (0..20).map(|_| time(&document)).min().unwrap_or_default();
+    (best.as_secs_f64() / REFERENCE.as_secs_f64()).max(1.0)
+}
+
+/// A document like those in the corpus, about 100 KB.
+fn reference_document() -> String {
+    let section = "\
+* TODO A heading with a [[https://example.org][link]] :tag:
+SCHEDULED: <2024-01-01 Mon>
+:PROPERTIES:
+:ID: a
+:END:
+Prose with *bold*, /italic/, =code=, ~verbatim~ and +struck+ text, a
+footnote[fn:1], \\alpha and $x^2$, src_rust{1 + 1} and https://example.org.
+
+- An item with a [[file:a.org][file link]]
+- [ ] A checkbox, and a term :: its description
+  1. Nested, with \\(a_{i}\\)
+
+| Name | Value |
+|------+-------|
+| a    | 1     |
+
+#+BEGIN_SRC rust
+fn main() {}
+#+END_SRC
+
+#+BEGIN_QUOTE
+A quotation.
+#+END_QUOTE
+
+[fn:1] The footnote.
+
+";
+    section.repeat(100_000 / section.len())
 }
 
 /// How long `text` takes to parse.
