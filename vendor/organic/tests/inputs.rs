@@ -194,3 +194,19 @@ fn a_comment_at_the_end_of_the_input_keeps_its_text() {
         assert_eq!(comment.value, [value], "{input:?}");
     }
 }
+
+/// An object inside another can run past the outer one's closer. Upstream
+/// panicked when the outer one's end matcher then found itself past it.
+#[test]
+fn an_object_past_its_parents_closer_does_not_panic() {
+    for input in [
+        ":_{[[}]]",
+        "}^{http:}(E",
+        ")^{src_}{}",
+        "[cite:\\[[]]\\]",
+        "[cite:src_]{}",
+        "[cite:[[\\]]]",
+    ] {
+        assert!(parse(input).is_ok(), "{input:?}");
+    }
+}

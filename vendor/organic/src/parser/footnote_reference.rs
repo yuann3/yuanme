@@ -6,6 +6,7 @@ use nom::combinator::consumed;
 use nom::combinator::map_parser;
 use nom::combinator::verify;
 use nom::multi::many1;
+use nom::InputTake;
 
 use super::closer;
 use super::org_source::BracketDepth;
@@ -170,8 +171,9 @@ fn _footnote_definition_end<'b, 'g, 'r, 's>(
         )));
     }
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing bracket should end the footnote definition.
-        unreachable!("Exceeded footnote reference definition bracket depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     tag("]")(input)
 }

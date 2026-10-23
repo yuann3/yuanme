@@ -24,6 +24,7 @@ use nom::multi::many1;
 use nom::multi::many1_count;
 use nom::multi::many_till;
 use nom::sequence::tuple;
+use nom::InputTake;
 
 use super::org_source::BracketDepth;
 use super::org_source::OrgSource;
@@ -371,8 +372,9 @@ fn _path_plain_parenthesis_end<'s>(
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let current_depth = input.get_parenthesis_depth() - starting_parenthesis_depth;
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing parenthesis should end the link.
-        unreachable!("Exceeded plain link parenthesis depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     if current_depth == 0 {
         let close_parenthesis = tag::<_, _, CustomError>(")")(input);

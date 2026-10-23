@@ -14,6 +14,7 @@ use nom::combinator::recognize;
 use nom::combinator::verify;
 use nom::multi::many_till;
 use nom::sequence::tuple;
+use nom::InputTake;
 
 use super::affiliated_keyword::parse_affiliated_keywords;
 use super::org_source::BracketDepth;
@@ -179,8 +180,9 @@ fn _optval_end<'s>(
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let current_depth = input.get_bracket_depth() - starting_bracket_depth;
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing bracket should end the opval.
-        unreachable!("Exceeded optval bracket depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     if current_depth == 0 {
         let close_bracket = tag::<_, _, CustomError>("]")(input);

@@ -8,6 +8,7 @@ use nom::combinator::opt;
 use nom::combinator::recognize;
 use nom::combinator::verify;
 use nom::multi::many_till;
+use nom::InputTake;
 
 use super::closer;
 use super::org_source::BracketDepth;
@@ -116,8 +117,9 @@ fn _header_end<'b, 'g, 'r, 's>(
         return Err(nom::Err::Error(CustomError::Static("NoHeaderEnd")));
     }
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing bracket should end the header.
-        unreachable!("Exceeded header bracket depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     alt((tag("]"), line_ending))(input)
 }
@@ -159,8 +161,9 @@ fn _argument_end<'b, 'g, 'r, 's>(
         return Err(nom::Err::Error(CustomError::Static("NoArgumentEnd")));
     }
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing parenthesis should end the argument.
-        unreachable!("Exceeded argument parenthesis depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     alt((tag(")"), line_ending))(input)
 }

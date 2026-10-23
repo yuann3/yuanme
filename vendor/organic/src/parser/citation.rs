@@ -10,6 +10,7 @@ use nom::multi::many1;
 use nom::multi::many_till;
 use nom::multi::separated_list1;
 use nom::sequence::tuple;
+use nom::InputTake;
 
 use super::citation_reference::must_balance_bracket;
 use super::closer;
@@ -128,8 +129,9 @@ fn _global_prefix_end<'b, 'g, 'r, 's>(
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let current_depth = input.get_bracket_depth() - starting_bracket_depth;
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing bracket should end the citation.
-        unreachable!("Exceeded citation global prefix bracket depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     if current_depth == 0 {
         let close_bracket = tag::<_, _, CustomError>("]")(input);
@@ -174,8 +176,9 @@ fn _global_suffix_end<'b, 'g, 'r, 's>(
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let current_depth = input.get_bracket_depth() - starting_bracket_depth;
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing bracket should end the citation.
-        unreachable!("Exceeded citation global suffix bracket depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     if current_depth == 0 {
         let close_bracket = tag::<_, _, CustomError>("]")(input);

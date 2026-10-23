@@ -12,6 +12,7 @@ use nom::combinator::recognize;
 use nom::combinator::verify;
 use nom::multi::many_till;
 use nom::sequence::tuple;
+use nom::InputTake;
 
 use super::closer;
 use super::object_parser::standard_set_object;
@@ -219,8 +220,9 @@ fn _script_with_braces_end<'b, 'g, 'r, 's>(
         )));
     }
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing brace should end the subscript or superscript.
-        unreachable!("Exceeded subscript or superscript brace depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     tag("}")(input)
 }
@@ -256,8 +258,9 @@ fn _script_with_parenthesis_end<'s>(
 ) -> Res<OrgSource<'s>, OrgSource<'s>> {
     let current_depth = input.get_parenthesis_depth() - starting_parenthesis_depth;
     if current_depth < 0 {
-        // This shouldn't be possible because if depth is 0 then a closing bracket should end the citation.
-        unreachable!("Exceeded citation key suffix bracket depth.")
+        // An object inside went past this closer. Upstream panicked here;
+        // ending now makes that object fail and be read again as text.
+        return Ok((input, input.take(0)));
     }
     if current_depth == 0 {
         let close_parenthesis = tag::<_, _, CustomError>(")")(input);
