@@ -15,6 +15,8 @@ use nom::multi::many_till;
 use nom::sequence::tuple;
 
 use super::affiliated_keyword::parse_affiliated_keywords;
+use super::closer::expect_end;
+use super::closer::End;
 use super::greater_block::leading_blank_lines_end;
 use super::org_source::OrgSource;
 use super::paragraph::empty_paragraph;
@@ -60,6 +62,7 @@ where
         space0,
         line_ending,
     ))(remaining)?;
+    expect_end(remaining, End::DynamicBlock)?;
     let contexts = [
         ContextElement::ConsumeTrailingWhitespace(true),
         ContextElement::Context("dynamic block"),

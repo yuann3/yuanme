@@ -12,6 +12,8 @@ use nom::multi::many_till;
 use nom::sequence::tuple;
 
 use super::affiliated_keyword::parse_affiliated_keywords;
+use super::closer::expect_end;
+use super::closer::End;
 use super::org_source::OrgSource;
 use super::paragraph::empty_paragraph;
 use super::util::maybe_consume_trailing_whitespace_if_not_exiting;
@@ -55,6 +57,7 @@ where
         tag(":"),
         recognize(tuple((space0, line_ending))),
     ))(remaining)?;
+    expect_end(remaining, End::Drawer)?;
 
     let contexts = [
         ContextElement::ConsumeTrailingWhitespace(true),

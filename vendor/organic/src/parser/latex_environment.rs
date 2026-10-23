@@ -12,6 +12,8 @@ use nom::multi::many_till;
 use nom::sequence::tuple;
 
 use super::affiliated_keyword::parse_affiliated_keywords;
+use super::closer::expect_end;
+use super::closer::End;
 use super::org_source::OrgSource;
 use super::util::get_consumed;
 use super::util::maybe_consume_trailing_whitespace_if_not_exiting;
@@ -41,6 +43,7 @@ where
     let (remaining, _leading_whitespace) = space0(remaining)?;
     let (remaining, (_opening, name, _open_close_brace, _ws, _line_ending)) =
         tuple((tag_no_case(r"\begin{"), name, tag("}"), space0, line_ending))(remaining)?;
+    expect_end(remaining, End::Latex(name.into()))?;
 
     let latex_environment_end_specialized = latex_environment_end(name.into());
     let parser_context = ContextElement::ExitMatcherNode(ExitMatcherNode {

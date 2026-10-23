@@ -15,6 +15,8 @@ use nom::multi::many_till;
 use nom::sequence::tuple;
 
 use super::affiliated_keyword::parse_affiliated_keywords;
+use super::closer::expect_end;
+use super::closer::End;
 use super::org_source::OrgSource;
 use super::paragraph::empty_paragraph;
 use super::util::in_section;
@@ -60,6 +62,7 @@ where
         }),
     ))(remaining)?;
     let name = Into::<&str>::into(name);
+    expect_end(remaining, End::Block(name))?;
     let (remaining, element) = match name.to_lowercase().as_str() {
         "center" => center_block(
             context,

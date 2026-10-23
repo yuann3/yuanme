@@ -14,9 +14,13 @@
 //! instead each input gets a table of where every bracket closes. Both live
 //! in thread-locals because `OrgSource` is a `Copy` value with nowhere to
 //! keep them.
+//!
+//! Blocks, drawers and LaTeX environments ask the same of their end lines;
+//! see `end_follows`.
 
 use std::cell::Cell;
 use std::cell::RefCell;
+use std::collections::HashMap;
 
 use super::org_source::OrgSource;
 use super::util::in_section;
@@ -81,6 +85,7 @@ pub(crate) fn reset() {
     SCANS.with_borrow_mut(Vec::clear);
     TABLES.with_borrow_mut(Vec::clear);
     LAST_DIVIDER.set(None);
+    ENDS.with_borrow_mut(Vec::clear);
 }
 
 /// Whether `input` starts the last list-item tag divider on its line: a
@@ -305,4 +310,138 @@ fn starts_blank_line(line: &[u8]) -> bool {
         .take_while(|b| matches!(b, b' ' | b'\t'))
         .count()..];
     rest.is_empty() || rest[0] == b'\n' || rest.starts_with(b"\r\n")
+}
+
+/// A line that can end a block, a drawer or a LaTeX environment.
+#[derive(Clone, Copy)]
+pub(crate) enum End<'a> {
+    /// `#+end_NAME`, for a greater or lesser block.
+    Block(&'a str),
+    /// `#+end:` or `#+end`, for a dynamic block.
+    DynamicBlock,
+    /// `:end:`, for a drawer.
+    Drawer,
+    /// `\end{NAME}`.
+    Latex(&'a str),
+}
+
+/// For one input, where the last line that might end each kind of block,
+/// drawer and LaTeX environment starts, or 0 for none.
+struct Ends {
+    source: (usize, usize),
+    /// By lowercased name.
+    blocks: HashMap<String, usize>,
+    /// The last block end whose name isn't ASCII. Upstream compares such a
+    /// name by Unicode case folding, where `K` (U+212A) matches `k`, so it
+    /// may end a block of any name.
+    any_block: usize,
+    latex: HashMap<String, usize>,
+    any_latex: usize,
+    dynamic_block: usize,
+    drawer: usize,
+}
+
+thread_local! {
+    static ENDS: RefCell<Vec<Ends>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Whether a line that may be `end` starts after `input`.
+///
+/// A block, drawer or LaTeX environment parses its contents as elements
+/// before it looks for its end, and fails after all that work when the end
+/// never comes; the paragraph that takes its place then tries every opener
+/// inside it again. Unclosed blocks nested in each other took exponential
+/// time that way (#15). Emacs looks for the end line first and makes an
+/// unclosed block a paragraph straight away, which this lets each parser do
+/// too. Lines that match every end matcher are found, and maybe more, so the
+/// answer may be a wrong "yes" but never a wrong "no".
+fn end_follows(input: OrgSource<'_>, end: End<'_>) -> bool {
+    let (text, at) = input.full_source_and_offset();
+    let source = (text.as_ptr() as usize, text.len());
+    ENDS.with_borrow_mut(|tables| {
+        let index = match tables.iter().position(|table| table.source == source) {
+            Some(index) => index,
+            None => {
+                if tables.len() == KEEP_TABLES {
+                    tables.remove(0);
+                }
+                tables.push(ends(text));
+                tables.len() - 1
+            }
+        };
+        let table = &tables[index];
+        let last = match end {
+            End::Block(name) => last_named(&table.blocks, table.any_block, name),
+            End::DynamicBlock => table.dynamic_block,
+            End::Drawer => table.drawer,
+            End::Latex(name) => last_named(&table.latex, table.any_latex, name),
+        };
+        last > at
+    })
+}
+
+fn last_named(lines: &HashMap<String, usize>, any: usize, name: &str) -> usize {
+    if !name.is_ascii() {
+        return usize::MAX;
+    }
+    let named = lines.get(&name.to_ascii_lowercase()).copied();
+    named.unwrap_or(0).max(any)
+}
+
+fn ends(text: &str) -> Ends {
+    let mut ends = Ends {
+        source: (text.as_ptr() as usize, text.len()),
+        blocks: HashMap::new(),
+        any_block: 0,
+        latex: HashMap::new(),
+        any_latex: 0,
+        dynamic_block: 0,
+        drawer: 0,
+    };
+    let mut start = 0;
+    for line in text.split('\n') {
+        let rest = line.trim_start_matches([' ', '\t']);
+        if let Some(rest) = strip_prefix_ignore_case(rest, "#+end") {
+            if matches!(rest, "" | ":" | "\r" | ":\r") {
+                ends.dynamic_block = start;
+            }
+            if let Some(name) = rest.strip_prefix('_') {
+                let name = name.split([' ', '\t', '\r']).next().unwrap_or_default();
+                record(&mut ends.blocks, &mut ends.any_block, name, start);
+            }
+        } else if let Some(rest) = strip_prefix_ignore_case(rest, ":end:") {
+            if rest.trim_matches([' ', '\t', '\r']).is_empty() {
+                ends.drawer = start;
+            }
+        } else if let Some(rest) = strip_prefix_ignore_case(rest, "\\end{") {
+            if let Some((name, _)) = rest.split_once('}') {
+                record(&mut ends.latex, &mut ends.any_latex, name, start);
+            }
+        }
+        start += line.len() + 1;
+    }
+    ends
+}
+
+fn strip_prefix_ignore_case<'s>(text: &'s str, prefix: &str) -> Option<&'s str> {
+    text.get(..prefix.len())
+        .filter(|start| start.eq_ignore_ascii_case(prefix))
+        .map(|_| &text[prefix.len()..])
+}
+
+fn record(lines: &mut HashMap<String, usize>, any: &mut usize, name: &str, start: usize) {
+    if name.is_ascii() {
+        lines.insert(name.to_ascii_lowercase(), start);
+    } else {
+        *any = start;
+    }
+}
+
+/// Fails unless a line that may be `end` is ahead; see `end_follows`.
+pub(crate) fn expect_end<'s>(input: OrgSource<'s>, end: End<'_>) -> Res<OrgSource<'s>, ()> {
+    if end_follows(input, end) {
+        Ok((input, ()))
+    } else {
+        Err(nom::Err::Error(CustomError::Static("Never ends.")))
+    }
 }

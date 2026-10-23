@@ -18,6 +18,8 @@ use nom::sequence::tuple;
 use nom::InputTake;
 
 use super::affiliated_keyword::parse_affiliated_keywords;
+use super::closer::expect_end;
+use super::closer::End;
 use super::org_source::OrgSource;
 use super::util::maybe_consume_trailing_whitespace_if_not_exiting;
 use crate::context::parser_with_context;
@@ -423,6 +425,7 @@ fn _lesser_block_begin<'b, 'g, 'r, 's, 'c>(
             Into::<&str>::into(name).eq_ignore_ascii_case(current_name_lower)
         }),
     ))(remaining)?;
+    expect_end(remaining, End::Block(current_name_lower))?;
     Ok((remaining, name))
 }
 

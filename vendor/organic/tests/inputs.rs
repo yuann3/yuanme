@@ -145,6 +145,29 @@ fn unclosed_openers_are_plain_text() {
     }
 }
 
+/// Blocks, drawers and LaTeX environments that never end. Each re-parsed
+/// everything after it, so upstream ran out of fuel on a few dozen (#15);
+/// Emacs reads each line as a paragraph.
+#[test]
+fn unclosed_blocks_are_paragraphs() {
+    let openers = [
+        "#+BEGIN_QUOTE",
+        "#+begin_verse",
+        "#+BEGIN_SRC x",
+        "#+BEGIN: x",
+        ":DRAWER:",
+        "\\begin{equation}",
+    ];
+    for opener in openers {
+        let shape = shape_of(&format!("{opener}\n\n").repeat(24));
+        assert_eq!(shape.len(), 24, "{opener:?}");
+        assert!(
+            shape.iter().all(|kind| kind.starts_with("Paragraph ")),
+            "{shape:?}"
+        );
+    }
+}
+
 #[test]
 fn markup_in_a_verse_block_can_span_a_blank_line() {
     let document = parse("#+begin_verse\n~/\n\nc~\n#+end_verse\n").unwrap();
@@ -225,13 +248,13 @@ fn any_todo_keyword_value_parses() {
     }
 }
 
-/// Unclosed blocks nested in each other take polynomial time, each block
-/// re-parsing the rest, so the parse runs out of fuel and names the first
-/// block (#15).
+/// In a run of underscores each one tries an underline that ends at the
+/// last, which takes quadratic time, so the parse runs out of fuel and names
+/// the paragraph (#15).
 #[test]
 fn a_runaway_parse_runs_out_of_fuel_at_its_opener() {
     let prose = "Some prose.\n\n";
-    let input = format!("{prose}{}text\n", "#+BEGIN_QUOTE\n#+BEGIN: x\n".repeat(8));
+    let input = format!("{prose}{}\n", "_".repeat(2000));
     match parse(&input) {
         Err(ParseError::OutOfFuel { opener }) => assert_eq!(opener, prose.len()),
         other => panic!("expected OutOfFuel, got {:?}", other.map(|_| ())),
@@ -274,10 +297,10 @@ fn a_radio_link_spans_lines_only_inside_a_paragraph() {
 fn a_parse_nested_too_deeply_stops_at_its_opener() {
     let input = format!(
         "{}{}{}{}",
-        "[cite:".repeat(44),
-        "][".repeat(43),
+        "[cite:".repeat(24),
+        "][".repeat(13),
         "[".repeat(130),
-        "@".repeat(1152)
+        "@".repeat(64)
     );
     match parse(&input) {
         Err(ParseError::TooDeep { opener }) => assert_eq!(opener, 0),
