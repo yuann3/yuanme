@@ -619,6 +619,7 @@ dependencies = [
 name = "yuanme-org"
 version = "0.0.0"
 dependencies = [
+ "insta",
  "nom",
 ]
 
