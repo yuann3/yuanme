@@ -18,6 +18,7 @@ use nom::sequence::tuple;
 use nom::InputTake;
 
 use super::closer;
+use super::fuel;
 use super::org_source::OrgSource;
 use super::section::section;
 use super::util::exit_matcher_parser;
@@ -225,6 +226,11 @@ fn headline_title_end<'b, 'g, 'r, 's>(
     let Some(len) = closer::headline_title_end(input) else {
         return Err(nom::Err::Error(CustomError::Static("The title goes on.")));
     };
+    // Nested objects ask here many times at each place the title could
+    // end, and slicing to the line's end reads every byte for bracket
+    // depths, so it is charged for; each ask spends only an exit matcher's
+    // fuel. check_exit_matcher stops the parse if this spent the last of it.
+    fuel::burn(len as u64 / 16, input.get_byte_offset());
     Ok(input.take_split(len))
 }
 
