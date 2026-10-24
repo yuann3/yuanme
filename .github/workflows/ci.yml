@@ -100,6 +100,43 @@ jobs:
             vendor/organic/fuzz/artifacts
           if-no-files-found: ignore
 
+  # The same guarantees for a Markdown body (#15, #47): no input panics, and
+  # none parses slower than 1 ms/KB + 1 ms, scaled to the runner's speed,
+  # through all of markdown::document. The bytes target starts from the
+  # Markdown corpus, and the margin check fails if a corpus file has less
+  # than ten times the fuel it needs.
+  fuzz-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: fuzz
+      - run: cargo install --locked cargo-fuzz@0.13.2
+      - run: cargo fmt --manifest-path fuzz/Cargo.toml --check
+      - run: cargo clippy --manifest-path fuzz/Cargo.toml --all-targets --locked -- -D warnings
+      - run: cargo run --release --locked --manifest-path fuzz/Cargo.toml --example margin -- corpus/md
+      # The adversarial seeds are full-size slow inputs for the replay;
+      # libFuzzer mutates their first 4 KB, which the generator multiplies.
+      - name: Fuzz
+        run: |
+          mkdir -p fuzz/corpus/adversarial fuzz/corpus/bytes
+          cargo fuzz run --sanitizer none adversarial fuzz/corpus/adversarial fuzz/seeds/adversarial -- -max_total_time=120 -timeout=10 -max_len=4096
+          cargo fuzz run --sanitizer none bytes fuzz/corpus/bytes corpus/md -- -max_total_time=60 -timeout=10
+      - name: Replay against the parse-time bound
+        run: |
+          cargo run --release --locked --manifest-path fuzz/Cargo.toml --example replay -- adversarial fuzz/corpus/adversarial fuzz/seeds/adversarial
+          cargo run --release --locked --manifest-path fuzz/Cargo.toml --example replay -- bytes fuzz/corpus/bytes corpus/md
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fuzz-markdown-corpus
+          path: |
+            fuzz/corpus
+            fuzz/artifacts
+          if-no-files-found: ignore
+
   supply-chain:
     runs-on: ubuntu-latest
     steps:
