@@ -11,9 +11,14 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/yuann3/yuanme"
 
 [workspace.dependencies]
-yuanme-engine = { path = "crates/yuanme-engine", version = "0.0.0" }
+yuanme-engine = { path = "crates/yuanme-engine", version = "0.0.0", default-features = false }
 yuanme-content = { path = "crates/yuanme-content", version = "0.0.0" }
 yuanme-render = { path = "crates/yuanme-render", version = "0.0.0" }
-yuanme-assets = { path = "crates/yuanme-assets", version = "0.0.0" }
+yuanme-assets = { path = "crates/yuanme-assets", version = "0.0.0", default-features = false }
 yuanme-diag = { path = "crates/yuanme-diag", version = "0.0.0" }
 yuanme-org = { path = "vendor/organic", version = "0.0.0" }
+
+# `Encoder::with_tiles`, so AVIF bytes don't depend on the core count (#28),
+# at a pinned commit on ravif 0.13.0 until upstream releases it (#27).
+[patch.crates-io]
+ravif = { git = "https://github.com/yuann3/cavif-rs", rev = "80886cdf01620d7c934bd18ade6e54744ebe366e" }

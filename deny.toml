@@ -3,6 +3,11 @@ all-features = true
 
 [advisories]
 yanked = "deny"
+ignore = [
+    # A proc-macro run at compile time, by rav1e 0.8.1, the newest. Nothing
+    # of it reaches the binary.
+    { id = "RUSTSEC-2024-0436", reason = "paste is unmaintained, not vulnerable; rav1e has no release without it" },
+]
 
 [licenses]
 # ADR 0014. MPL-2.0 is allowed only for unmodified files, so it is added per
@@ -23,6 +28,11 @@ allow = [
 confidence-threshold = 0.93
 # The list is policy, not a record of what is in the tree today.
 unused-allowed-license = "allow"
+exceptions = [
+    # rav1e depends on it only under `cfg(fuzzing)`, so no build of the
+    # Engine compiles it.
+    { crate = "libfuzzer-sys", allow = ["NCSA"] },
+]
 
 [bans]
 wildcards = "deny"
@@ -31,3 +41,5 @@ allow-wildcard-paths = true
 [sources]
 unknown-registry = "deny"
 unknown-git = "deny"
+# Forks at pinned commits until upstream releases the patch (#27).
+allow-git = ["https://github.com/yuann3/cavif-rs"]

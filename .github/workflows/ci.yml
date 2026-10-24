@@ -23,6 +23,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      # rav1e's x86_64 assembly (#27).
+      - run: sudo apt-get install -y nasm
       - run: cargo fmt --all --check
       - run: cargo clippy --all-targets --locked -- -D warnings
 
@@ -39,6 +41,10 @@ jobs:
       - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
         with:
           tool: cargo-nextest@0.9.148
+      - if: runner.os == 'Linux'
+        run: sudo apt-get install -y nasm
+      # One snapshot of image hashes for both, so this is also the test that
+      # x86_64 and arm64 encode the same bytes (#28).
       - run: cargo nextest run --locked --workspace
 
   # The Org parser's guarantees (#15): no input panics or fails except by

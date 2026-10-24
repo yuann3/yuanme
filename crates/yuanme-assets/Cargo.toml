@@ -10,3 +10,19 @@ include = ["/src"]
 
 [dependencies]
 yuanme-diag.workspace = true
+rayon = "1.12.0"
+# Exact pins: their output is the Site's bytes, so a bump is an output
+# change, reviewed as one (#27).
+image = { version = "=0.25.10", default-features = false, features = ["gif", "jpeg", "png", "webp"] }
+fast_image_resize = "=6.1.0"
+# The version `image` uses, so there is one copy.
+moxcms = "=0.8.1"
+# Patched with `with_tiles` until it is released; see the workspace manifest.
+ravif = { version = "=0.13.0", default-features = false, features = ["threading"] }
+mozjpeg-rs = "=0.9.2"
+libwebp-sys = "=0.14.4"
+
+[features]
+default = ["asm"]
+# rav1e's assembly: about 1.7× faster AVIF, and nasm on x86_64 (#27).
+asm = ["ravif/asm"]
