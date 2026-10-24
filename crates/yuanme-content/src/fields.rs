@@ -13,7 +13,7 @@ use jiff::tz::{Offset, TimeZone};
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Span, codes};
 
 use crate::config::{Field, FieldType, similar};
-use crate::yaml::{Node, Yaml};
+use crate::yaml::{Key, Node, Yaml};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
@@ -114,7 +114,7 @@ impl Cx<'_> {
 /// built-in fields, which are neither checked nor unknown here.
 pub(crate) fn fields(
     schema: &BTreeMap<String, Field>,
-    given: &[(String, Range<usize>, &Node)],
+    given: &[(Key, Node)],
     extra: &[&str],
     whole: Range<usize>,
     path: &str,
@@ -122,7 +122,14 @@ pub(crate) fn fields(
 ) -> Option<BTreeMap<String, Value>> {
     let mut out = BTreeMap::new();
     let mut ok = true;
-    for (key, key_span, node) in given {
+    for (
+        Key {
+            name: key,
+            span: key_span,
+        },
+        node,
+    ) in given
+    {
         if extra.contains(&key.as_str()) {
             continue;
         }
@@ -169,7 +176,7 @@ pub(crate) fn fields(
     let present = |name: &str| {
         given
             .iter()
-            .any(|(k, _, n)| k == name && n.value != Yaml::Null)
+            .any(|(k, n)| k.name == name && n.value != Yaml::Null)
     };
     for (name, field) in schema {
         if present(name) {
@@ -321,11 +328,7 @@ pub(crate) fn value(ty: &FieldType, node: &Node, path: &str, cx: &mut Cx<'_>) ->
             ok.then_some(Value::List(out))
         }
         (FieldType::Object(schema), Yaml::Map(entries)) => {
-            let given: Vec<_> = entries
-                .iter()
-                .map(|(k, v)| (k.name.clone(), k.span.clone(), v))
-                .collect();
-            fields(schema, &given, &[], at, path, cx).map(Value::Object)
+            fields(schema, entries, &[], at, path, cx).map(Value::Object)
         }
         (FieldType::String { .. } | FieldType::Enum(_), _) => wrong(cx, "a string"),
         (FieldType::Int { .. }, Yaml::Float(_)) => wrong(cx, "a whole number"),

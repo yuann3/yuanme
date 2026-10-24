@@ -10,7 +10,7 @@ use yuanme_diag::{Applicability, Diagnostic, Edit, codes};
 use crate::config::{Collection, FieldType, Taxonomy};
 use crate::fields::{self, Cx, Value};
 use crate::slug;
-use crate::yaml::{self, Node, Yaml};
+use crate::yaml::{self, Key, Node, Yaml};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SourceFormat {
@@ -64,20 +64,18 @@ impl Entry {
     }
 }
 
-/// A field as a Source format hands it in: front matter's key and YAML
-/// value, or, from #49, an Org keyword's.
-pub struct RawField {
-    pub key: String,
-    pub key_span: Range<usize>,
-    pub value: Node,
+/// An Entry's fields as its file writes them: front matter's keys and YAML
+/// values, or, from #49, an Org file's keywords.
+pub(crate) struct Head {
+    pub fields: Vec<(Key, Node)>,
+    /// Where the fields are written, for a missing field.
+    pub at: Range<usize>,
+    /// The body's bytes in the file.
+    pub body: Range<usize>,
 }
 
-/// Front matter between `---` lines: the fields, where they are, and where
-/// the body starts.
-pub(crate) fn front_matter(
-    text: &str,
-    cx: &mut Cx<'_>,
-) -> Option<(Vec<RawField>, Range<usize>, Range<usize>)> {
+/// Front matter between `---` lines.
+pub(crate) fn front_matter(text: &str, cx: &mut Cx<'_>) -> Option<Head> {
     let first_line = |prefix: &str| {
         text.strip_prefix(prefix)
             .is_some_and(|rest| rest.starts_with('\n') || rest.starts_with("\r\n"))
@@ -95,7 +93,11 @@ pub(crate) fn front_matter(
     }
     if !first_line("---") {
         // No front matter: every field is left out.
-        return Some((Vec::new(), 0..0, 0..text.len()));
+        return Some(Head {
+            fields: Vec::new(),
+            at: 0..0,
+            body: 0..text.len(),
+        });
     }
     let start = text.find('\n').expect("checked") + 1;
     let mut at = start;
@@ -127,14 +129,7 @@ pub(crate) fn front_matter(
     };
     let fields = match root.value {
         Yaml::Null => Vec::new(),
-        Yaml::Map(entries) => entries
-            .into_iter()
-            .map(|(k, value)| RawField {
-                key: k.name,
-                key_span: k.span,
-                value,
-            })
-            .collect(),
+        Yaml::Map(entries) => entries,
         _ => {
             let message = format!(
                 "front matter must be a mapping of fields, not {}",
@@ -144,7 +139,11 @@ pub(crate) fn front_matter(
             return None;
         }
     };
-    Some((fields, 0..yaml_end + 3, body_start..text.len()))
+    Some(Head {
+        fields,
+        at: 0..yaml_end + 3,
+        body: body_start..text.len(),
+    })
 }
 
 pub(crate) fn yaml_error(e: yaml::Error, cx: &Cx<'_>) -> Diagnostic {
@@ -175,31 +174,26 @@ pub(crate) fn yaml_error(e: yaml::Error, cx: &Cx<'_>) -> Diagnostic {
 
 const BUILT_IN: &[&str] = &["title", "date", "updated", "slug", "draft", "unlisted"];
 
-/// Checks an Entry's fields and works out its Slug. `default_slug` is the
-/// Slug from its path. `head` is where its fields are written, for a
-/// missing field.
-#[allow(
-    clippy::too_many_arguments,
-    reason = "each is one fact about the file the Entry needs"
-)]
+/// Checks an Entry's fields and works out its Slug, which defaults to the
+/// one from its path.
 pub(crate) fn read(
     collection: (&str, &Collection),
     taxonomies: &[(&str, &Taxonomy)],
-    raw: Vec<RawField>,
-    head: Range<usize>,
-    body: Range<usize>,
+    head: Head,
     path: &str,
-    format: SourceFormat,
     cx: &mut Cx<'_>,
 ) -> Option<Entry> {
     let (collection_name, collection) = collection;
-    let given: Vec<(String, Range<usize>, &Node)> = raw
-        .iter()
-        .map(|f| (f.key.clone(), f.key_span.clone(), &f.value))
-        .collect();
+    let Head {
+        fields: given,
+        at: head,
+        body,
+    } = head;
     let find = |key: &str| {
-        raw.iter()
-            .find(|f| f.key == key && f.value.value != Yaml::Null)
+        given
+            .iter()
+            .find(|(k, n)| k.name == key && n.value != Yaml::Null)
+            .map(|(_, n)| n)
     };
     let mut ok = true;
 
@@ -218,7 +212,7 @@ pub(crate) fn read(
     let mut built_in = |name: &str, ty: FieldType, required: bool| -> Option<Value> {
         match find(name) {
             Some(f) => {
-                let v = fields::value(&ty, &f.value, name, cx);
+                let v = fields::value(&ty, f, name, cx);
                 ok &= v.is_some();
                 v
             }
@@ -271,17 +265,17 @@ pub(crate) fn read(
                 let mut d = cx.error(
                     &codes::ENTRY_INVALID_SLUG,
                     format!("`{s}` is not a valid Slug"),
-                    f.value.span.clone(),
+                    f.span.clone(),
                 );
                 let fixed = slug::corrected(&s);
                 if !fixed.is_empty() {
-                    d = cx.fix(d, format!("use `{fixed}`"), f.value.span.clone(), fixed);
+                    d = cx.fix(d, format!("use `{fixed}`"), f.span.clone(), fixed);
                 }
                 d = d.note("a Slug is lowercase letters, digits, `-` and `_`, in segments separated by `/`");
                 cx.push(d);
                 ok = false;
             }
-            (s, f.value.span.clone())
+            (s, f.span.clone())
         }
         _ => (path_slug(path, &collection.dir), 0..0),
     };
@@ -293,31 +287,23 @@ pub(crate) fn read(
             items: Box::new(string.clone()),
             unique: false,
         };
-        let got = match (&f.value.value, taxonomy.single) {
-            (Yaml::Str(_), true) => fields::value(&string, &f.value, name, cx).map(|v| vec![v]),
+        let got = match (&f.value, taxonomy.single) {
+            (Yaml::Str(_), true) => fields::value(&string, f, name, cx).map(|v| vec![v]),
             (Yaml::Str(s), false) => {
                 let message = format!("`{name}` must be a list of Terms, not a string");
-                let d = cx.error(&codes::ENTRY_WRONG_TYPE, message, f.value.span.clone());
-                cx.push(cx.fix(
-                    d,
-                    "make it a list".into(),
-                    f.value.span.clone(),
-                    format!("[{s}]"),
-                ));
+                let d = cx.error(&codes::ENTRY_WRONG_TYPE, message, f.span.clone());
+                cx.push(cx.fix(d, "make it a list".into(), f.span.clone(), format!("[{s}]")));
                 None
             }
             (_, true) => {
-                let message = format!(
-                    "`{name}` holds one Term, as a string, not {}",
-                    f.value.kind()
-                );
+                let message = format!("`{name}` holds one Term, as a string, not {}", f.kind());
                 cx.push(
-                    cx.error(&codes::ENTRY_WRONG_TYPE, message, f.value.span.clone())
+                    cx.error(&codes::ENTRY_WRONG_TYPE, message, f.span.clone())
                         .note(format!("`[taxonomies.{name}]` has `single = true`")),
                 );
                 None
             }
-            (_, false) => match fields::value(&list, &f.value, name, cx) {
+            (_, false) => match fields::value(&list, f, name, cx) {
                 Some(Value::List(items)) => Some(items),
                 _ => None,
             },
@@ -326,9 +312,9 @@ pub(crate) fn read(
             ok = false;
             continue;
         };
-        let spans: Vec<Range<usize>> = match &f.value.value {
+        let spans: Vec<Range<usize>> = match &f.value {
             Yaml::Seq(items) => items.iter().map(|n| n.span.clone()).collect(),
-            _ => vec![f.value.span.clone()],
+            _ => vec![f.span.clone()],
         };
         let mut spelled = Vec::new();
         for (v, at) in got.into_iter().zip(spans) {
@@ -359,7 +345,11 @@ pub(crate) fn read(
         file: cx.file,
         path: path.to_string(),
         collection: collection_name.to_string(),
-        format,
+        format: if path.ends_with(".org") {
+            SourceFormat::Org
+        } else {
+            SourceFormat::Markdown
+        },
         slug,
         title: match title {
             Some(Value::String(t)) => t,

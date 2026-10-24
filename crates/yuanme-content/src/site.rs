@@ -10,7 +10,7 @@ use yuanme_diag::{Diagnostic, FileId, Files, Span, codes};
 
 use crate::config::{Collection, Config, SortKey, Taxonomy};
 use crate::data;
-use crate::entry::{self, Entry, SourceFormat};
+use crate::entry::{self, Entry};
 use crate::fields::{Cx, Value, compare};
 use crate::slug;
 
@@ -204,20 +204,11 @@ pub fn resolve(
             failed = true;
             continue;
         }
-        let Some((raw, head, body)) = entry::front_matter(text, &mut cx) else {
+        let Some(head) = entry::front_matter(text, &mut cx) else {
             failed = true;
             continue;
         };
-        match entry::read(
-            (collection, c),
-            &taxonomies,
-            raw,
-            head,
-            body,
-            path,
-            SourceFormat::Markdown,
-            &mut cx,
-        ) {
+        match entry::read((collection, c), &taxonomies, head, path, &mut cx) {
             Some(e) => entries.push(e),
             None => failed = true,
         }
