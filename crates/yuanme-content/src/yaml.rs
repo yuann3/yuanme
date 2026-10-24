@@ -93,7 +93,8 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
             at: at(e.marker().index()),
         })?;
         let range = at(span.start.index())..at(span.end.index());
-        let node = match event {
+        // An anchored node is recorded once it is complete.
+        let (node, anchor) = match event {
             Event::Scalar(value, style, anchor, tag) => {
                 if let Some(tag) = &tag
                     && !(tag.handle == "tag:yaml.org,2002:" && tag.suffix == "str")
@@ -105,26 +106,20 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 } else {
                     Yaml::Str(value.into_owned())
                 };
-                let node = Node { value, span: range };
-                if anchor > 0 {
-                    anchors.insert(anchor, node.clone());
-                }
-                node
+                (Node { value, span: range }, anchor)
             }
             Event::Alias(id) => {
                 let target = anchors.get(&id).ok_or_else(|| Error::Syntax {
                     message: "unknown anchor".into(),
                     at: range.start,
                 })?;
-                Node {
+                let node = Node {
                     value: target.value.clone(),
                     span: range,
-                }
+                };
+                (node, 0)
             }
-            Event::SequenceStart(anchor, tag) | Event::MappingStart(anchor, tag)
-                if tag.is_some() =>
-            {
-                let _ = anchor;
+            Event::SequenceStart(_, Some(_)) | Event::MappingStart(_, Some(_)) => {
                 return Err(Error::Tag { at: range });
             }
             Event::SequenceStart(anchor, _) => {
@@ -143,10 +138,7 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                     value: Yaml::Seq(items),
                     span: start..range.end,
                 };
-                if anchor > 0 {
-                    anchors.insert(anchor, node.clone());
-                }
-                node
+                (node, anchor)
             }
             Event::MappingEnd => {
                 let Some(Open::Map(start, anchor, entries, _)) = stack.pop() else {
@@ -159,13 +151,13 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                     value: Yaml::Map(entries),
                     span: start..end,
                 };
-                if anchor > 0 {
-                    anchors.insert(anchor, node.clone());
-                }
-                node
+                (node, anchor)
             }
             _ => continue,
         };
+        if anchor > 0 {
+            anchors.insert(anchor, node.clone());
+        }
         match stack.last_mut() {
             None => root = Some(node),
             Some(Open::Seq(_, _, items)) => items.push(node),
