@@ -1577,8 +1577,10 @@ dependencies = [
 name = "yuanme-assets"
 version = "0.0.0"
 dependencies = [
+ "blake3",
  "fast_image_resize",
  "image",
+ "insta",
  "libwebp-sys",
  "moxcms",
  "mozjpeg-rs",

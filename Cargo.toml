@@ -18,6 +18,21 @@ yuanme-assets = { path = "crates/yuanme-assets", version = "0.0.0", default-feat
 yuanme-diag = { path = "crates/yuanme-diag", version = "0.0.0" }
 yuanme-org = { path = "vendor/organic", version = "0.0.0" }
 
+# The image pipeline's tests encode real photos, which takes minutes
+# unoptimised. At release's opt-level, they hash release's bytes.
+[profile.dev.package]
+fast_image_resize.opt-level = 3
+image.opt-level = 3
+image-webp.opt-level = 3
+libwebp-sys.opt-level = 3
+moxcms.opt-level = 3
+mozjpeg-rs.opt-level = 3
+png.opt-level = 3
+rav1e.opt-level = 3
+ravif.opt-level = 3
+zune-jpeg.opt-level = 3
+yuanme-assets.opt-level = 3
+
 # `Encoder::with_tiles`, so AVIF bytes don't depend on the core count (#28),
 # at a pinned commit on ravif 0.13.0 until upstream releases it (#27).
 [patch.crates-io]

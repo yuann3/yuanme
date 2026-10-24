@@ -26,3 +26,7 @@ libwebp-sys = "=0.14.4"
 default = ["asm"]
 # rav1e's assembly: about 1.7× faster AVIF, and nasm on x86_64 (#27).
 asm = ["ravif/asm"]
+
+[dev-dependencies]
+blake3 = "1.8.7"
+insta = "1.49.0"
