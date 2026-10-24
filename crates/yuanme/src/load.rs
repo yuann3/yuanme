@@ -83,7 +83,7 @@ pub fn load(root: &Path, out: &Path) -> io::Result<Inputs> {
         })
         .collect::<io::Result<_>>()?;
 
-    let mut inputs = Inputs::default();
+    let mut inputs = Inputs::at(root.to_path_buf());
     for dir in dirs {
         inputs.insert_dir(dir);
     }

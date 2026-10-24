@@ -72,7 +72,7 @@ fn substitute(bytes: &[u8], urls: &[String]) -> Vec<u8> {
 
 /// `site.css` → `assets/site-0123456789abcdef.css`. 64 bits keeps collisions
 /// out of reach for any one Site.
-fn hashed_path(name: &str, hash: &blake3::Hash) -> String {
+pub(crate) fn hashed_path(name: &str, hash: &blake3::Hash) -> String {
     let hash = &hash.to_hex()[..16];
     match name.rsplit_once('.') {
         Some((stem, ext)) => format!("assets/{stem}-{hash}.{ext}"),

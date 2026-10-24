@@ -2,6 +2,7 @@
 //! project into every file of the Site, in memory (ADR 0011).
 
 mod cache;
+pub mod image;
 mod link;
 #[cfg(test)]
 mod tests;
@@ -21,6 +22,9 @@ use link::link;
 /// with `/` separators. It is everything a build reads.
 #[derive(Clone, Default)]
 pub struct Inputs {
+    /// Where streamed files are read from. `None` for Inputs built in
+    /// memory, which hold every file's bytes.
+    root: Option<PathBuf>,
     files: BTreeMap<String, Input>,
     /// Folders the walk found, so an empty Collection folder still exists.
     dirs: BTreeSet<String>,
@@ -35,6 +39,14 @@ pub struct Input {
 }
 
 impl Inputs {
+    /// The Inputs of the project at `root`.
+    pub fn at(root: PathBuf) -> Inputs {
+        Inputs {
+            root: Some(root),
+            ..Inputs::default()
+        }
+    }
+
     pub fn insert(&mut self, path: impl Into<String>, bytes: impl Into<Arc<[u8]>>) {
         let bytes = bytes.into();
         let input = Input {
@@ -121,7 +133,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         return failed(diagnostics, sources);
     };
     // Entries are parsed afresh each build until #47 caches them. `mode` is
-    // also for images on request (#62) and the unsubset font (#52).
+    // also for images on request, through `image::encode` (#63), and the
+    // unsubset font (#52).
     let (site, more) = resolve(inputs, &config, mode == Mode::Dev, &mut sources);
     diagnostics.extend(more);
     let Some(site) = site else {

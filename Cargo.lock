@@ -1616,6 +1616,7 @@ name = "yuanme-engine"
 version = "0.0.0"
 dependencies = [
  "blake3",
+ "image",
  "rayon",
  "tempfile",
  "yuanme-assets",
