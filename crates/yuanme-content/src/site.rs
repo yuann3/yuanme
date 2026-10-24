@@ -193,14 +193,14 @@ pub fn resolve(
             is_file: project.is_file,
         };
         if path.ends_with(".org") {
-            let d = cx
-                .error(
+            cx.push(
+                cx.error(
                     &codes::ORG_NOT_YET_SUPPORTED,
                     "yuanme can't read Org Entries yet".into(),
                     0..0,
                 )
-                .note("Org support arrives with the Org subset, before the first release");
-            cx.push(d);
+                .note("Org support arrives with the Org subset, before the first release"),
+            );
             failed = true;
             continue;
         }

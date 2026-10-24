@@ -55,8 +55,7 @@ pub(crate) fn read(
             _ => match yaml::parse(text, 0) {
                 Ok(node) => Some(node),
                 Err(e) => {
-                    let d = yaml_error(e, &cx);
-                    cx.push(d);
+                    cx.push(yaml_error(e, &cx));
                     None
                 }
             },
@@ -100,8 +99,7 @@ fn untyped(node: &Node, cx: &mut Cx<'_>) -> Option<Value> {
     Some(match &node.value {
         Yaml::Null => {
             let message = "an empty value: leave the key out instead".to_string();
-            let d = cx.error(&codes::ENTRY_WRONG_TYPE, message, node.span.clone());
-            cx.push(d);
+            cx.push(cx.error(&codes::ENTRY_WRONG_TYPE, message, node.span.clone()));
             return None;
         }
         Yaml::Bool(b) => Value::Bool(*b),
@@ -129,12 +127,11 @@ fn toml_node(text: &str, cx: &mut Cx<'_>) -> Option<Node> {
     let (root, errors) = DeTable::parse_recoverable(text);
     for e in &errors {
         let at = e.span().unwrap_or(0..0);
-        let d = cx.error(
+        cx.push(cx.error(
             &codes::ENTRY_SYNTAX,
             format!("invalid TOML: {}", e.message()),
             at,
-        );
-        cx.push(d);
+        ));
     }
     if !errors.is_empty() {
         return None;

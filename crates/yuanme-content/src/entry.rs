@@ -83,14 +83,14 @@ pub(crate) fn front_matter(
             .is_some_and(|rest| rest.starts_with('\n') || rest.starts_with("\r\n"))
     };
     if first_line("+++") {
-        let d = cx
-            .error(
+        cx.push(
+            cx.error(
                 &codes::ENTRY_TOML_FRONT_MATTER,
                 "front matter is YAML, between `---` lines, not TOML".into(),
                 0..3,
             )
-            .help("rewrite it as YAML: `title = \"Pew\"` becomes `title: Pew`");
-        cx.push(d);
+            .help("rewrite it as YAML: `title = \"Pew\"` becomes `title: Pew`"),
+        );
         return None;
     }
     if !first_line("---") {
@@ -111,12 +111,11 @@ pub(crate) fn front_matter(
         at = end + 1;
     };
     let Some((yaml_end, body_start)) = close else {
-        let d = cx.error(
+        cx.push(cx.error(
             &codes::ENTRY_SYNTAX,
             "front matter starts here but has no closing `---`".into(),
             0..3,
-        );
-        cx.push(d);
+        ));
         return None;
     };
     let root = match yaml::parse(&text[start..yaml_end], start) {
@@ -141,8 +140,7 @@ pub(crate) fn front_matter(
                 "front matter must be a mapping of fields, not {}",
                 root.kind()
             );
-            let d = cx.error(&codes::ENTRY_WRONG_TYPE, message, root.span);
-            cx.push(d);
+            cx.push(cx.error(&codes::ENTRY_WRONG_TYPE, message, root.span));
             return None;
         }
     };
@@ -300,13 +298,12 @@ pub(crate) fn read(
             (Yaml::Str(s), false) => {
                 let message = format!("`{name}` must be a list of Terms, not a string");
                 let d = cx.error(&codes::ENTRY_WRONG_TYPE, message, f.value.span.clone());
-                let d = cx.fix(
+                cx.push(cx.fix(
                     d,
                     "make it a list".into(),
                     f.value.span.clone(),
                     format!("[{s}]"),
-                );
-                cx.push(d);
+                ));
                 None
             }
             (_, true) => {
@@ -314,10 +311,10 @@ pub(crate) fn read(
                     "`{name}` holds one Term, as a string, not {}",
                     f.value.kind()
                 );
-                let d = cx
-                    .error(&codes::ENTRY_WRONG_TYPE, message, f.value.span.clone())
-                    .note(format!("`[taxonomies.{name}]` has `single = true`"));
-                cx.push(d);
+                cx.push(
+                    cx.error(&codes::ENTRY_WRONG_TYPE, message, f.value.span.clone())
+                        .note(format!("`[taxonomies.{name}]` has `single = true`")),
+                );
                 None
             }
             (_, false) => match fields::value(&list, &f.value, name, cx) {
@@ -341,8 +338,7 @@ pub(crate) fn read(
             if slug::term_slug(&term).is_empty() {
                 let message =
                     format!("the Term `{term}` has no letters or digits to make a URL from");
-                let d = cx.error(&codes::ENTRY_INVALID_VALUE, message, at);
-                cx.push(d);
+                cx.push(cx.error(&codes::ENTRY_INVALID_VALUE, message, at));
                 ok = false;
             } else if !spelled.iter().any(|(t, _)| *t == term) {
                 spelled.push((term, at));

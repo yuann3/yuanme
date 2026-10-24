@@ -85,7 +85,7 @@ impl Cx<'_> {
         }
     }
 
-    pub fn error(&mut self, code: &'static Code, message: String, at: Range<usize>) -> Diagnostic {
+    pub fn error(&self, code: &'static Code, message: String, at: Range<usize>) -> Diagnostic {
         Diagnostic::error(code, message, self.span(at))
     }
 
@@ -232,7 +232,7 @@ pub(crate) fn value(ty: &FieldType, node: &Node, path: &str, cx: &mut Cx<'_>) ->
         None
     };
     let range = |cx: &mut Cx<'_>, what: String| {
-        cx.push(cx_error(cx, &codes::ENTRY_OUT_OF_RANGE, what, at.clone()));
+        cx.push(cx.error(&codes::ENTRY_OUT_OF_RANGE, what, at.clone()));
         None
     };
     match (ty, &node.value) {
@@ -283,7 +283,7 @@ pub(crate) fn value(ty: &FieldType, node: &Node, path: &str, cx: &mut Cx<'_>) ->
                 Some(Value::Url(s.clone()))
             } else {
                 let message = format!("`{path}` must be an absolute URL starting with `https://`");
-                cx.push(cx_error(cx, &codes::ENTRY_INVALID_VALUE, message, at));
+                cx.push(cx.error(&codes::ENTRY_INVALID_VALUE, message, at));
                 None
             }
         }
@@ -311,12 +311,7 @@ pub(crate) fn value(ty: &FieldType, node: &Node, path: &str, cx: &mut Cx<'_>) ->
                     Some(v) if *unique && out.contains(&v) => {
                         let message =
                             format!("`{path}` repeats an item, but its items must be unique");
-                        cx.push(cx_error(
-                            cx,
-                            &codes::ENTRY_INVALID_VALUE,
-                            message,
-                            node.span.clone(),
-                        ));
+                        cx.push(cx.error(&codes::ENTRY_INVALID_VALUE, message, node.span.clone()));
                         ok = false;
                     }
                     Some(v) => out.push(v),
@@ -344,10 +339,6 @@ pub(crate) fn value(ty: &FieldType, node: &Node, path: &str, cx: &mut Cx<'_>) ->
         (FieldType::List { .. }, _) => wrong(cx, "a list"),
         (FieldType::Object(_), _) => wrong(cx, "a mapping"),
     }
-}
-
-fn cx_error(cx: &Cx<'_>, code: &'static Code, message: String, at: Range<usize>) -> Diagnostic {
-    Diagnostic::error(code, message, cx.span(at))
 }
 
 fn scalar_text(node: &Node) -> String {
@@ -439,10 +430,9 @@ fn image(s: &str, path: &str, at: Range<usize>, cx: &mut Cx<'_>) -> Option<Image
         return Some(Image::Local(local));
     }
     let message = format!("`{path}`: no image at `{local}`");
-    let d = cx
+    cx.push(cx
         .error(&codes::ENTRY_INVALID_VALUE, message, at)
-        .help("a relative path starts from the Entry's folder, and one starting with `/` from the project root");
-    cx.push(d);
+        .help("a relative path starts from the Entry's folder, and one starting with `/` from the project root"));
     None
 }
 
