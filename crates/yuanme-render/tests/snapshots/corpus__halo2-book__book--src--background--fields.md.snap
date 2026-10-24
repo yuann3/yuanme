@@ -1,0 +1,257 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<h1 id="fields">Fields</h1>
+<p>A fundamental component of many cryptographic protocols is the algebraic structure known
+as a <a href="https://en.wikipedia.org/wiki/Field_(mathematics)">field</a>. Fields are sets of objects (usually numbers) with two associated binary
+operators <code class="language-math math-inline">+</code> and <code class="language-math math-inline">\times</code> such that various <a href="https://en.wikipedia.org/wiki/Field_(mathematics)#Classic_definition">field axioms</a> hold. The real
+numbers <code class="language-math math-inline">\mathbb{R}</code> are an example of a field with uncountably many elements.</p>
+<p>Halo makes use of <em>finite fields</em> which have a finite number of elements. Finite fields
+are fully classified as follows:</p>
+<ul>
+<li>if <code class="language-math math-inline">\mathbb{F}</code> is a finite field, it contains <code class="language-math math-inline">|\mathbb{F}| = p^k</code> elements for some
+integer <code class="language-math math-inline">k \geq 1</code> and some prime <code class="language-math math-inline">p</code>;</li>
+<li>any two finite fields with the same number of elements are isomorphic. In particular,
+all of the arithmetic in a prime field <code class="language-math math-inline">\mathbb{F}_p</code> is isomorphic to addition and
+multiplication of integers modulo <code class="language-math math-inline">p</code>, i.e. in <code class="language-math math-inline">\mathbb{Z}_p</code>. This is why we often
+refer to <code class="language-math math-inline">p</code> as the <em>modulus</em>.</li>
+</ul>
+<p>We’ll write a field as <code class="language-math math-inline">\mathbb{F}_q</code> where <code class="language-math math-inline">q = p^k</code>. The prime <code class="language-math math-inline">p</code> is called its
+<em>characteristic</em>. In the cases where <code class="language-math math-inline">k \gt 1</code> the field <code class="language-math math-inline">\mathbb{F}_q</code> is a <code class="language-math math-inline">k</code>-degree
+extension of the field <code class="language-math math-inline">\mathbb{F}_p</code>. (By analogy, the complex numbers
+<code class="language-math math-inline">\mathbb{C} = \mathbb{R}(i)</code> are an extension of the real numbers.) However, in Halo we do
+not use extension fields. Whenever we write <code class="language-math math-inline">\mathbb{F}_p</code> we are referring to what
+we call a <em>prime field</em> which has a prime <code class="language-math math-inline">p</code> number of elements, i.e. <code class="language-math math-inline">k = 1</code>.</p>
+<p>Important notes:</p>
+<ul>
+<li>There are two special elements in any field: <code class="language-math math-inline">0</code>, the additive identity, and
+<code class="language-math math-inline">1</code>, the multiplicative identity.</li>
+<li>The least significant bit of a field element, when represented as an integer in binary
+format, can be interpreted as its “sign” to help distinguish it from its additive
+inverse (negation). This is because for some nonzero element <code class="language-math math-inline">a</code> which has a least
+significant bit <code class="language-math math-inline">0</code> we have that <code class="language-math math-inline">-a = p - a</code> has a least significant bit <code class="language-math math-inline">1</code>, and vice
+versa. We could also use whether or not an element is larger than <code class="language-math math-inline">(p - 1) / 2</code> to give
+it a “sign.”</li>
+</ul>
+<p>Finite fields will be useful later for constructing <a href="polynomials.md">polynomials</a> and
+<a href="curves.md">elliptic curves</a>. Elliptic curves are examples of groups, which we discuss
+below.</p>
+<h2 id="the-pasta-primes">The Pasta primes</h2>
+<p>Apart from the generic usage above, this book uses <code class="language-math math-inline">p</code> and <code class="language-math math-inline">q</code> for the two Pasta primes:
+<code class="language-math math-inline">p</code> is the modulus of the Pallas base field and <code class="language-math math-inline">q</code> is the modulus of the Vesta base
+field, where
+<code class="language-math math-display">
+\begin{aligned}
+p &#x26;= 2^{254} + 45560315531419706090280762371685220353, \\
+q &#x26;= 2^{254} + 45560315531506369815346746415080538113.
+\end{aligned}
+</code>
+Pallas and Vesta form a <a href="curves.md#cycles-of-curves">cycle of curves</a>: the scalar field of
+Pallas is <code class="language-math math-inline">\mathbb{F}_q</code>, and the scalar field of Vesta is <code class="language-math math-inline">\mathbb{F}_p</code>.</p>
+<h2 id="groups">Groups</h2>
+<p>Groups are simpler and more limited than fields; they have only one binary operator <code class="language-math math-inline">\cdot</code>
+and fewer axioms. They also have an identity, which we’ll denote as <code class="language-math math-inline">1</code>.</p>
+<p>Any non-zero element <code class="language-math math-inline">a</code> in a group has an <em>inverse</em> <code class="language-math math-inline">b = a^{-1}</code>,
+which is the <em>unique</em> element <code class="language-math math-inline">b</code> such that <code class="language-math math-inline">a \cdot b = 1</code>.</p>
+<p>For example, the set of nonzero elements of <code class="language-math math-inline">\mathbb{F}_p</code> forms a group, where the
+group operation is given by multiplication on the field.</p>
+<blockquote>
+<h4 id="aside-additive-vs-multiplicative-notation">(aside) Additive vs multiplicative notation</h4>
+<p>If <code class="language-math math-inline">\cdot</code> is written as <code class="language-math math-inline">\times</code> or omitted (i.e. <code class="language-math math-inline">a \cdot b</code> written as <code class="language-math math-inline">ab</code>), the
+identity as <code class="language-math math-inline">1</code>, and inversion as <code class="language-math math-inline">a^{-1}</code>, as we did above, then we say that the group
+is “written multiplicatively”. If <code class="language-math math-inline">\cdot</code> is written as <code class="language-math math-inline">+</code>, the identity as <code class="language-math math-inline">0</code> or
+<code class="language-math math-inline">\mathcal{O}</code>, and inversion as <code class="language-math math-inline">-a</code>, then we say it is “written additively”.</p>
+<p>It’s conventional to use additive notation for elliptic curve groups, and multiplicative
+notation when the elements come from a finite field.</p>
+<p>When additive notation is used, we also write</p>
+<p><code class="language-math math-display">[k] A = \underbrace{A + A + \cdots + A}_{k \text{ times}}</code></p>
+<p>for nonnegative <code class="language-math math-inline">k</code> and call this “scalar multiplication”; we also often use uppercase
+letters for variables denoting group elements. When multiplicative notation is used, we
+also write</p>
+<p><code class="language-math math-display">a^k = \underbrace{a \times a \times \cdots \times a}_{k \text{ times}}</code></p>
+<p>and call this “exponentiation”. In either case we call the scalar <code class="language-math math-inline">k</code> such that
+<code class="language-math math-inline">[k] g = a</code> or <code class="language-math math-inline">g^k = a</code> the “discrete logarithm” of <code class="language-math math-inline">a</code> to base <code class="language-math math-inline">g</code>. We can extend
+scalars to negative integers by inversion, i.e. <code class="language-math math-inline">[-k] A + [k] A = \mathcal{O}</code> or
+<code class="language-math math-inline">a^{-k} \times a^k = 1</code>.</p>
+</blockquote>
+<p>The <em>order</em> of an element <code class="language-math math-inline">a</code> of a finite group is defined as the smallest positive integer
+<code class="language-math math-inline">k</code> such that <code class="language-math math-inline">a^k = 1</code> (in multiplicative notation) or <code class="language-math math-inline">[k] a = \mathcal{O}</code> (in additive
+notation). The order <em>of the group</em> is the number of elements.</p>
+<p>Groups always have a <a href="https://en.wikipedia.org/wiki/Generating_set_of_a_group">generating set</a>, which is a set of elements such that we can produce
+any element of the group as (in multiplicative terminology) a product of powers of those
+elements. So if the generating set is <code class="language-math math-inline">g_{1..k}</code>, we can produce any element of the group
+as <code class="language-math math-inline">\prod\limits_{i=1}^{k} g_i^{a_i}</code>. There can be many different generating sets for a
+given group.</p>
+<p>A group is called <a href="https://en.wikipedia.org/wiki/Cyclic_group">cyclic</a> if it has a (not necessarily unique) generating set with only
+a single element — call it <code class="language-math math-inline">g</code>. In that case we can say that <code class="language-math math-inline">g</code> generates the group, and
+that the order of <code class="language-math math-inline">g</code> is the order of the group.</p>
+<p>Any finite cyclic group <code class="language-math math-inline">\mathbb{G}</code> of order <code class="language-math math-inline">n</code> is <a href="https://en.wikipedia.org/wiki/Isomorphism">isomorphic</a> to the integers
+modulo <code class="language-math math-inline">n</code> (denoted <code class="language-math math-inline">\mathbb{Z}/n\mathbb{Z}</code>), such that:</p>
+<ul>
+<li>the operation <code class="language-math math-inline">\cdot</code> in <code class="language-math math-inline">\mathbb{G}</code> corresponds to addition modulo <code class="language-math math-inline">n</code>;</li>
+<li>the identity in <code class="language-math math-inline">\mathbb{G}</code> corresponds to <code class="language-math math-inline">0</code>;</li>
+<li>some generator <code class="language-math math-inline">g \in \mathbb{G}</code> corresponds to <code class="language-math math-inline">1</code>.</li>
+</ul>
+<p>Given a generator <code class="language-math math-inline">g</code>, the isomorphism is always easy to compute in the
+<code class="language-math math-inline">\mathbb{Z}/n\mathbb{Z} \rightarrow \mathbb{G}</code> direction; it is just <code class="language-math math-inline">a \mapsto g^a</code>
+(or in additive notation, <code class="language-math math-inline">a \mapsto [a] g</code>).
+It may be difficult in general to compute in the <code class="language-math math-inline">\mathbb{G} \rightarrow \mathbb{Z}/n\mathbb{Z}</code>
+direction; we’ll discuss this further when we come to <a href="curves.md">elliptic curves</a>.</p>
+<p>If the order <code class="language-math math-inline">n</code> of a finite group is prime, then the group is cyclic, and every
+non-identity element is a generator.</p>
+<h3 id="the-multiplicative-group-of-a-finite-field">The multiplicative group of a finite field</h3>
+<p>We use the notation <code class="language-math math-inline">\mathbb{F}_p^\times</code> for the multiplicative group (i.e. the group
+operation is multiplication in <code class="language-math math-inline">\mathbb{F}_p</code>) over the set <code class="language-math math-inline">\mathbb{F}_p - \{0\}</code>.</p>
+<p>A quick way of obtaining the inverse in <code class="language-math math-inline">\mathbb{F}_p^\times</code> is <code class="language-math math-inline">a^{-1} = a^{p - 2}</code>.
+The reason for this stems from <a href="https://en.wikipedia.org/wiki/Fermat%27s_little_theorem">Fermat’s little theorem</a>, which states
+that <code class="language-math math-inline">a^p = a \pmod p</code> for any integer <code class="language-math math-inline">a</code>. If <code class="language-math math-inline">a</code> is nonzero, we can divide by <code class="language-math math-inline">a</code> twice
+to get <code class="language-math math-inline">a^{p-2} = a^{-1}.</code></p>
+<p>Let’s assume that <code class="language-math math-inline">\alpha</code> is a generator of <code class="language-math math-inline">\mathbb{F}_p^\times</code>, so it has order <code class="language-math math-inline">p-1</code>
+(equal to the number of elements in <code class="language-math math-inline">\mathbb{F}_p^\times</code>). Therefore, for any element in
+<code class="language-math math-inline">a \in \mathbb{F}_p^\times</code> there is a unique integer <code class="language-math math-inline">i \in \{0..p-2\}</code> such that <code class="language-math math-inline">a = \alpha^i</code>.</p>
+<p>Notice that <code class="language-math math-inline">a \times b</code> where <code class="language-math math-inline">a, b \in \mathbb{F}_p^\times</code> can really be interpreted as
+<code class="language-math math-inline">\alpha^i \times \alpha^j</code> where <code class="language-math math-inline">a = \alpha^i</code> and <code class="language-math math-inline">b = \alpha^j</code>. Indeed, it holds that
+<code class="language-math math-inline">\alpha^i \times \alpha^j = \alpha^{i + j}</code> for all <code class="language-math math-inline">0 \leq i, j \lt p - 1</code>. As a result
+the multiplication of nonzero field elements can be interpreted as addition modulo <code class="language-math math-inline">p - 1</code>
+with respect to some fixed generator <code class="language-math math-inline">\alpha</code>. The addition just happens “in the exponent.”</p>
+<p>This is another way to look at where <code class="language-math math-inline">a^{p - 2}</code> comes from for computing inverses in the
+field:</p>
+<p><code class="language-math math-display">p - 2 \equiv -1 \pmod{p - 1},</code></p>
+<p>so <code class="language-math math-inline">a^{p - 2} = a^{-1}</code>.</p>
+<h3 id="montgomerys-trick">Montgomery’s Trick</h3>
+<p>Montgomery’s trick, named after Peter Montgomery (RIP) is a way to compute many group
+inversions at the same time. It is commonly used to compute inversions in
+<code class="language-math math-inline">\mathbb{F}_p^\times</code>, which are quite computationally expensive compared to multiplication.</p>
+<p>Imagine we need to compute the inverses of three nonzero elements <code class="language-math math-inline">a, b, c \in \mathbb{F}_p^\times</code>.
+Instead, we’ll compute the products <code class="language-math math-inline">x = ab</code> and <code class="language-math math-inline">y = xc = abc</code>, and compute the inversion</p>
+<p><code class="language-math math-display">z = y^{p - 2} = \frac{1}{abc}.</code></p>
+<p>We can now multiply <code class="language-math math-inline">z</code> by <code class="language-math math-inline">x</code> to obtain <code class="language-math math-inline">\frac{1}{c}</code> and multiply <code class="language-math math-inline">z</code> by <code class="language-math math-inline">c</code> to obtain
+<code class="language-math math-inline">\frac{1}{ab}</code>, which we can then multiply by <code class="language-math math-inline">a, b</code> to obtain their respective inverses.</p>
+<p>This technique generalizes to arbitrary numbers of group elements with just a single
+inversion necessary.</p>
+<h2 id="multiplicative-subgroups">Multiplicative subgroups</h2>
+<p>A <em>subgroup</em> of a group <code class="language-math math-inline">G</code> with operation <code class="language-math math-inline">\cdot</code>, is a subset of elements of <code class="language-math math-inline">G</code> that
+also form a group under <code class="language-math math-inline">\cdot</code>.</p>
+<p>In the previous section we said that <code class="language-math math-inline">\alpha</code> is a generator of the <code class="language-math math-inline">(p - 1)</code>-order
+multiplicative group <code class="language-math math-inline">\mathbb{F}_p^\times</code>. This group has <em>composite</em> order, and so by
+the Chinese remainder theorem<sup><a href="#user-content-fn-chinese-remainder" id="user-content-fnref-chinese-remainder" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup> it has strict subgroups. As an example
+let’s imagine that <code class="language-math math-inline">p = 11</code>, and so <code class="language-math math-inline">p - 1</code> factors into <code class="language-math math-inline">5 \cdot 2</code>. Thus, there is a
+generator <code class="language-math math-inline">\beta</code> of the <code class="language-math math-inline">5</code>-order subgroup and a generator <code class="language-math math-inline">\gamma</code> of the <code class="language-math math-inline">2</code>-order
+subgroup. All elements in <code class="language-math math-inline">\mathbb{F}_p^\times</code>, therefore, can be written uniquely as
+<code class="language-math math-inline">\beta^i \cdot \gamma^j</code> for some <code class="language-math math-inline">i</code> (modulo <code class="language-math math-inline">5</code>) and some <code class="language-math math-inline">j</code> (modulo <code class="language-math math-inline">2</code>).</p>
+<p>If we have <code class="language-math math-inline">a = \beta^i \cdot \gamma^j</code> notice what happens when we compute</p>
+<p><code class="language-math math-display">
+a^5 = (\beta^i \cdot \gamma^j)^5
+= \beta^{i \cdot 5} \cdot \gamma^{j \cdot 5}
+= \beta^0 \cdot \gamma^{j \cdot 5}
+= \gamma^{j \cdot 5};
+</code></p>
+<p>we have effectively “killed” the <code class="language-math math-inline">5</code>-order subgroup component, producing a value in the
+<code class="language-math math-inline">2</code>-order subgroup.</p>
+<p><a href="https://en.wikipedia.org/wiki/Lagrange%27s_theorem_(group_theory)">Lagrange’s theorem (group theory)</a> states that the order of any subgroup
+<code class="language-math math-inline">H</code> of a finite group <code class="language-math math-inline">G</code> divides the order of <code class="language-math math-inline">G</code>. Therefore, the order of any subgroup
+of <code class="language-math math-inline">\mathbb{F}_p^\times</code> must divide <code class="language-math math-inline">p-1.</code></p>
+<p><a href="plonkish.md">PLONK-based</a> proving systems like Halo 2 are more convenient to use with fields that have
+a large number of multiplicative subgroups with a “smooth” distribution (which makes the
+performance cliffs smaller and more granular as circuit sizes increase). The Pallas and
+Vesta curves specifically have primes of the form</p>
+<p><code class="language-math math-display">T \cdot 2^S = p - 1</code></p>
+<p>with <code class="language-math math-inline">S = 32</code> and <code class="language-math math-inline">T</code> odd (i.e. <code class="language-math math-inline">p - 1</code> has 32 lower zero-bits). This means they have
+multiplicative subgroups of order <code class="language-math math-inline">2^k</code> for all <code class="language-math math-inline">k \leq 32</code>. These 2-adic subgroups are
+nice for <a href="polynomials.md#fast-fourier-transform-fft">efficient FFTs</a>, as well as enabling a wide variety of circuit sizes.</p>
+<h2 id="square-roots">Square roots</h2>
+<p>In a field <code class="language-math math-inline">\mathbb{F}_p</code> exactly half of all nonzero elements are squares; the remainder
+are non-squares or “quadratic non-residues”. In order to see why, consider an <code class="language-math math-inline">\alpha</code>
+that generates the <code class="language-math math-inline">2</code>-order multiplicative subgroup of <code class="language-math math-inline">\mathbb{F}_p^\times</code> (this exists
+because <code class="language-math math-inline">p - 1</code> is divisible by <code class="language-math math-inline">2</code> since <code class="language-math math-inline">p</code> is a prime greater than <code class="language-math math-inline">2</code>) and <code class="language-math math-inline">\beta</code> that
+generates the <code class="language-math math-inline">t</code>-order multiplicative subgroup of <code class="language-math math-inline">\mathbb{F}_p^\times</code> where <code class="language-math math-inline">p - 1 = 2t</code>.
+Then every element <code class="language-math math-inline">a \in \mathbb{F}_p^\times</code> can be written uniquely as
+<code class="language-math math-inline">\alpha^i \cdot \beta^j</code> with <code class="language-math math-inline">i \in \mathbb{Z}_2</code> and <code class="language-math math-inline">j \in \mathbb{Z}_t</code>. Half of all
+elements will have <code class="language-math math-inline">i = 0</code> and the other half will have <code class="language-math math-inline">i = 1</code>.</p>
+<p>Let’s consider the simple case where <code class="language-math math-inline">p \equiv 3 \pmod{4}</code> and so <code class="language-math math-inline">t</code> is odd (if <code class="language-math math-inline">t</code> is
+even, then <code class="language-math math-inline">p - 1</code> would be divisible by <code class="language-math math-inline">4</code>, which contradicts <code class="language-math math-inline">p</code> being <code class="language-math math-inline">3 \pmod{4}</code>).
+If <code class="language-math math-inline">a \in \mathbb{F}_p^\times</code> is a square, then there must exist
+<code class="language-math math-inline">b = \alpha^i \cdot \beta^j</code> such that <code class="language-math math-inline">b^2 = a</code>. But this means that</p>
+<p><code class="language-math math-display">a = (\alpha^i \cdot \beta^j)^2 = \alpha^{2i} \cdot \beta^{2j} = \beta^{2j}.</code></p>
+<p>In other words, all squares in this particular field do not generate the <code class="language-math math-inline">2</code>-order
+multiplicative subgroup, and so since half of the elements generate the <code class="language-math math-inline">2</code>-order subgroup
+then at most half of the elements are square. In fact exactly half of the elements are
+square (since squaring each nonsquare element gives a unique square). This means we can
+assume all squares can be written as <code class="language-math math-inline">\beta^m</code> for some <code class="language-math math-inline">m</code>, and therefore finding the
+square root is a matter of exponentiating by <code class="language-math math-inline">2^{-1} \pmod{t}</code>.</p>
+<p>In the event that <code class="language-math math-inline">p \equiv 1 \pmod{4}</code> then things get more complicated because
+<code class="language-math math-inline">2^{-1} \pmod{t}</code> does not exist. Let’s write <code class="language-math math-inline">p - 1</code> as <code class="language-math math-inline">2^k \cdot t</code> with <code class="language-math math-inline">t</code> odd. The
+case <code class="language-math math-inline">k = 0</code> is impossible, and the case <code class="language-math math-inline">k = 1</code> is what we already described, so consider
+<code class="language-math math-inline">k \geq 2</code>. <code class="language-math math-inline">\alpha</code> generates a <code class="language-math math-inline">2^k</code>-order multiplicative subgroup and <code class="language-math math-inline">\beta</code> generates
+the odd <code class="language-math math-inline">t</code>-order multiplicative subgroup. Then every element <code class="language-math math-inline">a \in \mathbb{F}_p^\times</code>
+can be written as <code class="language-math math-inline">\alpha^i \cdot \beta^j</code> for <code class="language-math math-inline">i \in \mathbb{Z}_{2^k}</code> and
+<code class="language-math math-inline">j \in \mathbb{Z}_t</code>. If the element is a square, then there exists some <code class="language-math math-inline">b = \sqrt{a}</code>
+which can be written <code class="language-math math-inline">b = \alpha^{i'} \cdot \beta^{j'}</code> for <code class="language-math math-inline">i' \in \mathbb{Z}_{2^k}</code> and
+<code class="language-math math-inline">j' \in \mathbb{Z}_t</code>. This means that <code class="language-math math-inline">a = b^2 = \alpha^{2i'} \cdot \beta^{2j'}</code>,
+therefore we have <code class="language-math math-inline">i \equiv 2i' \pmod{2^k}</code>, and <code class="language-math math-inline">j \equiv 2j' \pmod{t}</code>. <code class="language-math math-inline">i</code> would have
+to be even in this case because otherwise it would be impossible to have
+<code class="language-math math-inline">i \equiv 2i' \pmod{2^k}</code> for any <code class="language-math math-inline">i'</code>. In the case that <code class="language-math math-inline">a</code> is not a square, then <code class="language-math math-inline">i</code> is
+odd, and so half of all elements are squares.</p>
+<p>In order to compute the square root, we can first raise the element
+<code class="language-math math-inline">a = \alpha^i \cdot  \beta^j</code> to the power <code class="language-math math-inline">t</code> to “kill” the <code class="language-math math-inline">t</code>-order component, giving</p>
+<p><code class="language-math math-display">a^t = \alpha^{it \pmod {2^k}} \cdot \beta^{jt \pmod t} = \alpha^{it \pmod {2^k}}</code></p>
+<p>and then raise this result to the power <code class="language-math math-inline">t^{-1} \pmod{2^k}</code> to undo the effect of the
+original exponentiation on the <code class="language-math math-inline">2^k</code>-order component:</p>
+<p><code class="language-math math-display">(\alpha^{it \bmod 2^k})^{t^{-1} \pmod{2^k}} = \alpha^i</code></p>
+<p>(since <code class="language-math math-inline">t</code> is relatively prime to <code class="language-math math-inline">2^k</code>). This leaves bare the <code class="language-math math-inline">\alpha^i</code> value which we
+can trivially handle. We can similarly kill the <code class="language-math math-inline">2^k</code>-order component to obtain
+<code class="language-math math-inline">\beta^{j \cdot 2^{-1} \pmod{t}}</code>, and put the values together to obtain the square root.</p>
+<p>It turns out that in the cases <code class="language-math math-inline">k = 2, 3</code> there are simpler algorithms that merge several
+of these exponentiations together for efficiency. For other values of <code class="language-math math-inline">k</code>, the only known
+way is to manually extract <code class="language-math math-inline">i</code> by squaring until you obtain the identity for every single
+bit of <code class="language-math math-inline">i</code>. This is the essence of the <a href="https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm">Tonelli-Shanks square root algorithm</a> and
+describes the general strategy. (There is another square root algorithm that uses
+quadratic extension fields, but it doesn’t pay off in efficiency until the prime becomes
+quite large.)</p>
+<h2 id="roots-of-unity">Roots of unity</h2>
+<p>In the previous sections we wrote <code class="language-math math-inline">p - 1 = 2^k \cdot t</code> with <code class="language-math math-inline">t</code> odd, and stated that an
+element <code class="language-math math-inline">\alpha \in \mathbb{F}_p^\times</code> generated the <code class="language-math math-inline">2^k</code>-order subgroup. For
+convenience, let’s denote <code class="language-math math-inline">n := 2^k.</code> The elements <code class="language-math math-inline">\{1, \alpha, \ldots, \alpha^{n-1}\}</code>
+are known as the <code class="language-math math-inline">n</code>th <a href="https://en.wikipedia.org/wiki/Root_of_unity">roots of unity</a>.</p>
+<p>The <strong>primitive root of unity</strong>, <code class="language-math math-inline">\omega,</code> is an <code class="language-math math-inline">n</code>th root of unity such that
+<code class="language-math math-inline">\omega^i \neq 1</code> except when <code class="language-math math-inline">i \equiv 0 \pmod{n}</code>.</p>
+<p>Important notes:</p>
+<ul>
+<li>
+<p>If <code class="language-math math-inline">\alpha</code> is an <code class="language-math math-inline">n</code>th root of unity, <code class="language-math math-inline">\alpha</code> satisfies <code class="language-math math-inline">\alpha^n - 1 = 0.</code> If
+<code class="language-math math-inline">\alpha \neq 1,</code> then
+<code class="language-math math-display">1 + \alpha + \alpha^2 + \cdots + \alpha^{n-1} = 0.</code></p>
+</li>
+<li>
+<p>Equivalently, the roots of unity are solutions to the equation
+<code class="language-math math-display">X^n - 1 = (X - 1)(X - \alpha)(X - \alpha^2) \cdots (X - \alpha^{n-1}).</code></p>
+</li>
+<li>
+<p><strong><code class="language-math math-inline">\boxed{\omega^{\frac{n}{2}+i} =  -\omega^i}</code> (“Negation lemma”)</strong>. Proof:
+<code class="language-math math-display">
+\begin{aligned}
+\omega^n = 1 &#x26;\implies \omega^n - 1 = 0 \\
+&#x26;\implies (\omega^{n/2} + 1)(\omega^{n/2} - 1) = 0.
+\end{aligned}
+</code>
+Since the order of <code class="language-math math-inline">\omega</code> is <code class="language-math math-inline">n</code>, <code class="language-math math-inline">\omega^{n/2} \neq 1.</code> Therefore, <code class="language-math math-inline">\omega^{n/2} = -1.</code></p>
+</li>
+<li>
+<p><strong><code class="language-math math-inline">\boxed{(\omega^{\frac{n}{2}+i})^2 =  (\omega^i)^2}</code> (“Halving lemma”)</strong>. Proof:
+<code class="language-math math-display">
+(\omega^{\frac{n}{2}+i})^2 = \omega^{n + 2i} = \omega^{n} \cdot \omega^{2i} = \omega^{2i} = (\omega^i)^2.
+</code>
+In other words, if we square each element in the <code class="language-math math-inline">n</code>th roots of unity, we would get back
+only half the elements, <code class="language-math math-inline">\{(\omega_n^i)^2\} = \{\omega_{n/2}\}</code> (i.e. the <code class="language-math math-inline">\frac{n}{2}</code>th roots
+of unity). There is a two-to-one mapping between the elements and their squares.</p>
+</li>
+</ul>
+<h2 id="references">References</h2>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-chinese-remainder">
+<p><a href="https://web.archive.org/web/20240413230732/http://www.math.columbia.edu/~rf/numbertheory2.pdf">Friedman, R. (n.d.) “Cyclic Groups and Elementary Number Theory II” (p. 5).</a> <a href="#user-content-fnref-chinese-remainder" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

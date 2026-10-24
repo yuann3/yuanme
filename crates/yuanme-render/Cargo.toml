@@ -11,3 +11,6 @@ include = ["/src"]
 [dependencies]
 yuanme-content.workspace = true
 yuanme-diag.workspace = true
+
+[dev-dependencies]
+insta = "1.49.0"

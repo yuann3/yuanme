@@ -1,0 +1,34 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<h1 id="sequel">sequel</h1>
+<p>A no-bullshit, from-scratch SQLite parser and query engine clone written in Rust. We read raw <code>.db</code> files byte-by-byte, manually parse B-trees, and extract rows like it’s the Stone Age. It’s part of the Codecrafters SQLite challenge, but with extra muscle and fewer excuses.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>
+<p>Parses SQLite DB files directly, no external libraries or bindings</p>
+</li>
+<li>
+<p>Supports:</p>
+<ul>
+<li><code>.tables</code>, <code>.dbinfo</code></li>
+<li><code>SELECT ... FROM ...</code></li>
+<li><code>SELECT COUNT(*) FROM ...</code></li>
+<li><code>WHERE country = '...’</code> (only basic equality for now, cuz no point doing others)</li>
+</ul>
+</li>
+<li>
+<p>Index optimization with B-tree traversal (yes, it’s fast af)</p>
+</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-sh">./run.sh path/to/db "SELECT name, country FROM companies WHERE country = 'Japan'"
+</code></pre>
+<p>or</p>
+<pre><code class="language-sh">./run.sh path/to/db ".tables"
+</code></pre>
+<h2 id="why">Why</h2>
+<p>Part of “Rewrite everything in Rust” Movement. and real devs read hex dumps and parse varints manually, and I want to get my hands dirty with raw file I/O and binary parsing</p>
+<h2 id="file-structure">File Structure</h2>
+<p>Check <code>src/</code> — it’s clean, modular, and doesn’t hide logic under 10 layers of traits and async shit.</p>

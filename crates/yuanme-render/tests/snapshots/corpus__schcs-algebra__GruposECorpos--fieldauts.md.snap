@@ -1,0 +1,308 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+error[markdown/empty-directive]: a directive needs a name before `{#def-field-aut}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:11:1
+   |
+11 | :::{#def-field-aut}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-field-aut}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:18:1
+   |
+18 | :::{#exr-field-aut}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-field-aut}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:22:1
+   |
+22 | :::{#exr-field-aut}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-field-aut}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:26:1
+   |
+26 | :::{#exm-field-aut}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-galois-group}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:40:1
+   |
+40 | :::{#def-galois-group}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-gal-group}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:48:1
+   |
+48 | :::{#exr-gal-group}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#lem-aut-pol}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:52:1
+   |
+52 | :::{#lem-aut-pol}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:56:1
+   |
+56 | :::{.proof}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-gal}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:60:1
+   |
+60 | :::{#exm-gal}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-gal2}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:64:1
+   |
+64 | :::{#exm-gal2}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-sqroot-3}`
+  --> schcs-algebra/GruposECorpos--fieldauts.md:76:1
+   |
+76 | :::{#exm-sqroot-3}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-auts-li}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:110:1
+    |
+110 | :::{#exr-auts-li}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#lem-gal-ff}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:117:1
+    |
+117 | :::{#lem-gal-ff}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:121:1
+    |
+121 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{exm-gal-ff}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:147:1
+    |
+147 | :::{exm-gal-ff}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-normal-extension}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:154:1
+    |
+154 | :::{#def-normal-extension}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-normal-cuberoot-3}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:158:1
+    |
+158 | :::{#exm-normal-cuberoot-3}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#lem-normal-splitting}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:162:1
+    |
+162 | :::{#lem-normal-splitting}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:165:1
+    |
+165 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#lem-lifting-isom}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:190:1
+    |
+190 | :::{#lem-lifting-isom}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:194:1
+    |
+194 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-derivado}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:200:1
+    |
+200 | :::{#exr-derivado}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-sep-ext}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:207:1
+    |
+207 | :::{#def-sep-ext}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-sep-ext}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:216:1
+    |
+216 | :::{#exr-sep-ext}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-transitive}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:224:1
+    |
+224 | :::{#thm-transitive}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:228:1
+    |
+228 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#lem-simple-ext}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:236:1
+    |
+236 | :::{#lem-simple-ext}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:240:1
+    |
+240 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-ext-gal}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:259:1
+    |
+259 | :::{#def-ext-gal}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-gg-fix-normal}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:263:1
+    |
+263 | :::{#thm-gg-fix-normal}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:269:1
+    |
+269 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#lem-H-pol}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:276:1
+    |
+276 | :::{#lem-H-pol}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:293:1
+    |
+293 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-gg-order}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:297:1
+    |
+297 | :::{#thm-gg-order}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:300:1
+    |
+300 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-finite-field-galois}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:308:1
+    |
+308 | :::{#exm-finite-field-galois}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#lem-normal-invariant}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:312:1
+    |
+312 | :::{#lem-normal-invariant}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/GruposECorpos--fieldauts.md:318:1
+    |
+318 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more

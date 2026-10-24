@@ -1,0 +1,5 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<p>Reinventing the wheel, Ylib is a rewrite of the C standard library. It contains string type checking, memory management, include some linked list manipulate functions</p>

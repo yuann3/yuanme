@@ -1,0 +1,88 @@
+<h1 id="pew">Pew</h1>
+<p>Pew is a simple, lightweight CLI for dumping source code or directories into a single file, makes it easier to work with LLMs.</p>
+<p>Claude Code and Sonnet 3.7 its amazing at coding, but it lacks intelligence. So the best workflow is dump your code to Grok, asking grok to prompt claude first, create a <code>PLAN.md</code>, and let your fellow claude to follow it</p>
+<p><strong>WHAT THIS CLI CAN DO</strong></p>
+<ul>
+<li>Convert source code files to well-formatted Markdown</li>
+<li>Automatically detect and skip binary files</li>
+<li>Tree-style directory structure visualization</li>
+<li>GitIgnore-style pattern matching via <code>.pewc</code> configuration file</li>
+<li>Auto ignore the binary files</li>
+<li>Smart file extension detection for proper syntax highlighting</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<p><strong>Using Homebrew</strong></p>
+<pre><code class="language-bash">brew tap yuann3/pew
+brew install pew
+</code></pre>
+<p><strong>Linux</strong></p>
+<pre><code class="language-bash"># Download and install in one command
+curl -L https://raw.githubusercontent.com/yuann3/pew/main/install.sh | bash
+</code></pre>
+<h2 id="usage">Usage</h2>
+<pre><code>pew [flags] [files...]
+
+Flags:
+-d &#x3C;directory>       Directory to dump (mutually exclusive with specifying files)
+-o &#x3C;filename>        Output Markdown file (default: "source.md")
+-h                   Show this help message
+--no-default-ignores Disable default ignore patterns for directories
+</code></pre>
+<h2 id="examples">Examples</h2>
+<p>Dump specific files:</p>
+<pre><code class="language-bash">pew file1.go file2.go -o output.md
+</code></pre>
+<p>Dump a directory with default ignores:</p>
+<pre><code class="language-bash">pew -d /path/to/project -o project.md
+</code></pre>
+<p>Dump a directory without default ignores:</p>
+<pre><code class="language-bash">pew -d /path/to/project --no-default-ignores -o project.md
+</code></pre>
+<h2 id="configuration-with-pewc-file">Configuration with .pewc file</h2>
+<p>Create a <code>.pewc</code> file in your project directory to specify ignore patterns. The <code>.pewc</code> file works exactly like <code>.gitignore</code>:</p>
+<pre><code># Lines starting with # are comments
+
+# Ignore specific files
+bla.md
+README.md
+*.log
+*.tmp
+
+# Ignore directories (patterns ending with /)
+node_modules/
+dist/
+build/
+
+# Wildcards work just like in gitignore
+doc/*.txt      # Ignore all .txt files in doc/ directory
+test/*/data    # Ignore data in subdirectories of test/
+</code></pre>
+<h3 id="pattern-format">Pattern Format</h3>
+<ul>
+<li>Blank lines are ignored</li>
+<li>Lines starting with <code>#</code> are comments</li>
+<li>Patterns ending with <code>/</code> match directories only</li>
+<li><code>*</code> matches any sequence of characters except <code>/</code></li>
+<li><code>?</code> matches any single character except <code>/</code></li>
+<li>You can specify exact filenames like <code>bla.md</code> to ignore them</li>
+</ul>
+<h3 id="default-ignore-patterns">Default Ignore Patterns</h3>
+<p>By default, pew ignores these patterns:</p>
+<ul>
+<li><code>.*</code> (hidden files/directories)</li>
+<li><code>node_modules/</code></li>
+<li><code>target/</code></li>
+<li><code>dist/</code></li>
+<li><code>build/</code></li>
+<li><code>bin/</code></li>
+<li><code>pkg/</code></li>
+<li><code>.pewc</code> (the configuration file itself)</li>
+</ul>
+<p>Use <code>--no-default-ignores</code> to override this behavior.</p>
+<h2 id="output">Output</h2>
+<p>The output Markdown file contains:</p>
+<ol>
+<li>A directory structure tree (if dumping a directory)</li>
+<li>Code sections with proper syntax highlighting</li>
+<li>All text files found in the specified location(s), excluding any files that match patterns in your <code>.pewc</code> file</li>
+</ol>

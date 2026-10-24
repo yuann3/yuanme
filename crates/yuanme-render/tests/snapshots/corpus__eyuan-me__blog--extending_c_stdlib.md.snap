@@ -1,0 +1,374 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<p><em>What if we could have nice things in C?</em></p>
+<p>Ok, most of things cover in this post is already exists in some C library, you can just directly use them</p>
+<p>but who gonna stop us implement our own lib right?</p>
+<h2 id="the-problem-with-vanilla-c">The Problem with Vanilla C</h2>
+<p>If you’ve written C for any extended period, you know the pain. No dynamic arrays. No hash maps. No proper string handling. Every time you want to do something that takes one line in Python (it sucks, sry python lover), you’re suddenly writing 50 lines of memory management code.</p>
+<p>But here’s the thing - nothing stops us from building these abstractions ourselves. And we can steal ideas from languages that figured this out decades ago.</p>
+<p>I’ve been exploring how to extend my personal C utility library with concepts from Rust, C++, and Tsoding’s <a href="https://github.com/tsoding/nob.h">nob.h</a>.</p>
+<hr>
+<h2 id="dynamic-arrays-the-foundation">Dynamic Arrays (The Foundation)</h2>
+<p>C++ has <code>std::vector</code>. Rust has <code>Vec&#x3C;T></code>. We can have our own.</p>
+<p>The idea is dead simple:</p>
+<pre><code>┌──────────┬─────┬─────┬───────────┐
+│ data *   │ len │ cap │ elem_size │
+└────┬─────┴─────┴─────┴───────────┘
+     │
+     ▼
+┌────┬────┬────┬────┬────┬────┐
+│ e0 │ e1 │ e2 │ .. │    │    │
+└────┴────┴────┴────┴────┴────┘
+</code></pre>
+<pre><code class="language-c">typedef struct s_vec
+{
+    void    *data;
+    size_t  len;
+    size_t  cap;
+    size_t  elem_size;
+}   t_vec;
+
+t_vec   *vec_new(size_t elem_size, size_t init_cap);
+int     vec_push(t_vec *v, const void *elem);
+int     vec_pop(t_vec *v, void *out);
+void    *vec_get(t_vec *v, size_t index);
+void    vec_free(t_vec *v);
+</code></pre>
+<p>Track your data pointer, current length, total capacity, and element size. When <code>len == cap</code>, allocate a new buffer with <code>2x</code> capacity, copy everything over, free the old one. That’s it. O(1) amortized append.</p>
+<pre><code class="language-c">// Usage
+t_vec *nums = vec_new(sizeof(int), 8);
+int x = 42;
+vec_push(nums, &#x26;x);
+x = 100;
+vec_push(nums, &#x26;x);
+
+int *ptr = vec_get(nums, 0);  // returns pointer to 42
+</code></pre>
+<p>Tsoding’s nob.h does this beautifully with macros. You can go the struct route if you prefer type safety over convenience.</p>
+<hr>
+<h2 id="string-builder">String Builder</h2>
+<p>Building strings character by character in C is miserable. You either pre-allocate way too much, or you’re doing <code>realloc</code> gymnastics.</p>
+<p>A string builder is just a dynamic array specialized for chars:</p>
+<pre><code class="language-c">typedef struct s_str
+{
+    char    *data;
+    size_t  len;
+    size_t  cap;
+}   t_str;
+
+t_str   *str_new(void);
+t_str   *str_from(const char *s);
+int     str_push(t_str *s, char c);
+int     str_append(t_str *s, const char *suffix);
+char    *str_to_cstr(t_str *s);  // get null-terminated result
+void    str_free(t_str *s);
+</code></pre>
+<p>No more counting string lengths. No more buffer overflow anxiety. Just append stuff and extract the result.</p>
+<pre><code class="language-c">t_str *path = str_new();
+str_append(path, "/home/");
+str_append(path, username);
+str_append(path, "/.config");
+char *result = str_to_cstr(path);  // "/home/bob/.config"
+</code></pre>
+<p>This is basically what <code>std::string</code> gives you in C++, minus the operator overloading.</p>
+<hr>
+<h2 id="string-view-zero-copy-parsing">String View (Zero-Copy Parsing)</h2>
+<p>This one’s from both Rust (<code>&#x26;str</code>) and nob.h. A string view is just a pointer + length that <em>references</em> existing string data without copying.</p>
+<pre><code class="language-c">typedef struct s_sv
+{
+    const char  *data;
+    size_t      len;
+}   t_sv;
+
+t_sv    sv_from_cstr(const char *s);
+t_sv    sv_chop_by_delim(t_sv *sv, char delim);
+t_sv    sv_trim(t_sv sv);
+int     sv_eq(t_sv a, t_sv b);
+char    *sv_to_cstr(t_sv sv);  // allocate only when needed
+</code></pre>
+<p>The magic is in <code>sv_chop_by_delim</code> - it returns the part before the delimiter and advances the original view past it:</p>
+<pre><code class="language-c">t_sv line = sv_from_cstr("hello,world,foo");
+while (line.len > 0)
+{
+    t_sv token = sv_chop_by_delim(&#x26;line, ',');
+    // token is "hello", then "world", then "foo"
+    // zero allocations!
+}
+</code></pre>
+<p>This is incredibly useful for parsing. You can tokenize an entire file without a single malloc.</p>
+<hr>
+<h2 id="result-types-rusts-best-idea">Result Types (Rust’s Best Idea)</h2>
+<p>Rust’s <code>Result&#x3C;T, E></code> is genuinely one of the best error handling patterns I’ve seen. Instead of returning <code>-1</code> or <code>NULL</code> and hoping the caller checks, you return a tagged union that <em>forces</em> handling.</p>
+<pre><code class="language-c">typedef struct s_result
+{
+    int     ok;       // 1 = success, 0 = error
+    void    *value;   // the actual data
+    char    *error;   // error message if failed
+}   t_result;
+
+t_result    result_ok(void *value);
+t_result    result_err(char *msg);
+int         result_is_ok(t_result res);
+void        *result_unwrap(t_result res);
+</code></pre>
+<p>Now your functions return <code>t_result</code> instead of raw pointers:</p>
+<pre><code class="language-c">t_result parse_config(const char *path)
+{
+    int fd = open(path, O_RDONLY);
+    if (fd &#x3C; 0)
+        return (result_err("failed to open config"));
+    // ...parse...
+    return (result_ok(config));
+}
+
+// Caller
+t_result res = parse_config("app.conf");
+if (!result_is_ok(res))
+{
+    printf("Error: %s\n", res.error);
+    return (1);
+}
+t_config *cfg = result_unwrap(res);
+</code></pre>
+<p>Is it more verbose? Yeah. Does it prevent entire classes of bugs? Also yeah.</p>
+<hr>
+<h2 id="the-defer-pattern">The Defer Pattern</h2>
+<p>This one’s from nob.h and it’s surprisingly elegant. The problem: functions with multiple exit points leak resources.</p>
+<pre><code class="language-c">int some_function(void)
+{
+    int     result;
+    char    *buf;
+    int     fd;
+
+    result = 0;
+    buf = NULL;
+    fd = -1;
+    
+    buf = malloc(100);
+    if (!buf)
+        return (-1);
+    
+    fd = open("file", O_RDONLY);
+    if (fd &#x3C; 0)
+    {
+        result = -1;
+        goto defer;  // jump to cleanup
+    }
+    
+    // ... do work ...
+    
+    result = 1;
+defer:
+    if (buf)
+        free(buf);
+    if (fd >= 0)
+        close(fd);
+    return (result);
+}
+</code></pre>
+<p><code>goto</code> gets a bad rap, but this is legitimate structured use. All cleanup happens in one place at the bottom. No matter how many error conditions you have, resources get freed.</p>
+<hr>
+<h2 id="hash-maps">Hash Maps</h2>
+<p>Every modern language has a built-in hash map. C doesn’t. So we build one.</p>
+<pre><code class="language-c">typedef struct s_hashmap
+{
+    t_vec   *buckets;  // array of chains
+    size_t  size;      // number of entries
+    size_t  cap;       // number of buckets
+}   t_hashmap;
+
+t_hashmap   *hashmap_new(size_t init_cap);
+int         hashmap_set(t_hashmap *m, const char *key, void *value);
+void        *hashmap_get(t_hashmap *m, const char *key);
+int         hashmap_has(t_hashmap *m, const char *key);
+int         hashmap_del(t_hashmap *m, const char *key);
+void        hashmap_free(t_hashmap *m, void (*del)(void *));
+</code></pre>
+<p>For string keys, djb2 is a solid hash function:</p>
+<pre><code class="language-c">size_t hash(const char *str)
+{
+    size_t h = 5381;
+    while (*str)
+        h = ((h &#x3C;&#x3C; 5) + h) + *str++;
+    return (h);
+}
+</code></pre>
+<p>Use cases are everywhere - config lookups, caching, symbol tables, environment variables.</p>
+<hr>
+<h2 id="double-ended-queue">Double-Ended Queue</h2>
+<p>A deque lets you push/pop from both ends in O(1). Implemented as a circular buffer:</p>
+<pre><code>        head              tail
+          ↓                 ↓
+┌────┬────┬────┬────┬────┬────┬────┬────┐
+│    │    │ A  │ B  │ C  │ D  │    │    │
+└────┴────┴────┴────┴────┴────┴────┴────┘
+</code></pre>
+<pre><code class="language-c">typedef struct s_deque
+{
+    int     *data;
+    size_t  head;
+    size_t  tail;
+    size_t  len;
+    size_t  cap;
+}   t_deque;
+
+t_deque *deque_new(size_t cap);
+int     deque_push_front(t_deque *d, int val);
+int     deque_push_back(t_deque *d, int val);
+int     deque_pop_front(t_deque *d, int *out);
+int     deque_pop_back(t_deque *d, int *out);
+</code></pre>
+<p>Push front? Decrement head (with wraparound). Push back? Increment tail. Both O(1).</p>
+<p>This is perfect for algorithms that need stack + queue behavior, or anything involving sliding windows.</p>
+<hr>
+<h2 id="arena-allocator">Arena Allocator</h2>
+<p>This one’s a game changer for certain workloads.</p>
+<p>Instead of individual <code>malloc</code>/<code>free</code> calls, you allocate a big chunk upfront. Then you just bump a pointer for each allocation:</p>
+<pre><code class="language-c">typedef struct s_arena
+{
+    char    *buffer;
+    size_t  offset;
+    size_t  cap;
+}   t_arena;
+
+t_arena *arena_new(size_t size);
+void    *arena_alloc(t_arena *a, size_t size);
+void    arena_reset(t_arena *a);  // reuse memory
+void    arena_free(t_arena *a);   // free everything
+</code></pre>
+<pre><code class="language-c">void *arena_alloc(t_arena *a, size_t size)
+{
+    void *ptr;
+    
+    if (a->offset + size > a->cap)
+        return (NULL);
+    ptr = a->buffer + a->offset;
+    a->offset += size;
+    return (ptr);
+}
+</code></pre>
+<p>When you’re done with everything, free the whole arena at once. No tracking individual allocations. No memory leaks from forgotten frees.</p>
+<p>Rust’s bumpalo crate does this. It’s incredible for parsers, AST construction, or any “allocate a bunch of stuff, use it, throw it all away” pattern.</p>
+<hr>
+<h2 id="temporary-allocator">Temporary Allocator</h2>
+<p>Similar to arena, but using a static buffer for truly temporary strings:</p>
+<pre><code class="language-c">#define TEMP_CAP 8192
+
+static char g_temp_buffer[TEMP_CAP];
+static size_t g_temp_offset = 0;
+
+void    *temp_alloc(size_t size);
+void    temp_reset(void);
+char    *temp_sprintf(const char *fmt, ...);
+</code></pre>
+<p>Perfect for building paths, formatting strings, or anything you need briefly and then discard:</p>
+<pre><code class="language-c">while (/* main loop */)
+{
+    temp_reset();  // clear at start of each iteration
+    
+    char *path = temp_sprintf("/tmp/%s_%d.txt", name, id);
+    // use path...
+    // no need to free!
+}
+</code></pre>
+<hr>
+<h2 id="file-utilities">File Utilities</h2>
+<p>Reading and writing entire files is tedious. Make it one call:</p>
+<pre><code class="language-c">// Returns malloc'd buffer, sets *size. NULL on error.
+char    *read_entire_file(const char *path, size_t *size);
+
+// Returns 1 on success, 0 on failure
+int     write_entire_file(const char *path, const void *data, size_t size);
+</code></pre>
+<hr>
+<h2 id="path-manipulation">Path Manipulation</h2>
+<pre><code class="language-c">char        *path_join(const char *base, const char *name);
+const char  *path_name(const char *path);     // "a/b/file.c" -> "file.c"
+char        *path_dir(const char *path);      // "a/b/file.c" -> "a/b"
+const char  *path_ext(const char *path);      // "file.c" -> "c"
+int         path_exists(const char *path);
+</code></pre>
+<hr>
+<h2 id="logging">Logging</h2>
+<pre><code class="language-c">typedef enum e_log_level
+{
+    LOG_DEBUG,
+    LOG_INFO,
+    LOG_WARN,
+    LOG_ERROR
+}   t_log_level;
+
+void    log_msg(t_log_level level, const char *fmt, ...);
+
+#define LOG_INFO(fmt, ...) \
+    log_internal(LOG_INFO, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+</code></pre>
+<p>Output:</p>
+<pre><code>[INFO] main.c:42: Starting program
+[ERROR] parser.c:128: Unexpected token 'foo'
+</code></pre>
+<hr>
+<h2 id="vector-math">Vector Math</h2>
+<p>If you’re doing anything graphical, you need 2D/3D vector operations:</p>
+<pre><code class="language-c">typedef struct s_vec2
+{
+    double  x;
+    double  y;
+}   t_vec2;
+
+t_vec2  vec2_add(t_vec2 a, t_vec2 b);
+t_vec2  vec2_sub(t_vec2 a, t_vec2 b);
+t_vec2  vec2_scale(t_vec2 v, double s);
+double  vec2_dot(t_vec2 a, t_vec2 b);
+double  vec2_len(t_vec2 v);
+t_vec2  vec2_norm(t_vec2 v);
+</code></pre>
+<p>Also complex numbers for fractal rendering:</p>
+<pre><code class="language-c">typedef struct s_complex
+{
+    double  re;
+    double  im;
+}   t_complex;
+
+t_complex   complex_add(t_complex a, t_complex b);
+t_complex   complex_mul(t_complex a, t_complex b);
+double      complex_abs(t_complex z);
+</code></pre>
+<p>Mandelbrot becomes trivial:</p>
+<pre><code class="language-c">while (complex_abs(z) &#x3C; 2.0 &#x26;&#x26; iter &#x3C; max)
+{
+    z = complex_add(complex_mul(z, z), c);
+    iter++;
+}
+</code></pre>
+<hr>
+<h2 id="miscellaneous-utilities">Miscellaneous Utilities</h2>
+<p><strong>Generic swap:</strong></p>
+<pre><code class="language-c">void    swap(void *a, void *b, size_t size);
+</code></pre>
+<p><strong>Argument shifting (nob.h style):</strong></p>
+<pre><code class="language-c">char    *shift_args(int *argc, char ***argv);
+
+// Usage
+char *program = shift_args(&#x26;argc, &#x26;argv);
+char *command = shift_args(&#x26;argc, &#x26;argv);
+</code></pre>
+<p><strong>O(1) unordered remove from dynamic array:</strong></p>
+<pre><code class="language-c">// Instead of shifting all elements, swap with last and decrement len
+int vec_remove_unordered(t_vec *v, size_t index);
+</code></pre>
+<p><strong>Debug assertions:</strong></p>
+<pre><code class="language-c">#ifdef DEBUG
+# define ASSERT(cond) \
+    assert_impl((cond), #cond, __FILE__, __LINE__)
+#else
+# define ASSERT(cond) ((void)0)
+#endif
+</code></pre>
+<hr>
+<h2 id="the-point">The Point</h2>
+<p>C gives you nothing, but it also <em>restricts</em> nothing. Every feature missing from the standard library is an opportunity to build exactly what you need.</p>
+<p>The best part? These patterns compose. Dynamic arrays can hold hash map buckets. String builders can use arena allocators. Result types can wrap any of these.</p>
+<p>You don’t need a “batteries included” language. You just need to build your own batteries.</p>

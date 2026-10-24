@@ -1,0 +1,33 @@
+<p>A simple HTTP server implemented in Rust, supporting basic GET and POST requests, file operations, html image rendering, and gzip compression.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>HTTP/1.1 protocol support</li>
+<li>GET and POST request handling</li>
+<li>File upload and download capabilities</li>
+<li>User-Agent echo endpoint</li>
+<li>Gzip compression support</li>
+<li>Multithreaded request handling</li>
+</ul>
+<h2 id="getting-started">Getting Started</h2>
+<h3 id="installation">Installation</h3>
+<ol>
+<li>
+<p>Clone the repository:</p>
+</li>
+<li>
+<p>Run the server:</p>
+<pre><code>./build.sh
+</code></pre>
+</li>
+</ol>
+<h2 id="usage">Usage</h2>
+<p>The server listens on <code>127.0.0.1:4221</code> by default. Here are some example requests you can make:</p>
+<ul>
+<li>Echo endpoint: <code>GET /echo/&#x3C;string></code></li>
+<li>User-Agent: <code>GET /user-agent</code></li>
+<li>File download: <code>GET /files/&#x3C;filename></code></li>
+<li>File upload: <code>POST /files/&#x3C;filename></code></li>
+</ul>
+<p>The server supports gzip compression. Include the <code>Accept-Encoding: gzip</code> header in your requests to receive compressed responses when applicable.</p>
+<h2 id="license">License</h2>
+<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>

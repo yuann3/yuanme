@@ -1,0 +1,76 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+error[markdown/empty-directive]: a directive needs a name before `{.callout-note}`
+  --> matloff-wla/Ch1.md:13:1
+   |
+13 | ::: {.callout-note}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#tip-conformable .callout-tip}`
+   --> matloff-wla/Ch1.md:276:1
+    |
+276 | ::: {#tip-conformable .callout-tip}  
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-trabba}`
+   --> matloff-wla/Ch1.md:641:1
+    |
+641 | ::: {#thm-trabba}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> matloff-wla/Ch1.md:651:1
+    |
+651 | ::: {.proof} 
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#cor-trinvar}`
+   --> matloff-wla/Ch1.md:660:1
+    |
+660 | ::: {#cor-trinvar}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#tip-partitioned .callout-tip}`
+   --> matloff-wla/Ch1.md:672:1
+    |
+672 | ::: {#tip-partitioned .callout-tip}  
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-lincombRows}`
+   --> matloff-wla/Ch1.md:866:1
+    |
+866 | ::: {#thm-lincombRows}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-lincombCols}`
+   --> matloff-wla/Ch1.md:876:1
+    |
+876 | ::: {#thm-lincombCols}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-abPart}`
+    --> matloff-wla/Ch1.md:1008:1
+     |
+1008 | ::: {#thm-abPart}
+     | ^^^
+     |
+     = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+     = note: run `yuanme docs markdown/empty-directive` for more

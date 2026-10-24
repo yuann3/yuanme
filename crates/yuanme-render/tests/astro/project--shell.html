@@ -1,0 +1,19 @@
+<h1 id="shell">shell</h1>
+<p>single-binary shell written in Rust. If you want a fancy terminal emulator or
+500 features you’re in the wrong place this just works</p>
+<ul>
+<li>Built-ins: <code>exit</code>, <code>echo</code>, <code>pwd</code>, <code>cd</code>, <code>type</code>, <code>history</code></li>
+<li><strong>Pipelines</strong> with <code>|</code></li>
+<li><strong>Redirection</strong>: <code>></code>, <code>>></code>, <code>2></code>, <code>2>></code></li>
+<li><strong>Tab-completion</strong> on commands (including <code>$PATH</code> lookups)</li>
+<li><strong>Persistent history</strong> (reads and appends to <code>$HISTFILE</code>)</li>
+<li>Bell on first TAB, list on second</li>
+</ul>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Rust ≥ 1.80</li>
+<li>Unix-like environment (for exec permissions)</li>
+</ul>
+<h2 id="getting-started">Getting started</h2>
+<pre><code class="language-sh">just cargo run this shit dude
+</code></pre>

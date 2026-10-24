@@ -1,0 +1,52 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+error[markdown/empty-directive]: a directive needs a name before `{.callout-note}`
+  --> matloff-wla/Projections.md:12:1
+   |
+12 | ::: {.callout-note}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-projection}`
+  --> matloff-wla/Projections.md:32:1
+   |
+32 | ::: {#thm-projection}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+  --> matloff-wla/Projections.md:46:1
+   |
+46 | ::: {.proof}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-projdecomp}`
+  --> matloff-wla/Projections.md:74:1
+   |
+74 | ::: {#thm-projdecomp}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-psubw}`
+   --> matloff-wla/Projections.md:330:1
+    |
+330 | ::: {#thm-psubw}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.callout-note}`
+   --> matloff-wla/Projections.md:386:1
+    |
+386 | ::: {.callout-note}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more

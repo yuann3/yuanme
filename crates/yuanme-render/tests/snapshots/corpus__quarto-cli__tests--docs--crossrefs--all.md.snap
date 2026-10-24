@@ -1,0 +1,28 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+error[markdown/empty-directive]: a directive needs a name before `{#fig-elephants layout-ncol=2}`
+  --> quarto-cli/tests--docs--crossrefs--all.md:13:1
+   |
+13 | ::: {#fig-elephants layout-ncol=2}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#tbl-panel layout-ncol=2}`
+  --> quarto-cli/tests--docs--crossrefs--all.md:38:1
+   |
+38 | ::: {#tbl-panel layout-ncol=2}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-line}`
+  --> quarto-cli/tests--docs--crossrefs--all.md:62:1
+   |
+62 | ::: {#thm-line}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more

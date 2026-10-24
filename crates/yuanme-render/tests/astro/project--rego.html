@@ -1,0 +1,57 @@
+<h1 id="rego">Rego</h1>
+<p>a lightweight Redis server implementation written in Go, designed to be compatible with standard Redis clients while providing core Redis functionality.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Standard Redis protocol (RESP) support</li>
+<li>Key-value operations (GET, SET with expiry options)</li>
+<li>Transaction support (MULTI, EXEC, DISCARD)</li>
+<li>Replication (master-slave architecture)</li>
+<li>RDB file parsing and persistence</li>
+<li>Redis Streams support (XADD, XRANGE, XREAD)</li>
+<li>Incremental operations (INCR)</li>
+</ul>
+<h2 id="getting-started">Getting Started</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<ul>
+<li>Go 1.18 or higher</li>
+</ul>
+<h3 id="running-the-server">Running the Server</h3>
+<pre><code class="language-bash"># Run the server with default settings
+./run.sh
+
+# Run the server with custom settings
+./run.sh --port 6380 --dir /path/to/data --dbfilename custom.rdb
+</code></pre>
+<h3 id="setting-up-replication">Setting up Replication</h3>
+<p>To create a replica instance:</p>
+<pre><code class="language-bash"># Start the master on default port (6379)
+./run.sh
+
+# Start a replica on port 6380
+./run.sh --port 6380 --replicaof "localhost 6379"
+</code></pre>
+<h2 id="project-structure">Project Structure</h2>
+<ul>
+<li><code>app/</code> - Source code directory
+<ul>
+<li><code>main.go</code> - Server initialization and client handling</li>
+<li><code>handler.go</code> - Command implementations</li>
+<li><code>resp.go</code> - RESP protocol implementation</li>
+<li><code>key-value-store.go</code> - In-memory data store</li>
+<li><code>replica.go</code> - Replication logic</li>
+<li><code>rdb_parser.go</code> - RDB file format parser</li>
+<li><code>stream.go</code> &#x26; <code>stream_manager.go</code> - Redis Streams implementation</li>
+</ul>
+</li>
+</ul>
+<h2 id="supported-commands">Supported Commands</h2>
+<ul>
+<li>Basic: PING, ECHO</li>
+<li>Key-Value: GET, SET (with PX, EX, NX, XX options)</li>
+<li>Keys: KEYS, TYPE</li>
+<li>Configuration: CONFIG GET</li>
+<li>Replication: REPLCONF, PSYNC, WAIT, INFO REPLICATION</li>
+<li>Streams: XADD, XRANGE, XREAD</li>
+<li>Transactions: MULTI, EXEC, DISCARD</li>
+<li>Incremental: INCR</li>
+</ul>

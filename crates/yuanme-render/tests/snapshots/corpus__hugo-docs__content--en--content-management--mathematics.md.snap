@@ -1,0 +1,160 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<h2 id="overview">Overview</h2>
+<p>Mathematical equations and expressions written in <a href="https://www.latex-project.org/">LaTeX</a> are common in academic and scientific publications. Your browser typically renders this mathematical markup using an open-source JavaScript display engine such as <a href="https://www.mathjax.org/">MathJax</a> or <a href="https://katex.org/">KaTeX</a>.</p>
+<p>For example, this LaTeX markup:</p>
+<pre><code class="language-md">\[
+\begin{aligned}
+KL(\hat{y} || y) &#x26;= \sum_{c=1}^{M}\hat{y}_c \log{\frac{\hat{y}_c}{y_c}} \\
+JS(\hat{y} || y) &#x26;= \frac{1}{2}(KL(y||\frac{y+\hat{y}}{2}) + KL(\hat{y}||\frac{y+\hat{y}}{2}))
+\end{aligned}
+\]
+</code></pre>
+<p>Is rendered to:</p>
+<p>[
+\begin{aligned}
+KL(\hat{y} || y) &#x26;= \sum_{c=1}^{M}\hat{y}_c \log{\frac{\hat{y}_c}{y_c}} \
+JS(\hat{y} || y) &#x26;= \frac{1}{2}(KL(y||\frac{y+\hat{y}}{2}) + KL(\hat{y}||\frac{y+\hat{y}}{2}))
+\end{aligned}
+]</p>
+<p>Equations and expressions can be displayed inline with other text, or as standalone blocks. Block presentation is also known as “display” mode.</p>
+<p>Whether an equation or expression appears inline, or as a block, depends on the delimiters that surround the mathematical markup. Delimiters are defined in pairs, where each pair consists of an opening and closing delimiter. The opening and closing delimiters may be the same, or different.</p>
+<blockquote>
+<p>[!NOTE]
+You can configure Hugo to render mathematical markup on the client side using the MathJax or KaTeX display engine, or you can render the markup with the <a href="/functions/transform/tomath/"><code>transform.ToMath</code></a> function while building your project.</p>
+<p>The first approach is described below.</p>
+</blockquote>
+<h2 id="setup">Setup</h2>
+<p>Follow these instructions to include mathematical equations and expressions in your Markdown using LaTeX markup.</p>
+<p>Step 1
+: Enable and configure the Goldmark <a href="/configuration/markup/#passthrough">passthrough extension</a> in your project configuration. The passthrough extension preserves raw Markdown within delimited snippets of text, including the delimiters themselves.</p>
+<p>{{&#x3C; code-toggle file=hugo copy=true >}}
+[markup.goldmark.extensions.passthrough]
+enable = true</p>
+<p>[markup.goldmark.extensions.passthrough.delimiters]
+block = [[’[’, ’]’], ['<code class="language-math math-display">', '</code>']]
+inline = [[’(’, ’)’]]</p>
+<p>[params]
+math = true
+{{&#x3C; /code-toggle >}}</p>
+<p>The configuration above enables mathematical rendering on every page unless you set the <code>math</code> parameter to <code>false</code> in front matter. To enable mathematical rendering as needed, set the <code>math</code> parameter to <code>false</code> in your project configuration, and set the <code>math</code> parameter to <code>true</code> in front matter. Use this parameter in your <em>base</em> template as shown in <a href="#step-3">Step 3</a>.</p>
+<blockquote>
+<p>[!NOTE]
+The configuration above precludes the use of the <code>$...$</code> delimiter pair for inline equations. Although you can add this delimiter pair to the configuration and JavaScript, you must double-escape the <code>$</code> symbol when used outside of math contexts to avoid unintended formatting.</p>
+<p>See the <a href="#inline-delimiters">inline delimiters</a> section for details.</p>
+</blockquote>
+<p>To disable passthrough of inline snippets, omit the <code>inline</code> key from the configuration:</p>
+<p>{{&#x3C; code-toggle file=hugo >}}
+[markup.goldmark.extensions.passthrough.delimiters]
+block = [[’[’, ’]’], ['<code class="language-math math-display">', '</code>']]
+{{&#x3C; /code-toggle >}}</p>
+<p>You can define your own opening and closing delimiters, provided they match the delimiters that you set in <a href="#step-2">Step 2</a>.</p>
+<p>{{&#x3C; code-toggle file=hugo >}}
+[markup.goldmark.extensions.passthrough.delimiters]
+block = [[’@@’, ’@@’]]
+inline = [[’@’, ’@’]]
+{{&#x3C; /code-toggle >}}</p>
+<p>Step 2
+: Create a <em>partial</em> template to load MathJax or KaTeX. The example below loads MathJax, or you can use KaTeX as described in the <a href="#engines">engines</a> section.</p>
+<pre><code class="language-go-html-template">&#x3C;script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js">&#x3C;/script>
+
+&#x3C;script>
+  MathJax = {
+    tex: {
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],  // block
+      inlineMath: [['\\(', '\\)']]                  // inline
+    },
+    loader:{
+      load: ['ui/safe']
+    },
+  };
+&#x3C;/script>
+</code></pre>
+<p>The delimiters above must match the delimiters in your project configuration.</p>
+<p>Step 3
+: Conditionally call the <em>partial</em> template from the <em>base</em> template.</p>
+<pre><code class="language-go-html-template">&#x3C;head>
+  {{ if .Param "math" }}
+    {{ partialCached "math.html" . }}
+  {{ end }}
+&#x3C;/head>
+</code></pre>
+<p>The example above loads the <em>partial</em> template if you have set the <code>math</code> parameter in front matter to <code>true</code>. If you have not set the <code>math</code> parameter in front matter, the conditional statement falls back to the <code>math</code> parameter in your project configuration.</p>
+<p>Step 4
+: If you set the <code>math</code> parameter to <code>false</code> in your project configuration, you must set the <code>math</code> parameter to <code>true</code> in front matter. For example:</p>
+<p>{{&#x3C; code-toggle file=content/math-examples.md fm=true >}}
+title = ‘Math examples’
+date = 2024-01-24T18:09:49-08:00
+[params]
+math = true
+{{&#x3C; /code-toggle >}}</p>
+<p>Step 5
+: Include mathematical equations and expressions in Markdown using LaTeX markup.</p>
+<pre><code class="language-md">This is an inline \(a^*=x-b^*\) equation.
+
+These are block equations:
+
+\[a^*=x-b^*\]
+
+\[ a^*=x-b^* \]
+
+\[
+a^*=x-b^*
+\]
+
+These are also block equations:
+
+$$a^*=x-b^*$$
+
+$$ a^*=x-b^* $$
+
+$$
+a^*=x-b^*
+$$
+</code></pre>
+<h2 id="inline-delimiters">Inline delimiters</h2>
+<p>The configuration, JavaScript, and examples above use the <code>\(...\)</code> delimiter pair for inline equations. The <code>$...$</code> delimiter pair is a common alternative, but using it may result in unintended formatting if you use the <code>$</code> symbol outside of math contexts.</p>
+<p>If you add the <code>$...$</code> delimiter pair to your configuration and JavaScript, you must double-escape the <code>$</code> symbol when used outside of math contexts to avoid unintended formatting. For example:</p>
+<pre><code class="language-md">I will give you \\$2 if you can solve $y = x^2$.
+</code></pre>
+<blockquote>
+<p>[!NOTE]
+If you use the <code>$...$</code> delimiter pair for inline equations, and occasionally use the <code>$</code> symbol outside of math contexts, you must use MathJax instead of KaTeX to avoid unintended formatting caused by <a href="https://github.com/KaTeX/KaTeX/issues/437">this KaTeX limitation</a>.</p>
+</blockquote>
+<h2 id="engines">Engines</h2>
+<p>MathJax and KaTeX are open-source JavaScript display engines.</p>
+<blockquote>
+<p>[!NOTE]
+If you use the <code>$...$</code> delimiter pair for inline equations, and occasionally use the <code>$</code> symbol outside of math contexts, you must use MathJax instead of KaTeX to avoid unintended formatting caused by <a href="https://github.com/KaTeX/KaTeX/issues/437">this KaTeX limitation</a>.</p>
+<p>See the <a href="#inline-delimiters">inline delimiters</a> section for details.</p>
+</blockquote>
+<p>To use KaTeX instead of MathJax, replace the <em>partial</em> template from <a href="#step-2">Step 2</a> with this:</p>
+<pre><code class="language-go-html-template">&#x3C;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.css" integrity="sha384-u1zONI5gPXUx0UKI62c75/zww972y0v2rSK5ZYlVdS6xEuWDeZWUI66v6t1gvlXJ" crossorigin="anonymous">
+
+&#x3C;script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/katex.min.js" integrity="sha384-ykMNcWQhhTUb0YV9SPpPUFURHZ+tWmubkakGBP+OgNK/UXdO2gtzglWx0Rj9hnO3" crossorigin="anonymous">&#x3C;/script>
+
+&#x3C;script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.4/dist/contrib/auto-render.min.js" integrity="sha384-bjyGPfbij8/NDKJhSGZNP/khQVgtHUE5exjm4Ydllo42FwIgYsdLO2lXGmRBf5Mz" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);">&#x3C;/script>
+
+&#x3C;script>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '\\[', right: '\\]', display: true},   // block
+        {left: '$$', right: '$$', display: true},     // block
+        {left: '\\(', right: '\\)', display: false},  // inline
+      ],
+      throwOnError : false
+    });
+  });
+&#x3C;/script>
+</code></pre>
+<p>The delimiters above must match the delimiters in your project configuration.</p>
+<h2 id="chemistry">Chemistry</h2>
+<p>Both MathJax and KaTeX provide support for chemical equations. For example:</p>
+<pre><code class="language-md">$$C_p[\ce{H2O(l)}] = \pu{75.3 J // mol K}$$
+</code></pre>
+<p><code class="language-math math-display">C_p[\ce{H2O(l)}] = \pu{75.3 J // mol K}</code></p>
+<p>As shown in <a href="#step-2">Step 2</a> above, MathJax supports chemical equations without additional configuration. To add chemistry support to KaTeX, enable the mhchem extension as described in the KaTeX <a href="https://katex.org/docs/libs">documentation</a>.</p>

@@ -1,0 +1,17 @@
+<h1 id="lrle">LRLE</h1>
+<p>GPU-accelerated 3D terrain visualizer. Loads heightmap data from FDF files and renders them in real-time. WIP but it works.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Cross-platform GPU rendering via wgpu</li>
+<li>Interactive orbital camera with mouse and keyboard controls</li>
+<li>Adjustable height scaling for heightmap visualization</li>
+<li>Built-in egui UI panel with stats</li>
+<li>Efficient mesh generation from heightmap grid data</li>
+</ul>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-bash">cargo build --release
+lrle terrain.fdf
+lrle terrain.fdf --height-scale 2.0
+</code></pre>
+<h2 id="why">Why</h2>
+<p>Wanted to get my hands dirty with real-time GPU rendering and wgpu. FDF files are a simple heightmap format - perfect for learning 3D visualization without dealing with complex model formats.</p>

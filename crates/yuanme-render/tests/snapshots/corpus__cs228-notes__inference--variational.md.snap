@@ -1,0 +1,130 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<p>In the last chapter, we saw that inference in probabilistic models is often intractable, and we learned about algorithms that provide approximate solutions to the inference problem (e.g., marginal inference) by using subroutines that involve sampling random variables. Most sampling-based inference algorithms are instances of Markov Chain Monte-Carlo (MCMC); two popular MCMC methods are Gibbs sampling and Metropolis-Hastings.</p>
+<p>Unfortunately, these sampling-based methods have several important shortcomings.</p>
+<ul>
+<li>Although they are guaranteed to find a globally optimal solution given enough time, it is difficult to tell how close they are to a good solution given the finite amount of time that they have in practice.</li>
+<li>In order to quickly reach a good solution, MCMC methods require choosing an appropriate sampling technique (e.g., a good proposal in Metropolis-Hastings). Choosing this technique can be an art in itself.</li>
+</ul>
+<p>In this chapter, we are going to look at an alternative approach to approximate inference called the <em>variational</em> family of algorithms.</p>
+<h2 id="inference-as-optimization">Inference as optimization</h2>
+<p>The main idea of variational methods is to cast inference as an optimization problem.</p>
+<p>Suppose we are given an intractable probability distribution <code class="language-math math-display">p</code>. Variational techniques will try to solve an optimization problem over a class of tractable distributions <code class="language-math math-display">\mathcal{Q}</code> in order to find a <code class="language-math math-display">q \in \mathcal{Q}</code> that is most similar to <code class="language-math math-display">p</code>. We will then query <code class="language-math math-display">q</code> (rather than <code class="language-math math-display">p</code>) in order to get an approximate solution.</p>
+<p>The main differences between sampling and variational techniques are that:</p>
+<ul>
+<li>Unlike sampling-based methods, variational approaches will almost never find the globally optimal solution.</li>
+<li>However, we will always know if they have converged. In some cases, we will even have bounds on their accuracy.</li>
+<li>In practice, variational inference methods often scale better and are more amenable to techniques like stochastic gradient optimization, parallelization over multiple processors, and acceleration using GPUs.</li>
+</ul>
+<p>Although sampling methods were historically invented first (in the 1940s), variational techniques have been steadily gaining popularity and are currently the more widely used inference technique.</p>
+<h2 id="the-kullback-leibler-divergence">The Kullback-Leibler divergence</h2>
+<p>To formulate inference as an optimization problem, we need to choose an approximating family <code class="language-math math-display">\mathcal{Q}</code> and an optimization objective <code class="language-math math-display">J(q)</code>. This objective needs to capture the similarity between <code class="language-math math-display">q</code> and <code class="language-math math-display">p</code>; the field of information theory provides us with a tool for this called the <em>Kullback-Leibler (KL) divergence</em>.</p>
+<p>Formally, the KL divergence between two distributions <code class="language-math math-display">q</code> and <code class="language-math math-display">p</code> with discrete support is defined as</p>
+<p><code class="language-math math-display"> KL(q\|p) = \sum_x q(x) \log \frac{q(x)}{p(x)}. </code></p>
+<p>In information theory, this function is used to measure differences in information contained within two distributions. The KL divergence has the following properties that make it especially useful in our setting:</p>
+<ul>
+<li><code class="language-math math-display"> KL(q\|p) \geq 0 </code> for all <code class="language-math math-display">q,p</code>.</li>
+<li><code class="language-math math-display"> KL(q\|p) = 0 </code> if and only if <code class="language-math math-display"> q = p </code>.</li>
+</ul>
+<p>These can be proven as an exercise. Note however that <code class="language-math math-display">KL(q\|p) \neq KL(p\|q)</code>, i.e., the KL divergence is not symmetric. This is why we say that it’s a divergence, but not a distance. We will come back to this distinction shortly.</p>
+<h2 id="the-variational-lower-bound">The variational lower bound</h2>
+<p>How do we perform variational inference with a KL divergence? First, let’s fix a form for <code class="language-math math-display">p</code>. We’ll assume that <code class="language-math math-display">p</code> is a general (discrete, for simplicity) undirected model of the form</p>
+<p><code class="language-math math-display">
+p(x_1,\ldots,x_n; \theta) = \frac{\tp(x_1,\ldots,x_n ; \theta)}{Z(\theta)} =\frac{1}{Z(\theta)} \prod_{k} \phi_k(x_k; \theta),
+</code></p>
+<p>where the <code class="language-math math-display">\phi_k</code> are the factors and <code class="language-math math-display">Z(\theta)</code> is the normalization constant. This formulation captures virtually all the distributions in which we might want to perform approximate inference, such as marginal distributions of directed models <code class="language-math math-display">p(x\mid e) = p(x,e)/p(e)</code> with evidence <code class="language-math math-display">e</code>.</p>
+<p>Given this formulation, optimizing <code class="language-math math-display">KL(q\|p)</code> directly is not possible because of the potentially intractable normalization constant <code class="language-math math-display">Z(\theta)</code>. In fact, even evaluating <code class="language-math math-display">KL(q\|p)</code> is not possible, because we need to evaluate <code class="language-math math-display">p</code>.</p>
+<p>Instead, we will work with the following objective, which has the same form as the KL divergence, but only involves the unnormalized probability <code class="language-math math-display">\tp(x) = \prod_{k} \phi_k(x_k; \theta) </code>:</p>
+<p><code class="language-math math-display"> J(q) = \sum_x q(x) \log \frac{q(x)}{\tp(x)}. </code></p>
+<p>This function is not only tractable, it also has the following important property:</p>
+<p><code class="language-math math-display">
+\begin{align*}
+J(q)
+&#x26;= \sum_x q(x) \log \frac{q(x)} {\tp(x)} \\
+&#x26;= \sum_x q(x) \log \frac{q(x)}{p(x)} - \log Z(\theta) \\
+&#x26;= KL(q\|p) - \log Z(\theta)
+\end{align*}
+</code></p>
+<p>Since <code class="language-math math-display"> KL(q\|p) \geq 0 </code>, we get by rearranging terms that</p>
+<p><code class="language-math math-display"> \log Z(\theta) = KL(q\|p) - J(q) \geq -J(q). </code></p>
+<p>Thus, <code class="language-math math-display">-J(q)</code> is a <em>lower bound</em> on the log partition function <code class="language-math math-display">\log Z(\theta)</code>. In many cases, <code class="language-math math-display">Z(\theta)</code> has an interesting interpretation. For example, we may be trying to compute the marginal probability <code class="language-math math-display">p(x \mid D) = p(x,D) / p(D)</code> of variables <code class="language-math math-display">x</code> given observed data <code class="language-math math-display">D</code> that plays the role of evidence. We assume that <code class="language-math math-display">p(x,D)</code> is directed. In this case, minimizing <code class="language-math math-display">J(q)</code> amounts to maximizing a lower bound on the log-likelihood <code class="language-math math-display">\log p(D)</code> of the observed data.</p>
+<p>Because of this property, <code class="language-math math-display">-J(q)</code> is called the variational lower bound or the evidence lower bound (ELBO); it is often written in the form</p>
+<p><code class="language-math math-display"> \log Z(\theta) \geq \E_{q(x)} [ \log \tp(x) - \log q(x) ]. </code></p>
+<p>Crucially, the difference between <code class="language-math math-display">\log Z(\theta)</code> and <code class="language-math math-display">-J(q)</code> is precisely <code class="language-math math-display">KL(q\|p)</code>. Thus, by maximizing the evidence-lower bound, we are minimizing <code class="language-math math-display">KL(q\|p)</code> by “squeezing” it between <code class="language-math math-display">-J(q)</code> and <code class="language-math math-display">\log Z(\theta)</code>.</p>
+<h2 id="on-the-choice-of-kl-divergence">On the choice of KL divergence</h2>
+<p>To recap, we have just defined an optimization objective for variational inference (the variational lower bound) and we have shown that maximizing the lower bound leads to minimizing the divergence <code class="language-math math-display">KL(q\|p)</code>.</p>
+<p>Recall how we said earlier that <code class="language-math math-display">KL(q\|p) \neq KL(p\|q)</code>; both divergences equal zero when <code class="language-math math-display">q = p</code>, but assign different penalties when <code class="language-math math-display">q \neq p</code>. This raises the question: why did we choose one over the other and how do they differ?</p>
+<p>Perhaps the most important difference is computational: optimizing <code class="language-math math-display">KL(q\|p)</code> involves an expectation with respect to <code class="language-math math-display">q</code>, while <code class="language-math math-display">KL(p\|q)</code> requires computing expectations with respect to <code class="language-math math-display">p</code>, which is typically intractable even to evaluate.</p>
+<p>However, choosing this particular divergence affects the returned solution when the approximating family <code class="language-math math-display">\mathcal{Q}</code> does not contain the true <code class="language-math math-display">p</code>. Observe that <code class="language-math math-display">KL(q\|p)</code> --- which is called the I-projection or information projection --- is infinite if <code class="language-math math-display">p(x) = 0</code> and <code class="language-math math-display">q(x) > 0</code>:</p>
+<p><code class="language-math math-display">
+KL(q\|p) = \sum_x q(x) \log \frac{q(x)}{p(x)}.
+</code></p>
+<p>This means that if <code class="language-math math-display">p(x) = 0</code> we must have <code class="language-math math-display">q(x) = 0</code>. We say that <code class="language-math math-display">KL(q\|p)</code> is zero-forcing for <code class="language-math math-display">q</code> and it will typically under-estimate the support of <code class="language-math math-display">p</code>.</p>
+<p>On the other hand, <code class="language-math math-display">KL(p\|q)</code> --- known as the M-projection or the moment projection --- is infinite if <code class="language-math math-display">q(x) = 0</code> and <code class="language-math math-display">p(x) > 0</code>. Thus, if <code class="language-math math-display">p(x) > 0</code> we must have <code class="language-math math-display">q(x) > 0</code>. We say that <code class="language-math math-display">KL(p\|q)</code> is zero-avoiding for <code class="language-math math-display">q</code> and it will typically over-estimate the support of <code class="language-math math-display">p</code>.</p>
+<p>The figure below illustrates this phenomenon graphically.</p>
+<p>{% include maincolumn_img.html src=‘assets/img/kldiv.png’ caption=‘Fitting a unimodal approximating distribution q (red) to a multimodal p (blue). Using KL(p||q) leads to a q that tries to cover both modes (a). However, using KL(q||p) forces q to choose one of the two modes of p (b, c).’ %}</p>
+<p>Due to the properties that we just described, we often call <code class="language-math math-display">KL(p\|q)</code> the <em>inclusive</em> KL divergence, while <code class="language-math math-display">KL(q\|p)</code> is the <em>exclusive</em> KL divergence.</p>
+<h2 id="mean-field-inference">Mean-field inference</h2>
+<p>The next step in our development of variational inference concerns the choice of approximating family <code class="language-math math-display">\mathcal{Q}</code>. The machine learning literature contains dozens of proposed ways to parametrize this class of distributions; these include exponential families, neural networks, Gaussian processes, latent variable models, and many others types of models.</p>
+<p>However, one of the most widely used classes of distributions is simply the set of fully-factored <code class="language-math math-display">q(x) = q_1(x_1) q_2(x_2) \cdots q_n(x_n)</code>; here each <code class="language-math math-display">q_i(x_i)</code> is categorical distribution over a one-dimensional discrete variable, which can be described as a one-dimensional table.</p>
+<p>This choice of <code class="language-math math-display">\mathcal{Q}</code> turns out to be easy to optimize over and works surprisingly well. It is perhaps the most popular choice when optimizing the variational bound; variational inference with this choice of <code class="language-math math-display">\mathcal{Q}</code> is called <em>mean-field</em> inference. It consists in solving the following optimization problem:</p>
+<p><code class="language-math math-display"> \min_{q_1, \ldots, q_n} J(q). </code></p>
+<p>The standard way of performing this optimization problem is via coordinate descent over the <code class="language-math math-display">q_j</code>: we iterate over <code class="language-math math-display">j=1,2,\ldots,n</code> and for each <code class="language-math math-display">j</code> we optimize <code class="language-math math-display">KL(q\|p)</code> over <code class="language-math math-display">q_j</code> while keeping the other “coordinates” <code class="language-math math-display">q_{-j} = \prod_{i \neq j} q_i</code> fixed.</p>
+<p>Interestingly, the optimization problem for one coordinate has a simple closed form solution:</p>
+<p><code class="language-math math-display">
+\log q_j(x_j) \gets \E_{q_{-j}} \left[ \log \tp(x) \right] + \textrm{const.}
+</code></p>
+<p>Notice that both sides of the above equation contain univariate functions of <code class="language-math math-display">x_j</code>: we are thus replacing <code class="language-math math-display">q(x_j)</code> with another function of the same form. The constant term is a normalization constant for the new distribution.</p>
+<p>Notice also that on right-hand side, we are taking an expectation of a sum of factors</p>
+<p><code class="language-math math-display"> \log \tp(x) = \sum_k \log \phi(x_k) </code></p>
+<p>Of these, only factors belonging to the Markov blanket of <code class="language-math math-display">x_j</code> are a function of <code class="language-math math-display">x_j</code> (simply by the definition of the Markov blanket); the rest are constant with respect to <code class="language-math math-display">x_j</code> and can be pushed into the constant term.</p>
+<p>This leaves us with an expectation over a much smaller number of factors; if the Markov blanket of <code class="language-math math-display">x_j</code> is small (as is often the case), we are able to analytically compute <code class="language-math math-display">q(x_j)</code>. For example, if the variables are discrete with <code class="language-math math-display">K</code> possible values, and there are <code class="language-math math-display">F</code> factors and <code class="language-math math-display">N</code> variables in the Markov blanket of <code class="language-math math-display">x_j</code>, then computing the expectation takes <code class="language-math math-display">O(K F K^N)</code> time: for each value of <code class="language-math math-display">x_j</code> we sum over all <code class="language-math math-display">K^N</code> assignments of the <code class="language-math math-display">N</code> variables, and in each case, we sum over the <code class="language-math math-display">F</code> factors.</p>
+<p>The result of this is a procedure that iteratively fits a fully-factored <code class="language-math math-display">q(x) = q_1(x_1) q_2(x_2) \cdots q_n(x_n)</code> that approximates <code class="language-math math-display">p</code> in terms of <code class="language-math math-display">KL(q\|p)</code>. After each step of coordinate descent, we increase the variational lower bound, tightening it around <code class="language-math math-display">\log Z(\theta)</code>.</p>
+<p>In the end, the factors <code class="language-math math-display">q_j(x_j)</code> will not quite equal the true marginal distributions <code class="language-math math-display">p(x_j)</code>, but they will often be good enough for many practical purposes, such as determining <code class="language-math math-display">\max_{x_j} p(x_j)</code>.</p>
+<!---
+The notes below are incomplete and under construction
+## The marginal polytope
+
+A natural question to ask, given what we've seen, is how exactly do the mean-field marginals approximate $$p(x)$$, and what makes them "good enough".
+
+To answer this question, we will take a step back, and define a more general framework for thinking about variational inference. We will then see how mean field and, interestingly, loopy belief propagation (LBP) both fall into this framework and how exactly their approximations differ. As a result, we will also see how LBP is also a form of variational inference, something we have alluded to earlier.
+
+First, recall that we have assumed that the distribution $$p$$ is of the form
+$$
+p(x_1,\ldots,x_n; \theta) = \frac{\tp(x_1,\ldots,x_n ; \theta)}{Z(\theta)} =\frac{1}{Z(\theta)} \prod_{k} \phi_k(x_k; \theta).
+$$
+When the variables are discrete, we can further rewrite this as
+$$
+p(x_1,\ldots,x_n; \theta) = \frac{\exp(\sum_k \theta^T \psi(x))}{Z(\theta)},
+$$
+where $$\theta_{k, x_k} = \phi_k(x_k)$$ is now a vector of factor values (one for each variable assignment), and $$\psi_{k, x_k}(x') = \mathbb{I(x'_k = x_k)}($$ is a vector of indicator values for each assignment, given an input $$x'$$. The vector $$\psi_k$$ simply "picks out" the appropriate entries of $$\theta$$.
+
+Given this notation, we can write our objective as
+$$
+\begin{align*}
+-J(x)
+& = \E_{q(x)} \left[ \theta^T \psi(x) - \log q(x) \right] \\
+& = \theta^T \mu - H(\mu),
+\end{align*}
+$$
+where $$H(\mu) = \E_{q(x)} \log q(x)$$ denotes the entropy of $$q(x)$$ and $$\mu = \E_{q(x)} \psi(x)$$ is called the vector of moments. The key observation here is that instead of optimizing over $$q$$, we can equivalently optimize over the set of *valid moments* $$\mu$$.
+
+But which moments are valid? These are the ones that correspond to some probability distribution, i.e., they are in the set
+$$
+\mathbb{M} = \{ \mu : \exists p \text{ s.t. } \mu = \sum_x \psi(x)p(x) \text{ for some $p(x) \geq 0$ that sums to 1} \}
+$$
+
+Notice that $$\mathbb{M}$$ is the intersection of a set of linear constraints: hence it forms a convex set, that we will refer to as the *marginal polytope*. We can thus write the variational inference problem as
+$$
+\max_\mu \theta^T \mu - H(\mu) \text{ subject to } \mu \in \mathbb{M}.
+$$
+
+However, this by itself is not very useful. Although \mathbb{M} is convex, it is hard to describe in general (it is formed by the intersection of an exponential number of hyper-planes). Furthermore, $$H(\mu)$$ may be difficult to compute in general.
+
+We will make this problem feasible by replacing
+
+-->
+<br/>
+<p>|<a href="../../">Index</a> | <a href="../sampling">Previous</a> | <a href="../../learning/directed">Next</a>|</p>

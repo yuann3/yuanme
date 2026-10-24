@@ -1,0 +1,689 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<h1 id="syntax-guide">Syntax Guide</h1>
+<pre><code class="language-{note}">This documentation utilized the [Markedly Structured Text (MyST)](https://myst-parser.readthedocs.io/en/latest/index.html) syntax.
+</code></pre>
+<p>This package utilizes a <a href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html">Sphinx domain</a> - named “prf” - to describe and link typeset markup objects (theorems, proofs, corollaries, etc.) which we think belong together. All directives follow the pattern <code>{&#x3C;domain_name>:&#x3C;typeset>}</code> while all the roles follow the pattern <code>{&#x3C;domain_name>:ref}</code>. To utilize any directive in the <code>proof</code> domain follow the pattern <code>{prf:&#x3C;typeset>}</code>. To reference any directive follow the pattern <code>{prf:ref}</code>.</p>
+<h2 id="collection-of-directives">Collection of Directives</h2>
+<p>(syntax:proof)=</p>
+<h3 id="proofs">Proofs</h3>
+<p>A proof directive can be included using the <code>prf:proof</code> pattern. Unlike the other directives provided through this extension, a proof directive does not include any parameters nor does it require any arguments. A proof directive can easily be referenced through <a href="https://myst-parser.readthedocs.io/en/latest/using/syntax.html#targets-and-cross-referencing">targets</a>.</p>
+<p>The following option is supported:</p>
+<ul>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the proof’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:proof}">We'll omit the full proof.
+
+But we will prove sufficiency of the asserted conditions.
+
+To this end, let $y \in \mathbb R^n$ and let $S$ be a linear subspace of $\mathbb R^n$.
+
+Let $\hat y$ be a vector in $\mathbb R^n$ such that $\hat y \in S$ and $y - \hat y \perp S$.
+
+Let $z$ be any other point in $S$ and use the fact that $S$ is a linear subspace to deduce
+
+```{math}
+\| y - z \|^2
+= \| (y - \hat y) + (\hat y - z) \|^2
+= \| y - \hat y \|^2  + \| \hat y - z  \|^2
+```
+
+Hence $\| y - z \| \geq \| y - \hat y \|$, which completes the proof.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">````{prf:proof}
+We'll omit the full proof.
+
+But we will prove sufficiency of the asserted conditions.
+
+To this end, let $y \in \mathbb R^n$ and let $S$ be a linear subspace of $\mathbb R^n$.
+
+Let $\hat y$ be a vector in $\mathbb R^n$ such that $\hat y \in S$ and $y - \hat y \perp S$.
+
+Let $z$ be any other point in $S$ and use the fact that $S$ is a linear subspace to deduce
+
+```{math}
+\| y - z \|^2
+= \| (y - \hat y) + (\hat y - z) \|^2
+= \| y - \hat y \|^2  + \| \hat y - z  \|^2
+```
+
+Hence $\| y - z \| \geq \| y - \hat y \|$, which completes the proof.
+````
+</code></pre>
+<p><em>Source:</em> <a href="https://python-advanced.quantecon.org/orth_proj.html#The-Orthogonal-Projection-Theorem">QuantEcon</a></p>
+<p>(syntax:theorem)=</p>
+<h3 id="theorems">Theorems</h3>
+<p>A theorem directive can be included using the <code>prf:theorem</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your theorem that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the theorem’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off theorem auto numbering.</p>
+<pre><code class="language-{math}">\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+</code></pre>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:theorem}">:label: my-theorem
+
+Given $y \in \mathbb R^n$ and linear subspace $S \subset \mathbb R^n$,
+there exists a unique solution to the minimization problem
+
+```{math}
+\hat y := \argmin_{z \in S} \|y - z\|
+```
+
+The minimizer $\hat y$ is the unique vector in $\mathbb R^n$ that satisfies
+
+* $\hat y \in S$
+
+* $y - \hat y \perp S$
+
+
+The vector $\hat y$ is called the **orthogonal projection** of $y$ onto $S$.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">````{prf:theorem} Orthogonal-Projection-Theorem
+:label: my-theorem
+
+Given $y \in \mathbb R^n$ and linear subspace $S \subset \mathbb R^n$,
+there exists a unique solution to the minimization problem
+
+```{math}
+\hat y := \argmin_{z \in S} \|y - z\|
+```
+
+The minimizer $\hat y$ is the unique vector in $\mathbb R^n$ that satisfies
+
+* $\hat y \in S$
+
+* $y - \hat y \perp S$
+
+
+The vector $\hat y$ is called the **orthogonal projection** of $y$ onto $S$.
+````
+</code></pre>
+<p><em>Source:</em> <a href="https://python-advanced.quantecon.org/orth_proj.html#The-Orthogonal-Projection-Theorem">QuantEcon</a></p>
+<h4 id="referencing-theorems">Referencing Theorems</h4>
+<p>You can refer to a theorem using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-theorem` </code>, which will replace the reference with the theorem number like so: {prf:ref}<code>my-theorem</code>. When an explicit text is provided, this caption will serve as the title of the reference. For example, <code>{prf:ref}`Orthogonal-Projection-Theorem &#x3C;my-theorem>` </code> will produce: {prf:ref}<code>Orthogonal-Projection-Theorem &#x3C;my-theorem></code>.</p>
+<p>(syntax:axiom)=</p>
+<h3 id="axioms">Axioms</h3>
+<p>An axiom directive can be included using the <code>prf:axiom</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your axiom that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the axiom’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off axiom auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:axiom}">:label: my-axiom
+
+Every Cauchy sequence on the real line is convergent.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:axiom} Completeness of $\mathbb{R}$
+:label: my-axiom
+
+Every Cauchy sequence on the real line is convergent.
+```
+</code></pre>
+<p><em>Source:</em> {cite}<code>economic-dynamics-book</code></p>
+<h4 id="referencing-axioms">Referencing Axioms</h4>
+<p>You can refer to an axiom using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-axiom` </code>, which will replace the reference with the axiom number like so: {prf:ref}<code>my-axiom</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:lemma)=</p>
+<h3 id="lemmas">Lemmas</h3>
+<p>A lemma directive can be included using the <code>prf:lemma</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your lemma that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the lemma’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off lemma auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:lemma}">:label: my-lemma
+
+If $\hat P$ is the fixed point of the map $\mathcal B \circ \mathcal D$ and $\hat F$ is the robust policy as given in [(7)](https://python-advanced.quantecon.org/robustness.html#equation-rb-oc-ih), then
+
+```{math}
+:label: rb_kft
+
+K(\hat F, \theta) = (\theta I - C'\hat P C)^{-1} C' \hat P  (A - B \hat F)
+```
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">````{prf:lemma}
+:label: my-lemma
+
+If $\hat P$ is the fixed point of the map $\mathcal B \circ \mathcal D$ and $\hat F$ is the robust policy as given in [(7)](https://python-advanced.quantecon.org/robustness.html#equation-rb-oc-ih), then
+
+```{math}
+:label: rb_kft
+
+K(\hat F, \theta) = (\theta I - C'\hat P C)^{-1} C' \hat P  (A - B \hat F)
+```
+````
+</code></pre>
+<p><em>Source:</em> <a href="https://python-advanced.quantecon.org/robustness.html#Appendix">QuantEcon</a></p>
+<h4 id="referencing-lemmas">Referencing Lemmas</h4>
+<p>You can refer to a lemma using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-lemma` </code>, which will replace the reference with the lemma number like so: {prf:ref}<code>my-lemma</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:definition)=</p>
+<h3 id="definitions">Definitions</h3>
+<p>A definition directive can be included using the <code>prf:definition</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your definition that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the definition’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off definition auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:definition}">:label: my-definition
+
+The *economical expansion problem* (EEP) for
+$(A,B)$ is to find a semi-positive $n$-vector $p>0$
+and a number $\beta\in\mathbb{R}$, such that
+
+$$
+&#x26;\min_{\beta} \hspace{2mm} \beta \\
+&#x26;\text{s.t. }\hspace{2mm}Bp \leq \beta Ap
+$$
+
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">````{prf:definition}
+:label: my-definition
+
+The *economical expansion problem* (EEP) for
+$(A,B)$ is to find a semi-positive $n$-vector $p>0$
+and a number $\beta\in\mathbb{R}$, such that
+
+$$
+&#x26;\min_{\beta} \hspace{2mm} \beta \\
+&#x26;\text{s.t. }\hspace{2mm}Bp \leq \beta Ap
+$$
+````
+</code></pre>
+<p><em>Source:</em> <a href="https://python-advanced.quantecon.org/von_neumann_model.html#Duality">QuantEcon</a></p>
+<h4 id="referencing-definitions">Referencing Definitions</h4>
+<p>You can refer to a definition using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-definition` </code>, which will replace the reference with the definition number like so: {prf:ref}<code>my-definition</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:criterion)=</p>
+<h3 id="criteria">Criteria</h3>
+<p>A criterion directive can be included using the <code>prf:criterion</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your criterion that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the criterion’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off criterion auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:criterion}">:label: weyls-criterion
+
+Weyl's criterion states that the sequence $a_n$ is equidistributed modulo $1$ if
+and only if for all non-zero integers $m$,
+
+```{math}
+\lim_{n \rightarrow \infty} \frac{1}{n} \sum_{j=1}^{n} \exp^{2 \pi i m a_j} = 0
+```
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">````{prf:criterion} Weyl's criterion
+:label: weyls-criterion
+
+Weyl's criterion states that the sequence $a_n$ is equidistributed modulo $1$ if
+and only if for all non-zero integers $m$,
+
+```{math}
+\lim_{n \rightarrow \infty} \frac{1}{n} \sum_{j=1}^{n} \exp^{2 \pi i m a_j} = 0
+```
+````
+</code></pre>
+<p><em>Source:</em> <a href="https://en.wikipedia.org/wiki/Equidistributed_sequence#Weyl&#x27;s_criterion">Wikipedia</a></p>
+<h4 id="referencing-criteria">Referencing Criteria</h4>
+<p>You can refer to a criterion using the <code>{prf:ref}</code> role like: <code>{prf:ref}`weyls-criterion` </code>, which will replace the reference with the criterion number like so: {prf:ref}<code>weyls-criterion</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:remark)=</p>
+<h3 id="remarks">Remarks</h3>
+<p>A remark directive can be included using the <code>prf:remark</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your remark that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the remark’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off remark auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:remark}">:label: my-remark
+
+More generally there is a class of density functions
+that possesses this feature, i.e.
+
+$$
+\exists g: \mathbb{R}_+ \mapsto \mathbb{R}_+ \ \ \text{ and } \ \ c \geq 0,
+\ \ \text{s.t.  the density } \ \ f \ \ \text{of} \ \ Z  \ \
+\text{ has the form } \quad f(z) = c g(z\cdot z)
+$$
+
+This property is called **spherical symmetry** (see p 81. in Leamer
+(1978))
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:remark}
+:label: my-remark
+
+More generally there is a class of density functions
+that possesses this feature, i.e.
+
+$$
+\exists g: \mathbb{R}_+ \mapsto \mathbb{R}_+ \ \ \text{ and } \ \ c \geq 0,
+\ \ \text{s.t.  the density } \ \ f \ \ \text{of} \ \ Z  \ \
+\text{ has the form } \quad f(z) = c g(z\cdot z)
+$$
+
+This property is called **spherical symmetry** (see p 81. in Leamer
+(1978))
+```
+</code></pre>
+<p><em>Source:</em> <a href="https://python-advanced.quantecon.org/black_litterman.html">QuantEcon</a></p>
+<h4 id="referencing-remarks">Referencing Remarks</h4>
+<p>You can refer to a remark using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-remark` </code>, which will replace the reference with the remark number like so: {prf:ref}<code>my-remark</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:conjecture)=</p>
+<h3 id="conjectures">Conjectures</h3>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:conjecture}">:label: my-conjecture
+
+This is a dummy conjecture to illustrate that one can use math in titles.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:conjecture} Fake $\gamma$ conjecture
+:label: my-conjecture
+
+This is a dummy conjecture to illustrate that one can use math in titles.
+```
+</code></pre>
+<h4 id="referencing-conjectures">Referencing Conjectures</h4>
+<p>You can refer to a conjecture using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-conjecture` </code>, which will replace the reference with the conjecture number like so: {prf:ref}<code>my-conjecture</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:corollary)=</p>
+<h3 id="corollaries">Corollaries</h3>
+<p>A corollary directive can be included using the <code>prf:corollary</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your corollary that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the corollary’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off corollary auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:corollary}">:label: my-corollary
+
+If $A$ is a convergent matrix, then there exists a matrix norm such
+that $\vert \vert A \vert \vert &#x3C; 1$.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:corollary}
+:label: my-corollary
+
+If $A$ is a convergent matrix, then there exists a matrix norm such
+that $\vert \vert A \vert \vert &#x3C; 1$.
+```
+</code></pre>
+<p><em>Source:</em> <a href="https://python-intro.quantecon.org/_static/lecture_specific/linear_models/iteration_notes.pdf">QuantEcon</a></p>
+<h4 id="referencing-corollaries">Referencing Corollaries</h4>
+<p>You can refer to a corollary using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-corollary` </code>, which will replace the reference with the corollary number like so: {prf:ref}<code>my-corollary</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:algorithm)=</p>
+<h3 id="algorithms">Algorithms</h3>
+<p>An algorithm directive can be included using the <code>prf:algorithm</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your algorithm that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the algorithm’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off algorithm auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:algorithm}">:label: my-algorithm
+
+**Inputs** Given a Network $G=(V,E)$ with flow capacity $c$, a source node $s$, and a sink node $t$
+
+**Output** Compute a flow $f$ from $s$ to $t$ of maximum value
+
+1. $f(u, v) \leftarrow 0$ for all edges $(u,v)$
+2. While there is a path $p$ from $s$ to $t$ in $G_{f}$ such that $c_{f}(u,v)>0$ for all edges $(u,v) \in p$:
+
+	1. Find $c_{f}(p)= \min \{c_{f}(u,v):(u,v)\in p\}$
+	2. For each edge $(u,v) \in p$
+
+		1. $f(u,v) \leftarrow f(u,v) + c_{f}(p)$ *(Send flow along the path)*
+		2. $f(u,v) \leftarrow f(u,v) - c_{f}(p)$ *(The flow might be "returned" later)*
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:algorithm} Ford–Fulkerson
+:label: my-algorithm
+
+**Inputs** Given a Network $G=(V,E)$ with flow capacity $c$, a source node $s$, and a sink node $t$
+
+**Output** Compute a flow $f$ from $s$ to $t$ of maximum value
+
+1. $f(u, v) \leftarrow 0$ for all edges $(u,v)$
+2. While there is a path $p$ from $s$ to $t$ in $G_{f}$ such that $c_{f}(u,v)>0$
+	for all edges $(u,v) \in p$:
+
+	1. Find $c_{f}(p)= \min \{c_{f}(u,v):(u,v)\in p\}$
+	2. For each edge $(u,v) \in p$
+
+		1. $f(u,v) \leftarrow f(u,v) + c_{f}(p)$ *(Send flow along the path)*
+		2. $f(u,v) \leftarrow f(u,v) - c_{f}(p)$ *(The flow might be "returned" later)*
+```
+</code></pre>
+<p><em>Source:</em> <a href="https://en.wikipedia.org/wiki/Ford%E2%80%93Fulkerson_algorithm">Wikipedia</a></p>
+<h4 id="referencing-algorithms">Referencing Algorithms</h4>
+<p>You can refer to a algorithms using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-algorithm` </code>, which will replace the reference with the algorithm number like so: {prf:ref}<code>my-algorithm</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:example)=</p>
+<h3 id="examples">Examples</h3>
+<p>An example directive can be included using the <code>prf:example</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your example that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the example’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off example auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:example}">:label: my-example
+
+Next, we shut down randomness in demand and assume that the demand shock
+$\nu_t$ follows a deterministic path:
+
+
+```{math}
+\nu_t = \alpha + \rho \nu_{t-1}
+```
+
+Again, we’ll compute and display outcomes in some figures
+
+```python
+ex2 = SmoothingExample(C2=[[0], [0]])
+
+x0 = [0, 1, 0]
+ex2.simulate(x0)
+```
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">````{prf:example}
+:label: my-example
+
+Next, we shut down randomness in demand and assume that the demand shock
+$\nu_t$ follows a deterministic path:
+
+
+```{math}
+\nu_t = \alpha + \rho \nu_{t-1}
+```
+
+Again, we’ll compute and display outcomes in some figures
+
+```python
+ex2 = SmoothingExample(C2=[[0], [0]])
+
+x0 = [0, 1, 0]
+ex2.simulate(x0)
+```
+````
+</code></pre>
+<p><em>Source:</em> <a href="https://python.quantecon.org/lq_inventories.html#Example-2">QuantEcon</a></p>
+<h4 id="referencing-examples">Referencing Examples</h4>
+<p>You can refer to an example using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-example` </code>, which will replace the reference with the example number like so: {prf:ref}<code>my-example</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:property)=</p>
+<h3 id="properties">Properties</h3>
+<p>A property directive can be included using the <code>prf:property</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your property that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the property’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off property auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:property}">:label: my-property
+
+This is a dummy property to illustrate the directive.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:property}
+:label: my-property
+
+This is a dummy property to illustrate the directive.
+```
+</code></pre>
+<h4 id="referencing-properties">Referencing Properties</h4>
+<p>You can refer to a property using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-property` </code>, which will replace the reference with the property number like so: {prf:ref}<code>my-property</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:observation)=</p>
+<h3 id="observations">Observations</h3>
+<p>An observation directive can be included using the <code>prf:observation</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your observation that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the observation’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off observation auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:observation}">:label: my-observation
+
+This is a dummy observation directive.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:observation}
+:label: my-observation
+
+This is a dummy observation directive.
+```
+</code></pre>
+<h4 id="referencing-observations">Referencing Observations</h4>
+<p>You can refer to an observation using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-observation` </code>, which will replace the reference with the observation number like so: {prf:ref}<code>my-observation</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:proposition)=</p>
+<h3 id="propositions">Propositions</h3>
+<p>A proposition directive can be included using the <code>prf:proposition</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your proposition that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the proposition’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off proposition auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:proposition}">:label: my-proposition
+
+This is a dummy proposition directive.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:proposition}
+:label: my-proposition
+
+This is a dummy proposition directive.
+```
+</code></pre>
+<h4 id="referencing-propositions">Referencing Propositions</h4>
+<p>You can refer to a proposition using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-proposition` </code>, which will replace the reference with the proposition number like so: {prf:ref}<code>my-proposition</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:assumption)=</p>
+<h3 id="assumptions">Assumptions</h3>
+<p>An assumption directive can be included using the <code>prf:assumption</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your assumption that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the assumption’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off assumption auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:assumption}">:label: my-assumption
+
+This is a dummy assumption directive.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:assumption}
+:label: my-assumption
+
+This is a dummy assumption directive.
+```
+</code></pre>
+<h4 id="referencing-assumptions">Referencing Assumptions</h4>
+<p>You can refer to an assumption using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-assumption` </code>, which will replace the reference with the assumption number like so: {prf:ref}<code>my-assumption</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<p>(syntax:notation)=</p>
+<h3 id="notations">Notations</h3>
+<p>A notation directive can be included using the <code>prf:notation</code> pattern. The directive is enumerated by default and can take in an optional title argument. The following options are also supported:</p>
+<ul>
+<li>
+<p><code>label</code> : text</p>
+<p>A unique identifier for your notation that you can use to reference it with <code>{prf:ref}</code>. Cannot contain spaces or special characters.</p>
+</li>
+<li>
+<p><code>class</code> : text</p>
+<p>Value of the notation’s class attribute which can be used to add custom CSS or JavaScript.</p>
+</li>
+<li>
+<p><code>nonumber</code> : flag (empty)</p>
+<p>Turns off notation auto numbering.</p>
+</li>
+</ul>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:notation}">:label: my-notation
+
+This is a dummy notation directive.
+</code></pre>
+<p><strong>MyST Syntax</strong></p>
+<pre><code class="language-md">```{prf:notation}
+:label: my-notation
+
+This is a dummy notation directive.
+```
+</code></pre>
+<h4 id="referencing-notations">Referencing Notations</h4>
+<p>You can refer to a notation using the <code>{prf:ref}</code> role like: <code>{prf:ref}`my-notation` </code>, which will replace the reference with the notation number like so: {prf:ref}<code>my-notation</code>. When an explicit text is provided, this caption will serve as the title of the reference.</p>
+<h2 id="how-to-hide-content">How to Hide Content</h2>
+<p>Directive content can be hidden using the <code>dropdown</code> class which is available through <a href="https://sphinx-togglebutton.readthedocs.io/en/latest/">sphinx-togglebutton</a>. If your project utilizes the <a href="https://myst-nb.readthedocs.io/en/latest/">MyST-NB</a> extension, there is no need to activate <code>sphinx-togglebutton</code> since it is already bundled with <code>MyST-NB</code>.</p>
+<p>For Sphinx projects, add <code>"sphinx_togglebutton"</code> to your <code>extensions</code> list in <code>conf.py</code> to activate the extension</p>
+<pre><code class="language-python">extensions = [
+    ...
+    "sphinx_togglebutton"
+    ...
+]
+</code></pre>
+<p>For Jupyter Book projects, add <code>sphinx_togglebutton</code> under <code>extra_extensions</code></p>
+<pre><code class="language-yaml">sphinx:
+  extra_extensions:
+    - sphinx_togglebutton
+</code></pre>
+<p>To hide the directive, simply add <code>:class: dropdown</code> as a directive option.</p>
+<p><strong>Example</strong></p>
+<pre><code class="language-{prf:theorem}">:class: dropdown
+
+This is an example of how to hide the content of a directive.
+</code></pre>
+<p><strong>MyST Syntax</strong>:</p>
+<pre><code>```{prf:theorem}
+:class: dropdown
+
+This is an example of how to hide the content of a directive.
+```
+</code></pre>

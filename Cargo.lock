@@ -1781,6 +1781,7 @@ dependencies = [
 name = "yuanme-render"
 version = "0.0.0"
 dependencies = [
+ "insta",
  "yuanme-content",
  "yuanme-diag",
 ]

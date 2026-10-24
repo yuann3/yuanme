@@ -1,0 +1,254 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<h1 id="polynomials">Polynomials</h1>
+<p>Let <code class="language-math math-inline">A(X)</code> be a polynomial over <code class="language-math math-inline">\mathbb{F}_p</code> with formal indeterminate <code class="language-math math-inline">X</code>. As an example,</p>
+<p><code class="language-math math-display">
+A(X) = a_0 + a_1 X + a_2 X^2 + a_3 X^3
+</code></p>
+<p>defines a degree-<code class="language-math math-inline">3</code> polynomial. <code class="language-math math-inline">a_0</code> is referred to as the constant term. Polynomials of
+degree <code class="language-math math-inline">n-1</code> have <code class="language-math math-inline">n</code> coefficients. We will often want to compute the result of replacing
+the formal indeterminate <code class="language-math math-inline">X</code> with some concrete value <code class="language-math math-inline">x</code>, which we denote by <code class="language-math math-inline">A(x)</code>.</p>
+<blockquote>
+<p>In mathematics this is commonly referred to as “evaluating <code class="language-math math-inline">A(X)</code> at a point <code class="language-math math-inline">x</code>”.
+The word “point” here stems from the geometrical usage of polynomials in the form
+<code class="language-math math-inline">y = A(x)</code>, where <code class="language-math math-inline">(x, y)</code> is the coordinate of a point in two-dimensional space.
+However, the polynomials we deal with are almost always constrained to equal zero, and
+<code class="language-math math-inline">x</code> will be an <a href="fields.md">element of some field</a>. This should not be confused
+with points on an <a href="curves.md">elliptic curve</a>, which we also make use of, but never in
+the context of polynomial evaluation.</p>
+</blockquote>
+<p>Important notes:</p>
+<ul>
+<li>Multiplication of polynomials produces a product polynomial that is the sum of the
+degrees of its factors. Polynomial division subtracts from the degree.
+<code class="language-math math-display">\deg(A(X)B(X)) = \deg(A(X)) + \deg(B(X)),</code>
+<code class="language-math math-display">\deg(A(X)/B(X)) = \deg(A(X)) -\deg(B(X)).</code></li>
+<li>Given a polynomial <code class="language-math math-inline">A(X)</code> of degree <code class="language-math math-inline">n-1</code>, if we obtain <code class="language-math math-inline">n</code> evaluations of the
+polynomial at distinct points then these evaluations perfectly define the polynomial. In
+other words, given these evaluations we can obtain a unique polynomial <code class="language-math math-inline">A(X)</code> of degree
+<code class="language-math math-inline">n-1</code> via polynomial interpolation.</li>
+<li><code class="language-math math-inline">[a_0, a_1, \cdots, a_{n-1}]</code> is the <strong>coefficient representation</strong> of the polynomial
+<code class="language-math math-inline">A(X)</code>. Equivalently, we could use its <strong>evaluation representation</strong>
+<code class="language-math math-display">[(x_0, A(x_0)), (x_1, A(x_1)), \cdots, (x_{n-1}, A(x_{n-1}))]</code>
+at <code class="language-math math-inline">n</code> distinct points. Either representation uniquely specifies the same polynomial.</li>
+</ul>
+<blockquote>
+<h4 id="aside-horners-rule">(aside) Horner’s rule</h4>
+<p>Horner’s rule allows for efficient evaluation of a polynomial of degree <code class="language-math math-inline">n-1</code>, using
+only <code class="language-math math-inline">n-1</code> multiplications and <code class="language-math math-inline">n-1</code> additions. It is the following identity:
+<code class="language-math math-display">\begin{aligned}a_0 &#x26;+ a_1X + a_2X^2 + \cdots + a_{n-1}X^{n-1} \\ &#x26;= a_0 + X\bigg( a_1 + X \Big( a_2 + \cdots + X(a_{n-2} + X a_{n-1}) \Big)\!\bigg),\end{aligned}</code></p>
+</blockquote>
+<h2 id="fast-fourier-transform-fft">Fast Fourier Transform (FFT)</h2>
+<p>The FFT is an efficient way of converting between the coefficient and evaluation
+representations of a polynomial. It evaluates the polynomial at the <code class="language-math math-inline">n</code>th roots of unity
+<code class="language-math math-inline">\{\omega^0, \omega^1, \cdots, \omega^{n-1}\},</code> where <code class="language-math math-inline">\omega</code> is a primitive <code class="language-math math-inline">n</code>th root
+of unity. By exploiting symmetries in the roots of unity, each round of the FFT reduces
+the evaluation into a problem only half the size. Most commonly we use polynomials of
+length some power of two, <code class="language-math math-inline">n = 2^k</code>, and apply the halving reduction recursively.</p>
+<h3 id="motivation-fast-polynomial-multiplication">Motivation: Fast polynomial multiplication</h3>
+<p>In the coefficient representation, it takes <code class="language-math math-inline">O(n^2)</code> operations to multiply two
+polynomials <code class="language-math math-inline">A(X)\cdot B(X) = C(X)</code>:</p>
+<p><code class="language-math math-display">
+\begin{aligned}
+A(X) &#x26;= a_0 + a_1X + a_2X^2 + \cdots + a_{n-1}X^{n-1}, \\
+B(X) &#x26;= b_0 + b_1X + b_2X^2 + \cdots + b_{n-1}X^{n-1}, \\
+C(X) &#x26;= a_0\cdot (b_0 + b_1X + b_2X^2 + \cdots + b_{n-1}X^{n-1}) \\
+&#x26;+ a_1X\cdot (b_0 + b_1X + b_2X^2 + \cdots + b_{n-1}X^{n-1})\\
+&#x26;+ \cdots \\
+&#x26;+ a_{n-1}X^{n-1} \cdot (b_0 + b_1X + b_2X^2 + \cdots + b_{n-1}X^{n-1}),
+\end{aligned}
+</code></p>
+<p>where each of the <code class="language-math math-inline">n</code> terms in the first polynomial has to be multiplied by the <code class="language-math math-inline">n</code> terms
+of the second polynomial.</p>
+<p>In the evaluation representation, however, polynomial multiplication only requires <code class="language-math math-inline">O(n)</code>
+operations:</p>
+<p><code class="language-math math-display">
+\begin{aligned}
+A&#x26;: \{(x_0, A(x_0)), (x_1, A(x_1)), \cdots, (x_{n-1}, A(x_{n-1}))\}, \\
+B&#x26;: \{(x_0, B(x_0)), (x_1, B(x_1)), \cdots, (x_{n-1}, B(x_{n-1}))\}, \\
+C&#x26;: \{(x_0, A(x_0)B(x_0)), (x_1, A(x_1)B(x_1)), \cdots, (x_{n-1}, A(x_{n-1})B(x_{n-1}))\},
+\end{aligned}
+</code></p>
+<p>where each evaluation is multiplied pointwise.</p>
+<p>This suggests the following strategy for fast polynomial multiplication:</p>
+<ol>
+<li>Evaluate polynomials at all <code class="language-math math-inline">n</code> points;</li>
+<li>Perform fast pointwise multiplication in the evaluation representation (<code class="language-math math-inline">O(n)</code>);</li>
+<li>Convert back to the coefficient representation.</li>
+</ol>
+<p>The challenge now is how to <strong>evaluate</strong> and <strong>interpolate</strong> the polynomials efficiently.
+Naively, evaluating a polynomial at <code class="language-math math-inline">n</code> points would require <code class="language-math math-inline">O(n^2)</code> operations (we use
+the <code class="language-math math-inline">O(n)</code> Horner’s rule at each point):</p>
+<p><code class="language-math math-display">
+\begin{bmatrix}
+A(1) \\
+A(\omega) \\
+A(\omega^2) \\
+\vdots \\
+A(\omega^{n-1})
+\end{bmatrix} =
+\begin{bmatrix}
+1&#x26;1&#x26;1&#x26;\dots&#x26;1 \\
+1&#x26;\omega&#x26;\omega^2&#x26;\dots&#x26;\omega^{n-1} \\
+1&#x26;\omega^2&#x26;\omega^{2\cdot2}&#x26;\dots&#x26;\omega^{2\cdot(n-1)} \\
+\vdots&#x26;\vdots&#x26;\vdots&#x26; &#x26;\vdots \\
+1&#x26;\omega^{n-1}&#x26;\omega^{2(n-1)}&#x26;\cdots&#x26;\omega^{(n-1)^2}\\
+\end{bmatrix} \cdot
+\begin{bmatrix}
+a_0 \\
+a_1 \\
+a_2 \\
+\vdots \\
+a_{n-1}
+\end{bmatrix}.
+</code></p>
+<p>For convenience, we will denote the matrices above as:
+<code class="language-math math-display">\hat{\mathbf{A}} = \mathbf{V}_\omega \cdot \mathbf{A}. </code></p>
+<p>(<code class="language-math math-inline">\hat{\mathbf{A}}</code> is known as the <em>Discrete Fourier Transform</em> of <code class="language-math math-inline">\mathbf{A}</code>;
+<code class="language-math math-inline">\mathbf{V}_\omega</code> is also called the <em>Vandermonde matrix</em>.)</p>
+<h3 id="the-radix-2-cooley-tukey-algorithm">The (radix-2) Cooley-Tukey algorithm</h3>
+<p>Our strategy is to divide a DFT of size <code class="language-math math-inline">n</code> into two interleaved DFTs of size <code class="language-math math-inline">n/2</code>. Given
+the polynomial <code class="language-math math-inline">A(X) = a_0 + a_1X + a_2X^2 + \cdots + a_{n-1}X^{n-1},</code> we split it up into
+even and odd terms:</p>
+<p><code class="language-math math-display">
+\begin{aligned}
+A_{\text{even}} &#x26;= a_0 + a_2X + \cdots + a_{n-2}X^{\frac{n}{2} - 1}, \\
+A_{\text{odd}} &#x26;= a_1 + a_3X + \cdots + a_{n-1}X^{\frac{n}{2} - 1}. \\
+\end{aligned}
+</code></p>
+<p>To recover the original polynomial, we do
+<code class="language-math math-inline">A(X) = A_{\text{even}} (X^2) + X A_{\text{odd}}(X^2).</code></p>
+<p>Trying this out on points <code class="language-math math-inline">\omega_n^i</code> and <code class="language-math math-inline">\omega_n^{\frac{n}{2} + i}</code>,
+<code class="language-math math-inline">i \in [0..\frac{n}{2}-1],</code> we start to notice some symmetries:</p>
+<p><code class="language-math math-display">
+\begin{aligned}
+A(\omega_n^i) &#x26;= A_{\text{even}} ((\omega_n^i)^2) + \omega_n^i A_{\text{odd}}((\omega_n^i)^2), \\
+A(\omega_n^{\frac{n}{2} + i}) &#x26;= A_{\text{even}} ((\omega_n^{\frac{n}{2} + i})^2) + \omega_n^{\frac{n}{2} + i} A_{\text{odd}}((\omega_n^{\frac{n}{2} + i})^2) \\
+&#x26;= A_{\text{even}} ((-\omega_n^i)^2) - \omega_n^i A_{\text{odd}}((-\omega_n^i)^2) \leftarrow\text{(negation lemma)} \\
+&#x26;= A_{\text{even}} ((\omega_n^i)^2) - \omega_n^i A_{\text{odd}}((\omega_n^i)^2).
+\end{aligned}
+</code></p>
+<p>Notice that we are only evaluating <code class="language-math math-inline">A_{\text{even}}(X)</code> and <code class="language-math math-inline">A_{\text{odd}}(X)</code> over half
+the domain <code class="language-math math-inline">\{(\omega_n^0)^2, (\omega_n)^2, \cdots, (\omega_n^{\frac{n}{2} -1})^2\} = \{\omega_{n/2}^i\}, i = [0..\frac{n}{2}-1]</code> (halving lemma).
+This gives us all the terms we need to reconstruct <code class="language-math math-inline">A(X)</code> over the full domain
+<code class="language-math math-inline">\{\omega^0, \omega, \cdots, \omega^{n -1}\}</code>: which means we have transformed a
+length-<code class="language-math math-inline">n</code> DFT into two length-<code class="language-math math-inline">\frac{n}{2}</code> DFTs.</p>
+<p>We choose <code class="language-math math-inline">n = 2^k</code> to be a power of two (by zero-padding if needed), and apply this
+divide-and-conquer strategy recursively. By the Master Theorem<sup><a href="#user-content-fn-master-thm" id="user-content-fnref-master-thm" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>, this gives us
+an evaluation algorithm with <code class="language-math math-inline">O(n\log_2n)</code> operations, also known as the Fast Fourier
+Transform (FFT).</p>
+<h3 id="inverse-fft">Inverse FFT</h3>
+<p>So we’ve evaluated our polynomials and multiplied them pointwise. What remains is to
+convert the product from the evaluation representation back to coefficient representation.
+To do this, we simply call the FFT on the evaluation representation. However, this time we
+also:</p>
+<ul>
+<li>replace <code class="language-math math-inline">\omega^i</code> by <code class="language-math math-inline">\omega^{-i}</code> in the Vandermonde matrix, and</li>
+<li>multiply our final result by a factor of <code class="language-math math-inline">1/n</code>.</li>
+</ul>
+<p>In other words:
+<code class="language-math math-display">\mathbf{A} = \frac{1}{n} \mathbf{V}_{\omega^{-1}} \cdot \hat{\mathbf{A}}. </code></p>
+<p>(To understand why the inverse FFT has a similar form to the FFT, refer to Slide 13-1 of
+<sup><a href="#user-content-fn-ifft" id="user-content-fnref-ifft" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup>. The below image was also taken from <sup><a href="#user-content-fn-ifft" id="user-content-fnref-ifft-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup>.)</p>
+<p><img src="https://i.imgur.com/lSw30zo.png" alt=""></p>
+<h2 id="the-schwartz-zippel-lemma">The Schwartz-Zippel lemma</h2>
+<p>The Schwartz-Zippel lemma informally states that “different polynomials are different at
+most points.” Formally, it can be written as follows:</p>
+<blockquote>
+<p>Let <code class="language-math math-inline">p(x_1, x_2, \cdots, x_n)</code> be a nonzero polynomial of <code class="language-math math-inline">n</code> variables with degree <code class="language-math math-inline">d</code>.
+Let <code class="language-math math-inline">S</code> be a finite set of numbers with at least <code class="language-math math-inline">d</code> elements in it. If we choose random
+<code class="language-math math-inline">\alpha_1, \alpha_2, \cdots, \alpha_n</code> from <code class="language-math math-inline">S</code>,
+<code class="language-math math-display">\text{Pr}[p(\alpha_1, \alpha_2, \cdots, \alpha_n) = 0] \leq \frac{d}{|S|}.</code></p>
+</blockquote>
+<p>In the familiar univariate case <code class="language-math math-inline">p(X)</code>, this reduces to saying that a nonzero polynomial
+of degree <code class="language-math math-inline">d</code> has at most <code class="language-math math-inline">d</code> roots.</p>
+<p>The Schwartz-Zippel lemma is used in polynomial equality testing.  Given two multi-variate
+polynomials <code class="language-math math-inline">p_1(x_1,\cdots,x_n)</code> and <code class="language-math math-inline">p_2(x_1,\cdots,x_n)</code> of degrees <code class="language-math math-inline">d_1, d_2</code>
+respectively, we can test if
+<code class="language-math math-inline">p_1(\alpha_1, \cdots, \alpha_n) - p_2(\alpha_1, \cdots, \alpha_n) = 0</code> for random
+<code class="language-math math-inline">\alpha_1, \cdots, \alpha_n \leftarrow S,</code> where the size of <code class="language-math math-inline">S</code> is at least
+<code class="language-math math-inline">|S| \geq (d_1 + d_2).</code>  If the two polynomials are identical, this will always be true,
+whereas if the two polynomials are different then the equality holds with probability at
+most <code class="language-math math-inline">\frac{\max(d_1,d_2)}{|S|}</code>.</p>
+<h2 id="vanishing-polynomial">Vanishing polynomial</h2>
+<p>Consider the order-<code class="language-math math-inline">n</code> multiplicative subgroup <code class="language-math math-inline">\mathcal{H}</code> with primitive root of unity
+<code class="language-math math-inline">\omega</code>. For all <code class="language-math math-inline">\omega^i \in \mathcal{H}, i \in [n-1],</code> we have
+<code class="language-math math-inline">(\omega^i)^n = (\omega^n)^i = (\omega^0)^i = 1.</code> In other words, every element of
+<code class="language-math math-inline">\mathcal{H}</code> fulfils the equation</p>
+<p><code class="language-math math-display">
+\begin{aligned}
+Z_H(X) &#x26;= X^n - 1 \\
+&#x26;= (X-\omega^0)(X-\omega^1)(X-\omega^2)\cdots(X-\omega^{n-1}),
+\end{aligned}
+</code></p>
+<p>meaning every element is a root of <code class="language-math math-inline">Z_H(X).</code> We call <code class="language-math math-inline">Z_H(X)</code> the <strong>vanishing polynomial</strong>
+over <code class="language-math math-inline">\mathcal{H}</code> because it evaluates to zero on all elements of <code class="language-math math-inline">\mathcal{H}.</code></p>
+<p>This comes in particularly handy when checking polynomial constraints. For instance, to
+check that <code class="language-math math-inline">A(X) + B(X) = C(X)</code> over <code class="language-math math-inline">\mathcal{H},</code> we simply have to check that
+<code class="language-math math-inline">A(X) + B(X) - C(X)</code> is some multiple of <code class="language-math math-inline">Z_H(X)</code>. In other words, if dividing our
+constraint by the vanishing polynomial still yields some polynomial
+<code class="language-math math-inline">\frac{A(X) + B(X) - C(X)}{Z_H(X)} = H(X),</code> we are satisfied that <code class="language-math math-inline">A(X) + B(X) - C(X) = 0</code>
+over <code class="language-math math-inline">\mathcal{H}.</code></p>
+<h2 id="lagrange-basis-functions">Lagrange basis functions</h2>
+<blockquote>
+<p>TODO: explain what a basis is in general (briefly).</p>
+</blockquote>
+<p>Polynomials are commonly written in the monomial basis (e.g. <code class="language-math math-inline">X, X^2, ... X^n</code>). However,
+when working over a multiplicative subgroup of order <code class="language-math math-inline">n</code>, we find a more natural expression
+in the Lagrange basis.</p>
+<p>Consider the order-<code class="language-math math-inline">n</code> multiplicative subgroup <code class="language-math math-inline">\mathcal{H}</code> with primitive root of unity
+<code class="language-math math-inline">\omega</code>. The Lagrange basis corresponding to this subgroup is a set of functions
+<code class="language-math math-inline">\{\mathcal{L}_i\}_{i = 0}^{n-1}</code>, where</p>
+<p><code class="language-math math-display">
+\mathcal{L_i}(\omega^j) = \begin{cases}
+1 &#x26; \text{if } i = j, \\
+0 &#x26; \text{otherwise.}
+\end{cases}
+</code></p>
+<p>We can write this more compactly as <code class="language-math math-inline">\mathcal{L_i}(\omega^j) = \delta_{ij},</code> where
+<code class="language-math math-inline">\delta</code> is the Kronecker delta function.</p>
+<p>Now, we can write our polynomial as a linear combination of Lagrange basis functions,</p>
+<p><code class="language-math math-display">A(X) = \sum_{i = 0}^{n-1} a_i\mathcal{L_i}(X), X \in \mathcal{H},</code></p>
+<p>which is equivalent to saying that <code class="language-math math-inline">A(X)</code> evaluates to <code class="language-math math-inline">a_0</code> at <code class="language-math math-inline">\omega^0</code>,
+to <code class="language-math math-inline">a_1</code> at <code class="language-math math-inline">\omega^1</code>, to <code class="language-math math-inline">a_2</code> at <code class="language-math math-inline">\omega^2, \cdots,</code> and so on.</p>
+<p>When working over a multiplicative subgroup, the Lagrange basis function has a convenient
+sparse representation of the form</p>
+<p><code class="language-math math-display">
+\mathcal{L}_i(X) = \frac{c_i\cdot(X^{n} - 1)}{X - \omega^i},
+</code></p>
+<p>where <code class="language-math math-inline">c_i</code> is the barycentric weight. (To understand how this form was derived, refer to
+<sup><a href="#user-content-fn-barycentric" id="user-content-fnref-barycentric" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup>.) For <code class="language-math math-inline">i = 0,</code> we have
+<code class="language-math math-inline">c = 1/n \implies \mathcal{L}_0(X) = \frac{1}{n} \frac{(X^{n} - 1)}{X - 1}</code>.</p>
+<p>Suppose we are given a set of evaluation points <code class="language-math math-inline">\{x_0, x_1, \cdots, x_{n-1}\}</code>.
+Since we cannot assume that the <code class="language-math math-inline">x_i</code>‘s form a multiplicative subgroup, we consider also
+the Lagrange polynomials <code class="language-math math-inline">\mathcal{L}_i</code>‘s in the general case. Then we can construct:</p>
+<p><code class="language-math math-display">
+\mathcal{L}_i(X) = \prod_{j\neq i}\frac{X - x_j}{x_i - x_j}, i \in [0..n-1].
+</code></p>
+<p>Here, every <code class="language-math math-inline">X = x_j \neq x_i</code> will produce a zero numerator term <code class="language-math math-inline">(x_j - x_j),</code> causing
+the whole product to evaluate to zero. On the other hand, <code class="language-math math-inline">X= x_i</code> will evaluate to
+<code class="language-math math-inline">\frac{x_i - x_j}{x_i - x_j}</code> at every term, resulting in an overall product of one. This
+gives the desired Kronecker delta behaviour <code class="language-math math-inline">\mathcal{L_i}(x_j) = \delta_{ij}</code> on the
+set <code class="language-math math-inline">\{x_0, x_1, \cdots, x_{n-1}\}</code>.</p>
+<h3 id="lagrange-interpolation">Lagrange interpolation</h3>
+<p>Given a polynomial in its evaluation representation</p>
+<p><code class="language-math math-display">A: \{(x_0, A(x_0)), (x_1, A(x_1)), \cdots, (x_{n-1}, A(x_{n-1}))\},</code></p>
+<p>we can reconstruct its coefficient form in the Lagrange basis:</p>
+<p><code class="language-math math-display">A(X) = \sum_{i = 0}^{n-1} A(x_i)\mathcal{L_i}(X), </code></p>
+<p>where <code class="language-math math-inline">X \in \{x_0, x_1,\cdots, x_{n-1}\}.</code></p>
+<h2 id="references">References</h2>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-master-thm">
+<p><a href="https://people.eecs.berkeley.edu/~vazirani/algorithms/chap2.pdf">Dasgupta, S., Papadimitriou, C. H., &#x26; Vazirani, U. V. (2008). “Algorithms” (ch. 2). New York: McGraw-Hill Higher Education.</a> <a href="#user-content-fnref-master-thm" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-ifft">
+<p><a href="http://www.cs.ust.hk/mjg_lib/Classes/COMP3711H_Fall16/lectures/FFT_Slides.pdf">Golin, M. (2016). “The Fast Fourier Transform and Polynomial Multiplication” [lecture notes], COMP 3711H Design and Analysis of Algorithms, Hong Kong University of Science and Technology.</a> <a href="#user-content-fnref-ifft" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a> <a href="#user-content-fnref-ifft-2" data-footnote-backref="" aria-label="Back to reference 2-2" class="data-footnote-backref">↩<sup>2</sup></a></p>
+</li>
+<li id="user-content-fn-barycentric">
+<p><a href="https://people.maths.ox.ac.uk/trefethen/barycentric.pdf">Berrut, J. and Trefethen, L. (2004). “Barycentric Lagrange Interpolation.”</a> <a href="#user-content-fnref-barycentric" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

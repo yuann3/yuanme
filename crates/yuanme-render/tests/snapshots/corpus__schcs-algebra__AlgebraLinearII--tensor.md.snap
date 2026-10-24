@@ -1,0 +1,260 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+error[markdown/empty-directive]: a directive needs a name before `{#def-}`
+  --> schcs-algebra/AlgebraLinearII--tensor.md:16:1
+   |
+16 | :::{#def-}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-bil-esp}`
+  --> schcs-algebra/AlgebraLinearII--tensor.md:30:1
+   |
+30 | :::{#exr-bil-esp}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-inner-product}`
+  --> schcs-algebra/AlgebraLinearII--tensor.md:35:1
+   |
+35 | :::{#exm-inner-product}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-bilin-basis}`
+  --> schcs-algebra/AlgebraLinearII--tensor.md:43:1
+   |
+43 | :::{#exr-bilin-basis}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-}`
+  --> schcs-algebra/AlgebraLinearII--tensor.md:57:1
+   |
+57 | :::{#exm-}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-tensor-product}`
+  --> schcs-algebra/AlgebraLinearII--tensor.md:68:1
+   |
+68 | :::{#def-tensor-product}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-uniqueness}`
+  --> schcs-algebra/AlgebraLinearII--tensor.md:78:1
+   |
+78 | :::{#thm-tensor-uniqueness}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+  --> schcs-algebra/AlgebraLinearII--tensor.md:82:1
+   |
+82 | :::{.proof}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#cor-tensor}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:106:1
+    |
+106 | :::{#cor-tensor}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-espaço-X}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:113:1
+    |
+113 | :::{#exr-espaço-X}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-existence}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:142:1
+    |
+142 | :::{#thm-tensor-existence}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:145:1
+    |
+145 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-basis}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:171:1
+    |
+171 | :::{#thm-tensor-basis}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:174:1
+    |
+174 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#cor-tensor-dimensions}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:201:1
+    |
+201 | :::{#cor-tensor-dimensions}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:204:1
+    |
+204 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exr-unique-ubi}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:208:1
+    |
+208 | :::{#exr-unique-ubi}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-linear-maps}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:219:1
+    |
+219 | :::{#thm-tensor-linear-maps}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:223:1
+    |
+223 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-base-field-extension}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:234:1
+    |
+234 | :::{#def-base-field-extension}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-base-field-extension}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:243:1
+    |
+243 | :::{#def-base-field-extension}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-base-extension-basis}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:250:1
+    |
+250 | :::{#thm-base-extension-basis}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{.proof}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:254:1
+    |
+254 | :::{.proof}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-complexificação}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:265:1
+    |
+265 | :::{#exm-complexificação}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-multilinear-map}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:283:1
+    |
+283 | :::{#def-multilinear-map}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#exm-klin}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:291:1
+    |
+291 | :::{#exm-klin}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#def-tensor-product-multiple}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:302:1
+    |
+302 | :::{#def-tensor-product-multiple}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-existence-uniqueness}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:306:1
+    |
+306 | :::{#thm-tensor-existence-uniqueness}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-multiple-isomorphism}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:313:1
+    |
+313 | :::{#thm-tensor-multiple-isomorphism}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-multiple-basis}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:321:1
+    |
+321 | :::{#thm-tensor-multiple-basis}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#cor-tensor-multiple-dimensions}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:328:1
+    |
+328 | :::{#cor-tensor-multiple-dimensions}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more
+error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-multiple-linear-maps}`
+   --> schcs-algebra/AlgebraLinearII--tensor.md:335:1
+    |
+335 | :::{#thm-tensor-multiple-linear-maps}
+    | ^^^
+    |
+    = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+    = note: run `yuanme docs markdown/empty-directive` for more

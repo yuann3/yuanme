@@ -1,0 +1,222 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<h1 id="permutation-argument">Permutation argument</h1>
+<p>Given that gates in halo2 circuits operate “locally” (on cells in the current row or
+defined relative rows), it is common to need to copy a value from some arbitrary cell into
+the current row for use in a gate. This is performed with an equality constraint, which
+enforces that the source and destination cells contain the same value.</p>
+<p>We implement these equality constraints by constructing a permutation that represents the
+constraints, and then using a permutation argument within the proof to enforce them.</p>
+<h2 id="notation">Notation</h2>
+<p>A permutation is a one-to-one and onto mapping of a set onto itself. A permutation can be
+factored uniquely into a composition of cycles (up to ordering of cycles, and rotation of
+each cycle).</p>
+<p>We sometimes use <a href="https://en.wikipedia.org/wiki/Permutation#Cycle_notation">cycle notation</a>
+to write permutations. Let <code class="language-math math-inline">(a\ b\ c)</code> denote a cycle where <code class="language-math math-inline">a</code> maps to <code class="language-math math-inline">b,</code> <code class="language-math math-inline">b</code> maps to
+<code class="language-math math-inline">c,</code> and <code class="language-math math-inline">c</code> maps to <code class="language-math math-inline">a</code> (with the obvious generalization to arbitrary-sized cycles).
+Writing two or more cycles next to each other denotes a composition of the corresponding
+permutations. For example, <code class="language-math math-inline">(a\ b)\ (c\ d)</code> denotes the permutation that maps <code class="language-math math-inline">a</code> to <code class="language-math math-inline">b,</code>
+<code class="language-math math-inline">b</code> to <code class="language-math math-inline">a,</code> <code class="language-math math-inline">c</code> to <code class="language-math math-inline">d,</code> and <code class="language-math math-inline">d</code> to <code class="language-math math-inline">c.</code></p>
+<h2 id="constructing-the-permutation">Constructing the permutation</h2>
+<h3 id="goal">Goal</h3>
+<p>We want to construct a permutation in which each subset of variables that are in a
+equality-constraint set form a cycle. For example, suppose that we have a circuit that
+defines the following equality constraints:</p>
+<ul>
+<li><code class="language-math math-inline">a \equiv b</code></li>
+<li><code class="language-math math-inline">a \equiv c</code></li>
+<li><code class="language-math math-inline">d \equiv e</code></li>
+</ul>
+<p>From this we have the equality-constraint sets <code class="language-math math-inline">\{a, b, c\}</code> and <code class="language-math math-inline">\{d, e\}.</code> We want to
+construct the permutation:</p>
+<p><code class="language-math math-display">(a\ b\ c)\ (d\ e)</code></p>
+<p>which defines the mapping of <code class="language-math math-inline">[a, b, c, d, e]</code> to <code class="language-math math-inline">[b, c, a, e, d].</code></p>
+<h3 id="algorithm">Algorithm</h3>
+<p>We need to keep track of the set of cycles, which is a
+<a href="https://en.wikipedia.org/wiki/Disjoint-set_data_structure">set of disjoint sets</a>.
+Efficient data structures for this problem are known; for the sake of simplicity we choose
+one that is not asymptotically optimal but is easy to implement.</p>
+<p>We represent the current state as:</p>
+<ul>
+<li>an array <code class="language-math math-inline">\mathsf{mapping}</code> for the permutation itself;</li>
+<li>an auxiliary array <code class="language-math math-inline">\mathsf{aux}</code> that keeps track of a distinguished element of each
+cycle;</li>
+<li>another array <code class="language-math math-inline">\mathsf{sizes}</code> that keeps track of the size of each cycle.</li>
+</ul>
+<p>We have the invariant that for each element <code class="language-math math-inline">x</code> in a given cycle <code class="language-math math-inline">C,</code> <code class="language-math math-inline">\mathsf{aux}(x)</code>
+points to the same element <code class="language-math math-inline">c \in C.</code> This allows us to quickly decide whether two given
+elements <code class="language-math math-inline">x</code> and <code class="language-math math-inline">y</code> are in the same cycle, by checking whether
+<code class="language-math math-inline">\mathsf{aux}(x) = \mathsf{aux}(y).</code> Also, <code class="language-math math-inline">\mathsf{sizes}(\mathsf{aux}(x))</code> gives the
+size of the cycle containing <code class="language-math math-inline">x.</code> (This is guaranteed only for
+<code class="language-math math-inline">\mathsf{sizes}(\mathsf{aux}(x)),</code> not for <code class="language-math math-inline">\mathsf{sizes}(x).</code>)</p>
+<p>The algorithm starts with a representation of the identity permutation:
+for all <code class="language-math math-inline">x,</code> we set <code class="language-math math-inline">\mathsf{mapping}(x) = x,</code> <code class="language-math math-inline">\mathsf{aux}(x) = x,</code> and
+<code class="language-math math-inline">\mathsf{sizes}(x) = 1.</code></p>
+<p>To add an equality constraint <code class="language-math math-inline">\mathit{left} \equiv \mathit{right}</code>:</p>
+<ol>
+<li>Check whether <code class="language-math math-inline">\mathit{left}</code> and <code class="language-math math-inline">\mathit{right}</code> are already in the same cycle, i.e.
+whether <code class="language-math math-inline">\mathsf{aux}(\mathit{left}) = \mathsf{aux}(\mathit{right}).</code> If so, there is
+nothing to do.</li>
+<li>Otherwise, <code class="language-math math-inline">\mathit{left}</code> and <code class="language-math math-inline">\mathit{right}</code> belong to different cycles. Make
+<code class="language-math math-inline">\mathit{left}</code> the larger cycle and <code class="language-math math-inline">\mathit{right}</code> the smaller one, by swapping them
+iff <code class="language-math math-inline">\mathsf{sizes}(\mathsf{aux}(\mathit{left})) &#x3C; \mathsf{sizes}(\mathsf{aux}(\mathit{right})).</code></li>
+<li>Set <code class="language-math math-inline">\mathsf{sizes}(\mathsf{aux}(\mathit{left})) := \mathsf{sizes}(\mathsf{aux}(\mathit{left})) + \mathsf{sizes}(\mathsf{aux}(\mathit{right})).</code></li>
+<li>Following the mapping around the right (smaller) cycle, for each element <code class="language-math math-inline">x</code> set
+<code class="language-math math-inline">\mathsf{aux}(x) := \mathsf{aux}(\mathit{left}).</code></li>
+<li>Splice the smaller cycle into the larger one by swapping <code class="language-math math-inline">\mathsf{mapping}(\mathit{left})</code>
+with <code class="language-math math-inline">\mathsf{mapping}(\mathit{right}).</code></li>
+</ol>
+<p>For example, given two disjoint cycles <code class="language-math math-inline">(A\ B\ C\ D)</code> and <code class="language-math math-inline">(E\ F\ G\ H)</code>:</p>
+<pre><code class="language-plaintext">A +---> B
+^       +
+|       |
++       v
+D &#x3C;---+ C       E +---> F
+                ^       +
+                |       |
+                +       v
+                H &#x3C;---+ G
+</code></pre>
+<p>After adding constraint <code class="language-math math-inline">B \equiv E</code> the above algorithm produces the cycle:</p>
+<pre><code class="language-plaintext">A +---> B +-------------+
+^                       |
+|                       |
++                       v
+D &#x3C;---+ C &#x3C;---+ E       F
+                ^       +
+                |       |
+                +       v
+                H &#x3C;---+ G
+</code></pre>
+<h3 id="broken-alternatives">Broken alternatives</h3>
+<p>If we did not check whether <code class="language-math math-inline">\mathit{left}</code> and <code class="language-math math-inline">\mathit{right}</code> were already in the same
+cycle, then we could end up undoing an equality constraint. For example, if we have the
+following constraints:</p>
+<ul>
+<li><code class="language-math math-inline">a \equiv b</code></li>
+<li><code class="language-math math-inline">b \equiv c</code></li>
+<li><code class="language-math math-inline">c \equiv d</code></li>
+<li><code class="language-math math-inline">b \equiv d</code></li>
+</ul>
+<p>and we tried to implement adding an equality constraint just using step 5 of the above
+algorithm, then we would end up constructing the cycle <code class="language-math math-inline">(a\ b)\ (c\ d),</code> rather than the
+correct <code class="language-math math-inline">(a\ b\ c\ d).</code></p>
+<h2 id="argument-specification">Argument specification</h2>
+<p>We need to check a permutation of cells in <code class="language-math math-inline">m</code> columns, represented in Lagrange basis by
+polynomials <code class="language-math math-inline">v_0, \ldots, v_{m-1}.</code></p>
+<p>We will label <em>each cell</em> in those <code class="language-math math-inline">m</code> columns with a unique element of <code class="language-math math-inline">\mathbb{F}^\times.</code></p>
+<p>Suppose that we have a permutation on these labels,
+<code class="language-math math-display">
+\sigma(\mathsf{column}: i, \mathsf{row}: j) = (\mathsf{column}: i', \mathsf{row}: j').
+</code>
+in which the cycles correspond to equality-constraint sets.</p>
+<blockquote>
+<p>If we consider the set of pairs <code class="language-math math-inline">\{(\mathit{label}, \mathit{value})\}</code>, then the values within
+each cycle are equal if and only if permuting the label in each pair by <code class="language-math math-inline">\sigma</code> yields the
+same set:</p>
+<p><img src="./permutation-diagram.png" alt="An example for a cycle (A B C D). The set before permuting the labels is {(A, 7), (B, 7), (C, 7), (D, 7)}, and the set after is {(D, 7), (A, 7), (B, 7), (C, 7)} which is the same. If one of the 7s is replaced by 3, then the set after permuting labels is not the same."></p>
+<p>Since the labels are distinct, set equality is the same as multiset equality, which we can
+check using a product argument.</p>
+</blockquote>
+<p>Let <code class="language-math math-inline">\omega</code> be a <code class="language-math math-inline">2^k</code> root of unity and let <code class="language-math math-inline">\delta</code> be a <code class="language-math math-inline">T</code> root of unity, where
+<code class="language-math math-inline">{T \cdot 2^S + 1 = p}</code> with <code class="language-math math-inline">T</code> odd and <code class="language-math math-inline">{k \leq S.}</code>
+We will use <code class="language-math math-inline">\delta^i \cdot \omega^j \in \mathbb{F}^\times</code> as the label for the
+cell in the <code class="language-math math-inline">j</code>th row of the <code class="language-math math-inline">i</code>th column of the permutation argument.</p>
+<p>We represent <code class="language-math math-inline">\sigma</code> by a vector of <code class="language-math math-inline">m</code> polynomials <code class="language-math math-inline">s_i(X)</code> such that
+<code class="language-math math-inline">s_i(\omega^j) = \delta^{i'} \cdot \omega^{j'}.</code></p>
+<p>Notice that the identity permutation can be represented by the vector of <code class="language-math math-inline">m</code> polynomials
+<code class="language-math math-inline">\mathsf{ID}_i(\omega^j)</code> such that <code class="language-math math-inline">\mathsf{ID}_i(\omega^j) = \delta^i \cdot \omega^j.</code></p>
+<p>We will use a challenge <code class="language-math math-inline">\beta</code> to compress each <code class="language-math math-inline">{(\mathit{label}, \mathit{value})}</code> pair
+to <code class="language-math math-inline">\mathit{value} + \beta \cdot \mathit{label}.</code> Just as in the product argument we used
+for <a href="lookup.md">lookups</a>, we also use a challenge <code class="language-math math-inline">\gamma</code> to randomize each term of the
+product.</p>
+<p>Now given our permutation represented by <code class="language-math math-inline">s_0, \ldots, s_{m-1}</code> over columns represented by
+<code class="language-math math-inline">v_0, \ldots, v_{m-1},</code> we want to ensure that:
+<code class="language-math math-display">
+\prod\limits_{i=0}^{m-1} \prod\limits_{j=0}^{n-1} \left(\frac{v_i(\omega^j) + \beta \cdot \delta^i \cdot \omega^j + \gamma}{v_i(\omega^j) + \beta \cdot s_i(\omega^j) + \gamma}\right) = 1
+</code></p>
+<blockquote>
+<p>Here <code class="language-math math-inline">{v_i(\omega^j) + \beta \cdot \delta^i \cdot \omega^j}</code> represents the unpermuted
+<code class="language-math math-inline">(\mathit{label}, value)</code> pair, and <code class="language-math math-inline">{v_i(\omega^j) + \beta \cdot s_i(\omega^j)}</code>
+represents the permuted <code class="language-math math-inline">(\sigma(\mathit{label}), value)</code> pair.</p>
+</blockquote>
+<p>Let <code class="language-math math-inline">Z_P</code> be such that <code class="language-math math-inline">Z_P(\omega^0) = Z_P(\omega^n) = 1</code> and for <code class="language-math math-inline">0 \leq j &#x3C; n</code>:
+<code class="language-math math-display">\begin{array}{rl}
+Z_P(\omega^{j+1}) &#x26;= \prod\limits_{h=0}^{j} \prod\limits_{i=0}^{m-1} \frac{v_i(\omega^h) + \beta \cdot \delta^i \cdot \omega^h + \gamma}{v_i(\omega^h) + \beta \cdot s_i(\omega^h) + \gamma} \\
+&#x26;= Z_P(\omega^j) \prod\limits_{i=0}^{m-1} \frac{v_i(\omega^j) + \beta \cdot \delta^i \cdot \omega^j + \gamma}{v_i(\omega^j) + \beta \cdot s_i(\omega^j) + \gamma}
+\end{array}</code></p>
+<p>Then it is sufficient to enforce the rules:
+<code class="language-math math-display">
+Z_P(\omega X) \cdot \prod\limits_{i=0}^{m-1} \left(v_i(X) + \beta \cdot s_i(X) + \gamma\right) - Z_P(X) \cdot \prod\limits_{i=0}^{m-1} \left(v_i(X) + \beta \cdot \delta^i \cdot X + \gamma\right) = 0 \\
+\ell_0 \cdot (1 - Z_P(X)) = 0
+</code></p>
+<p>This assumes that the number of columns <code class="language-math math-inline">m</code> is such that the polynomial in the first
+rule above fits within the degree bound of the PLONK configuration. We will see
+<a href="#spanning-a-large-number-of-columns">below</a> how to handle a larger number of columns.</p>
+<blockquote>
+<p>The optimization used to obtain the simple representation of the identity permutation was suggested
+by Vitalik Buterin for PLONK, and is described at the end of section 8 of the PLONK paper. Note that
+the <code class="language-math math-inline">\delta^i</code> are all distinct quadratic non-residues, provided that the number of columns that
+are enabled for equality is no more than <code class="language-math math-inline">T</code>, which always holds in practice for the curves used in
+Halo 2.</p>
+</blockquote>
+<h2 id="zero-knowledge-adjustment">Zero-knowledge adjustment</h2>
+<p>Similarly to the <a href="lookup.md#zero-knowledge-adjustment">lookup argument</a>, we need an
+adjustment to the above argument to account for the last <code class="language-math math-inline">t</code> rows of each column being
+filled with random values.</p>
+<p>We limit the number of usable rows to <code class="language-math math-inline">u = 2^k - t - 1.</code> We add two selectors,
+defined in the same way as for the lookup argument:</p>
+<ul>
+<li><code class="language-math math-inline">q_\mathit{blind}</code> is set to <code class="language-math math-inline">1</code> on the last <code class="language-math math-inline">t</code> rows, and <code class="language-math math-inline">0</code> elsewhere;</li>
+<li><code class="language-math math-inline">q_\mathit{last}</code> is set to <code class="language-math math-inline">1</code> only on row <code class="language-math math-inline">u,</code> and <code class="language-math math-inline">0</code> elsewhere (i.e. it is set on
+the row in between the usable rows and the blinding rows).</li>
+</ul>
+<p>We enable the product rule from above only for the usable rows:</p>
+<p><code class="language-math math-inline">\big(1 - (q_\mathit{last}(X) + q_\mathit{blind}(X))\big) \cdot</code>
+<code class="language-math math-inline">\hspace{1em}\left(Z_P(\omega X) \cdot \prod\limits_{i=0}^{m-1} \left(v_i(X) + \beta \cdot s_i(X) + \gamma\right) - Z_P(X) \cdot \prod\limits_{i=0}^{m-1} \left(v_i(X) + \beta \cdot \delta^i \cdot X + \gamma\right)\right) = 0</code></p>
+<p>The rule that is enabled on row <code class="language-math math-inline">0</code> remains the same:</p>
+<p><code class="language-math math-display">
+\ell_0(X) \cdot (1 - Z_P(X)) = 0
+</code></p>
+<p>Since we can no longer rely on the wraparound to ensure that each product <code class="language-math math-inline">Z_P</code> becomes
+<code class="language-math math-inline">1</code> again at <code class="language-math math-inline">\omega^{2^k},</code> we would instead need to constrain <code class="language-math math-inline">Z(\omega^u) = 1.</code> This
+raises the same problem that was described for the lookup argument. So we allow
+<code class="language-math math-inline">Z(\omega^u)</code> to be either zero or one:</p>
+<p><code class="language-math math-display">
+q_\mathit{last}(X) \cdot (Z_P(X)^2 - Z_P(X)) = 0
+</code></p>
+<p>which gives perfect completeness and zero knowledge.</p>
+<h2 id="spanning-a-large-number-of-columns">Spanning a large number of columns</h2>
+<p>The halo2 implementation does not in practice limit the number of columns for which
+equality constraints can be enabled. Therefore, it must solve the problem that the
+above approach might yield a product rule with a polynomial that exceeds the PLONK
+configuration’s degree bound. The degree bound could be raised, but this would be
+inefficient if no other rules require a larger degree.</p>
+<p>Instead, we split the product across <code class="language-math math-inline">b</code> sets of <code class="language-math math-inline">m</code> columns, using product columns
+<code class="language-math math-inline">Z_{P,0}, \ldots Z_{P,b-1},</code> and we use another rule to copy the product from the end
+of one column set to the beginning of the next.</p>
+<p>That is, for <code class="language-math math-inline">0 \leq a &#x3C; b</code> we have:</p>
+<p><code class="language-math math-inline">\big(1 - (q_\mathit{last}(X) + q_\mathit{blind}(X))\big) \cdot</code>
+<code class="language-math math-inline">\hspace{1em}\left(Z_{P,a}(\omega X) \cdot \!\prod\limits_{i=am}^{(a+1)m-1}\! \left(v_i(X) + \beta \cdot s_i(X) + \gamma\right) - Z_P(X) \cdot \!\prod\limits_{i=am}^{(a+1)m-1}\! \left(v_i(X) + \beta \cdot \delta^i \cdot X + \gamma\right)\right)</code>
+<code class="language-math math-inline">\hspace{2em}= 0</code></p>
+<blockquote>
+<p>For simplicity this is written assuming that the number of columns enabled for
+equality constraints is a multiple of <code class="language-math math-inline">m</code>; if not then the products for the last
+column set will have fewer than <code class="language-math math-inline">m</code> terms.</p>
+</blockquote>
+<p>For the first column set we have:</p>
+<p><code class="language-math math-display">
+\ell_0 \cdot (1 - Z_{P,0}(X)) = 0
+</code></p>
+<p>For each subsequent column set, <code class="language-math math-inline">0 &#x3C; a &#x3C; b,</code> we use the following rule to copy
+<code class="language-math math-inline">Z_{P,a-1}(\omega^u)</code> to the start of the next column set, <code class="language-math math-inline">Z_{P,a}(\omega^0)</code>:</p>
+<p><code class="language-math math-display">
+\ell_0 \cdot \left(Z_{P,a}(X) - Z_{P,a-1}(\omega^u X)\right) = 0
+</code></p>
+<p>For the last column set, we allow <code class="language-math math-inline">Z_{P,b-1}(\omega^u)</code> to be either zero or one:</p>
+<p><code class="language-math math-display">
+q_\mathit{last}(X) \cdot \left(Z_{P,b-1}(X)^2 - Z_{P,b-1}(X)\right) = 0
+</code></p>
+<p>which gives perfect completeness and zero knowledge as before.</p>

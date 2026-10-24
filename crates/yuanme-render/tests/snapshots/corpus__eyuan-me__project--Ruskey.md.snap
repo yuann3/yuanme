@@ -1,0 +1,53 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<h1 id="ruskey">Ruskey 🦀</h1>
+<p>An implementation of the Monkey programming language interpreter in Rust, based on the book “Writing An Interpreter In Go” by Thorsten Ball.</p>
+<h2 id="about">About</h2>
+<p><strong>🚧 Work In Progress 🚧</strong></p>
+<p>This project is currently under active development. It’s a Rust implementation of the Monkey programming language introduced in the book “Writing An Interpreter In Go”. It serves as both a learning exercise for Rust and interpreter design.</p>
+<p>The Monkey language features:</p>
+<ul>
+<li>C-like syntax</li>
+<li>Variable bindings</li>
+<li>Integer and boolean data types</li>
+<li>Functions as first-class citizens</li>
+<li>Closures</li>
+<li>A simple object system</li>
+</ul>
+<h2 id="project-structure">Project Structure</h2>
+<pre><code>ruskey/
+├── src/           # Source code
+│   ├── token.rs   # Token definitions
+│   ├── lexer.rs   # Lexical analyzer
+│   ├── ast.rs     # Abstract Syntax Tree
+│   ├── parser.rs  # Parser
+│   └── ...
+├── tests/         # Test suite
+└── ...
+</code></pre>
+<h2 id="progress">Progress</h2>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> Lexer implementation</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Parser implementation</li>
+<li class="task-list-item"><input type="checkbox" disabled> AST evaluator</li>
+<li class="task-list-item"><input type="checkbox" disabled> Object system</li>
+<li class="task-list-item"><input type="checkbox" disabled> Environment</li>
+<li class="task-list-item"><input type="checkbox" disabled> Function evaluation</li>
+</ul>
+<h2 id="building-and-running">Building and Running</h2>
+<pre><code class="language-bash"># Build the project
+cargo build
+
+# Run tests
+cargo test
+
+# Run the REPL
+cargo run
+</code></pre>
+<h2 id="learning-resources">Learning Resources</h2>
+<p>If you’re interested in learning more about interpreters or following along with this project:</p>
+<ol>
+<li><a href="https://interpreterbook.com/">“Writing An Interpreter In Go”</a> by Thorsten Ball</li>
+</ol>

@@ -1,0 +1,12 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+error[markdown/empty-directive]: a directive needs a name before `{#thm-line}`
+  --> quarto-cli/tests--docs--smoke-all--crossrefs--theorem--theorem-1.md:39:1
+   |
+39 | ::: {#thm-line}
+   | ^^^
+   |
+   = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
+   = note: run `yuanme docs markdown/empty-directive` for more

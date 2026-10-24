@@ -1,0 +1,658 @@
+---
+source: crates/yuanme-render/tests/corpus.rs
+expression: render(&path)
+---
+<pre><code class="language-{.python">%load_ext d2lbook.tab
+tab.interact_select(['mxnet', 'pytorch', 'tensorflow', 'jax'])
+</code></pre>
+<h1 id="linear-regression">Linear Regression</h1>
+<p>:label:<code>sec_linear_regression</code></p>
+<p><em>Regression</em> problems pop up whenever we want to predict a numerical value.
+Common examples include predicting prices (of homes, stocks, etc.),
+predicting the length of stay (for patients in the hospital),
+forecasting demand (for retail sales), among numerous others.
+Not every prediction problem is one of classical regression.
+Later on, we will introduce classification problems,
+where the goal is to predict membership among a set of categories.</p>
+<p>As a running example, suppose that we wish
+to estimate the prices of houses (in dollars)
+based on their area (in square feet) and age (in years).
+To develop a model for predicting house prices,
+we need to get our hands on data,
+including the sales price, area, and age for each home.
+In the terminology of machine learning,
+the dataset is called a <em>training dataset</em> or <em>training set</em>,
+and each row (containing the data corresponding to one sale)
+is called an <em>example</em> (or <em>data point</em>, <em>instance</em>, <em>sample</em>).
+The thing we are trying to predict (price)
+is called a <em>label</em> (or <em>target</em>).
+The variables (age and area)
+upon which the predictions are based
+are called <em>features</em> (or <em>covariates</em>).</p>
+<pre><code class="language-{.python">%%tab mxnet
+%matplotlib inline
+from d2l import mxnet as d2l
+import math
+from mxnet import np
+import time
+</code></pre>
+<pre><code class="language-{.python">%%tab pytorch
+%matplotlib inline
+from d2l import torch as d2l
+import math
+import torch
+import numpy as np
+import time
+</code></pre>
+<pre><code class="language-{.python">%%tab tensorflow
+%matplotlib inline
+from d2l import tensorflow as d2l
+import math
+import tensorflow as tf
+import numpy as np
+import time
+</code></pre>
+<pre><code class="language-{.python">%%tab jax
+%matplotlib inline
+from d2l import jax as d2l
+from jax import numpy as jnp
+import math
+import time
+</code></pre>
+<h2 id="basics">Basics</h2>
+<p><em>Linear regression</em> is both the simplest
+and most popular among the standard tools
+for tackling regression problems.
+Dating back to the dawn of the 19th century :cite:<code>Legendre.1805,Gauss.1809</code>,
+linear regression flows from a few simple assumptions.
+First, we assume that the relationship
+between features <code class="language-math math-inline">\mathbf{x}</code> and target <code class="language-math math-inline">y</code>
+is approximately linear,
+i.e., that the conditional mean <code class="language-math math-inline">E[Y \mid X=\mathbf{x}]</code>
+can be expressed as a weighted sum
+of the features <code class="language-math math-inline">\mathbf{x}</code>.
+This setup allows that the target value
+may still deviate from its expected value
+on account of observation noise.
+Next, we can impose the assumption that any such noise
+is well behaved, following a Gaussian distribution.
+Typically, we will use <code class="language-math math-inline">n</code> to denote
+the number of examples in our dataset.
+We use superscripts to enumerate samples and targets,
+and subscripts to index coordinates.
+More concretely,
+<code class="language-math math-inline">\mathbf{x}^{(i)}</code> denotes the <code class="language-math math-inline">i^{\textrm{th}}</code> sample
+and <code class="language-math math-inline">x_j^{(i)}</code> denotes its <code class="language-math math-inline">j^{\textrm{th}}</code> coordinate.</p>
+<h3 id="model">Model</h3>
+<p>:label:<code>subsec_linear_model</code></p>
+<p>At the heart of every solution is a model
+that describes how features can be transformed
+into an estimate of the target.
+The assumption of linearity means that
+the expected value of the target (price) can be expressed
+as a weighted sum of the features (area and age):</p>
+<p><code class="language-math math-display">\textrm{price} = w_{\textrm{area}} \cdot \textrm{area} + w_{\textrm{age}} \cdot \textrm{age} + b.</code>
+:eqlabel:<code>eq_price-area</code></p>
+<p>Here <code class="language-math math-inline">w_{\textrm{area}}</code> and <code class="language-math math-inline">w_{\textrm{age}}</code>
+are called <em>weights</em>, and <code class="language-math math-inline">b</code> is called a <em>bias</em>
+(or <em>offset</em> or <em>intercept</em>).
+The weights determine the influence of each feature on our prediction.
+The bias determines the value of the estimate when all features are zero.
+Even though we will never see any newly-built homes with precisely zero area,
+we still need the bias because it allows us
+to express all linear functions of our features
+(rather than restricting us to lines that pass through the origin).
+Strictly speaking, :eqref:<code>eq_price-area</code> is an <em>affine transformation</em> of input features, which is characterized by a <em>linear transformation</em> of features via a weighted sum, combined with a <em>translation</em> via the added bias.
+Given a dataset, our goal is to choose
+the weights <code class="language-math math-inline">\mathbf{w}</code> and the bias <code class="language-math math-inline">b</code>
+that, on average, make our model’s predictions
+fit the true prices observed in the data as closely as possible.</p>
+<p>In disciplines where it is common to focus
+on datasets with just a few features,
+explicitly expressing models long-form,
+as in :eqref:<code>eq_price-area</code>, is common.
+In machine learning, we usually work
+with high-dimensional datasets,
+where it is more convenient to employ
+compact linear algebra notation.
+When our inputs consist of <code class="language-math math-inline">d</code> features,
+we can assign each an index (between <code class="language-math math-inline">1</code> and <code class="language-math math-inline">d</code>)
+and express our prediction <code class="language-math math-inline">\hat{y}</code>
+(in general the “hat” symbol denotes an estimate) as</p>
+<p><code class="language-math math-display">\hat{y} = w_1  x_1 + \cdots + w_d  x_d + b.</code></p>
+<p>Collecting all features into a vector <code class="language-math math-inline">\mathbf{x} \in \mathbb{R}^d</code>
+and all weights into a vector <code class="language-math math-inline">\mathbf{w} \in \mathbb{R}^d</code>,
+we can express our model compactly via the dot product
+between <code class="language-math math-inline">\mathbf{w}</code> and <code class="language-math math-inline">\mathbf{x}</code>:</p>
+<p><code class="language-math math-display">\hat{y} = \mathbf{w}^\top \mathbf{x} + b.</code>
+:eqlabel:<code>eq_linreg-y</code></p>
+<p>In :eqref:<code>eq_linreg-y</code>, the vector <code class="language-math math-inline">\mathbf{x}</code>
+corresponds to the features of a single example.
+We will often find it convenient
+to refer to features of our entire dataset of <code class="language-math math-inline">n</code> examples
+via the <em>design matrix</em> <code class="language-math math-inline">\mathbf{X} \in \mathbb{R}^{n \times d}</code>.
+Here, <code class="language-math math-inline">\mathbf{X}</code> contains one row for every example
+and one column for every feature.
+For a collection of features <code class="language-math math-inline">\mathbf{X}</code>,
+the predictions <code class="language-math math-inline">\hat{\mathbf{y}} \in \mathbb{R}^n</code>
+can be expressed via the matrix—vector product:</p>
+<p><code class="language-math math-display">{\hat{\mathbf{y}}} = \mathbf{X} \mathbf{w} + b,</code>
+:eqlabel:<code>eq_linreg-y-vec</code></p>
+<p>where broadcasting (:numref:<code>subsec_broadcasting</code>) is applied during the summation.
+Given features of a training dataset <code class="language-math math-inline">\mathbf{X}</code>
+and corresponding (known) labels <code class="language-math math-inline">\mathbf{y}</code>,
+the goal of linear regression is to find
+the weight vector <code class="language-math math-inline">\mathbf{w}</code> and the bias term <code class="language-math math-inline">b</code>
+such that, given features of a new data example
+sampled from the same distribution as <code class="language-math math-inline">\mathbf{X}</code>,
+the new example’s label will (in expectation)
+be predicted with the smallest error.</p>
+<p>Even if we believe that the best model for
+predicting <code class="language-math math-inline">y</code> given <code class="language-math math-inline">\mathbf{x}</code> is linear,
+we would not expect to find a real-world dataset of <code class="language-math math-inline">n</code> examples where
+<code class="language-math math-inline">y^{(i)}</code> exactly equals <code class="language-math math-inline">\mathbf{w}^\top \mathbf{x}^{(i)}+b</code>
+for all <code class="language-math math-inline">1 \leq i \leq n</code>.
+For example, whatever instruments we use to observe
+the features <code class="language-math math-inline">\mathbf{X}</code> and labels <code class="language-math math-inline">\mathbf{y}</code>, there might be a small amount of measurement error.
+Thus, even when we are confident
+that the underlying relationship is linear,
+we will incorporate a noise term to account for such errors.</p>
+<p>Before we can go about searching for the best <em>parameters</em>
+(or <em>model parameters</em>) <code class="language-math math-inline">\mathbf{w}</code> and <code class="language-math math-inline">b</code>,
+we will need two more things:
+(i) a measure of the quality of some given model;
+and (ii) a procedure for updating the model to improve its quality.</p>
+<h3 id="loss-function">Loss Function</h3>
+<p>:label:<code>subsec_linear-regression-loss-function</code></p>
+<p>Naturally, fitting our model to the data requires
+that we agree on some measure of <em>fitness</em>
+(or, equivalently, of <em>unfitness</em>).
+<em>Loss functions</em> quantify the distance
+between the <em>real</em> and <em>predicted</em> values of the target.
+The loss will usually be a nonnegative number
+where smaller values are better
+and perfect predictions incur a loss of 0.
+For regression problems, the most common loss function is the squared error.
+When our prediction for an example <code class="language-math math-inline">i</code> is <code class="language-math math-inline">\hat{y}^{(i)}</code>
+and the corresponding true label is <code class="language-math math-inline">y^{(i)}</code>,
+the <em>squared error</em> is given by:</p>
+<p><code class="language-math math-display">l^{(i)}(\mathbf{w}, b) = \frac{1}{2} \left(\hat{y}^{(i)} - y^{(i)}\right)^2.</code>
+:eqlabel:<code>eq_mse</code></p>
+<p>The constant <code class="language-math math-inline">\frac{1}{2}</code> makes no real difference
+but proves to be notationally convenient,
+since it cancels out when we take the derivative of the loss.
+Because the training dataset is given to us,
+and thus is out of our control,
+the empirical error is only a function of the model parameters.
+In :numref:<code>fig_fit_linreg</code>, we visualize the fit of a linear regression model
+in a problem with one-dimensional inputs.</p>
+<p><img src="../img/fit-linreg.svg" alt="Fitting a linear regression model to one-dimensional data.">
+:label:<code>fig_fit_linreg</code></p>
+<p>Note that large differences between
+estimates <code class="language-math math-inline">\hat{y}^{(i)}</code> and targets <code class="language-math math-inline">y^{(i)}</code>
+lead to even larger contributions to the loss,
+due to its quadratic form
+(this quadraticity can be a double-edge sword; while it encourages the model to avoid large errors
+it can also lead to excessive sensitivity to anomalous data).
+To measure the quality of a model on the entire dataset of <code class="language-math math-inline">n</code> examples,
+we simply average (or equivalently, sum)
+the losses on the training set:</p>
+<p><code class="language-math math-display">L(\mathbf{w}, b) =\frac{1}{n}\sum_{i=1}^n l^{(i)}(\mathbf{w}, b) =\frac{1}{n} \sum_{i=1}^n \frac{1}{2}\left(\mathbf{w}^\top \mathbf{x}^{(i)} + b - y^{(i)}\right)^2.</code></p>
+<p>When training the model, we seek parameters (<code class="language-math math-inline">\mathbf{w}^*, b^*</code>)
+that minimize the total loss across all training examples:</p>
+<p><code class="language-math math-display">\mathbf{w}^*, b^* = \operatorname*{argmin}_{\mathbf{w}, b}\  L(\mathbf{w}, b).</code></p>
+<h3 id="analytic-solution">Analytic Solution</h3>
+<p>Unlike most of the models that we will cover,
+linear regression presents us with
+a surprisingly easy optimization problem.
+In particular, we can find the optimal parameters
+(as assessed on the training data)
+analytically by applying a simple formula as follows.
+First, we can subsume the bias <code class="language-math math-inline">b</code> into the parameter <code class="language-math math-inline">\mathbf{w}</code>
+by appending a column to the design matrix consisting of all 1s.
+Then our prediction problem is to minimize <code class="language-math math-inline">\|\mathbf{y} - \mathbf{X}\mathbf{w}\|^2</code>.
+As long as the design matrix <code class="language-math math-inline">\mathbf{X}</code> has full rank
+(no feature is linearly dependent on the others),
+then there will be just one critical point on the loss surface
+and it corresponds to the minimum of the loss over the entire domain.
+Taking the derivative of the loss with respect to <code class="language-math math-inline">\mathbf{w}</code>
+and setting it equal to zero yields:</p>
+<p><code class="language-math math-display">\begin{aligned}
+\partial_{\mathbf{w}} \|\mathbf{y} - \mathbf{X}\mathbf{w}\|^2 =
+2 \mathbf{X}^\top (\mathbf{X} \mathbf{w} - \mathbf{y}) = 0
+\textrm{ and hence }
+\mathbf{X}^\top \mathbf{y} = \mathbf{X}^\top \mathbf{X} \mathbf{w}.
+\end{aligned}</code></p>
+<p>Solving for <code class="language-math math-inline">\mathbf{w}</code> provides us with the optimal solution
+for the optimization problem.
+Note that this solution</p>
+<p><code class="language-math math-display">\mathbf{w}^* = (\mathbf X^\top \mathbf X)^{-1}\mathbf X^\top \mathbf{y}</code></p>
+<p>will only be unique
+when the matrix <code class="language-math math-inline">\mathbf X^\top \mathbf X</code> is invertible,
+i.e., when the columns of the design matrix
+are linearly independent :cite:<code>Golub.Van-Loan.1996</code>.</p>
+<p>While simple problems like linear regression
+may admit analytic solutions,
+you should not get used to such good fortune.
+Although analytic solutions allow for nice mathematical analysis,
+the requirement of an analytic solution is so restrictive
+that it would exclude almost all exciting aspects of deep learning.</p>
+<h3 id="minibatch-stochastic-gradient-descent">Minibatch Stochastic Gradient Descent</h3>
+<p>Fortunately, even in cases where we cannot solve the models analytically,
+we can still often train models effectively in practice.
+Moreover, for many tasks, those hard-to-optimize models
+turn out to be so much better that figuring out how to train them
+ends up being well worth the trouble.</p>
+<p>The key technique for optimizing nearly every deep learning model,
+and which we will call upon throughout this book,
+consists of iteratively reducing the error
+by updating the parameters in the direction
+that incrementally lowers the loss function.
+This algorithm is called <em>gradient descent</em>.</p>
+<p>The most naive application of gradient descent
+consists of taking the derivative of the loss function,
+which is an average of the losses computed
+on every single example in the dataset.
+In practice, this can be extremely slow:
+we must pass over the entire dataset before making a single update,
+even if the update steps might be very powerful :cite:<code>Liu.Nocedal.1989</code>.
+Even worse, if there is a lot of redundancy in the training data,
+the benefit of a full update is limited.</p>
+<p>The other extreme is to consider only a single example at a time and to take
+update steps based on one observation at a time.
+The resulting algorithm, <em>stochastic gradient descent</em> (SGD)
+can be an effective strategy :cite:<code>Bottou.2010</code>, even for large datasets.
+Unfortunately, SGD has drawbacks, both computational and statistical.
+One problem arises from the fact that processors are a lot faster
+multiplying and adding numbers than they are
+at moving data from main memory to processor cache.
+It is up to an order of magnitude more efficient to
+perform a matrix—vector multiplication
+than a corresponding number of vector—vector operations.
+This means that it can take a lot longer to process
+one sample at a time compared to a full batch.
+A second problem is that some of the layers,
+such as batch normalization (to be described in :numref:<code>sec_batch_norm</code>),
+only work well when we have access
+to more than one observation at a time.</p>
+<p>The solution to both problems is to pick an intermediate strategy:
+rather than taking a full batch or only a single sample at a time,
+we take a <em>minibatch</em> of observations :cite:<code>Li.Zhang.Chen.ea.2014</code>.
+The specific choice of the size of the said minibatch depends on many factors,
+such as the amount of memory, the number of accelerators,
+the choice of layers, and the total dataset size.
+Despite all that, a number between 32 and 256,
+preferably a multiple of a large power of <code class="language-math math-inline">2</code>, is a good start.
+This leads us to <em>minibatch stochastic gradient descent</em>.</p>
+<p>In its most basic form, in each iteration <code class="language-math math-inline">t</code>,
+we first randomly sample a minibatch <code class="language-math math-inline">\mathcal{B}_t</code>
+consisting of a fixed number <code class="language-math math-inline">|\mathcal{B}|</code> of training examples.
+We then compute the derivative (gradient) of the average loss
+on the minibatch with respect to the model parameters.
+Finally, we multiply the gradient
+by a predetermined small positive value <code class="language-math math-inline">\eta</code>,
+called the <em>learning rate</em>,
+and subtract the resulting term from the current parameter values.
+We can express the update as follows:</p>
+<p><code class="language-math math-display">(\mathbf{w},b) \leftarrow (\mathbf{w},b) - \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \partial_{(\mathbf{w},b)} l^{(i)}(\mathbf{w},b).</code></p>
+<p>In summary, minibatch SGD proceeds as follows:
+(i) initialize the values of the model parameters, typically at random;
+(ii) iteratively sample random minibatches from the data,
+updating the parameters in the direction of the negative gradient.
+For quadratic losses and affine transformations,
+this has a closed-form expansion:</p>
+<p><code class="language-math math-display">\begin{aligned} \mathbf{w} &#x26; \leftarrow \mathbf{w} - \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \partial_{\mathbf{w}} l^{(i)}(\mathbf{w}, b) &#x26;&#x26; = \mathbf{w} - \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \mathbf{x}^{(i)} \left(\mathbf{w}^\top \mathbf{x}^{(i)} + b - y^{(i)}\right)\\ b &#x26;\leftarrow b -  \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \partial_b l^{(i)}(\mathbf{w}, b) &#x26;&#x26;  = b - \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \left(\mathbf{w}^\top \mathbf{x}^{(i)} + b - y^{(i)}\right). \end{aligned}</code>
+:eqlabel:<code>eq_linreg_batch_update</code></p>
+<p>Since we pick a minibatch <code class="language-math math-inline">\mathcal{B}</code>
+we need to normalize by its size <code class="language-math math-inline">|\mathcal{B}|</code>.
+Frequently minibatch size and learning rate are user-defined.
+Such tunable parameters that are not updated
+in the training loop are called <em>hyperparameters</em>.
+They can be tuned automatically by a number of techniques, such as Bayesian optimization
+:cite:<code>Frazier.2018</code>. In the end, the quality of the solution is
+typically assessed on a separate <em>validation dataset</em> (or <em>validation set</em>).</p>
+<p>After training for some predetermined number of iterations
+(or until some other stopping criterion is met),
+we record the estimated model parameters,
+denoted <code class="language-math math-inline">\hat{\mathbf{w}}, \hat{b}</code>.
+Note that even if our function is truly linear and noiseless,
+these parameters will not be the exact minimizers of the loss, nor even deterministic.
+Although the algorithm converges slowly towards the minimizers
+it typically will not find them exactly in a finite number of steps.
+Moreover, the minibatches <code class="language-math math-inline">\mathcal{B}</code>
+used for updating the parameters are chosen at random.
+This breaks determinism.</p>
+<p>Linear regression happens to be a learning problem
+with a global minimum
+(whenever <code class="language-math math-inline">\mathbf{X}</code> is full rank, or equivalently,
+whenever <code class="language-math math-inline">\mathbf{X}^\top \mathbf{X}</code> is invertible).
+However, the loss surfaces for deep networks contain many saddle points and minima.
+Fortunately, we typically do not care about finding
+an exact set of parameters but merely any set of parameters
+that leads to accurate predictions (and thus low loss).
+In practice, deep learning practitioners
+seldom struggle to find parameters
+that minimize the loss <em>on training sets</em>
+:cite:<code>Izmailov.Podoprikhin.Garipov.ea.2018,Frankle.Carbin.2018</code>.
+The more formidable task is to find parameters
+that lead to accurate predictions on previously unseen data,
+a challenge called <em>generalization</em>.
+We return to these topics throughout the book.</p>
+<h3 id="predictions">Predictions</h3>
+<p>Given the model <code class="language-math math-inline">\hat{\mathbf{w}}^\top \mathbf{x} + \hat{b}</code>,
+we can now make <em>predictions</em> for a new example,
+e.g., predicting the sales price of a previously unseen house
+given its area <code class="language-math math-inline">x_1</code> and age <code class="language-math math-inline">x_2</code>.
+Deep learning practitioners have taken to calling the prediction phase <em>inference</em>
+but this is a bit of a misnomer---<em>inference</em> refers broadly
+to any conclusion reached on the basis of evidence,
+including both the values of the parameters
+and the likely label for an unseen instance.
+If anything, in the statistics literature
+<em>inference</em> more often denotes parameter inference
+and this overloading of terminology creates unnecessary confusion
+when deep learning practitioners talk to statisticians.
+In the following we will stick to <em>prediction</em> whenever possible.</p>
+<h2 id="vectorization-for-speed">Vectorization for Speed</h2>
+<p>When training our models, we typically want to process
+whole minibatches of examples simultaneously.
+Doing this efficiently requires that (<strong>we</strong>) (<del>should</del>)
+(<strong>vectorize the calculations and leverage
+fast linear algebra libraries
+rather than writing costly for-loops in Python.</strong>)</p>
+<p>To see why this matters so much,
+let’s (<strong>consider two methods for adding vectors.</strong>)
+To start, we instantiate two 10,000-dimensional vectors
+containing all 1s.
+In the first method, we loop over the vectors with a Python for-loop.
+In the second, we rely on a single call to <code>+</code>.</p>
+<pre><code class="language-{.python">%%tab all
+n = 10000
+a = d2l.ones(n)
+b = d2l.ones(n)
+</code></pre>
+<p>Now we can benchmark the workloads.
+First, [<strong>we add them, one coordinate at a time,
+using a for-loop.</strong>]</p>
+<pre><code class="language-{.python">%%tab mxnet, pytorch
+c = d2l.zeros(n)
+t = time.time()
+for i in range(n):
+    c[i] = a[i] + b[i]
+f'{time.time() - t:.5f} sec'
+</code></pre>
+<pre><code class="language-{.python">%%tab tensorflow
+c = tf.Variable(d2l.zeros(n))
+t = time.time()
+for i in range(n):
+    c[i].assign(a[i] + b[i])
+f'{time.time() - t:.5f} sec'
+</code></pre>
+<pre><code class="language-{.python">%%tab jax
+# JAX arrays are immutable, meaning that once created their contents
+# cannot be changed. For updating individual elements, JAX provides
+# an indexed update syntax that returns an updated copy
+c = d2l.zeros(n)
+t = time.time()
+for i in range(n):
+    c = c.at[i].set(a[i] + b[i])
+f'{time.time() - t:.5f} sec'
+</code></pre>
+<p>(<strong>Alternatively, we rely on the reloaded <code>+</code> operator to compute the elementwise sum.</strong>)</p>
+<pre><code class="language-{.python">%%tab all
+t = time.time()
+d = a + b
+f'{time.time() - t:.5f} sec'
+</code></pre>
+<p>The second method is dramatically faster than the first.
+Vectorizing code often yields order-of-magnitude speedups.
+Moreover, we push more of the mathematics to the library
+so we do not have to write as many calculations ourselves,
+reducing the potential for errors and increasing portability of the code.</p>
+<h2 id="the-normal-distribution-and-squared-loss">The Normal Distribution and Squared Loss</h2>
+<p>:label:<code>subsec_normal_distribution_and_squared_loss</code></p>
+<p>So far we have given a fairly functional motivation
+of the squared loss objective:
+the optimal parameters return the conditional expectation <code class="language-math math-inline">E[Y\mid X]</code>
+whenever the underlying pattern is truly linear,
+and the loss assigns large penalties for outliers.
+We can also provide a more formal motivation
+for the squared loss objective
+by making probabilistic assumptions
+about the distribution of noise.</p>
+<p>Linear regression was invented at the turn of the 19th century.
+While it has long been debated whether Gauss or Legendre
+first thought up the idea,
+it was Gauss who also discovered the normal distribution
+(also called the <em>Gaussian</em>).
+It turns out that the normal distribution
+and linear regression with squared loss
+share a deeper connection than common parentage.</p>
+<p>To begin, recall that a normal distribution
+with mean <code class="language-math math-inline">\mu</code> and variance <code class="language-math math-inline">\sigma^2</code> (standard deviation <code class="language-math math-inline">\sigma</code>)
+is given as</p>
+<p><code class="language-math math-display">p(x) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{1}{2 \sigma^2} (x - \mu)^2\right).</code></p>
+<p>Below [<strong>we define a function to compute the normal distribution</strong>].</p>
+<pre><code class="language-{.python">%%tab all
+def normal(x, mu, sigma):
+    p = 1 / math.sqrt(2 * math.pi * sigma**2)
+    if tab.selected('jax'):
+        return p * jnp.exp(-0.5 * (x - mu)**2 / sigma**2)
+    if tab.selected('pytorch', 'mxnet', 'tensorflow'):
+        return p * np.exp(-0.5 * (x - mu)**2 / sigma**2)
+</code></pre>
+<p>We can now (<strong>visualize the normal distributions</strong>).</p>
+<pre><code class="language-{.python">%%tab mxnet
+# Use NumPy again for visualization
+x = np.arange(-7, 7, 0.01)
+
+# Mean and standard deviation pairs
+params = [(0, 1), (0, 2), (3, 1)]
+d2l.plot(x.asnumpy(), [normal(x, mu, sigma).asnumpy() for mu, sigma in params], xlabel='x',
+         ylabel='p(x)', figsize=(4.5, 2.5),
+         legend=[f'mean {mu}, std {sigma}' for mu, sigma in params])
+</code></pre>
+<pre><code class="language-{.python">
+%%tab pytorch, tensorflow, jax
+if tab.selected('jax'):
+    # Use JAX NumPy for visualization
+    x = jnp.arange(-7, 7, 0.01)
+if tab.selected('pytorch', 'mxnet', 'tensorflow'):
+    # Use NumPy again for visualization
+    x = np.arange(-7, 7, 0.01)
+
+# Mean and standard deviation pairs
+params = [(0, 1), (0, 2), (3, 1)]
+d2l.plot(x, [normal(x, mu, sigma) for mu, sigma in params], xlabel='x',
+         ylabel='p(x)', figsize=(4.5, 2.5),
+         legend=[f'mean {mu}, std {sigma}' for mu, sigma in params])
+</code></pre>
+<p>Note that changing the mean corresponds
+to a shift along the <code class="language-math math-inline">x</code>-axis,
+and increasing the variance
+spreads the distribution out,
+lowering its peak.</p>
+<p>One way to motivate linear regression with squared loss
+is to assume that observations arise from noisy measurements,
+where the noise <code class="language-math math-inline">\epsilon</code> follows the normal distribution
+<code class="language-math math-inline">\mathcal{N}(0, \sigma^2)</code>:</p>
+<p><code class="language-math math-display">y = \mathbf{w}^\top \mathbf{x} + b + \epsilon \textrm{ where } \epsilon \sim \mathcal{N}(0, \sigma^2).</code></p>
+<p>Thus, we can now write out the <em>likelihood</em>
+of seeing a particular <code class="language-math math-inline">y</code> for a given <code class="language-math math-inline">\mathbf{x}</code> via</p>
+<p><code class="language-math math-display">P(y \mid \mathbf{x}) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{1}{2 \sigma^2} (y - \mathbf{w}^\top \mathbf{x} - b)^2\right).</code></p>
+<p>As such, the likelihood factorizes.
+According to <em>the principle of maximum likelihood</em>,
+the best values of parameters <code class="language-math math-inline">\mathbf{w}</code> and <code class="language-math math-inline">b</code> are those
+that maximize the <em>likelihood</em> of the entire dataset:</p>
+<p><code class="language-math math-display">P(\mathbf y \mid \mathbf X) = \prod_{i=1}^{n} p(y^{(i)} \mid \mathbf{x}^{(i)}).</code></p>
+<p>The equality follows since all pairs <code class="language-math math-inline">(\mathbf{x}^{(i)}, y^{(i)})</code>
+were drawn independently of each other.
+Estimators chosen according to the principle of maximum likelihood
+are called <em>maximum likelihood estimators</em>.
+While, maximizing the product of many exponential functions,
+might look difficult,
+we can simplify things significantly, without changing the objective,
+by maximizing the logarithm of the likelihood instead.
+For historical reasons, optimizations are more often expressed
+as minimization rather than maximization.
+So, without changing anything,
+we can <em>minimize</em> the <em>negative log-likelihood</em>,
+which we can express as follows:</p>
+<p><code class="language-math math-display">-\log P(\mathbf y \mid \mathbf X) = \sum_{i=1}^n \frac{1}{2} \log(2 \pi \sigma^2) + \frac{1}{2 \sigma^2} \left(y^{(i)} - \mathbf{w}^\top \mathbf{x}^{(i)} - b\right)^2.</code></p>
+<p>If we assume that <code class="language-math math-inline">\sigma</code> is fixed,
+we can ignore the first term,
+because it does not depend on <code class="language-math math-inline">\mathbf{w}</code> or <code class="language-math math-inline">b</code>.
+The second term is identical
+to the squared error loss introduced earlier,
+except for the multiplicative constant <code class="language-math math-inline">\frac{1}{\sigma^2}</code>.
+Fortunately, the solution does not depend on <code class="language-math math-inline">\sigma</code> either.
+It follows that minimizing the mean squared error
+is equivalent to the maximum likelihood estimation
+of a linear model under the assumption of additive Gaussian noise.</p>
+<h2 id="linear-regression-as-a-neural-network">Linear Regression as a Neural Network</h2>
+<p>While linear models are not sufficiently rich
+to express the many complicated networks
+that we will introduce in this book,
+(artificial) neural networks are rich enough
+to subsume linear models as networks
+in which every feature is represented by an input neuron,
+all of which are connected directly to the output.</p>
+<p>:numref:<code>fig_single_neuron</code> depicts
+linear regression as a neural network.
+The diagram highlights the connectivity pattern,
+such as how each input is connected to the output,
+but not the specific values taken by the weights or biases.</p>
+<p><img src="../img/singleneuron.svg" alt="Linear regression is a single-layer neural network.">
+:label:<code>fig_single_neuron</code></p>
+<p>The inputs are <code class="language-math math-inline">x_1, \ldots, x_d</code>.
+We refer to <code class="language-math math-inline">d</code> as the <em>number of inputs</em>
+or the <em>feature dimensionality</em> in the input layer.
+The output of the network is <code class="language-math math-inline">o_1</code>.
+Because we are just trying to predict
+a single numerical value,
+we have only one output neuron.
+Note that the input values are all <em>given</em>.
+There is just a single <em>computed</em> neuron.
+In summary, we can think of linear regression
+as a single-layer fully connected neural network.
+We will encounter networks
+with far more layers
+in later chapters.</p>
+<h3 id="biology">Biology</h3>
+<p>Because linear regression predates computational neuroscience,
+it might seem anachronistic to describe
+linear regression in terms of neural networks.
+Nonetheless, they were a natural place to start
+when the cyberneticists and neurophysiologists
+Warren McCulloch and Walter Pitts began to develop
+models of artificial neurons.
+Consider the cartoonish picture
+of a biological neuron in :numref:<code>fig_Neuron</code>,
+consisting of <em>dendrites</em> (input terminals),
+the <em>nucleus</em> (CPU), the <em>axon</em> (output wire),
+and the <em>axon terminals</em> (output terminals),
+enabling connections to other neurons via <em>synapses</em>.</p>
+<p><img src="../img/neuron.svg" alt="The real neuron (source: &#x22;Anatomy and Physiology&#x22; by the US National Cancer Institute&#x27;s Surveillance, Epidemiology and End Results (SEER) Program).">
+:label:<code>fig_Neuron</code></p>
+<p>Information <code class="language-math math-inline">x_i</code> arriving from other neurons
+(or environmental sensors) is received in the dendrites.
+In particular, that information is weighted
+by <em>synaptic weights</em> <code class="language-math math-inline">w_i</code>,
+determining the effect of the inputs,
+e.g., activation or inhibition via the product <code class="language-math math-inline">x_i w_i</code>.
+The weighted inputs arriving from multiple sources
+are aggregated in the nucleus
+as a weighted sum <code class="language-math math-inline">y = \sum_i x_i w_i + b</code>,
+possibly subject to some nonlinear postprocessing via a function <code class="language-math math-inline">\sigma(y)</code>.
+This information is then sent via the axon to the axon terminals,
+where it reaches its destination
+(e.g., an actuator such as a muscle)
+or it is fed into another neuron via its dendrites.</p>
+<p>Certainly, the high-level idea that many such units
+could be combined, provided they have the correct connectivity and learning algorithm,
+to produce far more interesting and complex behavior
+than any one neuron alone could express
+arises from our study of real biological neural systems.
+At the same time, most research in deep learning today
+draws inspiration from a much wider source.
+We invoke :citet:<code>Russell.Norvig.2016</code>
+who pointed out that although airplanes might have been <em>inspired</em> by birds,
+ornithology has not been the primary driver
+of aeronautics innovation for some centuries.
+Likewise, inspiration in deep learning these days
+comes in equal or greater measure
+from mathematics, linguistics, psychology,
+statistics, computer science, and many other fields.</p>
+<h2 id="summary">Summary</h2>
+<p>In this section, we introduced
+traditional linear regression,
+where the parameters of a linear function
+are chosen to minimize squared loss on the training set.
+We also motivated this choice of objective
+both via some practical considerations
+and through an interpretation
+of linear regression as maximimum likelihood estimation
+under an assumption of linearity and Gaussian noise.
+After discussing both computational considerations
+and connections to statistics,
+we showed how such linear models could be expressed
+as simple neural networks where the inputs
+are directly wired to the output(s).
+While we will soon move past linear models altogether,
+they are sufficient to introduce most of the components
+that all of our models require:
+parametric forms, differentiable objectives,
+optimization via minibatch stochastic gradient descent,
+and ultimately, evaluation on previously unseen data.</p>
+<h2 id="exercises">Exercises</h2>
+<ol>
+<li>Assume that we have some data <code class="language-math math-inline">x_1, \ldots, x_n \in \mathbb{R}</code>. Our goal is to find a constant <code class="language-math math-inline">b</code> such that <code class="language-math math-inline">\sum_i (x_i - b)^2</code> is minimized.
+<ol>
+<li>Find an analytic solution for the optimal value of <code class="language-math math-inline">b</code>.</li>
+<li>How does this problem and its solution relate to the normal distribution?</li>
+<li>What if we change the loss from <code class="language-math math-inline">\sum_i (x_i - b)^2</code> to <code class="language-math math-inline">\sum_i |x_i-b|</code>? Can you find the optimal solution for <code class="language-math math-inline">b</code>?</li>
+</ol>
+</li>
+<li>Prove that the affine functions that can be expressed by <code class="language-math math-inline">\mathbf{x}^\top \mathbf{w} + b</code> are equivalent to linear functions on <code class="language-math math-inline">(\mathbf{x}, 1)</code>.</li>
+<li>Assume that you want to find quadratic functions of <code class="language-math math-inline">\mathbf{x}</code>, i.e., <code class="language-math math-inline">f(\mathbf{x}) = b + \sum_i w_i x_i + \sum_{j \leq i} w_{ij} x_{i} x_{j}</code>. How would you formulate this in a deep network?</li>
+<li>Recall that one of the conditions for the linear regression problem to be solvable was that the design matrix <code class="language-math math-inline">\mathbf{X}^\top \mathbf{X}</code> has full rank.
+<ol>
+<li>What happens if this is not the case?</li>
+<li>How could you fix it? What happens if you add a small amount of coordinate-wise independent Gaussian noise to all entries of <code class="language-math math-inline">\mathbf{X}</code>?</li>
+<li>What is the expected value of the design matrix <code class="language-math math-inline">\mathbf{X}^\top \mathbf{X}</code> in this case?</li>
+<li>What happens with stochastic gradient descent when <code class="language-math math-inline">\mathbf{X}^\top \mathbf{X}</code> does not have full rank?</li>
+</ol>
+</li>
+<li>Assume that the noise model governing the additive noise <code class="language-math math-inline">\epsilon</code> is the exponential distribution. That is, <code class="language-math math-inline">p(\epsilon) = \frac{1}{2} \exp(-|\epsilon|)</code>.
+<ol>
+<li>Write out the negative log-likelihood of the data under the model <code class="language-math math-inline">-\log P(\mathbf y \mid \mathbf X)</code>.</li>
+<li>Can you find a closed form solution?</li>
+<li>Suggest a minibatch stochastic gradient descent algorithm to solve this problem. What could possibly go wrong (hint: what happens near the stationary point as we keep on updating the parameters)? Can you fix this?</li>
+</ol>
+</li>
+<li>Assume that we want to design a neural network with two layers by composing two linear layers. That is, the output of the first layer becomes the input of the second layer. Why would such a naive composition not work?</li>
+<li>What happens if you want to use regression for realistic price estimation of houses or stock prices?
+<ol>
+<li>Show that the additive Gaussian noise assumption is not appropriate. Hint: can we have negative prices? What about fluctuations?</li>
+<li>Why would regression to the logarithm of the price be much better, i.e., <code class="language-math math-inline">y = \log \textrm{price}</code>?</li>
+<li>What do you need to worry about when dealing with pennystock, i.e., stock with very low prices? Hint: can you trade at all possible prices? Why is this a bigger problem for cheap stock? For more information review the celebrated Black—Scholes model for option pricing :cite:<code>Black.Scholes.1973</code>.</li>
+</ol>
+</li>
+<li>Suppose we want to use regression to estimate the <em>number</em> of apples sold in a grocery store.
+<ol>
+<li>What are the problems with a Gaussian additive noise model? Hint: you are selling apples, not oil.</li>
+<li>The <a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> captures distributions over counts. It is given by <code class="language-math math-inline">p(k \mid \lambda) = \lambda^k e^{-\lambda}/k!</code>. Here <code class="language-math math-inline">\lambda</code> is the rate function and <code class="language-math math-inline">k</code> is the number of events you see. Prove that <code class="language-math math-inline">\lambda</code> is the expected value of counts <code class="language-math math-inline">k</code>.</li>
+<li>Design a loss function associated with the Poisson distribution.</li>
+<li>Design a loss function for estimating <code class="language-math math-inline">\log \lambda</code> instead.</li>
+</ol>
+</li>
+</ol>
+<p>:begin_tab:<code>mxnet</code>
+<a href="https://discuss.d2l.ai/t/40">Discussions</a>
+:end_tab:</p>
+<p>:begin_tab:<code>pytorch</code>
+<a href="https://discuss.d2l.ai/t/258">Discussions</a>
+:end_tab:</p>
+<p>:begin_tab:<code>tensorflow</code>
+<a href="https://discuss.d2l.ai/t/259">Discussions</a>
+:end_tab:</p>

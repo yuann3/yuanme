@@ -1,0 +1,62 @@
+<p>a ray tracer with both CPU and GPU acceleration capabilities implemented in rust, just a fun project, do it for learning purpose</p>
+<p>with</p>
+<ul>
+<li>Path tracing with Monte Carlo sampling</li>
+<li>Materials: Lambertian diffuse, metal, dielectric (glass)</li>
+<li>Camera with depth of field and adjustable field of view</li>
+<li>Cross-platform GPU acceleration using wgpu</li>
+<li>PPM image output format</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>just your shitty laptop, that have GPU with Vulkan, Metal, or DirectX 12 support (if you dont have then use your poor cpu)</li>
+</ul>
+<h2 id="building">Building</h2>
+<h3 id="cpu-only-version">CPU-only version</h3>
+<pre><code class="language-bash">cargo build --release
+</code></pre>
+<h3 id="with-gpu-acceleration">With GPU acceleration</h3>
+<pre><code class="language-bash">cargo build --release --features gpu
+</code></pre>
+<h2 id="running">Running</h2>
+<h3 id="basic-usage">Basic usage</h3>
+<pre><code class="language-bash">cargo run --release
+</code></pre>
+<h3 id="with-gpu-acceleration-1">With GPU acceleration</h3>
+<pre><code class="language-bash">cargo run --release --features gpu -- --gpu
+</code></pre>
+<h3 id="saving-to-a-file">Saving to a file</h3>
+<pre><code class="language-bash">cargo run --release -- -o output.ppm
+</code></pre>
+<h3 id="using-gpu-acceleration-and-saving-to-a-file">Using GPU acceleration and saving to a file</h3>
+<pre><code class="language-bash">cargo run --release --features gpu -- --gpu -o output.ppm
+</code></pre>
+<h2 id="command-line-options">Command Line Options</h2>
+<ul>
+<li><code>--gpu</code> or <code>-g</code>: Enable GPU acceleration (requires compilation with <code>--features gpu</code>)</li>
+<li><code>-o</code> or <code>--output</code> followed by a filename: Save the render to a PPM file</li>
+</ul>
+<h2 id="performance">Performance</h2>
+<p>ofc GPU-accelerated version can be significantly faster than the CPU version, especially for high sample counts and complex scenes. Performance will vary based on your specific GPU.</p>
+<h2 id="configuration">Configuration</h2>
+<p>You might want to adjust rendering parameters in <code>main.rs</code> for faster preview:</p>
+<pre><code class="language-rust">// Camera setup
+let mut cam = Camera::new();
+cam.aspect_ratio = 16.0 / 9.0;
+cam.image_width = 1200;
+cam.samples_per_pixel = 500; // Lower this to 100-200 for faster rendering
+cam.max_depth = 50;
+cam.vfov = 20.0;
+cam.lookfrom = Point3::new(13.0, 2.0, 3.0);
+cam.lookat = Point3::new(0.0, 0.0, 0.0);
+cam.vup = Vec3::new(0.0, 1.0, 0.0);
+cam.defocus_angle = 0.6;
+cam.focus_dist = 10.0;
+cam.use_gpu = use_gpu; // This is set from command-line args
+</code></pre>
+<h2 id="implementation-details">Implementation Details</h2>
+<ul>
+<li>CPU rendering is implemented in pure Rust</li>
+<li>GPU rendering is implemented using wgpu for cross-platform compatibility (Metal on macOS, Vulkan on Linux, DirectX 12 on Windows)</li>
+<li>The ray tracing algorithm is implemented as a compute shader in WGSL</li>
+</ul>

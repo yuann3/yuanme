@@ -1,0 +1,494 @@
+//! A Document's body as HTML (#47). The shape is what the Reference site's
+//! remark pipeline emits (mdast-util-to-hast, then hast-util-to-html), so a
+//! Post renders byte for byte as it does on Astro; Org emits the same HTML
+//! wherever it has the same construct (#16).
+
+use std::collections::BTreeMap;
+
+use yuanme_content::document::{Align, Document, Kind, Links, NodeId};
+
+/// `links` says where resolved links go; any other link keeps the URL it
+/// was written with.
+pub fn body(doc: &Document, links: &Links) -> String {
+    let mut w = Writer {
+        doc,
+        links,
+        out: String::new(),
+        footnotes: Footnotes::default(),
+    };
+    let root = &doc.node(Document::ROOT).children;
+    let blocks: Vec<NodeId> = root
+        .iter()
+        .copied()
+        .filter(|&c| !w.is_definition(c))
+        .collect();
+    w.join(&blocks);
+    w.footer(root);
+    w.out
+}
+
+/// Footnotes in the order they are first referenced, as GFM numbers them.
+#[derive(Default)]
+struct Footnotes {
+    order: Vec<String>,
+    /// How often each has been referenced so far.
+    counts: BTreeMap<String, usize>,
+}
+
+struct Writer<'d> {
+    doc: &'d Document,
+    links: &'d Links,
+    out: String,
+    footnotes: Footnotes,
+}
+
+impl Writer<'_> {
+    fn is_definition(&self, id: NodeId) -> bool {
+        matches!(self.doc.node(id).kind, Kind::FootnoteDefinition { .. })
+    }
+
+    /// Siblings separated by a newline.
+    fn join(&mut self, ids: &[NodeId]) {
+        for (i, &id) in ids.iter().enumerate() {
+            if i > 0 {
+                self.out.push('\n');
+            }
+            self.node(id);
+        }
+    }
+
+    /// Block children inside a container: each on its own line.
+    fn wrap(&mut self, ids: &[NodeId]) {
+        self.out.push('\n');
+        self.join(ids);
+        if !ids.is_empty() {
+            self.out.push('\n');
+        }
+    }
+
+    fn inline(&mut self, id: NodeId) {
+        for &c in &self.doc.node(id).children {
+            self.node(c);
+        }
+    }
+
+    fn element(&mut self, tag: &str, id: NodeId) {
+        self.out.push_str(&format!("<{tag}>"));
+        self.inline(id);
+        self.out.push_str(&format!("</{tag}>"));
+    }
+
+    fn block(&mut self, open: &str, tag: &str, id: NodeId) {
+        self.out.push_str(open);
+        let children = self.doc.node(id).children.clone();
+        self.wrap(&children);
+        self.out.push_str(&format!("</{tag}>"));
+    }
+
+    fn node(&mut self, id: NodeId) {
+        let doc = self.doc;
+        let node = doc.node(id);
+        match &node.kind {
+            Kind::Root => unreachable!("the root is not a child"),
+            Kind::Paragraph => self.element("p", id),
+            Kind::Heading {
+                level,
+                id: anchor,
+                attrs,
+            } => {
+                self.out
+                    .push_str(&format!("<h{level} id=\"{}\"", attribute(anchor)));
+                for (name, value) in attrs {
+                    self.out
+                        .push_str(&format!(" {name}=\"{}\"", attribute(value)));
+                }
+                self.out.push('>');
+                self.inline(id);
+                self.out.push_str(&format!("</h{level}>"));
+            }
+            Kind::ThematicBreak => self.out.push_str("<hr>"),
+            Kind::BlockQuote => self.block("<blockquote>", "blockquote", id),
+            Kind::List {
+                ordered,
+                start,
+                tight,
+            } => self.list(id, *ordered, *start, !tight),
+            Kind::Item { .. } => unreachable!("written by its list"),
+            Kind::CodeBlock { lang, text: code } => {
+                self.out.push_str("<pre><code");
+                if let Some(lang) = lang {
+                    self.out
+                        .push_str(&format!(" class=\"language-{}\"", attribute(lang)));
+                }
+                self.out.push('>');
+                if !code.is_empty() {
+                    self.out.push_str(&text(code));
+                    self.out.push('\n');
+                }
+                self.out.push_str("</code></pre>");
+            }
+            Kind::HtmlBlock(raw) | Kind::HtmlInline(raw) => self.out.push_str(raw),
+            Kind::Table { align } => self.table(id, align),
+            Kind::TableRow { .. } | Kind::TableCell => unreachable!("written by its table"),
+            Kind::FootnoteDefinition { .. } => unreachable!("written in the footer"),
+            Kind::Directive { name } => {
+                let open = format!("<div class=\"{}\">", attribute(name));
+                self.block(&open, "div", id);
+            }
+            Kind::Text(s) => self.out.push_str(&text(s)),
+            Kind::Code(s) => self.out.push_str(&format!("<code>{}</code>", text(s))),
+            Kind::Emphasis => self.element("em", id),
+            Kind::Strong => self.element("strong", id),
+            Kind::Strikethrough => self.element("del", id),
+            Kind::Link { url, title } => {
+                let href = normalize_uri(self.links.get(&id).unwrap_or(url));
+                self.out
+                    .push_str(&format!("<a href=\"{}\"", attribute(&href)));
+                if let Some(title) = title {
+                    self.out
+                        .push_str(&format!(" title=\"{}\"", attribute(title)));
+                }
+                self.out.push('>');
+                self.inline(id);
+                self.out.push_str("</a>");
+            }
+            Kind::Image { url, title } => {
+                let alt = alt(doc, id);
+                self.out.push_str(&format!(
+                    "<img src=\"{}\" alt=\"{}\"",
+                    attribute(&normalize_uri(url)),
+                    attribute(&alt)
+                ));
+                if let Some(title) = title {
+                    self.out
+                        .push_str(&format!(" title=\"{}\"", attribute(title)));
+                }
+                self.out.push('>');
+            }
+            Kind::LineBreak => self.out.push_str("<br>\n"),
+            Kind::FootnoteReference { label } => self.reference(label),
+            // Until math renders (#50), its TeX shows as code.
+            Kind::Math {
+                display: false,
+                tex,
+            } => {
+                self.out.push_str(&format!(
+                    "<code class=\"language-math math-inline\">{}</code>",
+                    text(tex)
+                ));
+            }
+            Kind::Math { display: true, tex } => {
+                self.out.push_str(&format!(
+                    "<code class=\"language-math math-display\">{}</code>",
+                    text(tex)
+                ));
+            }
+        }
+    }
+
+    /// mdast-util-to-hast's list and listItem: a tight item's paragraphs
+    /// lose their `<p>`, and a task item starts with a checkbox.
+    fn list(&mut self, id: NodeId, ordered: bool, start: u64, loose: bool) {
+        let doc = self.doc;
+        let items = &doc.node(id).children;
+        let tasks = items
+            .iter()
+            .any(|&i| matches!(doc.node(i).kind, Kind::Item { checked: Some(_) }));
+        let tag = if ordered { "ol" } else { "ul" };
+        self.out.push('<');
+        self.out.push_str(tag);
+        if ordered && start != 1 {
+            self.out.push_str(&format!(" start=\"{start}\""));
+        }
+        if tasks {
+            self.out.push_str(" class=\"contains-task-list\"");
+        }
+        self.out.push_str(">\n");
+        for (n, &item) in items.iter().enumerate() {
+            if n > 0 {
+                self.out.push('\n');
+            }
+            self.item(item, loose);
+        }
+        if !items.is_empty() {
+            self.out.push('\n');
+        }
+        self.out.push_str(&format!("</{tag}>"));
+    }
+
+    fn item(&mut self, id: NodeId, loose: bool) {
+        let doc = self.doc;
+        let node = doc.node(id);
+        let Kind::Item { checked } = node.kind else {
+            unreachable!("a list holds items")
+        };
+        let is_p = |c: NodeId| matches!(doc.node(c).kind, Kind::Paragraph);
+        let children = &node.children;
+        match checked {
+            Some(_) => self.out.push_str("<li class=\"task-list-item\">"),
+            None => self.out.push_str("<li>"),
+        }
+        // The checkbox goes at the start of the first paragraph, which is
+        // made if the item doesn't start with one.
+        let checkbox = checked.map(|on| {
+            if on {
+                "<input type=\"checkbox\" checked disabled>"
+            } else {
+                "<input type=\"checkbox\" disabled>"
+            }
+        });
+        let head_is_p = children.first().is_some_and(|&c| is_p(c));
+        let mut parts: Vec<Option<NodeId>> = children.iter().copied().map(Some).collect();
+        if checkbox.is_some() && !head_is_p {
+            parts.insert(0, None);
+        }
+        let count = parts.len();
+        for (i, part) in parts.iter().enumerate() {
+            let p = part.is_none_or(is_p);
+            if loose || i != 0 || !p {
+                self.out.push('\n');
+            }
+            if loose && p {
+                self.out.push_str("<p>");
+            }
+            if i == 0
+                && let Some(checkbox) = checkbox
+            {
+                self.out.push_str(checkbox);
+                if part.is_some_and(|c| !doc.node(c).children.is_empty()) {
+                    self.out.push(' ');
+                }
+            }
+            match part {
+                Some(c) if p => self.inline(*c),
+                Some(c) => self.node(*c),
+                None => {}
+            }
+            if loose && p {
+                self.out.push_str("</p>");
+            }
+            if i + 1 == count && (loose || !p) {
+                self.out.push('\n');
+            }
+        }
+        self.out.push_str("</li>");
+    }
+
+    /// mdast-util-to-hast's table: the first row is the head, every row has
+    /// a cell per column, and the body is left out when it has no rows.
+    fn table(&mut self, id: NodeId, align: &[Align]) {
+        let rows = self.doc.node(id).children.clone();
+        self.out.push_str("<table>\n");
+        let (head, body) = rows
+            .split_first()
+            .map_or((None, &[][..]), |(h, b)| (Some(*h), b));
+        if let Some(head) = head {
+            self.out.push_str("<thead>\n");
+            self.row(head, "th", align);
+            self.out.push_str("\n</thead>");
+        }
+        if !body.is_empty() {
+            self.out.push_str("\n<tbody>\n");
+            for (i, &row) in body.iter().enumerate() {
+                if i > 0 {
+                    self.out.push('\n');
+                }
+                self.row(row, "td", align);
+            }
+            self.out.push_str("\n</tbody>");
+        }
+        self.out.push_str("\n</table>");
+    }
+
+    fn row(&mut self, id: NodeId, tag: &str, align: &[Align]) {
+        let cells = self.doc.node(id).children.clone();
+        self.out.push_str("<tr>\n");
+        for (i, a) in align.iter().enumerate() {
+            if i > 0 {
+                self.out.push('\n');
+            }
+            let align = match a {
+                Align::None => "",
+                Align::Left => " align=\"left\"",
+                Align::Center => " align=\"center\"",
+                Align::Right => " align=\"right\"",
+            };
+            self.out.push_str(&format!("<{tag}{align}>"));
+            if let Some(&cell) = cells.get(i) {
+                self.inline(cell);
+            }
+            self.out.push_str(&format!("</{tag}>"));
+        }
+        self.out.push_str("\n</tr>");
+    }
+
+    fn reference(&mut self, label: &str) {
+        let key = identifier(label);
+        let number = match self.footnotes.order.iter().position(|k| *k == key) {
+            Some(i) => i + 1,
+            None => {
+                self.footnotes.order.push(key.clone());
+                self.footnotes.order.len()
+            }
+        };
+        let count = self.footnotes.counts.entry(key.clone()).or_default();
+        *count += 1;
+        let safe = normalize_uri(&key.to_lowercase());
+        let again = if *count > 1 {
+            format!("-{count}")
+        } else {
+            String::new()
+        };
+        self.out.push_str(&format!(
+            "<sup><a href=\"#user-content-fn-{safe}\" id=\"user-content-fnref-{safe}{again}\" data-footnote-ref=\"\" aria-describedby=\"footnote-label\">{number}</a></sup>"
+        ));
+    }
+
+    /// mdast-util-to-hast's footer: the referenced definitions, in the
+    /// order of their first reference, each with links back.
+    fn footer(&mut self, root: &[NodeId]) {
+        let doc = self.doc;
+        let definitions: BTreeMap<String, NodeId> = root
+            .iter()
+            .filter_map(|&id| match &doc.node(id).kind {
+                Kind::FootnoteDefinition { label } => Some((identifier(label), id)),
+                _ => None,
+            })
+            .collect();
+        let mut items = Vec::new();
+        // A definition can reference another one, which joins the order.
+        let mut n = 0;
+        while n < self.footnotes.order.len() {
+            let key = self.footnotes.order[n].clone();
+            n += 1;
+            let Some(&def) = definitions.get(&key) else {
+                continue;
+            };
+            let mut item = std::mem::take(&mut self.out);
+            let safe = normalize_uri(&key.to_lowercase());
+            let backrefs: Vec<String> = (1..=self.footnotes.counts[&key])
+                .map(|r| {
+                    let again = if r > 1 { format!("-{r}") } else { String::new() };
+                    let sup = if r > 1 { format!("<sup>{r}</sup>") } else { String::new() };
+                    format!(
+                        "<a href=\"#user-content-fnref-{safe}{again}\" data-footnote-backref=\"\" aria-label=\"Back to reference {n}{again}\" class=\"data-footnote-backref\">↩{sup}</a>"
+                    )
+                })
+                .collect();
+            let backrefs = backrefs.join(" ");
+            let children = doc.node(def).children.clone();
+            self.out
+                .push_str(&format!("<li id=\"user-content-fn-{safe}\">\n"));
+            let last_is_p = children
+                .last()
+                .is_some_and(|&c| matches!(doc.node(c).kind, Kind::Paragraph));
+            for (i, &c) in children.iter().enumerate() {
+                if i > 0 {
+                    self.out.push('\n');
+                }
+                if i + 1 == children.len() && last_is_p {
+                    self.out.push_str("<p>");
+                    self.inline(c);
+                    self.out.push(' ');
+                    self.out.push_str(&backrefs);
+                    self.out.push_str("</p>");
+                } else {
+                    self.node(c);
+                }
+            }
+            if !last_is_p {
+                if !children.is_empty() {
+                    self.out.push('\n');
+                }
+                self.out.push_str(&backrefs);
+            }
+            self.out.push_str("\n</li>");
+            std::mem::swap(&mut self.out, &mut item);
+            items.push(item);
+        }
+        if items.is_empty() {
+            return;
+        }
+        self.out.push_str("\n<section data-footnotes=\"\" class=\"footnotes\"><h2 class=\"sr-only\" id=\"footnote-label\">Footnotes</h2>\n<ol>\n");
+        self.out.push_str(&items.join("\n"));
+        self.out.push_str("\n</ol>\n</section>");
+    }
+}
+
+/// An image's alt text: its children as plain text.
+fn alt(doc: &Document, id: NodeId) -> String {
+    let mut out = String::new();
+    for c in doc.descendants(id) {
+        match &doc.node(c).kind {
+            Kind::Text(s) | Kind::Code(s) => out.push_str(s),
+            Kind::Math { tex, .. } => out.push_str(tex),
+            _ => {}
+        }
+    }
+    out
+}
+
+/// mdast's footnote identifier: whitespace collapsed, case folded.
+fn identifier(label: &str) -> String {
+    label
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
+        .to_uppercase()
+}
+
+/// hast-util-to-html's text: `<` and `&` as hexadecimal references.
+fn text(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '<' => out.push_str("&#x3C;"),
+            '&' => out.push_str("&#x26;"),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+/// hast-util-to-html's double-quoted attribute value, safe for HTML and
+/// XML alike: `\0`, `"`, `&`, `'` and `` ` `` as hexadecimal references.
+fn attribute(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '\0' | '"' | '&' | '\'' | '`' => out.push_str(&format!("&#x{:X};", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+/// micromark's `normalizeUri`: percent-encodes what a URL can't hold and
+/// keeps escapes already written.
+pub fn normalize_uri(url: &str) -> String {
+    let bytes = url.as_bytes();
+    let mut out = String::with_capacity(url.len());
+    let mut i = 0;
+    for c in url.chars() {
+        let at = i;
+        i += c.len_utf8();
+        let kept = match c {
+            '%' => {
+                bytes.get(at + 1).is_some_and(u8::is_ascii_alphanumeric)
+                    && bytes.get(at + 2).is_some_and(u8::is_ascii_alphanumeric)
+            }
+            // `[!#$&-;=?-Z_a-z~]`
+            '!' | '#' | '$' | '=' | '_' | '~' | '&'..=';' | '?'..='Z' | 'a'..='z' => true,
+            _ => false,
+        };
+        if kept {
+            out.push(c);
+        } else {
+            for b in c.to_string().bytes() {
+                out.push_str(&format!("%{b:02X}"));
+            }
+        }
+    }
+    out
+}
