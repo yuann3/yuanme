@@ -38,8 +38,6 @@ pub struct Entry {
     pub fields: BTreeMap<String, Value>,
     /// Terms by Taxonomy, as the Entry spells them, and where.
     pub terms: BTreeMap<String, Vec<(String, Range<usize>)>>,
-    /// The body's bytes in the file.
-    pub body: Range<usize>,
     pub document: Arc<Document>,
     pub word_count: u64,
     /// Where the Slug came from, for a duplicate-Slug Diagnostic.
@@ -202,7 +200,7 @@ pub(crate) fn read(
     let Head {
         fields: given,
         at: head,
-        body,
+        ..
     } = head;
     let find = |key: &str| {
         given
@@ -377,7 +375,6 @@ pub(crate) fn read(
         unlisted: flag(unlisted),
         fields: declared.expect("checked"),
         terms,
-        body,
         word_count: document.word_count(),
         document: Arc::new(document),
         slug_at,
