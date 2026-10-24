@@ -5,7 +5,7 @@
 //! saphyr-parser does the syntax; this applies the 1.2 core schema, so `no`,
 //! `on` and `yes` stay strings, and rejects duplicate keys.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::ops::Range;
 
 use saphyr_parser::{Event, Parser, ScalarStyle};
@@ -67,8 +67,21 @@ impl Node {
     }
 }
 
-/// Reads one YAML document. `text` starts at byte `base` of its file, so
-/// every span is a span in the file.
+/// The most values aliases may copy in one file. Each alias copies its
+/// anchor's whole tree, so a few nested ones can fill memory.
+const ALIASED: usize = 100_000;
+
+/// How many values `node` holds, itself included.
+fn size(node: &Node) -> usize {
+    1 + match &node.value {
+        Yaml::Seq(items) => items.iter().map(size).sum(),
+        Yaml::Map(entries) => entries.iter().map(|(_, v)| 1 + size(v)).sum(),
+        _ => 0,
+    }
+}
+
+/// Reads one YAML document; a second is an error. `text` starts at byte
+/// `base` of its file, so every span is a span in the file.
 pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
     // saphyr counts characters, not bytes.
     let bytes: Vec<usize> = text
@@ -78,15 +91,24 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
         .map(|i| base + i)
         .collect();
     let at = |chars: usize| bytes[chars.min(bytes.len() - 1)];
-    let mut anchors: HashMap<usize, Node> = HashMap::new();
+    // Each anchored node, with its size.
+    let mut anchors: HashMap<usize, (Node, usize)> = HashMap::new();
+    let mut aliased = 0;
     // Each open collection: its start, its items, and for a mapping the key
-    // waiting for its value.
+    // waiting for its value and where each key is.
     enum Open {
         Seq(usize, usize, Vec<Node>),
-        Map(usize, usize, Vec<(Key, Node)>, Option<Node>),
+        Map(
+            usize,
+            usize,
+            Vec<(Key, Node)>,
+            Option<Node>,
+            BTreeMap<String, Range<usize>>,
+        ),
     }
     let mut stack: Vec<Open> = Vec::new();
     let mut root = None;
+    let mut documents = 0;
     for event in Parser::new_from_str(text) {
         let (event, span) = event.map_err(|e| Error::Syntax {
             message: e.info().to_string(),
@@ -109,10 +131,17 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 (Node { value, span: range }, anchor)
             }
             Event::Alias(id) => {
-                let target = anchors.get(&id).ok_or_else(|| Error::Syntax {
+                let (target, size) = anchors.get(&id).ok_or_else(|| Error::Syntax {
                     message: "unknown anchor".into(),
                     at: range.start,
                 })?;
+                aliased += size;
+                if aliased > ALIASED {
+                    return Err(Error::Syntax {
+                        message: format!("its aliases repeat more than {ALIASED} values"),
+                        at: range.start,
+                    });
+                }
                 let node = Node {
                     value: target.value.clone(),
                     span: range,
@@ -127,7 +156,13 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 continue;
             }
             Event::MappingStart(anchor, _) => {
-                stack.push(Open::Map(range.start, anchor, Vec::new(), None));
+                stack.push(Open::Map(
+                    range.start,
+                    anchor,
+                    Vec::new(),
+                    None,
+                    BTreeMap::new(),
+                ));
                 continue;
             }
             Event::SequenceEnd => {
@@ -141,7 +176,7 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 (node, anchor)
             }
             Event::MappingEnd => {
-                let Some(Open::Map(start, anchor, entries, _)) = stack.pop() else {
+                let Some(Open::Map(start, anchor, entries, ..)) = stack.pop() else {
                     unreachable!("balanced")
                 };
                 let end = entries
@@ -153,27 +188,38 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 };
                 (node, anchor)
             }
+            Event::DocumentStart(_) => {
+                documents += 1;
+                if documents > 1 {
+                    return Err(Error::Syntax {
+                        message: "a second document starts here; a file holds one".into(),
+                        at: range.start,
+                    });
+                }
+                continue;
+            }
             _ => continue,
         };
         if anchor > 0 {
-            anchors.insert(anchor, node.clone());
+            anchors.insert(anchor, (node.clone(), size(&node)));
         }
         match stack.last_mut() {
             None => root = Some(node),
             Some(Open::Seq(_, _, items)) => items.push(node),
-            Some(Open::Map(_, _, entries, pending)) => match pending.take() {
+            Some(Open::Map(_, _, entries, pending, keys)) => match pending.take() {
                 None => *pending = Some(node),
                 Some(key) => {
                     let Yaml::Str(name) = key.value else {
                         return Err(Error::KeyNotString { at: key.span });
                     };
-                    if let Some((first, _)) = entries.iter().find(|(k, _)| k.name == name) {
+                    if let Some(first) = keys.get(&name) {
                         return Err(Error::DuplicateKey {
                             name,
-                            first: first.span.clone(),
+                            first: first.clone(),
                             again: key.span,
                         });
                     }
+                    keys.insert(name.clone(), key.span.clone());
                     entries.push((
                         Key {
                             name,
@@ -315,6 +361,26 @@ mod tests {
                 again: 10..11
             }
         );
+    }
+
+    #[test]
+    fn nested_aliases_stop_before_they_fill_memory() {
+        let mut text = String::from("a0: &a0 [x, x, x, x, x, x, x, x, x, x]\n");
+        for n in 1..8 {
+            let refs = vec![format!("*a{}", n - 1); 10].join(", ");
+            text.push_str(&format!("a{n}: &a{n} [{refs}]\n"));
+        }
+        let Err(Error::Syntax { message, .. }) = parse(&text, 0) else {
+            panic!("read 10^8 values")
+        };
+        assert!(message.contains("aliases"), "{message}");
+        assert!(parse("a: &a [1, 2]\nb: *a\nc: *a\n", 0).is_ok());
+    }
+
+    #[test]
+    fn a_second_document_is_an_error() {
+        let err = parse("a: 1\n---\nb: 2\n", 0).unwrap_err();
+        assert!(matches!(err, Error::Syntax { at: 5, .. }), "{err:?}");
     }
 
     #[test]
