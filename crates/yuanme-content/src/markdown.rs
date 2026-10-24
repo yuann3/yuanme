@@ -1,10 +1,10 @@
 //! Markdown into the Document (#47): comrak parses CommonMark and GFM, and
 //! its tree is lowered here and dropped.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
-use comrak::nodes::{AstNode, ListType, NodeValue, Sourcepos, TableAlignment};
+use comrak::nodes::{AstNode, ListType, NodeBlockDirective, NodeValue, Sourcepos, TableAlignment};
 use comrak::{Arena, Options};
 use jiff::tz::TimeZone;
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
@@ -170,17 +170,30 @@ fn prose(doc: &Document, id: NodeId, out: &mut Vec<NodeId>) {
 }
 
 /// Each heading without an `{#id}` gets one from its smartened text, as
-/// Astro gives it.
+/// Astro gives it, but never one an `{#id}` already took.
 fn heading_ids(doc: &mut Document) {
+    let headings: Vec<NodeId> = doc
+        .descendants(Document::ROOT)
+        .into_iter()
+        .filter(|&id| matches!(doc.node(id).kind, Kind::Heading { .. }))
+        .collect();
+    let written: BTreeSet<String> = headings
+        .iter()
+        .filter_map(|&id| match &doc.node(id).kind {
+            Kind::Heading { id: anchor, .. } if !anchor.is_empty() => Some(anchor.clone()),
+            _ => None,
+        })
+        .collect();
     let mut slugger = Slugger::default();
-    for id in doc.descendants(Document::ROOT) {
-        let Kind::Heading { id: anchor, .. } = &doc.node(id).kind else {
-            continue;
-        };
-        if !anchor.is_empty() {
+    for id in headings {
+        if matches!(&doc.node(id).kind, Kind::Heading { id: anchor, .. } if !anchor.is_empty()) {
             continue;
         }
-        let new = slugger.heading_id(&doc.text(id));
+        let text = doc.text(id);
+        let mut new = slugger.heading_id(&text);
+        while written.contains(&new) {
+            new = slugger.heading_id(&text);
+        }
         if let Kind::Heading { id: anchor, .. } = doc.kind_mut(id) {
             *anchor = new;
         }
@@ -227,17 +240,30 @@ impl Lower<'_, '_> {
         let kind = match &ast.value {
             NodeValue::Paragraph => Kind::Paragraph,
             NodeValue::Heading(h) => {
-                let attrs = ast.attrs.as_deref();
-                let classes = attrs.map(|a| a.classes.join(" ")).filter(|c| !c.is_empty());
+                // `{#a .b id=c class=d}`: `#a` wins over `id=`, and the
+                // classes join, so each attribute is written once.
+                let mut id = None;
+                let mut classes = Vec::new();
+                let mut attrs = Vec::new();
+                if let Some(a) = ast.attrs.as_deref() {
+                    id = a.id.clone();
+                    classes.extend(a.classes.iter().cloned());
+                    for (name, value) in &a.pairs {
+                        match name.as_str() {
+                            "id" => id = id.or_else(|| Some(value.clone())),
+                            "class" => classes.push(value.clone()),
+                            _ => attrs.push((name.clone(), value.clone())),
+                        }
+                    }
+                }
+                if !classes.is_empty() {
+                    attrs.insert(0, ("class".to_string(), classes.join(" ")));
+                }
                 Kind::Heading {
                     level: h.level,
                     // Filled in once smartypants has run, as Astro's are (#18).
-                    id: attrs.and_then(|a| a.id.clone()).unwrap_or_default(),
-                    attrs: classes
-                        .map(|c| ("class".to_string(), c))
-                        .into_iter()
-                        .chain(attrs.into_iter().flat_map(|a| a.pairs.iter().cloned()))
-                        .collect(),
+                    id: id.unwrap_or_default(),
+                    attrs,
                 }
             }
             NodeValue::ThematicBreak => Kind::ThematicBreak,
@@ -295,7 +321,7 @@ impl Lower<'_, '_> {
             NodeValue::FootnoteDefinition(f) => Kind::FootnoteDefinition {
                 label: self.label(&span).unwrap_or(&f.name).to_string(),
             },
-            NodeValue::BlockDirective(d) => match self.directive(&d.info, span.clone()) {
+            NodeValue::BlockDirective(d) => match self.directive(d, span.clone()) {
                 Some(kind) => kind,
                 None => return,
             },
@@ -375,12 +401,13 @@ impl Lower<'_, '_> {
 
     /// `:::name[Title]{…}`. Theorem kinds arrive with #51; until then every
     /// directive is a `<div class="NAME">` (#17).
-    fn directive(&mut self, info: &str, span: Range<usize>) -> Option<Kind> {
+    fn directive(&mut self, d: &NodeBlockDirective, span: Range<usize>) -> Option<Kind> {
+        let info = d.info.as_str();
         let name: String = info
             .chars()
             .take_while(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_')
             .collect();
-        let opener = span.start..span.start + 3;
+        let opener = span.start..span.start + d.fence_length;
         if name.is_empty() {
             let d = match info.trim() {
                 // A bare `:::` opens a directive that swallows the rest of

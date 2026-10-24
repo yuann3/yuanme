@@ -133,6 +133,11 @@ date: 2025-02-01
 slug: 2024/custom-name
 kind: note
 ---
+## Taken {#one}
+
+## One
+
+See [the second one](#one-1).
 === content/posts/wip.md
 ---
 title: Work in progress
@@ -664,7 +669,7 @@ fn every_mistake_across_the_site_is_reported() {
 
 #[test]
 fn a_title_on_a_plain_directive_warns_and_the_entry_still_builds() {
-    let files = "---\ntitle: A\n---\n:::note[Heads up]\nx\n:::\n";
+    let files = "---\ntitle: A\n---\n::::note[Heads up]\nx\n::::\n";
     let (sources, site, diagnostics) = resolve(&fixture(files), false);
     assert!(site.is_some());
     let [d] = diagnostics.as_slice() else {
@@ -676,7 +681,7 @@ fn a_title_on_a_plain_directive_warns_and_the_entry_still_builds() {
     );
     assert_eq!(
         &sources.text(d.primary().file)[d.primary().range.clone()],
-        ":::"
+        "::::"
     );
 }
 

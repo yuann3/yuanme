@@ -32,8 +32,10 @@ pub struct Node {
 pub enum Kind {
     Root,
     Paragraph,
-    /// `id` is unique in the Document. `attrs` are the others an `{…}` on
-    /// the heading gives it, such as `class`.
+    /// A generated `id` differs from every other heading's; two written
+    /// `{#id}`s can still be the same until Labels are checked (#50).
+    /// `attrs` are the others an `{…}` on the heading gives it, such as
+    /// `class`.
     Heading {
         level: u8,
         id: String,

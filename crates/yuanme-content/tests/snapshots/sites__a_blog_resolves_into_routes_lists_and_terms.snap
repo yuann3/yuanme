@@ -19,7 +19,7 @@ routes:
   /tags/rust/ -> tags/rust/index.html  tags `Rust` page 1: second, hello-world
 entries:
   pages/about "About" no date, 0 words
-  posts/2024/custom-name "Custom" 2025-02-01, 0 words
+  posts/2024/custom-name "Custom" 2025-02-01, 4 words
     kind = "note"
   posts/hello-world "Hello, World" 2025-03-01, 9 words
     cover = local content/posts/cover.png
