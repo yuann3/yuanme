@@ -292,7 +292,9 @@ fn a_radio_link_spans_lines_only_inside_a_paragraph() {
 }
 
 /// Citations nested this deep recursed past a 2 MiB stack, which aborts the
-/// process instead of unwinding. Test threads get 2 MiB.
+/// process instead of unwinding. Test threads get 2 MiB. Unoptimised frames
+/// reach the depth limit first; release's smaller ones run out of fuel
+/// first. Either stops at the opener, and an overflow would abort the test.
 #[test]
 fn a_parse_nested_too_deeply_stops_at_its_opener() {
     let input = format!(
@@ -303,7 +305,9 @@ fn a_parse_nested_too_deeply_stops_at_its_opener() {
         "@".repeat(64)
     );
     match parse(&input) {
-        Err(ParseError::TooDeep { opener }) => assert_eq!(opener, 0),
-        other => panic!("expected TooDeep, got {:?}", other.map(|_| ())),
+        Err(ParseError::TooDeep { opener } | ParseError::OutOfFuel { opener }) => {
+            assert_eq!(opener, 0)
+        }
+        other => panic!("expected TooDeep or OutOfFuel, got {:?}", other.map(|_| ())),
     }
 }
