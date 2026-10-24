@@ -37,3 +37,7 @@ yuanme-assets.opt-level = 3
 # at a pinned commit on ravif 0.13.0 until upstream releases it (#27).
 [patch.crates-io]
 ravif = { git = "https://github.com/yuann3/cavif-rs", rev = "80886cdf01620d7c934bd18ade6e54744ebe366e" }
+# parse_document_bounded and the slow-path fixes that hold #15's parse-time
+# bound (#47), at a pinned commit on comrak 0.57.0. Rebase the branch onto
+# each comrak release before bumping the pin in yuanme-content.
+comrak = { git = "https://github.com/yuann3/comrak", rev = "94a145e456d0776fceb137c90e17101826d4e8d6" }

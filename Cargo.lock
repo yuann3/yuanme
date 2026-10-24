@@ -271,8 +271,7 @@ checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 [[package]]
 name = "comrak"
 version = "0.57.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5ef59c72b988dfc7c73ec58ec0dc50f95dd87d7f1f39f428902bc379cea8507"
+source = "git+https://github.com/yuann3/comrak?rev=94a145e456d0776fceb137c90e17101826d4e8d6#94a145e456d0776fceb137c90e17101826d4e8d6"
 dependencies = [
  "caseless",
  "entities",
