@@ -1,0 +1,1192 @@
+//! Smart punctuation exactly as Astro renders Markdown: remark-smartypants
+//! 3.0.2 driving retext-smartypants 6.2.0, which reads the token tree of
+//! parse-latin 7.0.0. Which quote a `'` becomes depends on that tree (a `'`
+//! inside a word, at a sentence start, beside a symbol), so the tokenizer
+//! and its merge passes are ported whole rather than approximated.
+//!
+//! Everything works on UTF-16 code units, as the JS does: parse-latin
+//! classifies one unit at a time, so an astral character is two symbol
+//! units, and remark-smartypants slices its joined text by `.length`.
+
+/// One mdast node remark-smartypants reads, in document order.
+#[derive(Debug, Clone, Copy)]
+pub enum Piece<'a> {
+    /// A `text` node's value, anywhere: paragraphs, headings, links,
+    /// emphasis, table cells.
+    Text(&'a str),
+    /// An `inlineCode` node's value. It is never changed but holds its
+    /// length in the joined text, so quotes either side of it see a word.
+    Code(&'a str),
+    /// The start of a `paragraph`, which remark-smartypants marks with a
+    /// space so a quote opening the paragraph opens. Headings and table
+    /// cells get none, so their text runs straight on from what came before.
+    ParagraphStart,
+}
+
+/// What `--` and `---` become.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Dashes {
+    /// retext-smartypants' default, as Astro's Markdown uses it: `--` → `—`,
+    /// `---` left alone.
+    Default,
+    /// `dashes: 'oldschool'`: `--` → `–`, `---` → `—`, and a literal `–`
+    /// followed by `-` → `—`.
+    Oldschool,
+}
+
+/// The smartened value of every [`Piece::Text`] in `pieces`, in order.
+///
+/// Two passes, as remark-smartypants runs them. Quotes are decided once
+/// over the whole document's text joined together, so quotes around a link
+/// or bold text pair up across nodes. Then each text node on its own gets
+/// backticks (` `` ` → `“`, `''` → `”`), dashes and ellipses (`...` → `…`).
+pub fn smarten(pieces: &[Piece<'_>], dashes: Dashes) -> Vec<String> {
+    let mut joined: Vec<u16> = Vec::new();
+    for piece in pieces {
+        match piece {
+            Piece::Text(text) => joined.extend(text.encode_utf16()),
+            Piece::Code(code) => joined.extend(code.encode_utf16().map(|_| u16::from(b'A'))),
+            Piece::ParagraphStart => joined.push(u16::from(b' ')),
+        }
+    }
+    // Quoting swaps one BMP unit for another, so every piece keeps its
+    // offsets in the result.
+    let quoted = retext(&joined, Pass::Quotes);
+    let mut out = Vec::new();
+    let mut start = 0;
+    for piece in pieces {
+        match piece {
+            Piece::Text(text) => {
+                let end = start + text.encode_utf16().count();
+                let units = retext(&quoted[start..end], Pass::Punctuation(dashes));
+                out.push(
+                    String::from_utf16(&units)
+                        .expect("smartypants only swaps BMP marks, so pieces stay whole"),
+                );
+                start = end;
+            }
+            Piece::Code(code) => start += code.encode_utf16().count(),
+            Piece::ParagraphStart => start += 1,
+        }
+    }
+    out
+}
+
+#[derive(Clone, Copy)]
+enum Pass {
+    /// remark-smartypants' first processor: quotes on, everything else off.
+    Quotes,
+    /// Its second: quotes off, ellipses, backticks and dashes on.
+    Punctuation(Dashes),
+}
+
+/// One retext run: parse, transform, stringify.
+fn retext(units: &[u16], pass: Pass) -> Vec<u16> {
+    let mut root = tokenize_root(units);
+    walk(&mut root.children, pass);
+    root.text()
+}
+
+// retext-smartypants
+
+/// unist-util-visit's preorder walk, calling the transforms on every
+/// punctuation and symbol node.
+fn walk(children: &mut Vec<Node>, pass: Pass) {
+    let mut index = 0;
+    while index < children.len() {
+        if !children[index].is_mark() {
+            walk(&mut children[index].children, pass);
+        } else {
+            match pass {
+                Pass::Quotes => quotes(children, index),
+                Pass::Punctuation(mode) => {
+                    let at = ellipses(children, index);
+                    backticks(&mut children[at]);
+                    if dashes(children, at, mode) {
+                        // A dropped node: the walk carries on at the same
+                        // index, now its next sibling.
+                        children.remove(at);
+                        continue;
+                    }
+                }
+            }
+        }
+        // Even when spaced ellipses removed siblings before `index`, the walk
+        // goes on at `index + 1`, skipping as many nodes as were removed.
+        index += 1;
+    }
+}
+
+const OPEN: [u16; 2] = [0x201C, 0x2018];
+const CLOSE: [u16; 2] = [0x201D, 0x2019];
+
+/// retext-smartypants' `quotesDefault`, in its order of special cases.
+fn quotes(siblings: &mut [Node], index: usize) {
+    let value = &siblings[index].value;
+    let quote = if eq(value, "\"") {
+        0
+    } else if eq(value, "'") {
+        1
+    } else {
+        return;
+    };
+    let previous = index.checked_sub(1).map(|i| &siblings[i]);
+    let next = siblings.get(index + 1);
+    let next_next = siblings.get(index + 2);
+    let next_value = next.map(Node::text).unwrap_or_default();
+    let next_is_mark = next.is_some_and(Node::is_mark);
+    let next_next_is_word = next_next.is_some_and(|n| n.kind == Kind::Word);
+    let is_space_or_mark = |n: &Node| n.kind == Kind::WhiteSpace || n.is_mark();
+
+    let mut next_open = None;
+    let smart = if next_is_mark && !next_next_is_word {
+        CLOSE[quote]
+    } else if next_is_mark && (eq(&next_value, "\"") || eq(&next_value, "'")) {
+        // `"'Quoted' words"`: both open.
+        next_open = Some(OPEN[usize::from(eq(&next_value, "'"))]);
+        OPEN[quote]
+    } else if next.is_some() && is_decade(&next_value) {
+        CLOSE[quote]
+    } else if previous.is_some_and(is_space_or_mark) && next.is_some_and(|n| n.kind == Kind::Word) {
+        OPEN[quote]
+    } else if previous.is_some_and(|p| !is_space_or_mark(p))
+        || next.is_none_or(|n| n.kind == Kind::WhiteSpace)
+        || (quote == 1 && eq(&next_value, "s"))
+    {
+        CLOSE[quote]
+    } else {
+        OPEN[quote]
+    };
+    siblings[index].value = vec![smart];
+    if let Some(open) = next_open {
+        siblings[index + 1].value = vec![open];
+    }
+}
+
+/// `the '80s`: two ASCII digits and an `s`.
+fn is_decade(units: &[u16]) -> bool {
+    matches!(units, [a, b, s] if is_digit(*a) && is_digit(*b) && *s == u16::from(b's'))
+}
+
+/// `ellipsesDefault`: dots with spaces between, then dots without. Returns
+/// where the node now is, as spaced dots take the dots before it out.
+fn ellipses(siblings: &mut Vec<Node>, index: usize) -> usize {
+    let is_dots = |units: &[u16]| !units.is_empty() && units.iter().all(|&u| u == DOT);
+    if !is_dots(&siblings[index].value) {
+        return index;
+    }
+    let mut position = index;
+    let mut removed = 0;
+    let mut count = 1;
+    // `while (--position > 0)`: the first sibling is never looked at as
+    // white space.
+    while position > 1 {
+        position -= 1;
+        if siblings[position].kind != Kind::WhiteSpace {
+            break;
+        }
+        position -= 1;
+        let sibling = &siblings[position];
+        if !(sibling.is_mark() && is_dots(&sibling.value)) {
+            break;
+        }
+        removed += 2;
+        count += 1;
+    }
+    if count >= 3 {
+        let at = index - removed;
+        siblings.drain(at..index);
+        siblings[at].value = vec![ELLIPSIS];
+        return at;
+    }
+    if siblings[index].value.len() >= 3 {
+        siblings[index].value = vec![ELLIPSIS];
+    }
+    index
+}
+
+/// `backticksDefault`.
+fn backticks(node: &mut Node) {
+    if eq(&node.value, "``") {
+        node.value = vec![OPEN[0]];
+    } else if eq(&node.value, "''") {
+        node.value = vec![CLOSE[0]];
+    }
+}
+
+/// `dashesDefault` or `dashesOldschool`. Returns whether to drop the node.
+fn dashes(siblings: &mut [Node], index: usize, mode: Dashes) -> bool {
+    let node = &siblings[index];
+    match mode {
+        Dashes::Default => {
+            if eq(&node.value, "--") {
+                siblings[index].value = vec![EM_DASH];
+            }
+        }
+        Dashes::Oldschool => {
+            let next_is_hyphen = siblings
+                .get(index + 1)
+                .is_some_and(|n| n.kind == Kind::Punctuation && eq(&n.value, "-"));
+            if node.value == [EN_DASH] && next_is_hyphen {
+                siblings[index + 1].value = vec![EM_DASH];
+                return true;
+            }
+            if eq(&node.value, "---") {
+                siblings[index].value = vec![EM_DASH];
+            } else if eq(&node.value, "--") {
+                siblings[index].value = vec![EN_DASH];
+            }
+        }
+    }
+    false
+}
+
+const DOT: u16 = 0x2E;
+const ELLIPSIS: u16 = 0x2026;
+const EN_DASH: u16 = 0x2013;
+const EM_DASH: u16 = 0x2014;
+
+// parse-latin
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Kind {
+    Root,
+    Paragraph,
+    Sentence,
+    Word,
+    Text,
+    WhiteSpace,
+    Punctuation,
+    Symbol,
+}
+
+/// An nlcst node: parents have `children`, the rest a `value`.
+struct Node {
+    kind: Kind,
+    value: Vec<u16>,
+    children: Vec<Node>,
+}
+
+impl Node {
+    fn leaf(kind: Kind, value: &[u16]) -> Node {
+        Node {
+            kind,
+            value: value.to_vec(),
+            children: Vec::new(),
+        }
+    }
+
+    fn parent(kind: Kind, children: Vec<Node>) -> Node {
+        Node {
+            kind,
+            value: Vec::new(),
+            children,
+        }
+    }
+
+    /// JS `'children' in node`.
+    fn is_parent(&self) -> bool {
+        matches!(
+            self.kind,
+            Kind::Root | Kind::Paragraph | Kind::Sentence | Kind::Word
+        )
+    }
+
+    fn is_mark(&self) -> bool {
+        matches!(self.kind, Kind::Punctuation | Kind::Symbol)
+    }
+
+    /// nlcst-to-string.
+    fn text(&self) -> Vec<u16> {
+        let mut out = Vec::new();
+        self.write(&mut out);
+        out
+    }
+
+    fn write(&self, out: &mut Vec<u16>) {
+        if self.is_parent() {
+            for child in &self.children {
+                child.write(out);
+            }
+        } else {
+            out.extend_from_slice(&self.value);
+        }
+    }
+}
+
+fn eq(units: &[u16], s: &str) -> bool {
+    units.iter().copied().eq(s.encode_utf16())
+}
+
+fn is_digit(u: u16) -> bool {
+    (0x30..=0x39).contains(&u)
+}
+
+type Modifier = fn(&mut Vec<Node>, usize) -> Option<usize>;
+type Visitor = fn(&mut Vec<Node>, usize);
+
+/// unist-util-modify-children: a returned index is where iteration resumes
+/// (JS `-1` resumes at 0, as `saturating_sub` gives).
+fn modify(children: &mut Vec<Node>, modifier: Modifier) {
+    let mut index = 0;
+    while index < children.len() {
+        index = modifier(children, index).unwrap_or(index + 1);
+    }
+}
+
+/// unist-util-visit-children: every index once, whatever the visitor moves.
+fn visit(children: &mut Vec<Node>, visitor: Visitor) {
+    let mut index = 0;
+    while index < children.len() {
+        visitor(children, index);
+        index += 1;
+    }
+}
+
+fn tokenize_root(value: &[u16]) -> Node {
+    let paragraph = tokenize_paragraph(value);
+    let mut children = split(Kind::Paragraph, paragraph.children, |n| {
+        n.kind == Kind::WhiteSpace && is_new_line(&n.value)
+    });
+    visit(&mut children, make_initial_white_space_siblings);
+    modify(&mut children, make_final_white_space_siblings);
+    modify(&mut children, remove_empty_nodes);
+    Node::parent(Kind::Root, children)
+}
+
+fn tokenize_paragraph(value: &[u16]) -> Node {
+    let sentence = tokenize_sentence(value);
+    let mut children = split(Kind::Sentence, sentence.children, |n| {
+        n.kind == Kind::Punctuation && is_terminal_marker(&n.value)
+    });
+    modify(&mut children, merge_non_word_sentences);
+    modify(&mut children, merge_affix_symbol);
+    modify(&mut children, merge_initial_lower_case_letter_sentences);
+    modify(&mut children, merge_initial_digit_sentences);
+    modify(&mut children, merge_prefix_exceptions);
+    modify(&mut children, merge_affix_exceptions);
+    visit(&mut children, merge_remaining_full_stops);
+    visit(&mut children, make_initial_white_space_siblings);
+    modify(&mut children, make_final_white_space_siblings);
+    modify(&mut children, break_implicit_sentences);
+    modify(&mut children, remove_empty_nodes);
+    Node::parent(Kind::Paragraph, children)
+}
+
+fn tokenize_sentence(value: &[u16]) -> Node {
+    let mut children = tokenize(value);
+    modify(&mut children, merge_initial_word_symbol);
+    modify(&mut children, merge_final_word_symbol);
+    modify(&mut children, merge_inner_word_symbol);
+    modify(&mut children, merge_inner_word_slash);
+    modify(&mut children, merge_initialisms);
+    Node::parent(Kind::Sentence, children)
+}
+
+/// Runs of one kind of unit. Words and white space run on; punctuation and
+/// symbols only repeat the same unit, except that a surrogate always joins
+/// the symbol before it.
+fn tokenize(value: &[u16]) -> Vec<Node> {
+    let token = |kind: Kind, units: &[u16]| match kind {
+        Kind::Word => Node::parent(Kind::Word, vec![Node::leaf(Kind::Text, units)]),
+        _ => Node::leaf(kind, units),
+    };
+    let mut children = Vec::new();
+    let mut from = 0;
+    let mut previous: Option<(Kind, u16)> = None;
+    for (index, &unit) in value.iter().enumerate() {
+        let kind = classify(unit);
+        if let Some((previous_kind, previous_unit)) = previous {
+            let continues = previous_kind == kind
+                && (matches!(kind, Kind::Word | Kind::WhiteSpace)
+                    || unit == previous_unit
+                    || (0xD800..=0xDFFF).contains(&unit));
+            if !continues {
+                children.push(token(previous_kind, &value[from..index]));
+                from = index;
+            }
+        }
+        previous = Some((kind, unit));
+    }
+    if let Some((kind, _)) = previous {
+        children.push(token(kind, &value[from..]));
+    }
+    children
+}
+
+fn classify(unit: u16) -> Kind {
+    if is_white_space(unit) {
+        Kind::WhiteSpace
+    } else if in_ranges(PUNCTUATION, unit) {
+        Kind::Punctuation
+    } else if in_ranges(WORD, unit) {
+        Kind::Word
+    } else {
+        Kind::Symbol
+    }
+}
+
+/// parse-latin's `splitNode`: a new `kind` parent after each child `at`
+/// matches, and after the last.
+fn split(kind: Kind, children: Vec<Node>, at: impl Fn(&Node) -> bool) -> Vec<Node> {
+    let last = children.len().saturating_sub(1);
+    let mut result = Vec::new();
+    let mut chunk = Vec::new();
+    for (index, child) in children.into_iter().enumerate() {
+        let ends = index == last || at(&child);
+        chunk.push(child);
+        if ends {
+            result.push(Node::parent(kind, std::mem::take(&mut chunk)));
+        }
+    }
+    result
+}
+
+// parse-latin's sentence plugins.
+
+/// `&` joins the word after it, when no word comes before.
+fn merge_initial_word_symbol(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if !child.is_mark() || !eq(&child.value, "&") {
+        return None;
+    }
+    let after_word = index > 0 && children[index - 1].kind == Kind::Word;
+    if after_word || children.get(index + 1).is_none_or(|n| n.kind != Kind::Word) {
+        return None;
+    }
+    let child = children.remove(index);
+    children[index].children.insert(0, child);
+    Some(index.saturating_sub(1))
+}
+
+/// A trailing `-` joins the word before it.
+fn merge_final_word_symbol(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if index == 0 || !child.is_mark() || !eq(&child.value, "-") {
+        return None;
+    }
+    let before_word = children
+        .get(index + 1)
+        .is_some_and(|n| n.kind == Kind::Word);
+    if before_word || children[index - 1].kind != Kind::Word {
+        return None;
+    }
+    let child = children.remove(index);
+    children[index - 1].children.push(child);
+    Some(index)
+}
+
+/// Words joined by inner-word marks (`it's`, `a-b`, `a.b`) become one word.
+fn merge_inner_word_symbol(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    if index == 0 || !children[index].is_mark() || children[index - 1].kind != Kind::Word {
+        return None;
+    }
+    let mut end = index;
+    for (position, sibling) in children.iter().enumerate().skip(index) {
+        if sibling.kind == Kind::Word {
+            end = position + 1;
+        } else if !(sibling.is_mark() && is_word_symbol_inner(&sibling.value)) {
+            break;
+        }
+    }
+    if end == index {
+        return None;
+    }
+    let tokens: Vec<Node> = children
+        .drain(index..end)
+        .flat_map(|n| {
+            if n.kind == Kind::Word {
+                n.children
+            } else {
+                vec![n]
+            }
+        })
+        .collect();
+    children[index - 1].children.extend(tokens);
+    Some(index)
+}
+
+/// `/` between short words (`a/b`, `km/h`) joins them.
+fn merge_inner_word_slash(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if index == 0
+        || children[index - 1].kind != Kind::Word
+        || !child.is_mark()
+        || !eq(&child.value, "/")
+    {
+        return None;
+    }
+    let previous_len = children[index - 1].text().len();
+    let next_len = children
+        .get(index + 1)
+        .filter(|n| n.kind == Kind::Word)
+        .map(|n| n.text().len());
+    if previous_len >= 3 || next_len.is_some_and(|len| len >= 3) {
+        return None;
+    }
+    let mut queue = vec![children.remove(index)];
+    if next_len.is_some() {
+        queue.extend(children.remove(index).children);
+    }
+    children[index - 1].children.extend(queue);
+    Some(index)
+}
+
+/// A `.` after an initialism such as `e.g` joins it, unless it is all digits.
+fn merge_initialisms(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if index == 0 || child.kind != Kind::Punctuation || !eq(&child.value, ".") {
+        return None;
+    }
+    let previous = &children[index - 1];
+    let len = previous.children.len();
+    if previous.kind != Kind::Word || len == 1 || len.is_multiple_of(2) {
+        return None;
+    }
+    let mut all_digits = true;
+    for position in (0..len).rev() {
+        let value = previous.children[position].text();
+        if position.is_multiple_of(2) {
+            if value.len() > 1 {
+                return None;
+            }
+            if !value.first().is_some_and(|&u| in_ranges(NUMERICAL, u)) {
+                all_digits = false;
+            }
+        } else if !eq(&value, ".") {
+            if position < len - 2 {
+                break;
+            }
+            return None;
+        }
+    }
+    if all_digits {
+        return None;
+    }
+    let child = children.remove(index);
+    children[index - 1].children.push(child);
+    Some(index)
+}
+
+// parse-latin's paragraph plugins.
+
+/// A sentence without words joins the one before it, or else the one after.
+fn merge_non_word_sentences(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if !child.is_parent() || child.children.iter().any(|n| n.kind == Kind::Word) {
+        return None;
+    }
+    if index > 0 && children[index - 1].is_parent() {
+        let child = children.remove(index);
+        children[index - 1].children.extend(child.children);
+        return Some(index);
+    }
+    if children.get(index + 1).is_some_and(Node::is_parent) {
+        let child = children.remove(index);
+        children[index].children.splice(0..0, child.children);
+    }
+    // parse-latin returns nothing here, so iteration skips the sentence just
+    // merged into.
+    None
+}
+
+/// Closing marks after a terminal marker (`."`, `!)`) stay with that sentence.
+// Takes a `Vec` to fit `Modifier` and `Visitor` beside the plugins that resize.
+#[allow(clippy::ptr_arg)]
+fn merge_affix_symbol(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if index == 0 || !child.is_parent() || children[index - 1].kind != Kind::Sentence {
+        return None;
+    }
+    let first = child.children.first()?;
+    if !first.is_mark() || !is_affix_symbol(&first.text()) {
+        return None;
+    }
+    let first = children[index].children.remove(0);
+    children[index - 1].children.push(first);
+    Some(index - 1)
+}
+
+/// A sentence whose first word starts lower case continues the one before.
+fn merge_initial_lower_case_letter_sentences(
+    children: &mut Vec<Node>,
+    index: usize,
+) -> Option<usize> {
+    let child = &children[index];
+    if child.kind != Kind::Sentence || index == 0 || children[index - 1].kind != Kind::Sentence {
+        return None;
+    }
+    let first = child
+        .children
+        .iter()
+        .find(|n| n.kind == Kind::Word || n.is_mark())?;
+    // A word starts with a word unit, `&` or `.`, never a surrogate, so the
+    // astral half of parse-latin's regex can't match and isn't ported.
+    if first.kind != Kind::Word
+        || !first
+            .text()
+            .first()
+            .is_some_and(|&u| in_ranges(LOWER_INITIAL, u))
+    {
+        return None;
+    }
+    merge_into_previous(children, index)
+}
+
+/// A sentence starting with a digit continues the one before.
+fn merge_initial_digit_sentences(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if index == 0 || children[index - 1].kind != Kind::Sentence || child.kind != Kind::Sentence {
+        return None;
+    }
+    let head = child.children.first()?;
+    if head.kind != Kind::Word || !head.text().first().is_some_and(|&u| is_digit(u)) {
+        return None;
+    }
+    merge_into_previous(children, index)
+}
+
+/// A sentence ending in an abbreviation and `.` (`etc.`, `cf.`, `e.`) runs
+/// on into the next.
+fn merge_prefix_exceptions(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let sentence = &mut children[index];
+    let len = sentence.children.len();
+    if !sentence.is_parent() || len < 2 {
+        return None;
+    }
+    let period = &sentence.children[len - 1];
+    let word = &sentence.children[len - 2];
+    if !period.is_mark()
+        || !eq(&period.text(), ".")
+        || word.kind != Kind::Word
+        || !is_abbreviation(&word.text())
+    {
+        return None;
+    }
+    let period = sentence.children.remove(len - 1);
+    sentence.children[len - 2].children.push(period);
+    if children
+        .get(index + 1)
+        .is_some_and(|n| n.kind == Kind::Sentence)
+    {
+        let next = children.remove(index + 1);
+        children[index].children.extend(next.children);
+        return Some(index.saturating_sub(1));
+    }
+    None
+}
+
+/// A sentence starting with `,` or `;` continues the one before.
+fn merge_affix_exceptions(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if index == 0 || !children[index - 1].is_parent() || !child.is_parent() {
+        return None;
+    }
+    let first = child
+        .children
+        .iter()
+        .find(|n| n.kind == Kind::Word || n.is_mark())?;
+    if first.kind == Kind::Word || !(eq(&first.text(), ",") || eq(&first.text(), ";")) {
+        return None;
+    }
+    merge_into_previous(children, index)
+}
+
+fn merge_into_previous(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = children.remove(index);
+    children[index - 1].children.extend(child.children);
+    Some(index)
+}
+
+/// Every `.` but a sentence's last terminal marker joins the word before it,
+/// or else the word after.
+// Takes a `Vec` to fit `Modifier` and `Visitor` beside the plugins that resize.
+#[allow(clippy::ptr_arg)]
+fn merge_remaining_full_stops(children: &mut Vec<Node>, index: usize) {
+    let sentence = &mut children[index];
+    if !sentence.is_parent() {
+        return;
+    }
+    let nodes = &mut sentence.children;
+    let mut found_delimiter = false;
+    let mut position = nodes.len();
+    while position > 0 {
+        position -= 1;
+        let node = &nodes[position];
+        if !node.is_mark() {
+            // A sentence without a terminal marker counts its last word as
+            // one.
+            found_delimiter |= node.kind == Kind::Word;
+            continue;
+        }
+        if !is_terminal_marker(&node.text()) {
+            continue;
+        }
+        if !found_delimiter {
+            found_delimiter = true;
+            continue;
+        }
+        if !eq(&node.text(), ".") {
+            continue;
+        }
+        if position > 0 && nodes[position - 1].kind == Kind::Word {
+            let spaced_stops = nodes
+                .get(position + 1)
+                .is_some_and(|n| n.kind == Kind::WhiteSpace)
+                && nodes.get(position + 2).is_some_and(|n| eq(&n.text(), "."));
+            if spaced_stops {
+                continue;
+            }
+            let stop = nodes.remove(position);
+            nodes[position - 1].children.push(stop);
+            // parse-latin steps over the word it just grew.
+            position -= 1;
+        } else if nodes
+            .get(position + 1)
+            .is_some_and(|n| n.kind == Kind::Word)
+        {
+            let stop = nodes.remove(position);
+            nodes[position].children.insert(0, stop);
+        }
+    }
+}
+
+/// White space opening a sentence or paragraph moves up to be its sibling.
+fn make_initial_white_space_siblings(children: &mut Vec<Node>, index: usize) {
+    let child = &mut children[index];
+    if child.is_parent()
+        && child
+            .children
+            .first()
+            .is_some_and(|n| n.kind == Kind::WhiteSpace)
+    {
+        let head = child.children.remove(0);
+        children.insert(index, head);
+    }
+}
+
+/// White space closing a sentence or paragraph moves up to be its sibling.
+fn make_final_white_space_siblings(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &mut children[index];
+    if !child.is_parent()
+        || child
+            .children
+            .last()
+            .is_none_or(|n| n.kind != Kind::WhiteSpace)
+    {
+        return None;
+    }
+    let tail = child.children.pop()?;
+    children.insert(index + 1, tail);
+    Some(index)
+}
+
+/// White space holding two or more line breaks ends a sentence.
+fn break_implicit_sentences(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let sentence = &mut children[index];
+    if sentence.kind != Kind::Sentence {
+        return None;
+    }
+    let nodes = &sentence.children;
+    let position = (1..nodes.len().saturating_sub(1))
+        .find(|&p| nodes[p].kind == Kind::WhiteSpace && line_breaks(&nodes[p].value) >= 2)?;
+    let rest = sentence.children.split_off(position + 1);
+    let space = sentence.children.pop()?;
+    children.splice(
+        index + 1..index + 1,
+        [space, Node::parent(Kind::Sentence, rest)],
+    );
+    Some(index + 1)
+}
+
+fn remove_empty_nodes(children: &mut Vec<Node>, index: usize) -> Option<usize> {
+    let child = &children[index];
+    if !child.is_parent() || !child.children.is_empty() {
+        return None;
+    }
+    children.remove(index);
+    Some(index)
+}
+
+// parse-latin's expressions.
+
+/// `\r\n`, `\r` and `\n` each count as one.
+fn line_breaks(units: &[u16]) -> usize {
+    let (cr, lf) = (u16::from(b'\r'), u16::from(b'\n'));
+    let crlf = units.windows(2).filter(|w| w == &[cr, lf]).count();
+    units.iter().filter(|&&u| u == cr || u == lf).count() - crlf
+}
+
+/// `^[ \t]*((\r?\n|\r)[\t ]*)+$`
+fn is_new_line(units: &[u16]) -> bool {
+    let allowed = |u: u16| matches!(u, 0x20 | 0x09 | 0x0D | 0x0A);
+    units.iter().all(|&u| allowed(u)) && units.iter().any(|&u| u == 0x0D || u == 0x0A)
+}
+
+/// `^([!.?\u2026\u203D]+)$`
+fn is_terminal_marker(units: &[u16]) -> bool {
+    !units.is_empty()
+        && units
+            .iter()
+            .all(|u| matches!(u, 0x21 | 0x2E | 0x3F | 0x2026 | 0x203D))
+}
+
+/// `^([&'\-.:=?@\u00AD\u00B7\u2010\u2011\u2019\u2027]|_+)$`
+fn is_word_symbol_inner(units: &[u16]) -> bool {
+    let inner = [
+        0x26, 0x27, 0x2D, 0x2E, 0x3A, 0x3D, 0x3F, 0x40, 0xAD, 0xB7, 0x2010, 0x2011, 0x2019, 0x2027,
+    ];
+    let underscores = !units.is_empty() && units.iter().all(|&u| u == 0x5F);
+    underscores || matches!(units, [u] if inner.contains(u))
+}
+
+/// `^([…])\1*$`: one affix mark, repeated.
+fn is_affix_symbol(units: &[u16]) -> bool {
+    units
+        .first()
+        .is_some_and(|&first| in_ranges(AFFIX_SYMBOL, first) && units.iter().all(|&u| u == first))
+}
+
+/// The abbreviations a full stop doesn't end a sentence after, matched on
+/// the lowercased word.
+fn is_abbreviation(units: &[u16]) -> bool {
+    const LATIN: &[&str] = &[
+        "al", "ca", "cap", "cca", "cent", "cf", "cit", "con", "cp", "cwt", "ead", "etc", "ff",
+        "fl", "ibid", "id", "nem", "op", "pro", "seq", "sic", "stat", "tem", "viz",
+    ];
+    let word = String::from_utf16_lossy(units).to_lowercase();
+    let digits = (1..=3).contains(&word.len()) && word.bytes().all(|b| b.is_ascii_digit());
+    let letter = word.len() == 1 && word.bytes().all(|b| b.is_ascii_lowercase());
+    digits || letter || LATIN.contains(&word.as_str())
+}
+
+/// `[\t-\r \u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]`
+fn is_white_space(unit: u16) -> bool {
+    matches!(
+        unit,
+        0x09..=0x0D | 0x20 | 0x85 | 0xA0 | 0x1680 | 0x2000..=0x200A | 0x2028 | 0x2029 | 0x202F
+            | 0x205F | 0x3000
+    )
+}
+
+/// Whether `unit` falls in `table`, flat half-open ranges `[start, end)`.
+fn in_ranges(table: &[u32], unit: u16) -> bool {
+    table.partition_point(|&bound| bound <= u32::from(unit)) % 2 == 1
+}
+
+// The tables below are generated, not hand-written: every UTF-16 code unit
+// `u` was tested with `regex.test(String.fromCharCode(u))` against
+// parse-latin 7.0.0's lib/expressions.js, and the hits kept as half-open
+// ranges. The regexes have no `u` flag and parse-latin tests one unit at a
+// time (or, for the anchored ones, only ever a word's first unit or a
+// one-unit value), so their astral alternatives never match and BMP units
+// are the whole story. PUNCTUATION excludes white space, and WORD both.
+
+const PUNCTUATION: &[u32] = &[
+    0x0021, 0x0023, 0x0027, 0x002A, 0x002C, 0x0030, 0x003A, 0x003C, 0x003F, 0x0040, 0x005B, 0x005E,
+    0x005F, 0x0060, 0x007B, 0x007C, 0x007D, 0x007E, 0x00A1, 0x00A2, 0x00A7, 0x00A8, 0x00AB, 0x00AC,
+    0x00B6, 0x00B8, 0x00BB, 0x00BC, 0x00BF, 0x00C0, 0x037E, 0x037F, 0x0387, 0x0388, 0x055A, 0x0560,
+    0x0589, 0x058B, 0x05BE, 0x05BF, 0x05C0, 0x05C1, 0x05C3, 0x05C4, 0x05C6, 0x05C7, 0x05F3, 0x05F5,
+    0x0609, 0x060B, 0x060C, 0x060E, 0x061B, 0x061C, 0x061D, 0x0620, 0x066A, 0x066E, 0x06D4, 0x06D5,
+    0x0700, 0x070E, 0x07F7, 0x07FA, 0x0830, 0x083F, 0x085E, 0x085F, 0x0964, 0x0966, 0x0970, 0x0971,
+    0x09FD, 0x09FE, 0x0A76, 0x0A77, 0x0AF0, 0x0AF1, 0x0C77, 0x0C78, 0x0C84, 0x0C85, 0x0DF4, 0x0DF5,
+    0x0E4F, 0x0E50, 0x0E5A, 0x0E5C, 0x0F04, 0x0F13, 0x0F14, 0x0F15, 0x0F3A, 0x0F3E, 0x0F85, 0x0F86,
+    0x0FD0, 0x0FD5, 0x0FD9, 0x0FDB, 0x104A, 0x1050, 0x10FB, 0x10FC, 0x1360, 0x1369, 0x1400, 0x1401,
+    0x166E, 0x166F, 0x169B, 0x169D, 0x16EB, 0x16EE, 0x1735, 0x1737, 0x17D4, 0x17D7, 0x17D8, 0x17DB,
+    0x1800, 0x180B, 0x1944, 0x1946, 0x1A1E, 0x1A20, 0x1AA0, 0x1AA7, 0x1AA8, 0x1AAE, 0x1B5A, 0x1B61,
+    0x1B7D, 0x1B7F, 0x1BFC, 0x1C00, 0x1C3B, 0x1C40, 0x1C7E, 0x1C80, 0x1CC0, 0x1CC8, 0x1CD3, 0x1CD4,
+    0x2010, 0x2020, 0x2022, 0x2028, 0x2032, 0x203B, 0x203C, 0x2044, 0x2045, 0x2052, 0x2053, 0x205F,
+    0x207D, 0x207F, 0x208D, 0x208F, 0x2308, 0x230C, 0x2329, 0x232B, 0x2768, 0x2776, 0x27C5, 0x27C7,
+    0x27E6, 0x27F0, 0x2983, 0x2999, 0x29D8, 0x29DC, 0x29FC, 0x29FE, 0x2CF9, 0x2CFD, 0x2CFE, 0x2D00,
+    0x2D70, 0x2D71, 0x2E00, 0x2E2F, 0x2E30, 0x2E50, 0x2E52, 0x2E5E, 0x3001, 0x3004, 0x3008, 0x3012,
+    0x3014, 0x3020, 0x3030, 0x3031, 0x303D, 0x303E, 0x30A0, 0x30A1, 0x30FB, 0x30FC, 0xA4FE, 0xA500,
+    0xA60D, 0xA610, 0xA673, 0xA674, 0xA67E, 0xA67F, 0xA6F2, 0xA6F8, 0xA874, 0xA878, 0xA8CE, 0xA8D0,
+    0xA8F8, 0xA8FB, 0xA8FC, 0xA8FD, 0xA92E, 0xA930, 0xA95F, 0xA960, 0xA9C1, 0xA9CE, 0xA9DE, 0xA9E0,
+    0xAA5C, 0xAA60, 0xAADE, 0xAAE0, 0xAAF0, 0xAAF2, 0xABEB, 0xABEC, 0xFD3E, 0xFD40, 0xFE10, 0xFE1A,
+    0xFE30, 0xFE53, 0xFE54, 0xFE62, 0xFE63, 0xFE64, 0xFE68, 0xFE69, 0xFE6A, 0xFE6C, 0xFF01, 0xFF04,
+    0xFF05, 0xFF0B, 0xFF0C, 0xFF10, 0xFF1A, 0xFF1C, 0xFF1F, 0xFF21, 0xFF3B, 0xFF3E, 0xFF3F, 0xFF40,
+    0xFF5B, 0xFF5C, 0xFF5D, 0xFF5E, 0xFF5F, 0xFF66,
+];
+
+const WORD: &[u32] = &[
+    0x0030, 0x003A, 0x0041, 0x005B, 0x0061, 0x007B, 0x00AA, 0x00AB, 0x00B2, 0x00B4, 0x00B5, 0x00B6,
+    0x00B9, 0x00BB, 0x00BC, 0x00BF, 0x00C0, 0x00D7, 0x00D8, 0x00F7, 0x00F8, 0x02C2, 0x02C6, 0x02D2,
+    0x02E0, 0x02E5, 0x02EC, 0x02ED, 0x02EE, 0x02EF, 0x0300, 0x0375, 0x0376, 0x0378, 0x037A, 0x037E,
+    0x037F, 0x0380, 0x0386, 0x0387, 0x0388, 0x038B, 0x038C, 0x038D, 0x038E, 0x03A2, 0x03A3, 0x03F6,
+    0x03F7, 0x0482, 0x0483, 0x0530, 0x0531, 0x0557, 0x0559, 0x055A, 0x0560, 0x0589, 0x0591, 0x05BE,
+    0x05BF, 0x05C0, 0x05C1, 0x05C3, 0x05C4, 0x05C6, 0x05C7, 0x05C8, 0x05D0, 0x05EB, 0x05EF, 0x05F3,
+    0x0610, 0x061B, 0x0620, 0x066A, 0x066E, 0x06D4, 0x06D5, 0x06DD, 0x06DF, 0x06E9, 0x06EA, 0x06FD,
+    0x06FF, 0x0700, 0x0710, 0x074B, 0x074D, 0x07B2, 0x07C0, 0x07F6, 0x07FA, 0x07FB, 0x07FD, 0x07FE,
+    0x0800, 0x082E, 0x0840, 0x085C, 0x0860, 0x086B, 0x0870, 0x0888, 0x0889, 0x088F, 0x0898, 0x08E2,
+    0x08E3, 0x0964, 0x0966, 0x0970, 0x0971, 0x0984, 0x0985, 0x098D, 0x098F, 0x0991, 0x0993, 0x09A9,
+    0x09AA, 0x09B1, 0x09B2, 0x09B3, 0x09B6, 0x09BA, 0x09BC, 0x09C5, 0x09C7, 0x09C9, 0x09CB, 0x09CF,
+    0x09D7, 0x09D8, 0x09DC, 0x09DE, 0x09DF, 0x09E4, 0x09E6, 0x09F2, 0x09F4, 0x09FA, 0x09FC, 0x09FD,
+    0x09FE, 0x09FF, 0x0A01, 0x0A04, 0x0A05, 0x0A0B, 0x0A0F, 0x0A11, 0x0A13, 0x0A29, 0x0A2A, 0x0A31,
+    0x0A32, 0x0A34, 0x0A35, 0x0A37, 0x0A38, 0x0A3A, 0x0A3C, 0x0A3D, 0x0A3E, 0x0A43, 0x0A47, 0x0A49,
+    0x0A4B, 0x0A4E, 0x0A51, 0x0A52, 0x0A59, 0x0A5D, 0x0A5E, 0x0A5F, 0x0A66, 0x0A76, 0x0A81, 0x0A84,
+    0x0A85, 0x0A8E, 0x0A8F, 0x0A92, 0x0A93, 0x0AA9, 0x0AAA, 0x0AB1, 0x0AB2, 0x0AB4, 0x0AB5, 0x0ABA,
+    0x0ABC, 0x0AC6, 0x0AC7, 0x0ACA, 0x0ACB, 0x0ACE, 0x0AD0, 0x0AD1, 0x0AE0, 0x0AE4, 0x0AE6, 0x0AF0,
+    0x0AF9, 0x0B00, 0x0B01, 0x0B04, 0x0B05, 0x0B0D, 0x0B0F, 0x0B11, 0x0B13, 0x0B29, 0x0B2A, 0x0B31,
+    0x0B32, 0x0B34, 0x0B35, 0x0B3A, 0x0B3C, 0x0B45, 0x0B47, 0x0B49, 0x0B4B, 0x0B4E, 0x0B55, 0x0B58,
+    0x0B5C, 0x0B5E, 0x0B5F, 0x0B64, 0x0B66, 0x0B70, 0x0B71, 0x0B78, 0x0B82, 0x0B84, 0x0B85, 0x0B8B,
+    0x0B8E, 0x0B91, 0x0B92, 0x0B96, 0x0B99, 0x0B9B, 0x0B9C, 0x0B9D, 0x0B9E, 0x0BA0, 0x0BA3, 0x0BA5,
+    0x0BA8, 0x0BAB, 0x0BAE, 0x0BBA, 0x0BBE, 0x0BC3, 0x0BC6, 0x0BC9, 0x0BCA, 0x0BCE, 0x0BD0, 0x0BD1,
+    0x0BD7, 0x0BD8, 0x0BE6, 0x0BF3, 0x0C00, 0x0C0D, 0x0C0E, 0x0C11, 0x0C12, 0x0C29, 0x0C2A, 0x0C3A,
+    0x0C3C, 0x0C45, 0x0C46, 0x0C49, 0x0C4A, 0x0C4E, 0x0C55, 0x0C57, 0x0C58, 0x0C5B, 0x0C5D, 0x0C5E,
+    0x0C60, 0x0C64, 0x0C66, 0x0C70, 0x0C78, 0x0C7F, 0x0C80, 0x0C84, 0x0C85, 0x0C8D, 0x0C8E, 0x0C91,
+    0x0C92, 0x0CA9, 0x0CAA, 0x0CB4, 0x0CB5, 0x0CBA, 0x0CBC, 0x0CC5, 0x0CC6, 0x0CC9, 0x0CCA, 0x0CCE,
+    0x0CD5, 0x0CD7, 0x0CDD, 0x0CDF, 0x0CE0, 0x0CE4, 0x0CE6, 0x0CF0, 0x0CF1, 0x0CF4, 0x0D00, 0x0D0D,
+    0x0D0E, 0x0D11, 0x0D12, 0x0D45, 0x0D46, 0x0D49, 0x0D4A, 0x0D4F, 0x0D54, 0x0D64, 0x0D66, 0x0D79,
+    0x0D7A, 0x0D80, 0x0D81, 0x0D84, 0x0D85, 0x0D97, 0x0D9A, 0x0DB2, 0x0DB3, 0x0DBC, 0x0DBD, 0x0DBE,
+    0x0DC0, 0x0DC7, 0x0DCA, 0x0DCB, 0x0DCF, 0x0DD5, 0x0DD6, 0x0DD7, 0x0DD8, 0x0DE0, 0x0DE6, 0x0DF0,
+    0x0DF2, 0x0DF4, 0x0E01, 0x0E3B, 0x0E40, 0x0E4F, 0x0E50, 0x0E5A, 0x0E81, 0x0E83, 0x0E84, 0x0E85,
+    0x0E86, 0x0E8B, 0x0E8C, 0x0EA4, 0x0EA5, 0x0EA6, 0x0EA7, 0x0EBE, 0x0EC0, 0x0EC5, 0x0EC6, 0x0EC7,
+    0x0EC8, 0x0ECF, 0x0ED0, 0x0EDA, 0x0EDC, 0x0EE0, 0x0F00, 0x0F01, 0x0F18, 0x0F1A, 0x0F20, 0x0F34,
+    0x0F35, 0x0F36, 0x0F37, 0x0F38, 0x0F39, 0x0F3A, 0x0F3E, 0x0F48, 0x0F49, 0x0F6D, 0x0F71, 0x0F85,
+    0x0F86, 0x0F98, 0x0F99, 0x0FBD, 0x0FC6, 0x0FC7, 0x1000, 0x104A, 0x1050, 0x109E, 0x10A0, 0x10C6,
+    0x10C7, 0x10C8, 0x10CD, 0x10CE, 0x10D0, 0x10FB, 0x10FC, 0x1249, 0x124A, 0x124E, 0x1250, 0x1257,
+    0x1258, 0x1259, 0x125A, 0x125E, 0x1260, 0x1289, 0x128A, 0x128E, 0x1290, 0x12B1, 0x12B2, 0x12B6,
+    0x12B8, 0x12BF, 0x12C0, 0x12C1, 0x12C2, 0x12C6, 0x12C8, 0x12D7, 0x12D8, 0x1311, 0x1312, 0x1316,
+    0x1318, 0x135B, 0x135D, 0x1360, 0x1369, 0x137D, 0x1380, 0x1390, 0x13A0, 0x13F6, 0x13F8, 0x13FE,
+    0x1401, 0x166D, 0x166F, 0x1680, 0x1681, 0x169B, 0x16A0, 0x16EB, 0x16EE, 0x16F9, 0x1700, 0x1716,
+    0x171F, 0x1735, 0x1740, 0x1754, 0x1760, 0x176D, 0x176E, 0x1771, 0x1772, 0x1774, 0x1780, 0x17D4,
+    0x17D7, 0x17D8, 0x17DC, 0x17DE, 0x17E0, 0x17EA, 0x17F0, 0x17FA, 0x180B, 0x180E, 0x180F, 0x181A,
+    0x1820, 0x1879, 0x1880, 0x18AB, 0x18B0, 0x18F6, 0x1900, 0x191F, 0x1920, 0x192C, 0x1930, 0x193C,
+    0x1946, 0x196E, 0x1970, 0x1975, 0x1980, 0x19AC, 0x19B0, 0x19CA, 0x19D0, 0x19DB, 0x1A00, 0x1A1C,
+    0x1A20, 0x1A5F, 0x1A60, 0x1A7D, 0x1A7F, 0x1A8A, 0x1A90, 0x1A9A, 0x1AA7, 0x1AA8, 0x1AB0, 0x1ACF,
+    0x1B00, 0x1B4D, 0x1B50, 0x1B5A, 0x1B6B, 0x1B74, 0x1B80, 0x1BF4, 0x1C00, 0x1C38, 0x1C40, 0x1C4A,
+    0x1C4D, 0x1C7E, 0x1C80, 0x1C89, 0x1C90, 0x1CBB, 0x1CBD, 0x1CC0, 0x1CD0, 0x1CD3, 0x1CD4, 0x1CFB,
+    0x1D00, 0x1F16, 0x1F18, 0x1F1E, 0x1F20, 0x1F46, 0x1F48, 0x1F4E, 0x1F50, 0x1F58, 0x1F59, 0x1F5A,
+    0x1F5B, 0x1F5C, 0x1F5D, 0x1F5E, 0x1F5F, 0x1F7E, 0x1F80, 0x1FB5, 0x1FB6, 0x1FBD, 0x1FBE, 0x1FBF,
+    0x1FC2, 0x1FC5, 0x1FC6, 0x1FCD, 0x1FD0, 0x1FD4, 0x1FD6, 0x1FDC, 0x1FE0, 0x1FED, 0x1FF2, 0x1FF5,
+    0x1FF6, 0x1FFD, 0x2070, 0x2072, 0x2074, 0x207A, 0x207F, 0x208A, 0x2090, 0x209D, 0x20D0, 0x20F1,
+    0x2102, 0x2103, 0x2107, 0x2108, 0x210A, 0x2114, 0x2115, 0x2116, 0x2119, 0x211E, 0x2124, 0x2125,
+    0x2126, 0x2127, 0x2128, 0x2129, 0x212A, 0x212E, 0x212F, 0x213A, 0x213C, 0x2140, 0x2145, 0x214A,
+    0x214E, 0x214F, 0x2150, 0x218A, 0x2460, 0x249C, 0x24EA, 0x2500, 0x2776, 0x2794, 0x2C00, 0x2CE5,
+    0x2CEB, 0x2CF4, 0x2CFD, 0x2CFE, 0x2D00, 0x2D26, 0x2D27, 0x2D28, 0x2D2D, 0x2D2E, 0x2D30, 0x2D68,
+    0x2D6F, 0x2D70, 0x2D7F, 0x2D97, 0x2DA0, 0x2DA7, 0x2DA8, 0x2DAF, 0x2DB0, 0x2DB7, 0x2DB8, 0x2DBF,
+    0x2DC0, 0x2DC7, 0x2DC8, 0x2DCF, 0x2DD0, 0x2DD7, 0x2DD8, 0x2DDF, 0x2DE0, 0x2E00, 0x2E2F, 0x2E30,
+    0x3005, 0x3008, 0x3021, 0x3030, 0x3031, 0x3036, 0x3038, 0x303D, 0x3041, 0x3097, 0x3099, 0x309B,
+    0x309D, 0x30A0, 0x30A1, 0x30FB, 0x30FC, 0x3100, 0x3105, 0x3130, 0x3131, 0x318F, 0x3192, 0x3196,
+    0x31A0, 0x31C0, 0x31F0, 0x3200, 0x3220, 0x322A, 0x3248, 0x3250, 0x3251, 0x3260, 0x3280, 0x328A,
+    0x32B1, 0x32C0, 0x3400, 0x4DC0, 0x4E00, 0xA48D, 0xA4D0, 0xA4FE, 0xA500, 0xA60D, 0xA610, 0xA62C,
+    0xA640, 0xA673, 0xA674, 0xA67E, 0xA67F, 0xA6F2, 0xA717, 0xA720, 0xA722, 0xA789, 0xA78B, 0xA7CB,
+    0xA7D0, 0xA7D2, 0xA7D3, 0xA7D4, 0xA7D5, 0xA7DA, 0xA7F2, 0xA828, 0xA82C, 0xA82D, 0xA830, 0xA836,
+    0xA840, 0xA874, 0xA880, 0xA8C6, 0xA8D0, 0xA8DA, 0xA8E0, 0xA8F8, 0xA8FB, 0xA8FC, 0xA8FD, 0xA92E,
+    0xA930, 0xA954, 0xA960, 0xA97D, 0xA980, 0xA9C1, 0xA9CF, 0xA9DA, 0xA9E0, 0xA9FF, 0xAA00, 0xAA37,
+    0xAA40, 0xAA4E, 0xAA50, 0xAA5A, 0xAA60, 0xAA77, 0xAA7A, 0xAAC3, 0xAADB, 0xAADE, 0xAAE0, 0xAAF0,
+    0xAAF2, 0xAAF7, 0xAB01, 0xAB07, 0xAB09, 0xAB0F, 0xAB11, 0xAB17, 0xAB20, 0xAB27, 0xAB28, 0xAB2F,
+    0xAB30, 0xAB5B, 0xAB5C, 0xAB6A, 0xAB70, 0xABEB, 0xABEC, 0xABEE, 0xABF0, 0xABFA, 0xAC00, 0xD7A4,
+    0xD7B0, 0xD7C7, 0xD7CB, 0xD7FC, 0xF900, 0xFA6E, 0xFA70, 0xFADA, 0xFB00, 0xFB07, 0xFB13, 0xFB18,
+    0xFB1D, 0xFB29, 0xFB2A, 0xFB37, 0xFB38, 0xFB3D, 0xFB3E, 0xFB3F, 0xFB40, 0xFB42, 0xFB43, 0xFB45,
+    0xFB46, 0xFBB2, 0xFBD3, 0xFD3E, 0xFD50, 0xFD90, 0xFD92, 0xFDC8, 0xFDF0, 0xFDFC, 0xFE00, 0xFE10,
+    0xFE20, 0xFE30, 0xFE70, 0xFE75, 0xFE76, 0xFEFD, 0xFF10, 0xFF1A, 0xFF21, 0xFF3B, 0xFF41, 0xFF5B,
+    0xFF66, 0xFFBF, 0xFFC2, 0xFFC8, 0xFFCA, 0xFFD0, 0xFFD2, 0xFFD8, 0xFFDA, 0xFFDD,
+];
+
+const AFFIX_SYMBOL: &[u32] = &[
+    0x0021, 0x0023, 0x0027, 0x0028, 0x0029, 0x002A, 0x002E, 0x002F, 0x003F, 0x0040, 0x005D, 0x005E,
+    0x007D, 0x007E, 0x00BB, 0x00BC, 0x0F3B, 0x0F3C, 0x0F3D, 0x0F3E, 0x169C, 0x169D, 0x2019, 0x201A,
+    0x201D, 0x201E, 0x2026, 0x2027, 0x203A, 0x203B, 0x203D, 0x203E, 0x2046, 0x2047, 0x207E, 0x207F,
+    0x208E, 0x208F, 0x2309, 0x230A, 0x230B, 0x230C, 0x232A, 0x232B, 0x2769, 0x276A, 0x276B, 0x276C,
+    0x276D, 0x276E, 0x276F, 0x2770, 0x2771, 0x2772, 0x2773, 0x2774, 0x2775, 0x2776, 0x27C6, 0x27C7,
+    0x27E7, 0x27E8, 0x27E9, 0x27EA, 0x27EB, 0x27EC, 0x27ED, 0x27EE, 0x27EF, 0x27F0, 0x2984, 0x2985,
+    0x2986, 0x2987, 0x2988, 0x2989, 0x298A, 0x298B, 0x298C, 0x298D, 0x298E, 0x298F, 0x2990, 0x2991,
+    0x2992, 0x2993, 0x2994, 0x2995, 0x2996, 0x2997, 0x2998, 0x2999, 0x29D9, 0x29DA, 0x29DB, 0x29DC,
+    0x29FD, 0x29FE, 0x2E03, 0x2E04, 0x2E05, 0x2E06, 0x2E0A, 0x2E0B, 0x2E0D, 0x2E0E, 0x2E1D, 0x2E1E,
+    0x2E21, 0x2E22, 0x2E23, 0x2E24, 0x2E25, 0x2E26, 0x2E27, 0x2E28, 0x2E29, 0x2E2A, 0x2E56, 0x2E57,
+    0x2E58, 0x2E59, 0x2E5A, 0x2E5B, 0x2E5C, 0x2E5D, 0x3009, 0x300A, 0x300B, 0x300C, 0x300D, 0x300E,
+    0x300F, 0x3010, 0x3011, 0x3012, 0x3015, 0x3016, 0x3017, 0x3018, 0x3019, 0x301A, 0x301B, 0x301C,
+    0x301E, 0x3020, 0xFD3E, 0xFD3F, 0xFE18, 0xFE19, 0xFE36, 0xFE37, 0xFE38, 0xFE39, 0xFE3A, 0xFE3B,
+    0xFE3C, 0xFE3D, 0xFE3E, 0xFE3F, 0xFE40, 0xFE41, 0xFE42, 0xFE43, 0xFE44, 0xFE45, 0xFE48, 0xFE49,
+    0xFE5A, 0xFE5B, 0xFE5C, 0xFE5D, 0xFE5E, 0xFE5F, 0xFF09, 0xFF0A, 0xFF3D, 0xFF3E, 0xFF5D, 0xFF5E,
+    0xFF60, 0xFF61, 0xFF63, 0xFF64,
+];
+
+const NUMERICAL: &[u32] = &[
+    0x0030, 0x003A, 0x00B2, 0x00B4, 0x00B9, 0x00BA, 0x00BC, 0x00BF, 0x0660, 0x066A, 0x06F0, 0x06FA,
+    0x07C0, 0x07CA, 0x0966, 0x0970, 0x09E6, 0x09F0, 0x09F4, 0x09FA, 0x0A66, 0x0A70, 0x0AE6, 0x0AF0,
+    0x0B66, 0x0B70, 0x0B72, 0x0B78, 0x0BE6, 0x0BF3, 0x0C66, 0x0C70, 0x0C78, 0x0C7F, 0x0CE6, 0x0CF0,
+    0x0D58, 0x0D5F, 0x0D66, 0x0D79, 0x0DE6, 0x0DF0, 0x0E50, 0x0E5A, 0x0ED0, 0x0EDA, 0x0F20, 0x0F34,
+    0x1040, 0x104A, 0x1090, 0x109A, 0x1369, 0x137D, 0x16EE, 0x16F1, 0x17E0, 0x17EA, 0x17F0, 0x17FA,
+    0x1810, 0x181A, 0x1946, 0x1950, 0x19D0, 0x19DB, 0x1A80, 0x1A8A, 0x1A90, 0x1A9A, 0x1B50, 0x1B5A,
+    0x1BB0, 0x1BBA, 0x1C40, 0x1C4A, 0x1C50, 0x1C5A, 0x2070, 0x2071, 0x2074, 0x207A, 0x2080, 0x208A,
+    0x2150, 0x2183, 0x2185, 0x218A, 0x2460, 0x249C, 0x24EA, 0x2500, 0x2776, 0x2794, 0x2CFD, 0x2CFE,
+    0x3007, 0x3008, 0x3021, 0x302A, 0x3038, 0x303B, 0x3192, 0x3196, 0x3220, 0x322A, 0x3248, 0x3250,
+    0x3251, 0x3260, 0x3280, 0x328A, 0x32B1, 0x32C0, 0xA620, 0xA62A, 0xA6E6, 0xA6F0, 0xA830, 0xA836,
+    0xA8D0, 0xA8DA, 0xA900, 0xA90A, 0xA9D0, 0xA9DA, 0xA9F0, 0xA9FA, 0xAA50, 0xAA5A, 0xABF0, 0xABFA,
+    0xFF10, 0xFF1A,
+];
+
+const LOWER_INITIAL: &[u32] = &[
+    0x0061, 0x007B, 0x00B5, 0x00B6, 0x00DF, 0x00F7, 0x00F8, 0x0100, 0x0101, 0x0102, 0x0103, 0x0104,
+    0x0105, 0x0106, 0x0107, 0x0108, 0x0109, 0x010A, 0x010B, 0x010C, 0x010D, 0x010E, 0x010F, 0x0110,
+    0x0111, 0x0112, 0x0113, 0x0114, 0x0115, 0x0116, 0x0117, 0x0118, 0x0119, 0x011A, 0x011B, 0x011C,
+    0x011D, 0x011E, 0x011F, 0x0120, 0x0121, 0x0122, 0x0123, 0x0124, 0x0125, 0x0126, 0x0127, 0x0128,
+    0x0129, 0x012A, 0x012B, 0x012C, 0x012D, 0x012E, 0x012F, 0x0130, 0x0131, 0x0132, 0x0133, 0x0134,
+    0x0135, 0x0136, 0x0137, 0x0139, 0x013A, 0x013B, 0x013C, 0x013D, 0x013E, 0x013F, 0x0140, 0x0141,
+    0x0142, 0x0143, 0x0144, 0x0145, 0x0146, 0x0147, 0x0148, 0x014A, 0x014B, 0x014C, 0x014D, 0x014E,
+    0x014F, 0x0150, 0x0151, 0x0152, 0x0153, 0x0154, 0x0155, 0x0156, 0x0157, 0x0158, 0x0159, 0x015A,
+    0x015B, 0x015C, 0x015D, 0x015E, 0x015F, 0x0160, 0x0161, 0x0162, 0x0163, 0x0164, 0x0165, 0x0166,
+    0x0167, 0x0168, 0x0169, 0x016A, 0x016B, 0x016C, 0x016D, 0x016E, 0x016F, 0x0170, 0x0171, 0x0172,
+    0x0173, 0x0174, 0x0175, 0x0176, 0x0177, 0x0178, 0x017A, 0x017B, 0x017C, 0x017D, 0x017E, 0x0181,
+    0x0183, 0x0184, 0x0185, 0x0186, 0x0188, 0x0189, 0x018C, 0x018E, 0x0192, 0x0193, 0x0195, 0x0196,
+    0x0199, 0x019C, 0x019E, 0x019F, 0x01A1, 0x01A2, 0x01A3, 0x01A4, 0x01A5, 0x01A6, 0x01A8, 0x01A9,
+    0x01AA, 0x01AC, 0x01AD, 0x01AE, 0x01B0, 0x01B1, 0x01B4, 0x01B5, 0x01B6, 0x01B7, 0x01B9, 0x01BB,
+    0x01BD, 0x01C0, 0x01C6, 0x01C7, 0x01C9, 0x01CA, 0x01CC, 0x01CD, 0x01CE, 0x01CF, 0x01D0, 0x01D1,
+    0x01D2, 0x01D3, 0x01D4, 0x01D5, 0x01D6, 0x01D7, 0x01D8, 0x01D9, 0x01DA, 0x01DB, 0x01DC, 0x01DE,
+    0x01DF, 0x01E0, 0x01E1, 0x01E2, 0x01E3, 0x01E4, 0x01E5, 0x01E6, 0x01E7, 0x01E8, 0x01E9, 0x01EA,
+    0x01EB, 0x01EC, 0x01ED, 0x01EE, 0x01EF, 0x01F1, 0x01F3, 0x01F4, 0x01F5, 0x01F6, 0x01F9, 0x01FA,
+    0x01FB, 0x01FC, 0x01FD, 0x01FE, 0x01FF, 0x0200, 0x0201, 0x0202, 0x0203, 0x0204, 0x0205, 0x0206,
+    0x0207, 0x0208, 0x0209, 0x020A, 0x020B, 0x020C, 0x020D, 0x020E, 0x020F, 0x0210, 0x0211, 0x0212,
+    0x0213, 0x0214, 0x0215, 0x0216, 0x0217, 0x0218, 0x0219, 0x021A, 0x021B, 0x021C, 0x021D, 0x021E,
+    0x021F, 0x0220, 0x0221, 0x0222, 0x0223, 0x0224, 0x0225, 0x0226, 0x0227, 0x0228, 0x0229, 0x022A,
+    0x022B, 0x022C, 0x022D, 0x022E, 0x022F, 0x0230, 0x0231, 0x0232, 0x0233, 0x023A, 0x023C, 0x023D,
+    0x023F, 0x0241, 0x0242, 0x0243, 0x0247, 0x0248, 0x0249, 0x024A, 0x024B, 0x024C, 0x024D, 0x024E,
+    0x024F, 0x0294, 0x0295, 0x02B0, 0x0371, 0x0372, 0x0373, 0x0374, 0x0377, 0x0378, 0x037B, 0x037E,
+    0x0390, 0x0391, 0x03AC, 0x03CF, 0x03D0, 0x03D2, 0x03D5, 0x03D8, 0x03D9, 0x03DA, 0x03DB, 0x03DC,
+    0x03DD, 0x03DE, 0x03DF, 0x03E0, 0x03E1, 0x03E2, 0x03E3, 0x03E4, 0x03E5, 0x03E6, 0x03E7, 0x03E8,
+    0x03E9, 0x03EA, 0x03EB, 0x03EC, 0x03ED, 0x03EE, 0x03EF, 0x03F4, 0x03F5, 0x03F6, 0x03F8, 0x03F9,
+    0x03FB, 0x03FD, 0x0430, 0x0460, 0x0461, 0x0462, 0x0463, 0x0464, 0x0465, 0x0466, 0x0467, 0x0468,
+    0x0469, 0x046A, 0x046B, 0x046C, 0x046D, 0x046E, 0x046F, 0x0470, 0x0471, 0x0472, 0x0473, 0x0474,
+    0x0475, 0x0476, 0x0477, 0x0478, 0x0479, 0x047A, 0x047B, 0x047C, 0x047D, 0x047E, 0x047F, 0x0480,
+    0x0481, 0x0482, 0x048B, 0x048C, 0x048D, 0x048E, 0x048F, 0x0490, 0x0491, 0x0492, 0x0493, 0x0494,
+    0x0495, 0x0496, 0x0497, 0x0498, 0x0499, 0x049A, 0x049B, 0x049C, 0x049D, 0x049E, 0x049F, 0x04A0,
+    0x04A1, 0x04A2, 0x04A3, 0x04A4, 0x04A5, 0x04A6, 0x04A7, 0x04A8, 0x04A9, 0x04AA, 0x04AB, 0x04AC,
+    0x04AD, 0x04AE, 0x04AF, 0x04B0, 0x04B1, 0x04B2, 0x04B3, 0x04B4, 0x04B5, 0x04B6, 0x04B7, 0x04B8,
+    0x04B9, 0x04BA, 0x04BB, 0x04BC, 0x04BD, 0x04BE, 0x04BF, 0x04C0, 0x04C2, 0x04C3, 0x04C4, 0x04C5,
+    0x04C6, 0x04C7, 0x04C8, 0x04C9, 0x04CA, 0x04CB, 0x04CC, 0x04CD, 0x04CE, 0x04D0, 0x04D1, 0x04D2,
+    0x04D3, 0x04D4, 0x04D5, 0x04D6, 0x04D7, 0x04D8, 0x04D9, 0x04DA, 0x04DB, 0x04DC, 0x04DD, 0x04DE,
+    0x04DF, 0x04E0, 0x04E1, 0x04E2, 0x04E3, 0x04E4, 0x04E5, 0x04E6, 0x04E7, 0x04E8, 0x04E9, 0x04EA,
+    0x04EB, 0x04EC, 0x04ED, 0x04EE, 0x04EF, 0x04F0, 0x04F1, 0x04F2, 0x04F3, 0x04F4, 0x04F5, 0x04F6,
+    0x04F7, 0x04F8, 0x04F9, 0x04FA, 0x04FB, 0x04FC, 0x04FD, 0x04FE, 0x04FF, 0x0500, 0x0501, 0x0502,
+    0x0503, 0x0504, 0x0505, 0x0506, 0x0507, 0x0508, 0x0509, 0x050A, 0x050B, 0x050C, 0x050D, 0x050E,
+    0x050F, 0x0510, 0x0511, 0x0512, 0x0513, 0x0514, 0x0515, 0x0516, 0x0517, 0x0518, 0x0519, 0x051A,
+    0x051B, 0x051C, 0x051D, 0x051E, 0x051F, 0x0520, 0x0521, 0x0522, 0x0523, 0x0524, 0x0525, 0x0526,
+    0x0527, 0x0528, 0x0529, 0x052A, 0x052B, 0x052C, 0x052D, 0x052E, 0x052F, 0x0530, 0x0560, 0x0589,
+    0x10D0, 0x10FB, 0x10FD, 0x1100, 0x13F8, 0x13FE, 0x1C80, 0x1C89, 0x1D00, 0x1D2C, 0x1D6B, 0x1D78,
+    0x1D79, 0x1D9B, 0x1E01, 0x1E02, 0x1E03, 0x1E04, 0x1E05, 0x1E06, 0x1E07, 0x1E08, 0x1E09, 0x1E0A,
+    0x1E0B, 0x1E0C, 0x1E0D, 0x1E0E, 0x1E0F, 0x1E10, 0x1E11, 0x1E12, 0x1E13, 0x1E14, 0x1E15, 0x1E16,
+    0x1E17, 0x1E18, 0x1E19, 0x1E1A, 0x1E1B, 0x1E1C, 0x1E1D, 0x1E1E, 0x1E1F, 0x1E20, 0x1E21, 0x1E22,
+    0x1E23, 0x1E24, 0x1E25, 0x1E26, 0x1E27, 0x1E28, 0x1E29, 0x1E2A, 0x1E2B, 0x1E2C, 0x1E2D, 0x1E2E,
+    0x1E2F, 0x1E30, 0x1E31, 0x1E32, 0x1E33, 0x1E34, 0x1E35, 0x1E36, 0x1E37, 0x1E38, 0x1E39, 0x1E3A,
+    0x1E3B, 0x1E3C, 0x1E3D, 0x1E3E, 0x1E3F, 0x1E40, 0x1E41, 0x1E42, 0x1E43, 0x1E44, 0x1E45, 0x1E46,
+    0x1E47, 0x1E48, 0x1E49, 0x1E4A, 0x1E4B, 0x1E4C, 0x1E4D, 0x1E4E, 0x1E4F, 0x1E50, 0x1E51, 0x1E52,
+    0x1E53, 0x1E54, 0x1E55, 0x1E56, 0x1E57, 0x1E58, 0x1E59, 0x1E5A, 0x1E5B, 0x1E5C, 0x1E5D, 0x1E5E,
+    0x1E5F, 0x1E60, 0x1E61, 0x1E62, 0x1E63, 0x1E64, 0x1E65, 0x1E66, 0x1E67, 0x1E68, 0x1E69, 0x1E6A,
+    0x1E6B, 0x1E6C, 0x1E6D, 0x1E6E, 0x1E6F, 0x1E70, 0x1E71, 0x1E72, 0x1E73, 0x1E74, 0x1E75, 0x1E76,
+    0x1E77, 0x1E78, 0x1E79, 0x1E7A, 0x1E7B, 0x1E7C, 0x1E7D, 0x1E7E, 0x1E7F, 0x1E80, 0x1E81, 0x1E82,
+    0x1E83, 0x1E84, 0x1E85, 0x1E86, 0x1E87, 0x1E88, 0x1E89, 0x1E8A, 0x1E8B, 0x1E8C, 0x1E8D, 0x1E8E,
+    0x1E8F, 0x1E90, 0x1E91, 0x1E92, 0x1E93, 0x1E94, 0x1E95, 0x1E9E, 0x1E9F, 0x1EA0, 0x1EA1, 0x1EA2,
+    0x1EA3, 0x1EA4, 0x1EA5, 0x1EA6, 0x1EA7, 0x1EA8, 0x1EA9, 0x1EAA, 0x1EAB, 0x1EAC, 0x1EAD, 0x1EAE,
+    0x1EAF, 0x1EB0, 0x1EB1, 0x1EB2, 0x1EB3, 0x1EB4, 0x1EB5, 0x1EB6, 0x1EB7, 0x1EB8, 0x1EB9, 0x1EBA,
+    0x1EBB, 0x1EBC, 0x1EBD, 0x1EBE, 0x1EBF, 0x1EC0, 0x1EC1, 0x1EC2, 0x1EC3, 0x1EC4, 0x1EC5, 0x1EC6,
+    0x1EC7, 0x1EC8, 0x1EC9, 0x1ECA, 0x1ECB, 0x1ECC, 0x1ECD, 0x1ECE, 0x1ECF, 0x1ED0, 0x1ED1, 0x1ED2,
+    0x1ED3, 0x1ED4, 0x1ED5, 0x1ED6, 0x1ED7, 0x1ED8, 0x1ED9, 0x1EDA, 0x1EDB, 0x1EDC, 0x1EDD, 0x1EDE,
+    0x1EDF, 0x1EE0, 0x1EE1, 0x1EE2, 0x1EE3, 0x1EE4, 0x1EE5, 0x1EE6, 0x1EE7, 0x1EE8, 0x1EE9, 0x1EEA,
+    0x1EEB, 0x1EEC, 0x1EED, 0x1EEE, 0x1EEF, 0x1EF0, 0x1EF1, 0x1EF2, 0x1EF3, 0x1EF4, 0x1EF5, 0x1EF6,
+    0x1EF7, 0x1EF8, 0x1EF9, 0x1EFA, 0x1EFB, 0x1EFC, 0x1EFD, 0x1EFE, 0x1EFF, 0x1F08, 0x1F10, 0x1F16,
+    0x1F20, 0x1F28, 0x1F30, 0x1F38, 0x1F40, 0x1F46, 0x1F50, 0x1F58, 0x1F60, 0x1F68, 0x1F70, 0x1F7E,
+    0x1F80, 0x1F88, 0x1F90, 0x1F98, 0x1FA0, 0x1FA8, 0x1FB0, 0x1FB5, 0x1FB6, 0x1FB8, 0x1FBE, 0x1FBF,
+    0x1FC2, 0x1FC5, 0x1FC6, 0x1FC8, 0x1FD0, 0x1FD4, 0x1FD6, 0x1FD8, 0x1FE0, 0x1FE8, 0x1FF2, 0x1FF5,
+    0x1FF6, 0x1FF8, 0x210A, 0x210B, 0x210E, 0x2110, 0x2113, 0x2114, 0x212F, 0x2130, 0x2134, 0x2135,
+    0x2139, 0x213A, 0x213C, 0x213E, 0x2146, 0x214A, 0x214E, 0x214F, 0x2184, 0x2185, 0x2C30, 0x2C60,
+    0x2C61, 0x2C62, 0x2C65, 0x2C67, 0x2C68, 0x2C69, 0x2C6A, 0x2C6B, 0x2C6C, 0x2C6D, 0x2C71, 0x2C72,
+    0x2C73, 0x2C75, 0x2C76, 0x2C7C, 0x2C81, 0x2C82, 0x2C83, 0x2C84, 0x2C85, 0x2C86, 0x2C87, 0x2C88,
+    0x2C89, 0x2C8A, 0x2C8B, 0x2C8C, 0x2C8D, 0x2C8E, 0x2C8F, 0x2C90, 0x2C91, 0x2C92, 0x2C93, 0x2C94,
+    0x2C95, 0x2C96, 0x2C97, 0x2C98, 0x2C99, 0x2C9A, 0x2C9B, 0x2C9C, 0x2C9D, 0x2C9E, 0x2C9F, 0x2CA0,
+    0x2CA1, 0x2CA2, 0x2CA3, 0x2CA4, 0x2CA5, 0x2CA6, 0x2CA7, 0x2CA8, 0x2CA9, 0x2CAA, 0x2CAB, 0x2CAC,
+    0x2CAD, 0x2CAE, 0x2CAF, 0x2CB0, 0x2CB1, 0x2CB2, 0x2CB3, 0x2CB4, 0x2CB5, 0x2CB6, 0x2CB7, 0x2CB8,
+    0x2CB9, 0x2CBA, 0x2CBB, 0x2CBC, 0x2CBD, 0x2CBE, 0x2CBF, 0x2CC0, 0x2CC1, 0x2CC2, 0x2CC3, 0x2CC4,
+    0x2CC5, 0x2CC6, 0x2CC7, 0x2CC8, 0x2CC9, 0x2CCA, 0x2CCB, 0x2CCC, 0x2CCD, 0x2CCE, 0x2CCF, 0x2CD0,
+    0x2CD1, 0x2CD2, 0x2CD3, 0x2CD4, 0x2CD5, 0x2CD6, 0x2CD7, 0x2CD8, 0x2CD9, 0x2CDA, 0x2CDB, 0x2CDC,
+    0x2CDD, 0x2CDE, 0x2CDF, 0x2CE0, 0x2CE1, 0x2CE2, 0x2CE3, 0x2CE5, 0x2CEC, 0x2CED, 0x2CEE, 0x2CEF,
+    0x2CF3, 0x2CF4, 0x2D00, 0x2D26, 0x2D27, 0x2D28, 0x2D2D, 0x2D2E, 0xA641, 0xA642, 0xA643, 0xA644,
+    0xA645, 0xA646, 0xA647, 0xA648, 0xA649, 0xA64A, 0xA64B, 0xA64C, 0xA64D, 0xA64E, 0xA64F, 0xA650,
+    0xA651, 0xA652, 0xA653, 0xA654, 0xA655, 0xA656, 0xA657, 0xA658, 0xA659, 0xA65A, 0xA65B, 0xA65C,
+    0xA65D, 0xA65E, 0xA65F, 0xA660, 0xA661, 0xA662, 0xA663, 0xA664, 0xA665, 0xA666, 0xA667, 0xA668,
+    0xA669, 0xA66A, 0xA66B, 0xA66C, 0xA66D, 0xA66E, 0xA681, 0xA682, 0xA683, 0xA684, 0xA685, 0xA686,
+    0xA687, 0xA688, 0xA689, 0xA68A, 0xA68B, 0xA68C, 0xA68D, 0xA68E, 0xA68F, 0xA690, 0xA691, 0xA692,
+    0xA693, 0xA694, 0xA695, 0xA696, 0xA697, 0xA698, 0xA699, 0xA69A, 0xA69B, 0xA69C, 0xA723, 0xA724,
+    0xA725, 0xA726, 0xA727, 0xA728, 0xA729, 0xA72A, 0xA72B, 0xA72C, 0xA72D, 0xA72E, 0xA72F, 0xA732,
+    0xA733, 0xA734, 0xA735, 0xA736, 0xA737, 0xA738, 0xA739, 0xA73A, 0xA73B, 0xA73C, 0xA73D, 0xA73E,
+    0xA73F, 0xA740, 0xA741, 0xA742, 0xA743, 0xA744, 0xA745, 0xA746, 0xA747, 0xA748, 0xA749, 0xA74A,
+    0xA74B, 0xA74C, 0xA74D, 0xA74E, 0xA74F, 0xA750, 0xA751, 0xA752, 0xA753, 0xA754, 0xA755, 0xA756,
+    0xA757, 0xA758, 0xA759, 0xA75A, 0xA75B, 0xA75C, 0xA75D, 0xA75E, 0xA75F, 0xA760, 0xA761, 0xA762,
+    0xA763, 0xA764, 0xA765, 0xA766, 0xA767, 0xA768, 0xA769, 0xA76A, 0xA76B, 0xA76C, 0xA76D, 0xA76E,
+    0xA76F, 0xA770, 0xA771, 0xA779, 0xA77A, 0xA77B, 0xA77C, 0xA77D, 0xA77F, 0xA780, 0xA781, 0xA782,
+    0xA783, 0xA784, 0xA785, 0xA786, 0xA787, 0xA788, 0xA78C, 0xA78D, 0xA78E, 0xA78F, 0xA791, 0xA792,
+    0xA793, 0xA796, 0xA797, 0xA798, 0xA799, 0xA79A, 0xA79B, 0xA79C, 0xA79D, 0xA79E, 0xA79F, 0xA7A0,
+    0xA7A1, 0xA7A2, 0xA7A3, 0xA7A4, 0xA7A5, 0xA7A6, 0xA7A7, 0xA7A8, 0xA7A9, 0xA7AA, 0xA7AF, 0xA7B0,
+    0xA7B5, 0xA7B6, 0xA7B7, 0xA7B8, 0xA7B9, 0xA7BA, 0xA7BB, 0xA7BC, 0xA7BD, 0xA7BE, 0xA7BF, 0xA7C0,
+    0xA7C1, 0xA7C2, 0xA7C3, 0xA7C4, 0xA7C8, 0xA7C9, 0xA7CA, 0xA7CB, 0xA7D1, 0xA7D2, 0xA7D3, 0xA7D4,
+    0xA7D5, 0xA7D6, 0xA7D7, 0xA7D8, 0xA7D9, 0xA7DA, 0xA7F6, 0xA7F7, 0xA7FA, 0xA7FB, 0xAB30, 0xAB5B,
+    0xAB60, 0xAB69, 0xAB70, 0xABC0, 0xFB00, 0xFB07, 0xFB13, 0xFB18, 0xFF41, 0xFF5B,
+];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Expected values from remark-smartypants 3.0.2 and retext-smartypants
+    // 6.2.0 themselves.
+    #[test]
+    fn quotes_follow_the_token_around_them() {
+        let text = "Rust's 2024 edition, the '90s and rock 'n' roll";
+        assert_eq!(
+            smarten(&[Piece::ParagraphStart, Piece::Text(text)], Dashes::Default),
+            ["Rust’s 2024 edition, the ’90s and rock ‘n’ roll"]
+        );
+    }
+
+    #[test]
+    fn quotes_pair_across_nodes_counting_code_in_utf_16() {
+        let link = [
+            Piece::ParagraphStart,
+            Piece::Text("Read \""),
+            Piece::Text("the book"),
+            Piece::Text("\" now."),
+        ];
+        assert_eq!(
+            smarten(&link, Dashes::Default),
+            ["Read “", "the book", "” now."]
+        );
+
+        let code = [
+            Piece::ParagraphStart,
+            Piece::Text("\""),
+            Piece::Code("x"),
+            Piece::Text("\" and \""),
+            Piece::Code("🦀"),
+            Piece::Text("\""),
+        ];
+        assert_eq!(smarten(&code, Dashes::Default), ["“", "” and “", "”"]);
+
+        // A hard break is no piece, so the quote after it follows a word.
+        let broken = [
+            Piece::ParagraphStart,
+            Piece::Text("Para one"),
+            Piece::Text("\"broken\" line"),
+        ];
+        assert_eq!(
+            smarten(&broken, Dashes::Default),
+            ["Para one", "”broken” line"]
+        );
+    }
+
+    #[test]
+    fn dashes_ellipses_and_backticks_per_text_node() {
+        let text = [
+            Piece::ParagraphStart,
+            Piece::Text("a -- b --- c, wait... ``hi'' – - x –-y"),
+        ];
+        assert_eq!(
+            smarten(&text, Dashes::Default),
+            ["a — b --- c, wait… “hi” – - x –-y"]
+        );
+        assert_eq!(
+            smarten(&text, Dashes::Oldschool),
+            ["a – b — c, wait… “hi” – - x —y"]
+        );
+    }
+}
