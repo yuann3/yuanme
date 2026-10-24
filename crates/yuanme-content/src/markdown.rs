@@ -15,7 +15,7 @@ use crate::smartypants::{self, Dashes, Piece};
 
 /// The comrak extensions the Engine reads (#2, #17). Raw HTML is kept and
 /// written out as it is (ADR 0009); comrak's own HTML is never used.
-fn options() -> Options<'static> {
+pub fn options() -> Options<'static> {
     let mut o = Options::default();
     let e = &mut o.extension;
     e.strikethrough = true;
@@ -147,10 +147,16 @@ fn heading_ids(doc: &mut Document) {
     }
 }
 
+/// Where each line starts. A line ends at `\n`, `\r\n` or a lone `\r`, as
+/// comrak counts lines.
 fn line_starts(text: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(text.match_indices('\n').map(|(i, _)| i + 1))
-        .collect()
+    let bytes = text.as_bytes();
+    let ends = bytes.iter().enumerate().filter_map(|(i, &b)| match b {
+        b'\n' => Some(i + 1),
+        b'\r' if bytes.get(i + 1) != Some(&b'\n') => Some(i + 1),
+        _ => None,
+    });
+    std::iter::once(0).chain(ends).collect()
 }
 
 struct Lower<'c, 'd> {

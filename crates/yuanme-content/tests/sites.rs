@@ -679,3 +679,17 @@ fn a_title_on_a_plain_directive_warns_and_the_entry_still_builds() {
         ":::"
     );
 }
+
+#[test]
+fn spans_after_a_lone_carriage_return_point_at_the_right_text() {
+    // comrak ends a line at `\r`, `\n` or `\r\n`, as CommonMark does.
+    let files = "---\ntitle: A\n---\nOne\r\rSee [b](b.md).\r\n";
+    let (sources, _, diagnostics) = resolve(&fixture(files), false);
+    let [d] = diagnostics.as_slice() else {
+        panic!("{diagnostics:#?}")
+    };
+    assert_eq!(
+        &sources.text(d.primary().file)[d.primary().range.clone()],
+        "[b](b.md)"
+    );
+}
