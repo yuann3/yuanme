@@ -1,0 +1,39 @@
+[package]
+name = "yuanme-markdown-fuzz"
+version = "0.0.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+arbitrary = { version = "1.4", features = ["derive"] }
+comrak = { version = "=0.57.0", default-features = false, features = ["attributes"] }
+libfuzzer-sys = "0.4"
+yuanme-content = { path = "../crates/yuanme-content" }
+yuanme-diag = { path = "../crates/yuanme-diag" }
+
+# Its own workspace, so the main one, its lockfile and its checks never see
+# libFuzzer.
+[workspace]
+
+# The root Cargo.toml's comrak patch, which a separate workspace doesn't
+# inherit. Keep the two pins the same.
+[patch.crates-io]
+comrak = { git = "https://github.com/yuann3/comrak", rev = "94a145e456d0776fceb137c90e17101826d4e8d6" }
+
+[[bin]]
+name = "adversarial"
+path = "fuzz_targets/adversarial.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "bytes"
+path = "fuzz_targets/bytes.rs"
+test = false
+doc = false
+bench = false
