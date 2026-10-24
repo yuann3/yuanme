@@ -66,6 +66,81 @@ codes! {
         example: "Any key the release notes list as renamed.",
         fix: "Apply the machine-applicable fix, which renames the key; `yuanme check --json` reports it.",
     }
+    ENTRY_SYNTAX = "entry/syntax" {
+        meaning: "An Entry's front matter, or a Data file, can't be read: it isn't valid YAML, TOML or JSON, its `---` is never closed, or the file isn't UTF-8.",
+        example: "---\ntitle: [Pew\n---",
+        fix: "Fix the syntax at the reported place. Here the list needs its closing bracket, or the title needs quotes: `title: \"[Pew\"`.",
+    }
+    ENTRY_TOML_FRONT_MATTER = "entry/toml-front-matter" {
+        meaning: "An Entry starts with `+++` TOML front matter. yuanme reads front matter as YAML only, between `---` lines.",
+        example: "+++\ntitle = \"Pew\"\n+++",
+        fix: "Rewrite it as YAML between `---` lines: `title: Pew`.",
+    }
+    ENTRY_DUPLICATE_KEY = "entry/duplicate-key" {
+        meaning: "A key appears twice in the same mapping of front matter or a Data file. YAML forbids it, and the second value would silently win.",
+        example: "---\ntitle: Pew\ntitle: Pew 2\n---",
+        fix: "Delete one of them.",
+    }
+    ENTRY_UNKNOWN_KEY = "entry/unknown-key" {
+        meaning: "Front matter, or a Data file with a schema, has a key its Collection or schema doesn't declare. Unknown keys are errors, so a typo can't silently do nothing.",
+        example: "---\ntitle: Pew\ndraf: true\n---",
+        fix: "Use the key the help suggests, such as `draft`, or declare the field under `[collections.<name>.fields]` in `yuanme.toml`.",
+    }
+    ENTRY_MISSING_FIELD = "entry/missing-field" {
+        meaning: "An Entry, or an object inside one, leaves out a field that is required: `title`, or a declared field with neither `optional = true` nor a `default`.",
+        example: "---\ndate: 2025-12-12\n---",
+        fix: "Add the field, here `title: Pew`, or make it optional in `yuanme.toml`.",
+    }
+    ENTRY_WRONG_TYPE = "entry/wrong-type" {
+        meaning: "A field has a value of the wrong type, such as a number where text goes. YAML reads `2025` as a number and `yes` as text, so either may need quotes or rewriting.",
+        example: "---\ntitle: 2025\n---",
+        fix: "Write the value as the type the message names. Here `title: \"2025\"`.",
+    }
+    ENTRY_OUT_OF_RANGE = "entry/out-of-range" {
+        meaning: "A field's value is outside the `min` and `max` its Collection declares: a string's length in characters, or a number.",
+        example: "---\ntitle: Pew\norder: 9\n---\n(with order = { type = \"int\", max = 5 })",
+        fix: "Use a value inside the range, or change the range in `yuanme.toml`.",
+    }
+    ENTRY_INVALID_VALUE = "entry/invalid-value" {
+        meaning: "A field's value has the right type but isn't allowed: an `enum` value not in its list, a URL that isn't absolute, an image that doesn't exist, or an item repeated in a `unique` list.",
+        example: "---\ntitle: Pew\nkind: esay\n---\n(with kind = { type = \"enum\", values = [\"essay\", \"note\"] })",
+        fix: "Change the value as the message says. Here `kind: essay`.",
+    }
+    ENTRY_INVALID_DATE = "entry/invalid-date" {
+        meaning: "A `date` or `datetime` field can't be read. Dates are ISO 8601, such as 2025-12-12; datetimes are RFC 3339, such as 2025-12-12T09:30:00+08:00, and one without an offset is in `site.timezone`.",
+        example: "---\ntitle: Pew\ndate: Dec 12 2025\n---",
+        fix: "Write the date in ISO form, `date: 2025-12-12`; the help suggests it when the date can be read another way.",
+    }
+    ENTRY_INVALID_SLUG = "entry/invalid-slug" {
+        meaning: "A `slug:` override isn't a valid Slug. A Slug is lowercase letters, digits, `-` and `_`, in segments separated by `/`, and an override is used exactly as written.",
+        example: "---\ntitle: Pew\nslug: My Post\n---",
+        fix: "Use the corrected form the help suggests, here `slug: my-post`.",
+    }
+    ENTRY_DUPLICATE_SLUG = "entry/duplicate-slug" {
+        meaning: "Two Entries in one Collection have the same Slug, so they would be written to the same URL.",
+        example: "content/posts/Pew.md and content/posts/pew.org",
+        fix: "Rename one of the files, or give one a different `slug:`.",
+    }
+    ENTRY_TERM_COLLISION = "entry/term-collision" {
+        meaning: "Two different Terms of a Taxonomy end up with the same Slug, because a `slugs` override in `yuanme.toml` gives one the Slug of another.",
+        example: "slugs = { \"C++\" = \"c\" } in [taxonomies.tags], with Entries tagged both `C++` and `C`",
+        fix: "Change the override so every Term keeps its own Slug.",
+    }
+    ENTRY_OUTPUT_COLLISION = "entry/output-collision" {
+        meaning: "Two Routes, or a Route and a Static file, would write the same file of the Site.",
+        example: "[collections.posts] route = \"/{slug}/\" and content/pages/about.md, with content/posts/about.md",
+        fix: "Change one Collection's `route`, or rename one of the files.",
+    }
+    ENTRY_DUPLICATE_DATA_FILE = "entry/duplicate-data-file" {
+        meaning: "Two Data files share a name, such as `data/nav.toml` and `data/nav.yaml`, so `data.nav` would be ambiguous.",
+        example: "data/nav.toml and data/nav.yaml",
+        fix: "Delete or rename one of them.",
+    }
+    ORG_NOT_YET_SUPPORTED = "org/not-yet-supported" {
+        meaning: "This build of yuanme can't read Org Entries yet. Org support arrives before the first release, and this code goes away with it.",
+        example: "content/posts/proof.org",
+        fix: "Write the Entry in Markdown for now, or use a build of yuanme with Org support.",
+    }
     INTERNAL_PANIC = "internal/panic" {
         meaning: "yuanme crashed while processing a file. This is a bug in yuanme, not in the project.",
         example: "Any file can trigger it, if it reaches a bug in a parser or a renderer.",
