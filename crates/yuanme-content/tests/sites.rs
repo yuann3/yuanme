@@ -687,6 +687,13 @@ fn a_title_on_a_plain_directive_warns_and_the_entry_still_builds() {
 }
 
 #[test]
+fn front_matter_after_a_byte_order_mark_is_read() {
+    let (_, site, diagnostics) = resolve(&fixture("\u{FEFF}---\ntitle: A\n---\nBody.\n"), false);
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    assert_eq!(site.expect("no errors").entries[0].title, "A");
+}
+
+#[test]
 fn spans_after_a_lone_carriage_return_point_at_the_right_text() {
     // comrak ends a line at `\r`, `\n` or `\r\n`, as CommonMark does.
     let files = "---\ntitle: A\n---\nOne\r\rSee [b](b.md).\r\n";

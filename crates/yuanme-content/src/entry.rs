@@ -84,10 +84,13 @@ pub(crate) struct Head {
     pub body: Range<usize>,
 }
 
-/// Front matter between `---` lines.
+/// Front matter between `---` lines, after a byte order mark if the file
+/// starts with one.
 pub(crate) fn front_matter(text: &str, cx: &mut Cx<'_>) -> Option<Head> {
+    let bom = if text.starts_with('\u{FEFF}') { 3 } else { 0 };
     let first_line = |prefix: &str| {
-        text.strip_prefix(prefix)
+        text[bom..]
+            .strip_prefix(prefix)
             .is_some_and(|rest| rest.starts_with('\n') || rest.starts_with("\r\n"))
     };
     if first_line("+++") {
@@ -95,7 +98,7 @@ pub(crate) fn front_matter(text: &str, cx: &mut Cx<'_>) -> Option<Head> {
             cx.error(
                 &codes::ENTRY_TOML_FRONT_MATTER,
                 "front matter is YAML, between `---` lines, not TOML".into(),
-                0..3,
+                bom..bom + 3,
             )
             .help("rewrite it as YAML: `title = \"Pew\"` becomes `title: Pew`"),
         );
@@ -105,8 +108,8 @@ pub(crate) fn front_matter(text: &str, cx: &mut Cx<'_>) -> Option<Head> {
         // No front matter: every field is left out.
         return Some(Head {
             fields: Vec::new(),
-            at: 0..0,
-            body: 0..text.len(),
+            at: bom..bom,
+            body: bom..text.len(),
         });
     }
     let start = text.find('\n').expect("checked") + 1;
@@ -126,7 +129,7 @@ pub(crate) fn front_matter(text: &str, cx: &mut Cx<'_>) -> Option<Head> {
         cx.push(cx.error(
             &codes::ENTRY_SYNTAX,
             "front matter starts here but has no closing `---`".into(),
-            0..3,
+            bom..bom + 3,
         ));
         return None;
     };
@@ -151,7 +154,7 @@ pub(crate) fn front_matter(text: &str, cx: &mut Cx<'_>) -> Option<Head> {
     };
     Some(Head {
         fields,
-        at: 0..yaml_end + 3,
+        at: bom..yaml_end + 3,
         body: body_start..text.len(),
     })
 }
