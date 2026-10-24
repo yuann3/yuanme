@@ -71,7 +71,7 @@ links = { type = "list", items = { type = "url" }, unique = true }
 cover = { type = "object", fields = { src = { type = "image" }, alt = { type = "string", optional = true } } }
 
 [collections.projects]
-dir = "content/work"
+dir = "content/work/"
 route = "/projects/{slug}/"
 
 [taxonomies.tags]

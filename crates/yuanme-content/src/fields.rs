@@ -36,7 +36,9 @@ pub enum Image {
     Remote(String),
 }
 
-/// Orders two values of one field, for Collection `sort`.
+/// Orders two values of one field, for Collection `sort`. Values of
+/// different kinds, which two Collections can give one field, order by
+/// kind, so the order stays total.
 pub fn compare(a: &Value, b: &Value) -> Ordering {
     use Value::*;
     match (a, b) {
@@ -49,7 +51,19 @@ pub fn compare(a: &Value, b: &Value) -> Ordering {
         // A date sorts as its midnight UTC, as it is written out (#18).
         (Date(a), Datetime(b)) => midnight(*a).cmp(&b.timestamp()),
         (Datetime(a), Date(b)) => a.timestamp().cmp(&midnight(*b)),
-        _ => Ordering::Equal,
+        _ => kind(a).cmp(&kind(b)),
+    }
+}
+
+fn kind(v: &Value) -> u8 {
+    match v {
+        Value::Int(_) | Value::Float(_) => 0,
+        Value::String(_) | Value::Url(_) => 1,
+        Value::Bool(_) => 2,
+        Value::Date(_) | Value::Datetime(_) => 3,
+        Value::Image(_) => 4,
+        Value::List(_) => 5,
+        Value::Object(_) => 6,
     }
 }
 

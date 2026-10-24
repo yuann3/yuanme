@@ -328,7 +328,11 @@ fn collection(
     }
     let (sortable, unsortable) = sortable(&fields);
     Collection {
-        dir: string(c, "dir").unwrap_or_else(|| format!("content/{name}")),
+        // `content/posts/` names the same folder as `content/posts`.
+        dir: string(c, "dir").map_or_else(
+            || format!("content/{name}"),
+            |d| d.trim_end_matches('/').to_string(),
+        ),
         dir_at: c.get("dir").map_or(key.span(), |d| d.span()),
         route: string(c, "route").expect("required"),
         list_route,
