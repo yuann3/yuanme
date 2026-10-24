@@ -151,6 +151,11 @@ codes! {
         example: ":::note[Heads up]\nText\n:::",
         fix: "Remove it, or use a construct that shows it.",
     }
+    MARKDOWN_OUT_OF_FUEL = "markdown/out-of-fuel" {
+        meaning: "A Markdown body would take longer to parse than yuanme allows for its length, so the build stops instead of hanging. Only pathological input does this, such as hundreds of block directives opened inside each other and never closed.",
+        example: ":::a\n:::a\n:::a\n(and so on, a few hundred times)",
+        fix: "Close the blocks that start at the reported line, or nest them less deeply.",
+    }
     LINK_UNRESOLVED = "link/unresolved" {
         meaning: "A link to another file or a fragment doesn't lead anywhere in the Site: no Entry has that file as its source, or the page has no element with that id.",
         example: "[the setup](setup.md#install), where setup.md has no `## Install` heading",

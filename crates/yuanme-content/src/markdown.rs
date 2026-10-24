@@ -53,7 +53,24 @@ pub fn document(
 pub(crate) fn parse(text: &str, body: Range<usize>, cx: &mut Cx<'_>) -> Option<Document> {
     let source = &text[body.clone()];
     let arena = Arena::new();
-    let root = comrak::parse_document(&arena, source, &options());
+    let root = match comrak::parse_document_bounded(&arena, source, &options()) {
+        Ok(root) => root,
+        Err(comrak::OutOfFuel { offset }) => {
+            let line_end = source[offset..]
+                .find(['\r', '\n'])
+                .map_or(source.len(), |i| offset + i);
+            let at = body.start + offset..body.start + line_end;
+            let d = cx
+                .error(
+                    &codes::MARKDOWN_OUT_OF_FUEL,
+                    "this block takes too long to parse".into(),
+                    at,
+                )
+                .help("blocks nested this deep are almost always a mistake, such as `:::` fences that never close");
+            cx.push(d);
+            return None;
+        }
+    };
     let mut lower = Lower {
         doc: Document::new(body.clone()),
         lines: line_starts(source),

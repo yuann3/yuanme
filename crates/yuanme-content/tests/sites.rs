@@ -303,6 +303,19 @@ single = true
 
 const ONE_POST: &str = "=== content/posts/a.md\n";
 
+/// `$s` 256 times, for the input that runs a parse out of fuel: a quadratic
+/// one needs a few hundred lines.
+macro_rules! x256 {
+    ($s:literal) => {
+        x4!(x4!(x4!(x4!($s))))
+    };
+}
+macro_rules! x4 {
+    ($s:expr) => {
+        concat!($s, $s, $s, $s)
+    };
+}
+
 /// (code, files, the file and text its primary span must cover). Files
 /// without a `yuanme.toml` are added to `BASE`, and text without a
 /// `=== path` line is `content/posts/a.md`.
@@ -513,6 +526,14 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "---\ntitle: A\n---\n::: {#thm-a}\nx\n:::\n",
         "content/posts/a.md",
         ":::",
+    ),
+    // Block directives nested and never closed: each line is matched
+    // against every one open around it.
+    (
+        "markdown/out-of-fuel",
+        concat!("---\ntitle: A\n---\nProse.\n\n", x256!(":::a\n")),
+        "content/posts/a.md",
+        ":::a",
     ),
     (
         "link/unresolved",
