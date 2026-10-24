@@ -13,23 +13,6 @@ use comrak::{Arena, Options, fuel_for, parse_document_with_fuel};
 /// it would fail a build if it grew a little more nested.
 const LEAST: f64 = 10.0;
 
-/// The options `yuanme_content::markdown` parses with, which it keeps
-/// private. Keep the two the same.
-fn options() -> Options<'static> {
-    let mut o = Options::default();
-    let e = &mut o.extension;
-    e.strikethrough = true;
-    e.table = true;
-    e.autolink = true;
-    e.tasklist = true;
-    e.footnotes = true;
-    e.math_dollars = true;
-    e.math_code = true;
-    e.block_directive = true;
-    e.header_attributes = true;
-    o
-}
-
 /// The least fuel `text` parses with.
 fn needs(text: &str, options: &Options) -> u64 {
     let parses = |fuel| parse_document_with_fuel(&Arena::new(), text, options, fuel).is_ok();
@@ -63,7 +46,7 @@ fn walk(dir: &Path, out: &mut Vec<(f64, u64, usize, String)>, options: &Options)
 }
 
 fn main() -> ExitCode {
-    let options = options();
+    let options = yuanme_content::markdown::options();
     let mut files = Vec::new();
     for dir in std::env::args().skip(1) {
         walk(Path::new(&dir), &mut files, &options);
