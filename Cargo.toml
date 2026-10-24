@@ -40,4 +40,4 @@ ravif = { git = "https://github.com/yuann3/cavif-rs", rev = "80886cdf01620d7c934
 # parse_document_bounded and the slow-path fixes that hold #15's parse-time
 # bound (#47), at a pinned commit on comrak 0.57.0. Rebase the branch onto
 # each comrak release before bumping the pin in yuanme-content.
-comrak = { git = "https://github.com/yuann3/comrak", rev = "94a145e456d0776fceb137c90e17101826d4e8d6" }
+comrak = { git = "https://github.com/yuann3/comrak", rev = "5c14241418654c10b6a5129ee535b5831c231d9b" }

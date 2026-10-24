@@ -271,7 +271,7 @@ checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 [[package]]
 name = "comrak"
 version = "0.57.0"
-source = "git+https://github.com/yuann3/comrak?rev=94a145e456d0776fceb137c90e17101826d4e8d6#94a145e456d0776fceb137c90e17101826d4e8d6"
+source = "git+https://github.com/yuann3/comrak?rev=5c14241418654c10b6a5129ee535b5831c231d9b#5c14241418654c10b6a5129ee535b5831c231d9b"
 dependencies = [
  "caseless",
  "entities",

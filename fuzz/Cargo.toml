@@ -22,7 +22,7 @@ yuanme-diag = { path = "../crates/yuanme-diag" }
 # The root Cargo.toml's comrak patch, which a separate workspace doesn't
 # inherit. Keep the two pins the same.
 [patch.crates-io]
-comrak = { git = "https://github.com/yuann3/comrak", rev = "94a145e456d0776fceb137c90e17101826d4e8d6" }
+comrak = { git = "https://github.com/yuann3/comrak", rev = "5c14241418654c10b6a5129ee535b5831c231d9b" }
 
 [[bin]]
 name = "adversarial"
