@@ -1,0 +1,44 @@
+---
+source: crates/yuanme-content/tests/sites.rs
+expression: "summary(&site.expect(\"no errors\"))"
+---
+routes:
+  /about/ -> about/index.html  entry content/pages/about.md
+  /blog/2024/custom-name/ -> blog/2024/custom-name/index.html  entry content/posts/custom.md
+  /blog/hello-world/ -> blog/hello-world/index.html  entry content/posts/hello-world.md
+  /blog/second/ -> blog/second/index.html  entry content/posts/second/index.md
+  /blog/secret/ -> blog/secret/index.html  entry content/posts/secret.md
+  /blog/undated/ -> blog/undated/index.html  entry content/posts/undated.md
+  /blog/ -> blog/index.html  posts page 1: second, hello-world
+  /blog/2/ -> blog/2/index.html  posts page 2: 2024/custom-name, undated
+  /series/ -> series/index.html  series index
+  /series/intro/ -> series/intro/index.html  series `Intro` page 1: second, hello-world
+  /tags/ -> tags/index.html  tags index
+  /tags/c-sharp/ -> tags/c-sharp/index.html  tags `C#` page 1: second
+  /tags/cplusplus/ -> tags/cplusplus/index.html  tags `C++` page 1: hello-world
+  /tags/rust/ -> tags/rust/index.html  tags `Rust` page 1: second, hello-world
+entries:
+  pages/about "About" no date
+  posts/2024/custom-name "Custom" 2025-02-01
+    kind = "note"
+  posts/hello-world "Hello, World" 2025-03-01
+    cover = local content/posts/cover.png
+    kind = "essay"
+    published = 2025-03-01T09:30:00+08:00[Asia/Singapore]
+    series: Intro
+    tags: Rust, C++
+  posts/second "Second" 2025-04-01
+    kind = "essay"
+    series: Intro
+    tags: rust, C#
+  posts/secret "Secret" 2025-06-01 unlisted
+    kind = "essay"
+    tags: Rust
+  posts/undated "Undated" no date
+    kind = "essay"
+lists:
+  pages: about
+  posts: second, hello-world, 2024/custom-name, undated
+data:
+  nav = [{href: "/blog/", name: "Blog"}]
+  social = {followers: 12, github: "yuann3"}
