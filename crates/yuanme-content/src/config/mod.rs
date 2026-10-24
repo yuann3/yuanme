@@ -13,18 +13,28 @@ use toml::Spanned;
 use toml::de::{DeTable, DeValue};
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
 
-use check::{Checker, kind, parse_version, similar};
+pub(crate) use check::similar;
+use check::{Checker, kind, parse_version};
 pub use schema::json_schema;
 #[cfg(test)]
 use schema::{Key, Shape};
 
 #[derive(Debug)]
 pub struct Config {
+    /// `yuanme.toml`, which the spans below are in.
+    pub file: FileId,
     pub site: Site,
     pub collections: BTreeMap<String, Collection>,
     pub taxonomies: BTreeMap<String, Taxonomy>,
     /// Schemas for Data files, by name.
-    pub data: BTreeMap<String, FieldType>,
+    pub data: BTreeMap<String, DataSchema>,
+}
+
+#[derive(Debug)]
+pub struct DataSchema {
+    pub kind: FieldType,
+    /// Where `[data.<name>]` is named.
+    pub at: Range<usize>,
 }
 
 #[derive(Debug)]
@@ -38,9 +48,11 @@ pub struct Site {
     pub extra: toml::Table,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Collection {
     pub dir: String,
+    /// Where the folder is set, or the Collection named when it isn't.
+    pub dir_at: Range<usize>,
     pub route: String,
     pub list_route: Option<String>,
     pub paginate: Option<u64>,
@@ -60,13 +72,13 @@ pub struct Taxonomy {
     pub slugs: BTreeMap<String, String>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SortKey {
     pub field: String,
     pub descending: bool,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Field {
     pub kind: FieldType,
     /// Entries may leave it out. A field with a default is optional.
@@ -75,7 +87,7 @@ pub struct Field {
     pub description: Option<String>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum FieldType {
     String { min: Option<u64>, max: Option<u64> },
     Int { min: Option<i64>, max: Option<i64> },
@@ -198,8 +210,8 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
 
     let collections: BTreeMap<String, Collection> = collections
         .iter()
-        .map(|(name, c)| {
-            let name = name.get_ref().as_ref();
+        .map(|(key, c)| {
+            let name: &str = key.get_ref().as_ref();
             // Each Taxonomy over this Collection adds a field of its name.
             let taxonomy_fields: Vec<&str> = taxonomies
                 .iter()
@@ -212,7 +224,7 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
                 .collect();
             (
                 name.to_string(),
-                collection(name, as_table(c), &taxonomy_fields, checker),
+                collection(key, as_table(c), &taxonomy_fields, checker),
             )
         })
         .collect();
@@ -228,12 +240,26 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
     let data = entries(table(root, "data"))
         .iter()
         .map(|(name, spec)| {
+            let kind = field(as_table(spec), false, checker).kind;
             (
                 name.get_ref().to_string(),
-                field(as_table(spec), false, checker).kind,
+                DataSchema {
+                    kind,
+                    at: name.span(),
+                },
             )
         })
         .collect();
+    if let Some(tz) = site.get("timezone") {
+        let name = tz.get_ref().as_str().expect("checked");
+        // The bundled database, so a build never depends on the machine's.
+        if jiff::tz::TimeZone::get(name).is_err() {
+            checker.invalid(
+                format!("`{name}` is not an IANA time zone, such as \"Asia/Singapore\" or \"UTC\""),
+                tz.span(),
+            );
+        }
+    }
 
     let extra = match site.get("extra").map(|e| to_value(e.get_ref())) {
         Some(toml::Value::Table(extra)) => extra,
@@ -241,6 +267,7 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         None => toml::Table::new(),
     };
     Config {
+        file: checker.file(),
         site: Site {
             url: string(site, "url").expect("required"),
             title: string(site, "title"),
@@ -257,11 +284,13 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
 }
 
 fn collection(
-    name: &str,
+    name: &Spanned<std::borrow::Cow<'_, str>>,
     c: &Table<'_>,
     taxonomy_fields: &[&str],
     checker: &mut Checker,
 ) -> Collection {
+    let key = name;
+    let name: &str = key.get_ref().as_ref();
     let mut fields = BTreeMap::new();
     for (field_name, spec) in entries(table(c, "fields")) {
         let at = field_name.span();
@@ -297,18 +326,14 @@ fn collection(
             paginate.span(),
         );
     }
-    let sortable: Vec<&str> = BUILT_IN
-        .iter()
-        .chain(DERIVED)
-        .copied()
-        .chain(fields.keys().map(String::as_str))
-        .collect();
+    let (sortable, unsortable) = sortable(&fields);
     Collection {
         dir: string(c, "dir").unwrap_or_else(|| format!("content/{name}")),
+        dir_at: c.get("dir").map_or(key.span(), |d| d.span()),
         route: string(c, "route").expect("required"),
         list_route,
         paginate: paginate.map(|p| int(p) as u64),
-        sort: sort(c.get("sort"), &sortable, checker),
+        sort: sort(c.get("sort"), &sortable, &unsortable, checker),
         fields,
     }
 }
@@ -327,11 +352,14 @@ fn taxonomy(
         );
         checker.invalid(message, name.span());
     }
-    let mut sortable: Vec<&str> = BUILT_IN.iter().chain(DERIVED).copied().collect();
+    let no_fields = BTreeMap::new();
+    let (mut sortable, mut unsortable) = sortable(&no_fields);
     for collection in items(&t["collections"]) {
         let s = collection.get_ref().as_str().expect("checked");
         if let Some(c) = collections.get(s) {
-            sortable.extend(c.fields.keys().map(String::as_str));
+            let (yes, no) = self::sortable(&c.fields);
+            sortable.extend(yes);
+            unsortable.extend(no);
         } else if !names.contains(s) {
             checker.invalid(format!("there is no Collection `{s}`"), collection.span());
             if let Some(near) = similar(s, names.iter().copied()) {
@@ -351,21 +379,54 @@ fn taxonomy(
         route: string(t, "route").expect("required"),
         paginate: t.get("paginate").map(|p| int(p) as u64),
         single: boolean(t, "single"),
-        sort: sort(t.get("sort"), &sortable, checker),
+        sort: sort(t.get("sort"), &sortable, &unsortable, checker),
         lowercase: boolean(t, "lowercase"),
         slugs: entries(table(t, "slugs"))
             .iter()
             .map(|(term, slug)| {
-                (
-                    term.get_ref().to_string(),
-                    slug.get_ref().as_str().expect("checked").to_string(),
-                )
+                let s = slug.get_ref().as_str().expect("checked");
+                if !crate::slug::is_valid(s) {
+                    checker.invalid(format!("`{s}` is not a valid Slug"), slug.span());
+                    let fixed = crate::slug::corrected(s);
+                    if !fixed.is_empty() {
+                        checker.suggest(
+                            format!("use `{fixed}`"),
+                            slug.span(),
+                            format!("\"{fixed}\""),
+                        );
+                    }
+                }
+                (term.get_ref().to_string(), s.to_string())
             })
             .collect(),
     }
 }
 
-fn sort(keys: Option<&Value<'_>>, sortable: &[&str], checker: &mut Checker) -> Vec<SortKey> {
+/// The fields Entries can sort by, and the ones they can't: lists and objects
+/// have no order.
+fn sortable(fields: &BTreeMap<String, Field>) -> (Vec<&str>, Vec<&str>) {
+    let mut yes: Vec<&str> = BUILT_IN
+        .iter()
+        .chain(DERIVED)
+        .copied()
+        .filter(|f| *f != "headings")
+        .collect();
+    let mut no = vec!["headings"];
+    for (name, field) in fields {
+        match field.kind {
+            FieldType::List { .. } | FieldType::Object(_) => no.push(name),
+            _ => yes.push(name),
+        }
+    }
+    (yes, no)
+}
+
+fn sort(
+    keys: Option<&Value<'_>>,
+    sortable: &[&str],
+    unsortable: &[&str],
+    checker: &mut Checker,
+) -> Vec<SortKey> {
     let Some(keys) = keys else {
         return vec![SortKey {
             field: "date".into(),
@@ -383,6 +444,11 @@ fn sort(keys: Option<&Value<'_>>, sortable: &[&str], checker: &mut Checker) -> V
             if field.is_empty() {
                 checker.invalid(
                     "a sort key needs a field name, such as \"-date\"".into(),
+                    key.span(),
+                );
+            } else if unsortable.contains(&field) && !sortable.contains(&field) {
+                checker.invalid(
+                    format!("Entries can't sort by `{field}`: it is a list or an object"),
                     key.span(),
                 );
             } else if !sortable.contains(&field) {

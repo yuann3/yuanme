@@ -23,6 +23,10 @@ impl Checker {
         }
     }
 
+    pub fn file(&self) -> FileId {
+        self.file
+    }
+
     pub fn failed(&self) -> bool {
         self.diagnostics.iter().any(|d| d.level == Level::Error)
     }

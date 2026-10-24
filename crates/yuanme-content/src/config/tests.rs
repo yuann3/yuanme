@@ -165,7 +165,7 @@ items = { type = "object", fields = { label = { type = "string" }, href = { type
     assert!(tags.lowercase && !tags.single);
     assert_eq!(tags.slugs["C++"], "cplusplus");
 
-    let FieldType::List { items, .. } = &config.data["nav"] else {
+    let FieldType::List { items, .. } = &config.data["nav"].kind else {
         panic!("nav is a list");
     };
     assert!(matches!(**items, FieldType::Object(_)));
@@ -350,6 +350,22 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "yuanme = \"1\"\n[site]\nurl = \"https://e.com\"\n",
         "\"1\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\ntimezone = \"Asia/Singapur\"\n",
+        "\"Asia/Singapur\"",
+    ),
+    // A list has no order to sort by.
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{slug}/\"\nsort = [\"links\"]\nfields = { links = { type = \"list\", items = { type = \"url\" } } }\n",
+        "\"links\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[taxonomies.tags]\ncollections = []\nroute = \"/tags/{term}/\"\nslugs = { \"C++\" = \"C Plus Plus\" }\n",
+        "\"C Plus Plus\"",
     ),
 ];
 
