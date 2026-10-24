@@ -86,8 +86,12 @@ pub enum Kind {
     },
     LineBreak,
     HtmlInline(String),
+    /// `number` is the footnote's, counted as GFM does: in the order of
+    /// first reference, with the body before the definitions. It is 0 in a
+    /// definition that is never referenced, as that is never written.
     FootnoteReference {
         label: String,
+        number: usize,
     },
     Math {
         display: bool,
@@ -157,8 +161,9 @@ impl Document {
         out
     }
 
-    /// The text under `id`: text, code and math, with no markup. An image
-    /// below `id` adds nothing, as its alt text is an attribute.
+    /// The text under `id`: text, code, math and footnote numbers, with no
+    /// markup. An image below `id` adds nothing, as its alt text is an
+    /// attribute.
     pub fn text(&self, id: NodeId) -> String {
         let mut out = String::new();
         self.collect_text(id, &mut out);
@@ -170,6 +175,7 @@ impl Document {
         match &node.kind {
             Kind::Text(s) | Kind::Code(s) => out.push_str(s),
             Kind::Math { tex, .. } => out.push_str(tex),
+            Kind::FootnoteReference { number, .. } => out.push_str(&number.to_string()),
             _ => {}
         }
         for &child in &node.children {
@@ -218,6 +224,18 @@ impl Document {
             })
             .collect()
     }
+}
+
+/// mdast's footnote identifier: runs of `[\t\n\r ]` collapsed, case
+/// folded.
+pub fn footnote_identifier(label: &str) -> String {
+    label
+        .split([' ', '\t', '\n', '\r'])
+        .filter(|w| !w.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
+        .to_lowercase()
+        .to_uppercase()
 }
 
 /// reading-time 1.5's count, over UTF-16 code units as JavaScript indexes

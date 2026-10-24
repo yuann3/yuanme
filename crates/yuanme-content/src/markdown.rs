@@ -1,6 +1,7 @@
 //! Markdown into the Document (#47): comrak parses CommonMark and GFM, and
 //! its tree is lowered here and dropped.
 
+use std::collections::BTreeMap;
 use std::ops::Range;
 
 use comrak::nodes::{AstNode, ListType, NodeValue, Sourcepos, TableAlignment};
@@ -8,7 +9,7 @@ use comrak::{Arena, Options};
 use jiff::tz::TimeZone;
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
 
-use crate::document::{Align, Document, Kind, NodeId};
+use crate::document::{Align, Document, Kind, NodeId, footnote_identifier};
 use crate::fields::Cx;
 use crate::slug::Slugger;
 use crate::smartypants::{self, Dashes, Piece};
@@ -73,6 +74,7 @@ pub(crate) fn parse(text: &str, body: Range<usize>, cx: &mut Cx<'_>) -> Option<D
     };
     let mut lower = Lower {
         doc: Document::new(body.clone()),
+        source,
         lines: line_starts(source),
         base: body.start,
         ok: true,
@@ -82,9 +84,47 @@ pub(crate) fn parse(text: &str, body: Range<usize>, cx: &mut Cx<'_>) -> Option<D
         lower.node(child, Document::ROOT);
     }
     let Lower { mut doc, ok, .. } = lower;
+    number_footnotes(&mut doc);
     smarten(&mut doc);
     heading_ids(&mut doc);
     ok.then_some(doc)
+}
+
+/// Numbers each footnote reference in the order the writer meets them:
+/// the body first, then each referenced definition in turn, whose own
+/// references can number more.
+fn number_footnotes(doc: &mut Document) {
+    let root = doc.node(Document::ROOT).children.clone();
+    let mut definitions = BTreeMap::new();
+    let mut blocks = Vec::new();
+    for &id in &root {
+        match &doc.node(id).kind {
+            Kind::FootnoteDefinition { label } => {
+                definitions.insert(footnote_identifier(label), id);
+            }
+            _ => blocks.push(id),
+        }
+    }
+    let mut order: Vec<String> = Vec::new();
+    let mut numbers = BTreeMap::new();
+    let mut written = 0;
+    loop {
+        let ids: Vec<NodeId> = blocks.iter().flat_map(|&b| doc.descendants(b)).collect();
+        for id in ids {
+            if let Kind::FootnoteReference { label, number } = doc.kind_mut(id) {
+                let key = footnote_identifier(label);
+                *number = *numbers.entry(key.clone()).or_insert_with(|| {
+                    order.push(key);
+                    order.len()
+                });
+            }
+        }
+        let Some(key) = order.get(written) else {
+            return;
+        };
+        written += 1;
+        blocks = definitions.get(key).copied().into_iter().collect();
+    }
 }
 
 /// remark-smartypants over the Document, which needs its text in mdast's
@@ -161,6 +201,8 @@ fn line_starts(text: &str) -> Vec<usize> {
 
 struct Lower<'c, 'd> {
     doc: Document,
+    /// The body, which `lines` index.
+    source: &'c str,
     lines: Vec<usize>,
     base: usize,
     ok: bool,
@@ -206,6 +248,17 @@ impl Lower<'_, '_> {
                 tight: l.tight,
             },
             NodeValue::Item(_) => Kind::Item { checked: None },
+            // mdast reads a task item with nothing after its box as an
+            // item whose text is the box.
+            NodeValue::TaskItem(t) if node.first_child().is_none() => {
+                let item = self
+                    .doc
+                    .push(parent, Kind::Item { checked: None }, span.clone());
+                let p = self.doc.push(item, Kind::Paragraph, span.clone());
+                let text = format!("[{}]", t.symbol.unwrap_or(' '));
+                self.doc.push(p, Kind::Text(text), span);
+                return;
+            }
             NodeValue::TaskItem(t) => Kind::Item {
                 checked: Some(t.symbol.is_some()),
             },
@@ -219,18 +272,9 @@ impl Lower<'_, '_> {
             // without the final newline.
             NodeValue::CodeBlock(c) => Kind::CodeBlock {
                 lang: c.info.split_whitespace().next().map(str::to_string),
-                text: c
-                    .literal
-                    .strip_suffix('\n')
-                    .unwrap_or(&c.literal)
-                    .to_string(),
+                text: without_line_end(&c.literal),
             },
-            NodeValue::HtmlBlock(h) => Kind::HtmlBlock(
-                h.literal
-                    .strip_suffix('\n')
-                    .unwrap_or(&h.literal)
-                    .to_string(),
-            ),
+            NodeValue::HtmlBlock(h) => Kind::HtmlBlock(without_line_end(&h.literal)),
             NodeValue::Table(t) => Kind::Table {
                 align: t
                     .alignments
@@ -245,8 +289,11 @@ impl Lower<'_, '_> {
             },
             NodeValue::TableRow(head) => Kind::TableRow { head: *head },
             NodeValue::TableCell => Kind::TableCell,
+            // comrak leaves a definition inside another where it is, and
+            // mdast never writes it.
+            NodeValue::FootnoteDefinition(_) if parent != Document::ROOT => return,
             NodeValue::FootnoteDefinition(f) => Kind::FootnoteDefinition {
-                label: f.name.clone(),
+                label: self.label(&span).unwrap_or(&f.name).to_string(),
             },
             NodeValue::BlockDirective(d) => match self.directive(&d.info, span.clone()) {
                 Some(kind) => kind,
@@ -255,7 +302,10 @@ impl Lower<'_, '_> {
             // mdast keeps a soft break as a newline in its text, which
             // smartypants then sees.
             NodeValue::Text(t) => return self.text(parent, t, span),
-            NodeValue::SoftBreak => return self.text(parent, "\n", span),
+            NodeValue::SoftBreak => {
+                let ending = self.line_ending(ast.sourcepos.start.line);
+                return self.text(parent, ending, span);
+            }
             NodeValue::Code(c) => Kind::Code(c.literal.clone()),
             NodeValue::Emph => Kind::Emphasis,
             NodeValue::Strong => Kind::Strong,
@@ -271,7 +321,8 @@ impl Lower<'_, '_> {
             NodeValue::LineBreak => Kind::LineBreak,
             NodeValue::HtmlInline(h) => Kind::HtmlInline(h.clone()),
             NodeValue::FootnoteReference(f) => Kind::FootnoteReference {
-                label: f.name.clone(),
+                label: self.label(&span).unwrap_or(&f.name).to_string(),
+                number: 0,
             },
             NodeValue::Math(m) => Kind::Math {
                 display: m.display_math,
@@ -283,6 +334,29 @@ impl Lower<'_, '_> {
         drop(ast);
         for child in node.children() {
             self.node(child, id);
+        }
+    }
+
+    /// The label of the footnote written at `span` as it is written, as
+    /// comrak changes its whitespace.
+    fn label(&self, span: &Range<usize>) -> Option<&str> {
+        let rest = self
+            .source
+            .get(span.start - self.base..)?
+            .strip_prefix("[^")?;
+        rest.get(..rest.find(']')?)
+    }
+
+    /// How the 1-based `line` ends in the source: `\n`, `\r\n` or `\r`.
+    fn line_ending(&self, line: usize) -> &'static str {
+        let end = self.lines.get(line).map_or(self.source.len(), |&e| e);
+        let before = &self.source[..end];
+        if before.ends_with("\r\n") {
+            "\r\n"
+        } else if before.ends_with('\r') {
+            "\r"
+        } else {
+            "\n"
         }
     }
 
@@ -340,4 +414,11 @@ impl Lower<'_, '_> {
         }
         Some(Kind::Directive { name })
     }
+}
+
+/// A code or HTML block's literal as mdast's value: without its final line
+/// ending.
+fn without_line_end(literal: &str) -> String {
+    let text = literal.strip_suffix('\n').unwrap_or(literal);
+    text.strip_suffix('\r').unwrap_or(text).to_string()
 }

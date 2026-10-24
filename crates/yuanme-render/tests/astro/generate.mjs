@@ -1,5 +1,6 @@
 // Writes what the Reference site's Markdown pipeline renders for each
-// Reference Post, the bodies tests/corpus.rs must match byte for byte.
+// Reference Post, and for each edge case in cases/, the bodies
+// tests/corpus.rs must match byte for byte.
 // Shiki is off: code highlighting arrives with #53.
 //
 // Run from the repository root, with the Reference site checked out and
@@ -20,4 +21,9 @@ for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.md')).sort()) 
   const body = text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
   const { code } = await processor.render(body);
   fs.writeFileSync(path.join('crates/yuanme-render/tests/astro', name.replace(/\.md$/, '.html')), code);
+}
+const cases = 'crates/yuanme-render/tests/astro/cases';
+for (const name of fs.readdirSync(cases).filter((f) => f.endsWith('.md')).sort()) {
+  const { code } = await processor.render(fs.readFileSync(path.join(cases, name), 'utf8'));
+  fs.writeFileSync(path.join(cases, name.replace(/\.md$/, '.html')), code);
 }

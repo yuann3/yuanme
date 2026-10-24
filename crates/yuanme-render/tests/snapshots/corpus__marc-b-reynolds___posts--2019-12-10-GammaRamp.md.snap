@@ -81,42 +81,42 @@ Let’s cut the error plot (you can hide traces by clicking on its name in the l
 <p>\
 The Y axis has ticks/grid-lines at <code class="language-math math-inline">\pm2^{-10}</code> and <code class="language-math math-inline">\pm2^{-11}</code> and we can immediately observe that all the approximations meet the minimal error requirement except the degree 3 polynomial (remez 3). The forth degree has a low enough error for 11-bits, so we could find a new polynomial with the constant term <code class="language-math math-inline">e</code> fixed to zero (exercise for the reader). Likewise <code class="language-math math-inline">abc</code> requires an extra constant so it’s not worth considering (aside: in the tweeter thread I joked about <code class="language-math math-inline">ab</code> not being exact at 1 being a sadface..totally unimportant).  Using the computer math library/DSL <a href="http://sollya.gforge.inria.fr/">sollya</a> I computed the peak errors of each:</p>
 <p>{: .center }</p>
-<table>
-<thead>
-<tr>
-<th align="center">method</th>
-<th>peak error</th>
-<th>peak error</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="center">remez 3</td>
-<td>0.00113705781122</td>
-<td>$ 1.2a12b \cdot 2^{-10} $</td>
-</tr>
-<tr>
-<td align="center">remez 4</td>
-<td>0.00026079002477</td>
-<td>$ 1.11755 \cdot 2^{-11} $</td>
-</tr>
-<tr>
-<td align="center">a</td>
-<td>0.00092451750243</td>
-<td>$ 1.e4b6a \cdot 2^{-11} $</td>
-</tr>
-<tr>
-<td align="center">ab</td>
-<td>0.00079275667667</td>
-<td>$ 1.9fa20 \cdot 2^{-11} $</td>
-</tr>
-<tr>
-<td align="center">abc</td>
-<td>0.00057435967028</td>
-<td>$ 1.2d214 \cdot 2^{-11} $</td>
-</tr>
-</tbody>
-</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th align="center">method</th><th>peak error</th><th>peak error</th></tr></thead><tbody><tr><td align="center">remez 3</td><td>0.00113705781122</td><td>$ 1.2a12b \cdot 2^{-10} $</td></tr><tr><td align="center">remez 4</td><td>0.00026079002477</td><td>$ 1.11755 \cdot 2^{-11} $</td></tr><tr><td align="center">a</td><td>0.00092451750243</td><td>$ 1.e4b6a \cdot 2^{-11} $</td></tr><tr><td align="center">ab</td><td>0.00079275667667</td><td>$ 1.9fa20 \cdot 2^{-11} $</td></tr><tr><td align="center">abc</td><td>0.00057435967028</td><td>$ 1.2d214 \cdot 2^{-11} $</td></tr></tbody></table>
 <p>\
 So what about the second question? What about performance? Well to spitball it: using any of the above will be roughly <code class="language-math math-inline">5x</code> faster than a standard power function! Oh, compared to each other? Well…it depends. We roughly have the same number of ISA ops for each. This <a href="https://gcc.godbolt.org/z/PEy3s-">godbolt</a> has (completely useless) scalar versions as functions. The mix of ops and port usages are somewhat similar. The potential interesting differences are: the sqrt and rsqrt version need fewer constants which might lead to few register spills and the throughput numbers on sqrt (<a href="https://uops.info/html-instr/VSQRTSS_XMM_XMM_XMM.html">scalar</a>/<a href="https://uops.info/html-instr/VSQRTPS_XMM_XMM.html">SIMD</a>) &#x26; rsqrt (<a href="https://uops.info/html-instr/VRSQRTSS_XMM_XMM_XMM.html">scalar</a>/<a href="https://uops.info/html-instr/VRSQRTPS_XMM_XMM.html">SIMD</a>) are on the move in recent-ish microarchitecture. So we’d really need to look at them <em>in flagrante</em> (or is it <em>in situ</em>, I always mix them up)…whatever…the surrounding work and given microarch are quite important to the answer.</p>
 <br>

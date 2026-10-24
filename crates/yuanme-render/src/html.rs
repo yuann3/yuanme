@@ -5,7 +5,7 @@
 
 use std::collections::BTreeMap;
 
-use yuanme_content::document::{Align, Document, Kind, Links, NodeId};
+use yuanme_content::document::{Align, Document, Kind, Links, NodeId, footnote_identifier};
 
 /// `links` says where resolved links go; any other link keeps the URL it
 /// was written with.
@@ -14,39 +14,28 @@ pub fn body(doc: &Document, links: &Links) -> String {
         doc,
         links,
         out: String::new(),
-        footnotes: Footnotes::default(),
+        references: BTreeMap::new(),
     };
     let root = &doc.node(Document::ROOT).children;
     let blocks: Vec<NodeId> = root
         .iter()
         .copied()
-        .filter(|&c| !w.is_definition(c))
+        .filter(|&c| !matches!(doc.node(c).kind, Kind::FootnoteDefinition { .. }))
         .collect();
     w.join(&blocks);
     w.footer(root);
     w.out
 }
 
-/// Footnotes in the order they are first referenced, as GFM numbers them.
-#[derive(Default)]
-struct Footnotes {
-    order: Vec<String>,
-    /// How often each has been referenced so far.
-    counts: BTreeMap<String, usize>,
-}
-
 struct Writer<'d> {
     doc: &'d Document,
     links: &'d Links,
     out: String,
-    footnotes: Footnotes,
+    /// How often each footnote has been referenced so far.
+    references: BTreeMap<String, usize>,
 }
 
 impl Writer<'_> {
-    fn is_definition(&self, id: NodeId) -> bool {
-        matches!(self.doc.node(id).kind, Kind::FootnoteDefinition { .. })
-    }
-
     /// Siblings separated by a newline.
     fn join(&mut self, ids: &[NodeId]) {
         for (i, &id) in ids.iter().enumerate() {
@@ -127,7 +116,9 @@ impl Writer<'_> {
                 }
                 self.out.push_str("</code></pre>");
             }
-            Kind::HtmlBlock(raw) | Kind::HtmlInline(raw) => self.out.push_str(raw),
+            Kind::HtmlBlock(raw) | Kind::HtmlInline(raw) => {
+                self.out.push_str(&raw.replace('\0', "\u{FFFD}"))
+            }
             Kind::Table { align } => self.table(id, align),
             Kind::TableRow { .. } | Kind::TableCell => unreachable!("written by its table"),
             Kind::FootnoteDefinition { .. } => unreachable!("written in the footer"),
@@ -166,7 +157,7 @@ impl Writer<'_> {
                 self.out.push('>');
             }
             Kind::LineBreak => self.out.push_str("<br>\n"),
-            Kind::FootnoteReference { label } => self.reference(label),
+            Kind::FootnoteReference { label, number } => self.reference(label, *number),
             // Until math renders (#50), its TeX shows as code.
             Kind::Math {
                 display: false,
@@ -276,37 +267,40 @@ impl Writer<'_> {
 
     /// mdast-util-to-hast's table: the first row is the head, every row has
     /// a cell per column, and the body is left out when it has no rows.
+    /// rehype-raw then reparses it, which moves every newline between the
+    /// table's own tags to before the table.
     fn table(&mut self, id: NodeId, align: &[Align]) {
         let rows = self.doc.node(id).children.clone();
-        self.out.push_str("<table>\n");
+        let start = self.out.len();
+        let mut newlines = 2;
+        self.out.push_str("<table>");
         let (head, body) = rows
             .split_first()
             .map_or((None, &[][..]), |(h, b)| (Some(*h), b));
         if let Some(head) = head {
-            self.out.push_str("<thead>\n");
-            self.row(head, "th", align);
-            self.out.push_str("\n</thead>");
+            self.out.push_str("<thead>");
+            newlines += 2 + self.row(head, "th", align);
+            self.out.push_str("</thead>");
         }
         if !body.is_empty() {
-            self.out.push_str("\n<tbody>\n");
-            for (i, &row) in body.iter().enumerate() {
-                if i > 0 {
-                    self.out.push('\n');
-                }
-                self.row(row, "td", align);
+            self.out.push_str("<tbody>");
+            newlines += 2 + body.len() - 1;
+            for &row in body {
+                newlines += self.row(row, "td", align);
             }
-            self.out.push_str("\n</tbody>");
+            self.out.push_str("</tbody>");
+            newlines += 1;
         }
-        self.out.push_str("\n</table>");
+        self.out.push_str("</table>");
+        self.out.insert_str(start, &"\n".repeat(newlines));
     }
 
-    fn row(&mut self, id: NodeId, tag: &str, align: &[Align]) {
+    /// Writes a row and says how many newlines mdast-util-to-hast puts
+    /// between its tags.
+    fn row(&mut self, id: NodeId, tag: &str, align: &[Align]) -> usize {
         let cells = self.doc.node(id).children.clone();
-        self.out.push_str("<tr>\n");
+        self.out.push_str("<tr>");
         for (i, a) in align.iter().enumerate() {
-            if i > 0 {
-                self.out.push('\n');
-            }
             let align = match a {
                 Align::None => "",
                 Align::Left => " align=\"left\"",
@@ -319,19 +313,13 @@ impl Writer<'_> {
             }
             self.out.push_str(&format!("</{tag}>"));
         }
-        self.out.push_str("\n</tr>");
+        self.out.push_str("</tr>");
+        align.len() + 1
     }
 
-    fn reference(&mut self, label: &str) {
-        let key = identifier(label);
-        let number = match self.footnotes.order.iter().position(|k| *k == key) {
-            Some(i) => i + 1,
-            None => {
-                self.footnotes.order.push(key.clone());
-                self.footnotes.order.len()
-            }
-        };
-        let count = self.footnotes.counts.entry(key.clone()).or_default();
+    fn reference(&mut self, label: &str, number: usize) {
+        let key = footnote_identifier(label);
+        let count = self.references.entry(key.clone()).or_default();
         *count += 1;
         let safe = normalize_uri(&key.to_lowercase());
         let again = if *count > 1 {
@@ -344,38 +332,51 @@ impl Writer<'_> {
         ));
     }
 
+    /// The links back to footnote `n`'s references so far, joined by
+    /// `between`.
+    fn backrefs(&self, key: &str, n: usize, between: &str) -> String {
+        let safe = normalize_uri(&key.to_lowercase());
+        let backrefs: Vec<String> = (1..=self.references[key])
+            .map(|r| {
+                let again = if r > 1 { format!("-{r}") } else { String::new() };
+                let sup = if r > 1 { format!("<sup>{r}</sup>") } else { String::new() };
+                format!(
+                    "<a href=\"#user-content-fnref-{safe}{again}\" data-footnote-backref=\"\" aria-label=\"Back to reference {n}{again}\" class=\"data-footnote-backref\">↩{sup}</a>"
+                )
+            })
+            .collect();
+        backrefs.join(between)
+    }
+
     /// mdast-util-to-hast's footer: the referenced definitions, in the
-    /// order of their first reference, each with links back.
+    /// order of their numbers, each with links back to the references
+    /// written before its end.
     fn footer(&mut self, root: &[NodeId]) {
         let doc = self.doc;
         let definitions: BTreeMap<String, NodeId> = root
             .iter()
             .filter_map(|&id| match &doc.node(id).kind {
-                Kind::FootnoteDefinition { label } => Some((identifier(label), id)),
+                Kind::FootnoteDefinition { label } => Some((footnote_identifier(label), id)),
+                _ => None,
+            })
+            .collect();
+        let numbered: BTreeMap<usize, String> = doc
+            .descendants(Document::ROOT)
+            .into_iter()
+            .filter_map(|id| match &doc.node(id).kind {
+                Kind::FootnoteReference { label, number } if *number > 0 => {
+                    Some((*number, footnote_identifier(label)))
+                }
                 _ => None,
             })
             .collect();
         let mut items = Vec::new();
-        // A definition can reference another one, which joins the order.
-        let mut n = 0;
-        while n < self.footnotes.order.len() {
-            let key = self.footnotes.order[n].clone();
-            n += 1;
-            let Some(&def) = definitions.get(&key) else {
+        for (&n, key) in &numbered {
+            let Some(&def) = definitions.get(key) else {
                 continue;
             };
             let mut item = std::mem::take(&mut self.out);
             let safe = normalize_uri(&key.to_lowercase());
-            let backrefs: Vec<String> = (1..=self.footnotes.counts[&key])
-                .map(|r| {
-                    let again = if r > 1 { format!("-{r}") } else { String::new() };
-                    let sup = if r > 1 { format!("<sup>{r}</sup>") } else { String::new() };
-                    format!(
-                        "<a href=\"#user-content-fnref-{safe}{again}\" data-footnote-backref=\"\" aria-label=\"Back to reference {n}{again}\" class=\"data-footnote-backref\">↩{sup}</a>"
-                    )
-                })
-                .collect();
-            let backrefs = backrefs.join(" ");
             let children = doc.node(def).children.clone();
             self.out
                 .push_str(&format!("<li id=\"user-content-fn-{safe}\">\n"));
@@ -390,6 +391,7 @@ impl Writer<'_> {
                     self.out.push_str("<p>");
                     self.inline(c);
                     self.out.push(' ');
+                    let backrefs = self.backrefs(key, n, " ");
                     self.out.push_str(&backrefs);
                     self.out.push_str("</p>");
                 } else {
@@ -400,6 +402,8 @@ impl Writer<'_> {
                 if !children.is_empty() {
                     self.out.push('\n');
                 }
+                // Each link back is a block of its own, as is the space.
+                let backrefs = self.backrefs(key, n, "\n \n");
                 self.out.push_str(&backrefs);
             }
             self.out.push_str("\n</li>");
@@ -415,12 +419,12 @@ impl Writer<'_> {
     }
 }
 
-/// An image's alt text: its children as plain text.
+/// An image's alt text: its children as plain text, raw HTML included.
 fn alt(doc: &Document, id: NodeId) -> String {
     let mut out = String::new();
     for c in doc.descendants(id) {
         match &doc.node(c).kind {
-            Kind::Text(s) | Kind::Code(s) => out.push_str(s),
+            Kind::Text(s) | Kind::Code(s) | Kind::HtmlInline(s) => out.push_str(s),
             Kind::Math { tex, .. } => out.push_str(tex),
             _ => {}
         }
@@ -428,23 +432,15 @@ fn alt(doc: &Document, id: NodeId) -> String {
     out
 }
 
-/// mdast's footnote identifier: whitespace collapsed, case folded.
-fn identifier(label: &str) -> String {
-    label
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ")
-        .to_lowercase()
-        .to_uppercase()
-}
-
-/// hast-util-to-html's text: `<` and `&` as hexadecimal references.
+/// hast-util-to-html's text: `<` and `&` as hexadecimal references. A NUL,
+/// which micromark replaces, is U+FFFD here and in attributes.
 fn text(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
         match c {
             '<' => out.push_str("&#x3C;"),
             '&' => out.push_str("&#x26;"),
+            '\0' => out.push('\u{FFFD}'),
             c => out.push(c),
         }
     }
@@ -452,12 +448,13 @@ fn text(s: &str) -> String {
 }
 
 /// hast-util-to-html's double-quoted attribute value, safe for HTML and
-/// XML alike: `\0`, `"`, `&`, `'` and `` ` `` as hexadecimal references.
+/// XML alike: `"`, `&`, `'` and `` ` `` as hexadecimal references.
 fn attribute(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
         match c {
-            '\0' | '"' | '&' | '\'' | '`' => out.push_str(&format!("&#x{:X};", c as u32)),
+            '\0' => out.push('\u{FFFD}'),
+            '"' | '&' | '\'' | '`' => out.push_str(&format!("&#x{:X};", c as u32)),
             c => out.push(c),
         }
     }
@@ -466,7 +463,7 @@ fn attribute(s: &str) -> String {
 
 /// micromark's `normalizeUri`: percent-encodes what a URL can't hold and
 /// keeps escapes already written.
-pub fn normalize_uri(url: &str) -> String {
+fn normalize_uri(url: &str) -> String {
     let bytes = url.as_bytes();
     let mut out = String::with_capacity(url.len());
     let mut i = 0;

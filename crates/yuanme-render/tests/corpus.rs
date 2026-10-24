@@ -30,7 +30,7 @@ fn render(path: &Path) -> String {
         .and_then(|rest| rest.find("\n---\n"))
         .map_or(0, |end| end + 9);
     let mut sources = Files::default();
-    let name = path.strip_prefix(CORPUS).unwrap().to_str().unwrap();
+    let name = path.strip_prefix(CORPUS).unwrap_or(path).to_str().unwrap();
     let file = sources.add(name, text.as_str());
     match markdown::document(&sources, file, body..text.len()) {
         (Some(doc), _) => yuanme_render::html::body(&doc, &Default::default()),
@@ -77,4 +77,22 @@ fn reference_posts_render_as_astro_does() {
         .collect();
     assert!(wrong.is_empty(), "differ from Astro: {wrong:?}");
     assert_eq!(files(&dir).len(), 15);
+}
+
+/// Edge cases render byte for byte as Astro renders them
+/// (tests/astro/generate.mjs).
+#[test]
+fn edge_cases_render_as_astro_does() {
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/astro/cases");
+    let cases = files(&dir);
+    let wrong: Vec<String> = cases
+        .iter()
+        .filter_map(|path| {
+            let want = std::fs::read_to_string(path.with_extension("html")).unwrap();
+            let got = render(path);
+            (got != want).then(|| format!("{}:\n{got}\nwant:\n{want}", path.display()))
+        })
+        .collect();
+    assert!(wrong.is_empty(), "differ from Astro:\n{}", wrong.join("\n"));
+    assert_eq!(cases.len(), 7);
 }
