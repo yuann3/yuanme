@@ -616,6 +616,15 @@ dependencies = [
  "libfuzzer-sys",
  "yuanme-content",
  "yuanme-diag",
+ "yuanme-render",
+]
+
+[[package]]
+name = "yuanme-render"
+version = "0.0.0"
+dependencies = [
+ "yuanme-content",
+ "yuanme-diag",
 ]
 
 [[package]]

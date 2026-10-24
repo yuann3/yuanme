@@ -14,6 +14,7 @@ comrak = { version = "=0.57.0", default-features = false, features = ["attribute
 libfuzzer-sys = "0.4"
 yuanme-content = { path = "../crates/yuanme-content" }
 yuanme-diag = { path = "../crates/yuanme-diag" }
+yuanme-render = { path = "../crates/yuanme-render" }
 
 # Its own workspace, so the main one, its lockfile and its checks never see
 # libFuzzer.

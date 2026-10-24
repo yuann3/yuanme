@@ -2,7 +2,8 @@
 //! none parses slower than 1 ms/KB + 1 ms on the M4 Max the fuel was
 //! calibrated on, or as many times longer as the machine is slower. The
 //! parse is all of `markdown::document`: comrak, lowering, smartypants and
-//! heading ids. From the repository root, on stable Rust:
+//! heading ids. The HTML writer runs too, for panics, but isn't timed.
+//! From the repository root, on stable Rust:
 //!
 //! ```text
 //! cargo fuzz run --sanitizer none adversarial fuzz/corpus/adversarial fuzz/seeds/adversarial
@@ -63,13 +64,20 @@ pub fn adversarial(data: &[u8]) -> String {
     text
 }
 
-/// Parses `text` as a Markdown body, as the Engine parses an Entry's. A
-/// panic is the failure libFuzzer looks for; Diagnostics, such as running
-/// out of fuel, are how the parse reports bad input.
+/// Parses `text` as a Markdown body, as the Engine parses an Entry's, and
+/// writes it as HTML. A panic is the failure libFuzzer looks for;
+/// Diagnostics, such as running out of fuel, are how the parse reports bad
+/// input.
 pub fn check(text: &str) {
+    if let Some(doc) = parse(text) {
+        let _ = yuanme_render::html::body(&doc, &Default::default());
+    }
+}
+
+fn parse(text: &str) -> Option<yuanme_content::document::Document> {
     let mut files = Files::default();
     let file = files.add("a.md", text);
-    let _ = yuanme_content::markdown::document(&files, file, 0..text.len());
+    yuanme_content::markdown::document(&files, file, 0..text.len()).0
 }
 
 /// How long #15 lets `text` take to parse on the machine the fuel was
@@ -138,6 +146,6 @@ Every *statement* here is true.
 /// How long `text` takes to parse.
 pub fn time(text: &str) -> Duration {
     let start = Instant::now();
-    check(text);
+    let _ = parse(text);
     start.elapsed()
 }
