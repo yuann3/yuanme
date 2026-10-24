@@ -141,6 +141,21 @@ codes! {
         example: "content/posts/proof.org",
         fix: "Write the Entry in Markdown for now, or use a build of yuanme with Org support.",
     }
+    MARKDOWN_EMPTY_DIRECTIVE = "markdown/empty-directive" {
+        meaning: "A `:::` line opens a block directive with no name. A bare `:::` meant as a closing fence opens a new block instead when it is no longer than an open block's fence, and that block swallows the rest of the file.",
+        example: "::::note\n:::tip\nText\n:::\n:::\n(the last line should be `::::`)",
+        fix: "Give the opening fence more colons than any block inside it, and close it with the same number, or name the directive.",
+    }
+    MARKDOWN_NO_EFFECT = "markdown/no-effect" {
+        meaning: "Something in a Markdown body is valid but changes nothing in the output, such as a `[title]` on a directive that isn't a Theorem block.",
+        example: ":::note[Heads up]\nText\n:::",
+        fix: "Remove it, or use a construct that shows it.",
+    }
+    LINK_UNRESOLVED = "link/unresolved" {
+        meaning: "A link to another file or a fragment doesn't lead anywhere in the Site: no Entry has that file as its source, or the page has no element with that id.",
+        example: "[the setup](setup.md#install), where setup.md has no `## Install` heading",
+        fix: "Link to an Entry's file by its path from this file, and to a heading by its id. Links to URLs and to `/` paths are left as they are.",
+    }
     INTERNAL_PANIC = "internal/panic" {
         meaning: "yuanme crashed while processing a file. This is a bug in yuanme, not in the project.",
         example: "Any file can trigger it, if it reaches a bug in a parser or a renderer.",
