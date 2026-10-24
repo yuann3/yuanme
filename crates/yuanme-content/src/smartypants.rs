@@ -7,6 +7,14 @@
 //! Everything works on UTF-16 code units, as the JS does: parse-latin
 //! classifies one unit at a time, so an astral character is two symbol
 //! units, and remark-smartypants slices its joined text by `.length`.
+//!
+//! A whole document is one string here, so one list can hold every sentence
+//! of it. The JS edits those lists with `splice` at the walk's index, which
+//! is quadratic on a long list; the port gets the same results in linear
+//! time by walking with a [`Cursor`] and rebuilding lists in one pass.
+
+use std::mem;
+use std::ops::Deref;
 
 /// One mdast node remark-smartypants reads, in document order.
 #[derive(Debug, Clone, Copy)]
@@ -82,58 +90,121 @@ enum Pass {
 
 /// One retext run: parse, transform, stringify.
 fn retext(units: &[u16], pass: Pass) -> Vec<u16> {
+    if !can_change(units, pass) {
+        return units.to_vec();
+    }
     let mut root = tokenize_root(units);
-    walk(&mut root.children, pass);
-    root.text()
+    match pass {
+        Pass::Quotes => {
+            // Quoting keeps every value's length, so it patches a copy of
+            // the text in place rather than writing the tree back out.
+            let mut out = units.to_vec();
+            quote_all(&mut root.children, &mut 0, &mut out);
+            out
+        }
+        Pass::Punctuation(mode) => {
+            punctuate(&mut root.children, mode);
+            let mut out = Vec::with_capacity(units.len());
+            root.write(&mut out);
+            out
+        }
+    }
 }
 
-// retext-smartypants
+/// Whether `pass` could change anything in `units`, so that text with
+/// nothing to smarten skips the tokenizer. Every transform needs its marks
+/// in the text: a quote; ``` `` ``` or `''`; `--`, or `–-` for oldschool's
+/// drop; and three dots, together or spaced out.
+fn can_change(units: &[u16], pass: Pass) -> bool {
+    let has = |pair: [u8; 2]| units.windows(2).any(|w| w == pair.map(u16::from));
+    match pass {
+        Pass::Quotes => units
+            .iter()
+            .any(|&u| u == u16::from(b'"') || u == u16::from(b'\'')),
+        Pass::Punctuation(mode) => {
+            has(*b"``")
+                || has(*b"''")
+                || has(*b"--")
+                || (mode == Dashes::Oldschool && units.windows(2).any(|w| w == [EN_DASH, 0x2D]))
+                || units.iter().filter(|&&u| u == DOT).nth(2).is_some()
+        }
+    }
+}
 
-/// unist-util-visit's preorder walk, calling the transforms on every
-/// punctuation and symbol node.
-fn walk(children: &mut Vec<Node>, pass: Pass) {
-    let mut index = 0;
-    while index < children.len() {
-        if !children[index].is_mark() {
-            walk(&mut children[index].children, pass);
-        } else {
-            match pass {
-                Pass::Quotes => quotes(children, index),
-                Pass::Punctuation(mode) => {
-                    let at = ellipses(children, index);
-                    backticks(&mut children[at]);
-                    if dashes(children, at, mode) {
-                        // A dropped node: the walk carries on at the same
-                        // index, now its next sibling.
-                        children.remove(at);
-                        continue;
-                    }
+// retext-smartypants, walked as unist-util-visit does: preorder, calling the
+// transforms on every punctuation and symbol node.
+
+/// The quotes pass, copying each quote it sets into `out` at `offset`, the
+/// position of the node in the text. It only rewrites values, so a plain
+/// walk will do.
+fn quote_all(children: &mut [Node], offset: &mut usize, out: &mut [u16]) {
+    for index in 0..children.len() {
+        let node = &children[index];
+        if node.children.is_empty() {
+            if node.is_mark()
+                && let Some((smart, next_open)) = quotes(children, index)
+            {
+                out[*offset] = smart;
+                if let Some(open) = next_open {
+                    out[*offset + 1] = open;
                 }
             }
+            *offset += children[index].value.len();
+        } else {
+            quote_all(&mut children[index].children, offset, out);
         }
-        // Even when spaced ellipses removed siblings before `index`, the walk
-        // goes on at `index + 1`, skipping as many nodes as were removed.
-        index += 1;
     }
+}
+
+/// The ellipses, backticks and dashes pass.
+fn punctuate(list: &mut Vec<Node>, mode: Dashes) {
+    let mut cursor = Cursor::new(list);
+    while let Some(node) = cursor.cur() {
+        if !node.is_mark() {
+            punctuate(&mut cursor.cur_mut().children, mode);
+            cursor.forward();
+            continue;
+        }
+        let removed = ellipses(&mut cursor);
+        backticks(cursor.cur_mut());
+        if dashes(&mut cursor, mode) {
+            // A dropped node: the walk carries on at the same index, now its
+            // next sibling.
+            cursor.remove_cur();
+            continue;
+        }
+        cursor.forward();
+        // When spaced ellipses removed siblings before the node, the walk
+        // still goes on at its old index + 1, skipping as many nodes, and
+        // never visits them.
+        for _ in 0..removed {
+            cursor.forward();
+        }
+    }
+    cursor.finish();
 }
 
 const OPEN: [u16; 2] = [0x201C, 0x2018];
 const CLOSE: [u16; 2] = [0x201D, 0x2019];
 
 /// retext-smartypants' `quotesDefault`, in its order of special cases.
-fn quotes(siblings: &mut [Node], index: usize) {
+/// Returns the quote set, and the one set on the next node if any; both
+/// replace a one-unit quote.
+fn quotes(siblings: &mut [Node], index: usize) -> Option<(u16, Option<u16>)> {
     let value = &siblings[index].value;
     let quote = if eq(value, "\"") {
         0
     } else if eq(value, "'") {
         1
     } else {
-        return;
+        return None;
     };
     let previous = index.checked_sub(1).map(|i| &siblings[i]);
     let next = siblings.get(index + 1);
     let next_next = siblings.get(index + 2);
-    let next_value = next.map(Node::text).unwrap_or_default();
+    // Only ever compared with values three units long or shorter, which a
+    // longer text matches no better than an empty one.
+    let next_value = next.and_then(|n| n.short_text(3)).unwrap_or_default();
     let next_is_mark = next.is_some_and(Node::is_mark);
     let next_next_is_word = next_next.is_some_and(|n| n.kind == Kind::Word);
     let is_space_or_mark = |n: &Node| n.kind == Kind::WhiteSpace || n.is_mark();
@@ -157,10 +228,11 @@ fn quotes(siblings: &mut [Node], index: usize) {
     } else {
         OPEN[quote]
     };
-    siblings[index].value = vec![smart];
+    siblings[index].value = Units::one(smart);
     if let Some(open) = next_open {
-        siblings[index + 1].value = vec![open];
+        siblings[index + 1].value = Units::one(open);
     }
+    Some((smart, next_open))
 }
 
 /// `the '80s`: two ASCII digits and an `s`.
@@ -168,73 +240,77 @@ fn is_decade(units: &[u16]) -> bool {
     matches!(units, [a, b, s] if is_digit(*a) && is_digit(*b) && *s == u16::from(b's'))
 }
 
-/// `ellipsesDefault`: dots with spaces between, then dots without. Returns
-/// where the node now is, as spaced dots take the dots before it out.
-fn ellipses(siblings: &mut Vec<Node>, index: usize) -> usize {
+/// `ellipsesDefault` on the node at the cursor: dots with spaces between,
+/// then dots without. Returns how many siblings before it spaced dots took
+/// out.
+fn ellipses(cursor: &mut Cursor<'_>) -> usize {
     let is_dots = |units: &[u16]| !units.is_empty() && units.iter().all(|&u| u == DOT);
-    if !is_dots(&siblings[index].value) {
-        return index;
+    if !cursor.cur().is_some_and(|n| is_dots(&n.value)) {
+        return 0;
     }
-    let mut position = index;
+    let before = cursor.before();
+    let mut position = before.len();
     let mut removed = 0;
     let mut count = 1;
     // `while (--position > 0)`: the first sibling is never looked at as
     // white space.
     while position > 1 {
         position -= 1;
-        if siblings[position].kind != Kind::WhiteSpace {
+        if before[position].kind != Kind::WhiteSpace {
             break;
         }
         position -= 1;
-        let sibling = &siblings[position];
+        let sibling = &before[position];
         if !(sibling.is_mark() && is_dots(&sibling.value)) {
             break;
         }
         removed += 2;
         count += 1;
     }
+    let node = cursor.cur_mut();
     if count >= 3 {
-        let at = index - removed;
-        siblings.drain(at..index);
-        siblings[at].value = vec![ELLIPSIS];
-        return at;
+        node.value = Units::one(ELLIPSIS);
+        cursor.remove_before(removed);
+        return removed;
     }
-    if siblings[index].value.len() >= 3 {
-        siblings[index].value = vec![ELLIPSIS];
+    if node.value.len() >= 3 {
+        node.value = Units::one(ELLIPSIS);
     }
-    index
+    0
 }
 
 /// `backticksDefault`.
 fn backticks(node: &mut Node) {
     if eq(&node.value, "``") {
-        node.value = vec![OPEN[0]];
+        node.value = Units::one(OPEN[0]);
     } else if eq(&node.value, "''") {
-        node.value = vec![CLOSE[0]];
+        node.value = Units::one(CLOSE[0]);
     }
 }
 
-/// `dashesDefault` or `dashesOldschool`. Returns whether to drop the node.
-fn dashes(siblings: &mut [Node], index: usize, mode: Dashes) -> bool {
-    let node = &siblings[index];
+/// `dashesDefault` or `dashesOldschool` on the node at the cursor. Returns
+/// whether to drop it.
+fn dashes(cursor: &mut Cursor<'_>, mode: Dashes) -> bool {
+    let node = cursor.cur_mut();
     match mode {
         Dashes::Default => {
             if eq(&node.value, "--") {
-                siblings[index].value = vec![EM_DASH];
+                node.value = Units::one(EM_DASH);
             }
         }
         Dashes::Oldschool => {
-            let next_is_hyphen = siblings
-                .get(index + 1)
-                .is_some_and(|n| n.kind == Kind::Punctuation && eq(&n.value, "-"));
-            if node.value == [EN_DASH] && next_is_hyphen {
-                siblings[index + 1].value = vec![EM_DASH];
-                return true;
-            }
-            if eq(&node.value, "---") {
-                siblings[index].value = vec![EM_DASH];
+            if *node.value == [EN_DASH] {
+                if let Some(next) = cursor.next_mut()
+                    && next.kind == Kind::Punctuation
+                    && eq(&next.value, "-")
+                {
+                    next.value = Units::one(EM_DASH);
+                    return true;
+                }
+            } else if eq(&node.value, "---") {
+                node.value = Units::one(EM_DASH);
             } else if eq(&node.value, "--") {
-                siblings[index].value = vec![EN_DASH];
+                node.value = Units::one(EN_DASH);
             }
         }
     }
@@ -248,22 +324,28 @@ const EM_DASH: u16 = 0x2014;
 
 // parse-latin
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 enum Kind {
     Root,
     Paragraph,
     Sentence,
     Word,
+    #[default]
     Text,
     WhiteSpace,
     Punctuation,
     Symbol,
 }
 
-/// An nlcst node: parents have `children`, the rest a `value`.
+/// An nlcst node: parents have `children`, the rest a `value`. A word with
+/// one text child, nearly every word, keeps that text as its own `value`
+/// and no `children` until something joins it, which saves an allocation
+/// per word. The default is the placeholder a [`Cursor`] leaves where it
+/// took a node out.
+#[derive(Default)]
 struct Node {
     kind: Kind,
-    value: Vec<u16>,
+    value: Units,
     children: Vec<Node>,
 }
 
@@ -271,7 +353,7 @@ impl Node {
     fn leaf(kind: Kind, value: &[u16]) -> Node {
         Node {
             kind,
-            value: value.to_vec(),
+            value: Units::new(value),
             children: Vec::new(),
         }
     }
@@ -279,7 +361,7 @@ impl Node {
     fn parent(kind: Kind, children: Vec<Node>) -> Node {
         Node {
             kind,
-            value: Vec::new(),
+            value: Units::default(),
             children,
         }
     }
@@ -296,51 +378,270 @@ impl Node {
         matches!(self.kind, Kind::Punctuation | Kind::Symbol)
     }
 
-    /// nlcst-to-string.
-    fn text(&self) -> Vec<u16> {
-        let mut out = Vec::new();
-        self.write(&mut out);
-        out
+    fn is_word(&self) -> bool {
+        self.kind == Kind::Word
     }
 
+    /// A parent's children, for adding to: a word keeping its text as its
+    /// value first gets it back as a text child.
+    fn children_mut(&mut self) -> &mut Vec<Node> {
+        if self.is_word() && self.children.is_empty() {
+            let text = Node::leaf(Kind::Text, &mem::take(&mut self.value));
+            self.children.push(text);
+        }
+        &mut self.children
+    }
+
+    /// A parent's children, taking it apart.
+    fn into_children(mut self) -> Vec<Node> {
+        self.children_mut();
+        self.children
+    }
+
+    /// nlcst-to-string.
     fn write(&self, out: &mut Vec<u16>) {
-        if self.is_parent() {
+        if self.children.is_empty() {
+            out.extend_from_slice(&self.value);
+        } else {
             for child in &self.children {
                 child.write(out);
             }
+        }
+    }
+
+    /// nlcst-to-string, when it is at most `cap` units long. The JS only
+    /// compares a node's text with short values, and building the text of
+    /// a long word each time would be quadratic.
+    fn short_text(&self, cap: usize) -> Option<Units> {
+        let mut buf = [0; INLINE];
+        let mut len = 0;
+        self.fill(&mut buf[..cap], &mut len)
+            .then(|| Units::new(&buf[..len]))
+    }
+
+    /// Whether the node's text is `ascii`, without building it.
+    fn text_is(&self, ascii: &str) -> bool {
+        let mut rest = ascii.as_bytes();
+        self.strip(&mut rest) && rest.is_empty()
+    }
+
+    fn strip(&self, rest: &mut &[u8]) -> bool {
+        if !self.children.is_empty() {
+            return self.children.iter().all(|child| child.strip(rest));
+        }
+        let Some((head, tail)) = rest.split_at_checked(self.value.len()) else {
+            return false;
+        };
+        let same = self
+            .value
+            .iter()
+            .zip(head)
+            .all(|(&u, &b)| u == u16::from(b));
+        *rest = tail;
+        same
+    }
+
+    fn fill(&self, buf: &mut [u16], len: &mut usize) -> bool {
+        if !self.children.is_empty() {
+            return self.children.iter().all(|child| child.fill(buf, len));
+        }
+        let end = *len + self.value.len();
+        if end > buf.len() {
+            return false;
+        }
+        buf[*len..end].copy_from_slice(&self.value);
+        *len = end;
+        true
+    }
+
+    /// The first unit of the node's text.
+    fn first_unit(&self) -> Option<u16> {
+        if self.children.is_empty() {
+            self.value.first().copied()
         } else {
-            out.extend_from_slice(&self.value);
+            self.children.iter().find_map(Node::first_unit)
         }
     }
 }
 
-fn eq(units: &[u16], s: &str) -> bool {
-    units.iter().copied().eq(s.encode_utf16())
+const INLINE: usize = 8;
+
+/// A leaf's value. Nearly every token is a few units long, so it is kept
+/// inline instead of allocated per token.
+enum Units {
+    Inline(u8, [u16; INLINE]),
+    Heap(Box<[u16]>),
+}
+
+impl Units {
+    fn new(units: &[u16]) -> Units {
+        match u8::try_from(units.len()) {
+            Ok(len) if units.len() <= INLINE => {
+                let mut buf = [0; INLINE];
+                buf[..units.len()].copy_from_slice(units);
+                Units::Inline(len, buf)
+            }
+            _ => Units::Heap(units.into()),
+        }
+    }
+
+    fn one(unit: u16) -> Units {
+        Units::new(&[unit])
+    }
+}
+
+impl Default for Units {
+    fn default() -> Units {
+        Units::Inline(0, [0; INLINE])
+    }
+}
+
+impl Deref for Units {
+    type Target = [u16];
+
+    fn deref(&self) -> &[u16] {
+        match self {
+            Units::Inline(len, buf) => &buf[..usize::from(*len)],
+            Units::Heap(units) => units,
+        }
+    }
+}
+
+/// Whether `units` spell `ascii`.
+fn eq(units: &[u16], ascii: &str) -> bool {
+    units.len() == ascii.len()
+        && units
+            .iter()
+            .zip(ascii.bytes())
+            .all(|(&u, b)| u == u16::from(b))
 }
 
 fn is_digit(u: u16) -> bool {
     (0x30..=0x39).contains(&u)
 }
 
-type Modifier = fn(&mut Vec<Node>, usize) -> Option<usize>;
-type Visitor = fn(&mut Vec<Node>, usize);
+/// A walk over a list that edits it at and around the walk's position, as
+/// unist-util-modify-children and unist-util-visit allow. The nodes taken
+/// out so far sit as placeholders in a gap just behind the position, so
+/// taking out the node at or after it, or the nodes just before it, is O(1)
+/// instead of a shift of everything after; [`Cursor::finish`] closes the
+/// gap once.
+struct Cursor<'a> {
+    list: &'a mut Vec<Node>,
+    /// The number of nodes before the position: the JS index.
+    write: usize,
+    /// Where the node at the position is; `write..read` is the gap.
+    read: usize,
+}
 
-/// unist-util-modify-children: a returned index is where iteration resumes
-/// (JS `-1` resumes at 0, as `saturating_sub` gives).
-fn modify(children: &mut Vec<Node>, modifier: Modifier) {
-    let mut index = 0;
-    while index < children.len() {
-        index = modifier(children, index).unwrap_or(index + 1);
+impl<'a> Cursor<'a> {
+    fn new(list: &'a mut Vec<Node>) -> Cursor<'a> {
+        Cursor {
+            list,
+            write: 0,
+            read: 0,
+        }
+    }
+
+    fn before(&self) -> &[Node] {
+        &self.list[..self.write]
+    }
+
+    fn prev(&self) -> Option<&Node> {
+        self.before().last()
+    }
+
+    fn prev_mut(&mut self) -> Option<&mut Node> {
+        self.list[..self.write].last_mut()
+    }
+
+    fn cur(&self) -> Option<&Node> {
+        self.list.get(self.read)
+    }
+
+    /// The node at the position. Only called while there is one.
+    fn cur_mut(&mut self) -> &mut Node {
+        &mut self.list[self.read]
+    }
+
+    fn next(&self) -> Option<&Node> {
+        self.list.get(self.read + 1)
+    }
+
+    fn next_mut(&mut self) -> Option<&mut Node> {
+        self.list.get_mut(self.read + 1)
+    }
+
+    /// Takes out the node at the position; the next one moves up to it.
+    fn remove_cur(&mut self) -> Node {
+        let node = mem::take(&mut self.list[self.read]);
+        self.read += 1;
+        node
+    }
+
+    /// Takes out the node after the position.
+    fn remove_next(&mut self) -> Node {
+        let node = mem::take(&mut self.list[self.read + 1]);
+        self.list.swap(self.read, self.read + 1);
+        self.read += 1;
+        node
+    }
+
+    /// Takes out the `n` nodes just before the position.
+    fn remove_before(&mut self, n: usize) {
+        for node in &mut self.list[self.write - n..self.write] {
+            *node = Node::default();
+        }
+        self.write -= n;
+    }
+
+    fn forward(&mut self) {
+        if self.read < self.list.len() {
+            if self.write < self.read {
+                self.list.swap(self.write, self.read);
+            }
+            self.write += 1;
+            self.read += 1;
+        }
+    }
+
+    /// One step back; JS index `-1` resumes at 0.
+    fn back(&mut self) {
+        if self.write > 0 {
+            if self.write < self.read {
+                self.list.swap(self.write - 1, self.read - 1);
+            }
+            self.write -= 1;
+            self.read -= 1;
+        }
+    }
+
+    fn finish(self) {
+        self.list.drain(self.write..self.read);
     }
 }
 
-/// unist-util-visit-children: every index once, whatever the visitor moves.
-fn visit(children: &mut Vec<Node>, visitor: Visitor) {
-    let mut index = 0;
-    while index < children.len() {
-        visitor(children, index);
-        index += 1;
+/// Where unist-util-modify-children goes after a modifier.
+enum Step {
+    /// The JS returns nothing: on to the next index.
+    Next,
+    /// The JS returns `index`: this index again, now holding the next node.
+    Stay,
+    /// The JS returns `index - 1`.
+    Back,
+}
+
+/// unist-util-modify-children.
+fn modify(list: &mut Vec<Node>, modifier: impl Fn(&mut Cursor<'_>) -> Step) {
+    let mut cursor = Cursor::new(list);
+    while cursor.cur().is_some() {
+        match modifier(&mut cursor) {
+            Step::Next => cursor.forward(),
+            Step::Stay => {}
+            Step::Back => cursor.back(),
+        }
     }
+    cursor.finish();
 }
 
 fn tokenize_root(value: &[u16]) -> Node {
@@ -348,9 +649,9 @@ fn tokenize_root(value: &[u16]) -> Node {
     let mut children = split(Kind::Paragraph, paragraph.children, |n| {
         n.kind == Kind::WhiteSpace && is_new_line(&n.value)
     });
-    visit(&mut children, make_initial_white_space_siblings);
-    modify(&mut children, make_final_white_space_siblings);
-    modify(&mut children, remove_empty_nodes);
+    make_initial_white_space_siblings(&mut children);
+    make_final_white_space_siblings(&mut children);
+    remove_empty_nodes(&mut children);
     Node::parent(Kind::Root, children)
 }
 
@@ -365,11 +666,13 @@ fn tokenize_paragraph(value: &[u16]) -> Node {
     modify(&mut children, merge_initial_digit_sentences);
     modify(&mut children, merge_prefix_exceptions);
     modify(&mut children, merge_affix_exceptions);
-    visit(&mut children, merge_remaining_full_stops);
-    visit(&mut children, make_initial_white_space_siblings);
-    modify(&mut children, make_final_white_space_siblings);
-    modify(&mut children, break_implicit_sentences);
-    modify(&mut children, remove_empty_nodes);
+    for sentence in &mut children {
+        merge_remaining_full_stops(&mut sentence.children);
+    }
+    make_initial_white_space_siblings(&mut children);
+    make_final_white_space_siblings(&mut children);
+    break_implicit_sentences(&mut children);
+    remove_empty_nodes(&mut children);
     Node::parent(Kind::Paragraph, children)
 }
 
@@ -387,11 +690,7 @@ fn tokenize_sentence(value: &[u16]) -> Node {
 /// symbols only repeat the same unit, except that a surrogate always joins
 /// the symbol before it.
 fn tokenize(value: &[u16]) -> Vec<Node> {
-    let token = |kind: Kind, units: &[u16]| match kind {
-        Kind::Word => Node::parent(Kind::Word, vec![Node::leaf(Kind::Text, units)]),
-        _ => Node::leaf(kind, units),
-    };
-    let mut children = Vec::new();
+    let mut children = Vec::with_capacity(value.len() / 4);
     let mut from = 0;
     let mut previous: Option<(Kind, u16)> = None;
     for (index, &unit) in value.iter().enumerate() {
@@ -402,19 +701,39 @@ fn tokenize(value: &[u16]) -> Vec<Node> {
                     || unit == previous_unit
                     || (0xD800..=0xDFFF).contains(&unit));
             if !continues {
-                children.push(token(previous_kind, &value[from..index]));
+                children.push(Node::leaf(previous_kind, &value[from..index]));
                 from = index;
             }
         }
         previous = Some((kind, unit));
     }
     if let Some((kind, _)) = previous {
-        children.push(token(kind, &value[from..]));
+        children.push(Node::leaf(kind, &value[from..]));
     }
     children
 }
 
 fn classify(unit: u16) -> Kind {
+    match ASCII.get(usize::from(unit)) {
+        Some(&kind) => kind,
+        None => classify_by_table(unit),
+    }
+}
+
+/// [`classify_by_table`] for ASCII, worked out at compile time, as most
+/// text is ASCII and a table search per unit is a measurable share of the
+/// whole.
+const ASCII: [Kind; 128] = {
+    let mut table = [Kind::Symbol; 128];
+    let mut unit = 0;
+    while unit < 128 {
+        table[unit as usize] = classify_by_table(unit);
+        unit += 1;
+    }
+    table
+};
+
+const fn classify_by_table(unit: u16) -> Kind {
     if is_white_space(unit) {
         Kind::WhiteSpace
     } else if in_ranges(PUNCTUATION, unit) {
@@ -429,383 +748,441 @@ fn classify(unit: u16) -> Kind {
 /// parse-latin's `splitNode`: a new `kind` parent after each child `at`
 /// matches, and after the last.
 fn split(kind: Kind, children: Vec<Node>, at: impl Fn(&Node) -> bool) -> Vec<Node> {
-    let last = children.len().saturating_sub(1);
-    let mut result = Vec::new();
-    let mut chunk = Vec::new();
-    for (index, child) in children.into_iter().enumerate() {
-        let ends = index == last || at(&child);
-        chunk.push(child);
-        if ends {
-            result.push(Node::parent(kind, std::mem::take(&mut chunk)));
-        }
+    // Found first, so that each part is allocated once at its size.
+    let ends: Vec<usize> = children
+        .iter()
+        .enumerate()
+        .filter(|&(index, child)| index + 1 == children.len() || at(child))
+        .map(|(index, _)| index + 1)
+        .collect();
+    let mut nodes = children.into_iter();
+    let mut start = 0;
+    let mut result = Vec::with_capacity(ends.len());
+    for end in ends {
+        result.push(Node::parent(
+            kind,
+            nodes.by_ref().take(end - start).collect(),
+        ));
+        start = end;
     }
     result
 }
 
-// parse-latin's sentence plugins.
+// parse-latin's sentence plugins, on a sentence's tokens.
 
 /// `&` joins the word after it, when no word comes before.
-fn merge_initial_word_symbol(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if !child.is_mark() || !eq(&child.value, "&") {
-        return None;
+fn merge_initial_word_symbol(cursor: &mut Cursor<'_>) -> Step {
+    if !cursor
+        .cur()
+        .is_some_and(|n| n.is_mark() && eq(&n.value, "&"))
+        || cursor.prev().is_some_and(Node::is_word)
+        || !cursor.next().is_some_and(Node::is_word)
+    {
+        return Step::Next;
     }
-    let after_word = index > 0 && children[index - 1].kind == Kind::Word;
-    if after_word || children.get(index + 1).is_none_or(|n| n.kind != Kind::Word) {
-        return None;
-    }
-    let child = children.remove(index);
-    children[index].children.insert(0, child);
-    Some(index.saturating_sub(1))
+    let child = cursor.remove_cur();
+    cursor.cur_mut().children_mut().insert(0, child);
+    Step::Back
 }
 
 /// A trailing `-` joins the word before it.
-fn merge_final_word_symbol(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if index == 0 || !child.is_mark() || !eq(&child.value, "-") {
-        return None;
+fn merge_final_word_symbol(cursor: &mut Cursor<'_>) -> Step {
+    if !cursor
+        .cur()
+        .is_some_and(|n| n.is_mark() && eq(&n.value, "-"))
+        || !cursor.prev().is_some_and(Node::is_word)
+        || cursor.next().is_some_and(Node::is_word)
+    {
+        return Step::Next;
     }
-    let before_word = children
-        .get(index + 1)
-        .is_some_and(|n| n.kind == Kind::Word);
-    if before_word || children[index - 1].kind != Kind::Word {
-        return None;
-    }
-    let child = children.remove(index);
-    children[index - 1].children.push(child);
-    Some(index)
+    let child = cursor.remove_cur();
+    push_to_prev(cursor, child);
+    Step::Stay
 }
 
 /// Words joined by inner-word marks (`it's`, `a-b`, `a.b`) become one word.
-fn merge_inner_word_symbol(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    if index == 0 || !children[index].is_mark() || children[index - 1].kind != Kind::Word {
-        return None;
+fn merge_inner_word_symbol(cursor: &mut Cursor<'_>) -> Step {
+    if !cursor.cur().is_some_and(Node::is_mark) || !cursor.prev().is_some_and(Node::is_word) {
+        return Step::Next;
     }
-    let mut end = index;
-    for (position, sibling) in children.iter().enumerate().skip(index) {
-        if sibling.kind == Kind::Word {
-            end = position + 1;
+    let mut end = 0;
+    for (offset, sibling) in cursor.list[cursor.read..].iter().enumerate() {
+        if sibling.is_word() {
+            end = offset + 1;
         } else if !(sibling.is_mark() && is_word_symbol_inner(&sibling.value)) {
             break;
         }
     }
-    if end == index {
-        return None;
+    if end == 0 {
+        return Step::Next;
     }
-    let tokens: Vec<Node> = children
-        .drain(index..end)
-        .flat_map(|n| {
-            if n.kind == Kind::Word {
-                n.children
-            } else {
-                vec![n]
+    for _ in 0..end {
+        let node = cursor.remove_cur();
+        if node.is_word() {
+            for child in node.into_children() {
+                push_to_prev(cursor, child);
             }
-        })
-        .collect();
-    children[index - 1].children.extend(tokens);
-    Some(index)
+        } else {
+            push_to_prev(cursor, node);
+        }
+    }
+    Step::Stay
 }
 
 /// `/` between short words (`a/b`, `km/h`) joins them.
-fn merge_inner_word_slash(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if index == 0
-        || children[index - 1].kind != Kind::Word
-        || !child.is_mark()
-        || !eq(&child.value, "/")
+fn merge_inner_word_slash(cursor: &mut Cursor<'_>) -> Step {
+    let short = |n: &Node| n.short_text(2).is_some();
+    if !cursor
+        .cur()
+        .is_some_and(|n| n.is_mark() && eq(&n.value, "/"))
+        || !cursor.prev().is_some_and(|n| n.is_word() && short(n))
     {
-        return None;
+        return Step::Next;
     }
-    let previous_len = children[index - 1].text().len();
-    let next_len = children
-        .get(index + 1)
-        .filter(|n| n.kind == Kind::Word)
-        .map(|n| n.text().len());
-    if previous_len >= 3 || next_len.is_some_and(|len| len >= 3) {
-        return None;
+    let next_is_word = cursor.next().is_some_and(Node::is_word);
+    if next_is_word && !cursor.next().is_some_and(short) {
+        return Step::Next;
     }
-    let mut queue = vec![children.remove(index)];
-    if next_len.is_some() {
-        queue.extend(children.remove(index).children);
+    let slash = cursor.remove_cur();
+    push_to_prev(cursor, slash);
+    if next_is_word {
+        for child in cursor.remove_cur().into_children() {
+            push_to_prev(cursor, child);
+        }
     }
-    children[index - 1].children.extend(queue);
-    Some(index)
+    Step::Stay
 }
 
 /// A `.` after an initialism such as `e.g` joins it, unless it is all digits.
-fn merge_initialisms(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if index == 0 || child.kind != Kind::Punctuation || !eq(&child.value, ".") {
-        return None;
+fn merge_initialisms(cursor: &mut Cursor<'_>) -> Step {
+    if !cursor
+        .cur()
+        .is_some_and(|n| n.kind == Kind::Punctuation && eq(&n.value, "."))
+    {
+        return Step::Next;
     }
-    let previous = &children[index - 1];
+    let Some(previous) = cursor.prev() else {
+        return Step::Next;
+    };
+    // A word keeping its text as its value counts no children here, not
+    // the JS's one, and is passed over either way.
     let len = previous.children.len();
-    if previous.kind != Kind::Word || len == 1 || len.is_multiple_of(2) {
-        return None;
+    if !previous.is_word() || len == 1 || len.is_multiple_of(2) {
+        return Step::Next;
     }
+    // A word's children are all leaves, so their text is their value.
     let mut all_digits = true;
     for position in (0..len).rev() {
-        let value = previous.children[position].text();
+        let value = &previous.children[position].value;
         if position.is_multiple_of(2) {
             if value.len() > 1 {
-                return None;
+                return Step::Next;
             }
             if !value.first().is_some_and(|&u| in_ranges(NUMERICAL, u)) {
                 all_digits = false;
             }
-        } else if !eq(&value, ".") {
+        } else if !eq(value, ".") {
             if position < len - 2 {
                 break;
             }
-            return None;
+            return Step::Next;
         }
     }
     if all_digits {
-        return None;
+        return Step::Next;
     }
-    let child = children.remove(index);
-    children[index - 1].children.push(child);
-    Some(index)
+    let stop = cursor.remove_cur();
+    push_to_prev(cursor, stop);
+    Step::Stay
 }
 
-// parse-latin's paragraph plugins.
+fn push_to_prev(cursor: &mut Cursor<'_>, node: Node) {
+    if let Some(previous) = cursor.prev_mut() {
+        previous.children_mut().push(node);
+    }
+}
+
+// parse-latin's paragraph plugins, on a paragraph's sentences.
 
 /// A sentence without words joins the one before it, or else the one after.
-fn merge_non_word_sentences(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if !child.is_parent() || child.children.iter().any(|n| n.kind == Kind::Word) {
-        return None;
+fn merge_non_word_sentences(cursor: &mut Cursor<'_>) -> Step {
+    if !cursor
+        .cur()
+        .is_some_and(|n| n.is_parent() && !n.children.iter().any(Node::is_word))
+    {
+        return Step::Next;
     }
-    if index > 0 && children[index - 1].is_parent() {
-        let child = children.remove(index);
-        children[index - 1].children.extend(child.children);
-        return Some(index);
+    if cursor.prev().is_some_and(Node::is_parent) {
+        return merge_into_previous(cursor);
     }
-    if children.get(index + 1).is_some_and(Node::is_parent) {
-        let child = children.remove(index);
-        children[index].children.splice(0..0, child.children);
+    if cursor.next().is_some_and(Node::is_parent) {
+        let child = cursor.remove_cur();
+        cursor.cur_mut().children.splice(0..0, child.children);
     }
     // parse-latin returns nothing here, so iteration skips the sentence just
     // merged into.
-    None
+    Step::Next
 }
 
 /// Closing marks after a terminal marker (`."`, `!)`) stay with that sentence.
-// Takes a `Vec` to fit `Modifier` and `Visitor` beside the plugins that resize.
-#[allow(clippy::ptr_arg)]
-fn merge_affix_symbol(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if index == 0 || !child.is_parent() || children[index - 1].kind != Kind::Sentence {
-        return None;
+fn merge_affix_symbol(cursor: &mut Cursor<'_>) -> Step {
+    let Some(child) = cursor.cur() else {
+        return Step::Next;
+    };
+    if !child.is_parent() || !cursor.prev().is_some_and(|n| n.kind == Kind::Sentence) {
+        return Step::Next;
     }
-    let first = child.children.first()?;
-    if !first.is_mark() || !is_affix_symbol(&first.text()) {
-        return None;
+    // parse-latin moves one mark, steps back to the previous sentence and
+    // returns. Every sentence but the first has a word by now (the pass
+    // before merged the others), so none is emptied, the step back finds
+    // nothing to move, and moving the whole run at once is the same.
+    // Moving marks one at a time off the front would be quadratic.
+    let run = child
+        .children
+        .iter()
+        .take_while(|n| n.is_mark() && is_affix_symbol(&n.value))
+        .count();
+    if run == 0 {
+        return Step::Next;
     }
-    let first = children[index].children.remove(0);
-    children[index - 1].children.push(first);
-    Some(index - 1)
+    let moved: Vec<Node> = cursor.cur_mut().children.drain(..run).collect();
+    if let Some(previous) = cursor.prev_mut() {
+        previous.children.extend(moved);
+    }
+    Step::Back
 }
 
 /// A sentence whose first word starts lower case continues the one before.
-fn merge_initial_lower_case_letter_sentences(
-    children: &mut Vec<Node>,
-    index: usize,
-) -> Option<usize> {
-    let child = &children[index];
-    if child.kind != Kind::Sentence || index == 0 || children[index - 1].kind != Kind::Sentence {
-        return None;
+fn merge_initial_lower_case_letter_sentences(cursor: &mut Cursor<'_>) -> Step {
+    let Some(child) = cursor.cur() else {
+        return Step::Next;
+    };
+    if child.kind != Kind::Sentence || !cursor.prev().is_some_and(|n| n.kind == Kind::Sentence) {
+        return Step::Next;
     }
-    let first = child
-        .children
-        .iter()
-        .find(|n| n.kind == Kind::Word || n.is_mark())?;
+    let first = child.children.iter().find(|n| n.is_word() || n.is_mark());
     // A word starts with a word unit, `&` or `.`, never a surrogate, so the
     // astral half of parse-latin's regex can't match and isn't ported.
-    if first.kind != Kind::Word
-        || !first
-            .text()
-            .first()
-            .is_some_and(|&u| in_ranges(LOWER_INITIAL, u))
-    {
-        return None;
+    let lower = first.is_some_and(|n| {
+        n.is_word() && n.first_unit().is_some_and(|u| in_ranges(LOWER_INITIAL, u))
+    });
+    if !lower {
+        return Step::Next;
     }
-    merge_into_previous(children, index)
+    merge_into_previous(cursor)
 }
 
 /// A sentence starting with a digit continues the one before.
-fn merge_initial_digit_sentences(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if index == 0 || children[index - 1].kind != Kind::Sentence || child.kind != Kind::Sentence {
-        return None;
+fn merge_initial_digit_sentences(cursor: &mut Cursor<'_>) -> Step {
+    let Some(child) = cursor.cur() else {
+        return Step::Next;
+    };
+    if child.kind != Kind::Sentence || !cursor.prev().is_some_and(|n| n.kind == Kind::Sentence) {
+        return Step::Next;
     }
-    let head = child.children.first()?;
-    if head.kind != Kind::Word || !head.text().first().is_some_and(|&u| is_digit(u)) {
-        return None;
+    let digit = child
+        .children
+        .first()
+        .is_some_and(|n| n.is_word() && n.first_unit().is_some_and(is_digit));
+    if !digit {
+        return Step::Next;
     }
-    merge_into_previous(children, index)
+    merge_into_previous(cursor)
 }
 
 /// A sentence ending in an abbreviation and `.` (`etc.`, `cf.`, `e.`) runs
 /// on into the next.
-fn merge_prefix_exceptions(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let sentence = &mut children[index];
+fn merge_prefix_exceptions(cursor: &mut Cursor<'_>) -> Step {
+    let Some(sentence) = cursor.cur() else {
+        return Step::Next;
+    };
     let len = sentence.children.len();
     if !sentence.is_parent() || len < 2 {
-        return None;
+        return Step::Next;
     }
     let period = &sentence.children[len - 1];
     let word = &sentence.children[len - 2];
-    if !period.is_mark()
-        || !eq(&period.text(), ".")
-        || word.kind != Kind::Word
-        || !is_abbreviation(&word.text())
-    {
-        return None;
+    // No abbreviation is longer than four letters, and lowercasing never
+    // makes text shorter, so a word over eight units can't be one.
+    let abbreviation = word.is_word() && word.short_text(8).is_some_and(|w| is_abbreviation(&w));
+    if !period.is_mark() || !eq(&period.value, ".") || !abbreviation {
+        return Step::Next;
     }
+    let sentence = cursor.cur_mut();
     let period = sentence.children.remove(len - 1);
-    sentence.children[len - 2].children.push(period);
-    if children
-        .get(index + 1)
-        .is_some_and(|n| n.kind == Kind::Sentence)
-    {
-        let next = children.remove(index + 1);
-        children[index].children.extend(next.children);
-        return Some(index.saturating_sub(1));
+    sentence.children[len - 2].children_mut().push(period);
+    if !cursor.next().is_some_and(|n| n.kind == Kind::Sentence) {
+        return Step::Next;
     }
-    None
+    let next = cursor.remove_next();
+    cursor.cur_mut().children.extend(next.children);
+    Step::Back
 }
 
 /// A sentence starting with `,` or `;` continues the one before.
-fn merge_affix_exceptions(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if index == 0 || !children[index - 1].is_parent() || !child.is_parent() {
-        return None;
+fn merge_affix_exceptions(cursor: &mut Cursor<'_>) -> Step {
+    let Some(child) = cursor.cur() else {
+        return Step::Next;
+    };
+    if !child.is_parent() || !cursor.prev().is_some_and(Node::is_parent) {
+        return Step::Next;
     }
-    let first = child
-        .children
-        .iter()
-        .find(|n| n.kind == Kind::Word || n.is_mark())?;
-    if first.kind == Kind::Word || !(eq(&first.text(), ",") || eq(&first.text(), ";")) {
-        return None;
+    let first = child.children.iter().find(|n| n.is_word() || n.is_mark());
+    let affix = first.is_some_and(|n| n.is_mark() && (eq(&n.value, ",") || eq(&n.value, ";")));
+    if !affix {
+        return Step::Next;
     }
-    merge_into_previous(children, index)
+    merge_into_previous(cursor)
 }
 
-fn merge_into_previous(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = children.remove(index);
-    children[index - 1].children.extend(child.children);
-    Some(index)
+fn merge_into_previous(cursor: &mut Cursor<'_>) -> Step {
+    let child = cursor.remove_cur();
+    if let Some(previous) = cursor.prev_mut() {
+        previous.children.extend(child.children);
+    }
+    Step::Stay
 }
 
 /// Every `.` but a sentence's last terminal marker joins the word before it,
-/// or else the word after.
-// Takes a `Vec` to fit `Modifier` and `Visitor` beside the plugins that resize.
-#[allow(clippy::ptr_arg)]
-fn merge_remaining_full_stops(children: &mut Vec<Node>, index: usize) {
-    let sentence = &mut children[index];
-    if !sentence.is_parent() {
+/// or else the word after. parse-latin walks the sentence backwards; this
+/// does too, building the result reversed.
+fn merge_remaining_full_stops(nodes: &mut Vec<Node>) {
+    let is_stop = |n: &Node| n.is_mark() && eq(&n.value, ".");
+    let stops = nodes.iter().filter(|n| is_stop(n)).count();
+    if stops == 0 || (stops == 1 && nodes.last().is_some_and(is_stop)) {
+        // Nothing can move: the only `.` is the last terminal marker.
         return;
     }
-    let nodes = &mut sentence.children;
+    let mut left = mem::take(nodes);
+    let mut right = Vec::with_capacity(left.len());
     let mut found_delimiter = false;
-    let mut position = nodes.len();
-    while position > 0 {
-        position -= 1;
-        let node = &nodes[position];
+    while let Some(node) = left.pop() {
         if !node.is_mark() {
             // A sentence without a terminal marker counts its last word as
             // one.
-            found_delimiter |= node.kind == Kind::Word;
+            found_delimiter |= node.is_word();
+            right.push(node);
             continue;
         }
-        if !is_terminal_marker(&node.text()) {
+        if !is_terminal_marker(&node.value) || !found_delimiter || !eq(&node.value, ".") {
+            found_delimiter |= is_terminal_marker(&node.value);
+            right.push(node);
             continue;
         }
-        if !found_delimiter {
-            found_delimiter = true;
-            continue;
-        }
-        if !eq(&node.text(), ".") {
-            continue;
-        }
-        if position > 0 && nodes[position - 1].kind == Kind::Word {
-            let spaced_stops = nodes
-                .get(position + 1)
-                .is_some_and(|n| n.kind == Kind::WhiteSpace)
-                && nodes.get(position + 2).is_some_and(|n| eq(&n.text(), "."));
+        if left.last().is_some_and(Node::is_word) {
+            let spaced_stops = right.last().is_some_and(|n| n.kind == Kind::WhiteSpace)
+                && right
+                    .len()
+                    .checked_sub(2)
+                    .is_some_and(|i| right[i].text_is("."));
             if spaced_stops {
+                right.push(node);
                 continue;
             }
-            let stop = nodes.remove(position);
-            nodes[position - 1].children.push(stop);
             // parse-latin steps over the word it just grew.
-            position -= 1;
-        } else if nodes
-            .get(position + 1)
-            .is_some_and(|n| n.kind == Kind::Word)
-        {
-            let stop = nodes.remove(position);
-            nodes[position].children.insert(0, stop);
+            if let Some(mut word) = left.pop() {
+                word.children_mut().push(node);
+                right.push(word);
+            }
+        } else if let Some(next) = right.last_mut().filter(|n| n.is_word()) {
+            next.children_mut().insert(0, node);
+        } else {
+            right.push(node);
         }
     }
+    right.reverse();
+    *nodes = right;
 }
 
 /// White space opening a sentence or paragraph moves up to be its sibling.
-fn make_initial_white_space_siblings(children: &mut Vec<Node>, index: usize) {
-    let child = &mut children[index];
-    if child.is_parent()
-        && child
-            .children
-            .first()
-            .is_some_and(|n| n.kind == Kind::WhiteSpace)
-    {
-        let head = child.children.remove(0);
-        children.insert(index, head);
+fn make_initial_white_space_siblings(list: &mut Vec<Node>) {
+    let opens_with_space = |n: &Node| {
+        n.is_parent()
+            && n.children
+                .first()
+                .is_some_and(|c| c.kind == Kind::WhiteSpace)
+    };
+    if !list.iter().any(opens_with_space) {
+        return;
+    }
+    for mut child in mem::take(list) {
+        while opens_with_space(&child) {
+            list.push(child.children.remove(0));
+        }
+        list.push(child);
     }
 }
 
 /// White space closing a sentence or paragraph moves up to be its sibling.
-fn make_final_white_space_siblings(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &mut children[index];
-    if !child.is_parent()
-        || child
-            .children
-            .last()
-            .is_none_or(|n| n.kind != Kind::WhiteSpace)
-    {
-        return None;
+fn make_final_white_space_siblings(list: &mut Vec<Node>) {
+    let closes_with_space = |n: &Node| {
+        n.is_parent()
+            && n.children
+                .last()
+                .is_some_and(|c| c.kind == Kind::WhiteSpace)
+    };
+    if !list.iter().any(closes_with_space) {
+        return;
     }
-    let tail = child.children.pop()?;
-    children.insert(index + 1, tail);
-    Some(index)
+    for mut child in mem::take(list) {
+        let mut tails = Vec::new();
+        while closes_with_space(&child) {
+            tails.extend(child.children.pop());
+        }
+        list.push(child);
+        list.extend(tails.into_iter().rev());
+    }
 }
 
-/// White space holding two or more line breaks ends a sentence.
-fn break_implicit_sentences(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let sentence = &mut children[index];
-    if sentence.kind != Kind::Sentence {
-        return None;
+/// White space holding two or more line breaks ends a sentence. parse-latin
+/// splits at the first and walks on into the rest; this makes every split
+/// of a sentence at once.
+fn break_implicit_sentences(list: &mut Vec<Node>) {
+    // The breaks in `nodes`: never its first or last node, nor the first of
+    // what is left after a break.
+    let breaks = |nodes: &[Node]| {
+        let mut at = Vec::new();
+        let mut start = 0;
+        for (position, node) in nodes.iter().enumerate() {
+            if position > start
+                && position + 1 < nodes.len()
+                && node.kind == Kind::WhiteSpace
+                && line_breaks(&node.value) >= 2
+            {
+                at.push(position);
+                start = position + 1;
+            }
+        }
+        at
+    };
+    let splits = |n: &Node| n.kind == Kind::Sentence && !breaks(&n.children).is_empty();
+    if !list.iter().any(splits) {
+        return;
     }
-    let nodes = &sentence.children;
-    let position = (1..nodes.len().saturating_sub(1))
-        .find(|&p| nodes[p].kind == Kind::WhiteSpace && line_breaks(&nodes[p].value) >= 2)?;
-    let rest = sentence.children.split_off(position + 1);
-    let space = sentence.children.pop()?;
-    children.splice(
-        index + 1..index + 1,
-        [space, Node::parent(Kind::Sentence, rest)],
-    );
-    Some(index + 1)
+    for child in mem::take(list) {
+        let at = if child.kind == Kind::Sentence {
+            breaks(&child.children)
+        } else {
+            Vec::new()
+        };
+        if at.is_empty() {
+            list.push(child);
+            continue;
+        }
+        let mut nodes = child.children.into_iter();
+        let mut start = 0;
+        for position in at {
+            let sentence: Vec<Node> = nodes.by_ref().take(position - start).collect();
+            list.push(Node::parent(Kind::Sentence, sentence));
+            list.extend(nodes.next());
+            start = position + 1;
+        }
+        list.push(Node::parent(Kind::Sentence, nodes.collect()));
+    }
 }
 
-fn remove_empty_nodes(children: &mut Vec<Node>, index: usize) -> Option<usize> {
-    let child = &children[index];
-    if !child.is_parent() || !child.children.is_empty() {
-        return None;
-    }
-    children.remove(index);
-    Some(index)
+fn remove_empty_nodes(list: &mut Vec<Node>) {
+    list.retain(|n| !n.is_parent() || !n.children.is_empty());
 }
 
 // parse-latin's expressions.
@@ -861,7 +1238,7 @@ fn is_abbreviation(units: &[u16]) -> bool {
 }
 
 /// `[\t-\r \u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]`
-fn is_white_space(unit: u16) -> bool {
+const fn is_white_space(unit: u16) -> bool {
     matches!(
         unit,
         0x09..=0x0D | 0x20 | 0x85 | 0xA0 | 0x1680 | 0x2000..=0x200A | 0x2028 | 0x2029 | 0x202F
@@ -869,9 +1246,19 @@ fn is_white_space(unit: u16) -> bool {
     )
 }
 
-/// Whether `unit` falls in `table`, flat half-open ranges `[start, end)`.
-fn in_ranges(table: &[u32], unit: u16) -> bool {
-    table.partition_point(|&bound| bound <= u32::from(unit)) % 2 == 1
+/// Whether `unit` falls in `table`, flat half-open ranges `[start, end)`:
+/// inside when an odd number of bounds are at or below it.
+const fn in_ranges(table: &[u32], unit: u16) -> bool {
+    let (mut low, mut high) = (0, table.len());
+    while low < high {
+        let middle = (low + high) / 2;
+        if table[middle] <= unit as u32 {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    low % 2 == 1
 }
 
 // The tables below are generated, not hand-written: every UTF-16 code unit
