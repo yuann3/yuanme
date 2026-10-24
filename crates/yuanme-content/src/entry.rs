@@ -3,11 +3,13 @@
 
 use std::collections::BTreeMap;
 use std::ops::Range;
+use std::sync::Arc;
 
 use jiff::civil::Date;
 use yuanme_diag::{Applicability, Diagnostic, Edit, codes};
 
 use crate::config::{Collection, FieldType, Taxonomy};
+use crate::document::{self, Document};
 use crate::fields::{self, Cx, Value};
 use crate::slug;
 use crate::yaml::{self, Key, Node, Yaml};
@@ -38,6 +40,8 @@ pub struct Entry {
     pub terms: BTreeMap<String, Vec<(String, Range<usize>)>>,
     /// The body's bytes in the file.
     pub body: Range<usize>,
+    pub document: Arc<Document>,
+    pub word_count: u64,
     /// Where the Slug came from, for a duplicate-Slug Diagnostic.
     pub slug_at: Range<usize>,
 }
@@ -46,6 +50,11 @@ impl Entry {
     /// `updated` if set, otherwise `date` (#18).
     pub fn modified(&self) -> Option<Date> {
         self.updated.or(self.date)
+    }
+
+    /// Minutes to read, as the Reference site rounds them.
+    pub fn reading_time(&self) -> u64 {
+        document::reading_time(self.word_count)
     }
 
     /// A field by name, built-in, derived or declared, for sorting.
@@ -58,7 +67,8 @@ impl Entry {
             "modified" => self.modified().map(Value::Date),
             "draft" => Some(Value::Bool(self.draft)),
             "unlisted" => Some(Value::Bool(self.unlisted)),
-            // word_count and reading_time come with the body, in #47.
+            "word_count" => Some(Value::Int(self.word_count as i64)),
+            "reading_time" => Some(Value::Int(self.reading_time() as i64)),
             _ => self.fields.get(field).cloned(),
         }
     }
@@ -175,11 +185,13 @@ pub(crate) fn yaml_error(e: yaml::Error, cx: &Cx<'_>) -> Diagnostic {
 const BUILT_IN: &[&str] = &["title", "date", "updated", "slug", "draft", "unlisted"];
 
 /// Checks an Entry's fields and works out its Slug, which defaults to the
-/// one from its path.
+/// one from its path. `document` is `None` when the body failed, which
+/// fails the Entry once its fields are checked too.
 pub(crate) fn read(
     collection: (&str, &Collection),
     taxonomies: &[(&str, &Taxonomy)],
     head: Head,
+    document: Option<Document>,
     path: &str,
     cx: &mut Cx<'_>,
 ) -> Option<Entry> {
@@ -333,6 +345,7 @@ pub(crate) fn read(
         terms.insert(name.to_string(), spelled);
     }
 
+    let document = document?;
     if !ok {
         return None;
     }
@@ -362,6 +375,8 @@ pub(crate) fn read(
         fields: declared.expect("checked"),
         terms,
         body,
+        word_count: document.word_count(),
+        document: Arc::new(document),
         slug_at,
     })
 }

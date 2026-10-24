@@ -18,24 +18,26 @@ routes:
   /tags/cplusplus/ -> tags/cplusplus/index.html  tags `C++` page 1: hello-world
   /tags/rust/ -> tags/rust/index.html  tags `Rust` page 1: second, hello-world
 entries:
-  pages/about "About" no date
-  posts/2024/custom-name "Custom" 2025-02-01
+  pages/about "About" no date, 0 words
+  posts/2024/custom-name "Custom" 2025-02-01, 0 words
     kind = "note"
-  posts/hello-world "Hello, World" 2025-03-01
+  posts/hello-world "Hello, World" 2025-03-01, 9 words
     cover = local content/posts/cover.png
     kind = "essay"
     published = 2025-03-01T09:30:00+08:00[Asia/Singapore]
     series: Intro
     tags: Rust, C++
-  posts/second "Second" 2025-04-01
+  posts/second "Second" 2025-04-01, 3 words
     kind = "essay"
     series: Intro
     tags: rust, C#
-  posts/secret "Secret" 2025-06-01 unlisted
+  posts/secret "Secret" 2025-06-01 unlisted, 0 words
     kind = "essay"
     tags: Rust
-  posts/undated "Undated" no date
+  posts/undated "Undated" no date, 0 words
     kind = "essay"
+  hello-world links to /blog/second/#how-it-ends
+  hello-world links to /about/
 lists:
   pages: about
   posts: second, hello-world, 2024/custom-name, undated

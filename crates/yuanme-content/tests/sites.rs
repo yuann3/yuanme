@@ -109,7 +109,10 @@ cover: ./cover.png
 tags: [Rust, C++]
 series: Intro
 ---
-Hi.
+Hi. Read [the second](second/index.md#how-it-ends), [this](#hello),
+[About](../pages/about.md) and [the site](https://example.com/x).
+
+## Hello
 === content/posts/cover.png
 === content/posts/second/index.md
 ---
@@ -118,6 +121,7 @@ date: 2025-04-01
 tags: [rust, "C#"]
 series: Intro
 ---
+## How it ends
 === content/posts/undated.md
 ---
 title: Undated
@@ -222,8 +226,8 @@ fn summary(site: &Site) -> String {
             .collect::<String>();
         writeln!(
             out,
-            "  {}/{} {:?} {date}{flags}",
-            e.collection, e.slug, e.title
+            "  {}/{} {:?} {date}{flags}, {} words",
+            e.collection, e.slug, e.title, e.word_count
         )
         .unwrap();
         for (k, v) in &e.fields {
@@ -232,6 +236,11 @@ fn summary(site: &Site) -> String {
         for (taxonomy, terms) in &e.terms {
             let terms: Vec<_> = terms.iter().map(|(t, _)| t.as_str()).collect();
             writeln!(out, "    {taxonomy}: {}", terms.join(", ")).unwrap();
+        }
+    }
+    for (i, links) in site.links.iter().enumerate() {
+        for href in links.values() {
+            writeln!(out, "  {} links to {href}", site.entries[i].slug).unwrap();
         }
     }
     out.push_str("lists:\n");
@@ -492,6 +501,51 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "content/posts/a.org",
         "",
     ),
+    (
+        "markdown/empty-directive",
+        "---\ntitle: A\n---\n:::\nx\n",
+        "content/posts/a.md",
+        ":::",
+    ),
+    // Pandoc's fenced div, which yuanme doesn't read (#17).
+    (
+        "markdown/empty-directive",
+        "---\ntitle: A\n---\n::: {#thm-a}\nx\n:::\n",
+        "content/posts/a.md",
+        ":::",
+    ),
+    (
+        "link/unresolved",
+        "---\ntitle: A\n---\nSee [b](b.md).\n",
+        "content/posts/a.md",
+        "[b](b.md)",
+    ),
+    // `..` and `%20` resolve as a path does, and the file is still missing.
+    (
+        "link/unresolved",
+        "---\ntitle: A\n---\nSee [b](../posts/my%20b.md).\n",
+        "content/posts/a.md",
+        "[b](../posts/my%20b.md)",
+    ),
+    (
+        "link/unresolved",
+        "=== content/posts/a.md\n---\ntitle: A\n---\nSee [b](b.md#nope).\n=== content/posts/b.md\n---\ntitle: B\n---\n## Yes\n",
+        "content/posts/a.md",
+        "[b](b.md#nope)",
+    ),
+    (
+        "link/unresolved",
+        "---\ntitle: A\n---\n## One\nSee [one](#two).\n",
+        "content/posts/a.md",
+        "[one](#two)",
+    ),
+    // A Draft has no Route in a build.
+    (
+        "link/unresolved",
+        "=== content/posts/a.md\n---\ntitle: A\n---\nSee [b](b.md).\n=== content/posts/b.md\n---\ntitle: B\ndraft: true\n---\n",
+        "content/posts/a.md",
+        "[b](b.md)",
+    ),
     // Config the content contradicts.
     (
         "config/invalid-value",
@@ -553,11 +607,16 @@ fn every_entry_code_has_a_case_here() {
         .iter()
         .map(|c| c.0)
         .filter(|c| !c.starts_with("config/"))
+        .chain(["markdown/no-effect"])
         .collect();
     let all: BTreeSet<&str> = codes::ALL
         .iter()
         .map(|c| c.name)
-        .filter(|n| n.starts_with("entry/") || n.starts_with("org/"))
+        .filter(|n| {
+            ["entry/", "org/", "markdown/", "link/"]
+                .iter()
+                .any(|a| n.starts_with(a))
+        })
         .collect();
     assert_eq!(tested, all);
 }
@@ -579,5 +638,23 @@ fn every_mistake_across_the_site_is_reported() {
             ("content/posts/b.md", "entry/missing-field"),
             ("content/posts/b.md", "entry/invalid-date"),
         ]
+    );
+}
+
+#[test]
+fn a_title_on_a_plain_directive_warns_and_the_entry_still_builds() {
+    let files = "---\ntitle: A\n---\n:::note[Heads up]\nx\n:::\n";
+    let (sources, site, diagnostics) = resolve(&fixture(files), false);
+    assert!(site.is_some());
+    let [d] = diagnostics.as_slice() else {
+        panic!("{diagnostics:#?}")
+    };
+    assert_eq!(
+        (d.code.name, d.level),
+        ("markdown/no-effect", yuanme_diag::Level::Warning)
+    );
+    assert_eq!(
+        &sources.text(d.primary().file)[d.primary().range.clone()],
+        ":::"
     );
 }

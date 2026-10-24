@@ -32,6 +32,9 @@ exceptions = [
     # rav1e depends on it only under `cfg(fuzzing)`, so no build of the
     # Engine compiles it.
     { crate = "libfuzzer-sys", allow = ["NCSA"] },
+    # comrak's Unicode tables, under Unicode-3.0's predecessor, which has
+    # the same permissive terms.
+    { crate = "finl_unicode", allow = ["Unicode-DFS-2016"] },
 ]
 
 [bans]

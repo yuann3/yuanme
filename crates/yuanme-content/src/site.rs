@@ -9,10 +9,11 @@ use jiff::tz::TimeZone;
 use yuanme_diag::{Diagnostic, FileId, Files, Level, Span, codes};
 
 use crate::config::{Collection, Config, SortKey, Taxonomy};
-use crate::data;
+use crate::document::{Document, Kind, Links};
 use crate::entry::{self, Entry};
 use crate::fields::{Cx, Value, compare};
 use crate::slug;
+use crate::{data, markdown};
 
 #[derive(Debug)]
 pub struct Site {
@@ -23,6 +24,8 @@ pub struct Site {
     pub collections: BTreeMap<String, Vec<usize>>,
     pub taxonomies: BTreeMap<String, Vec<Term>>,
     pub routes: Vec<Route>,
+    /// Where each Entry's links to other files go, by Entry.
+    pub links: Vec<Links>,
     pub data: BTreeMap<String, Value>,
 }
 
@@ -186,34 +189,37 @@ pub fn resolve(
             .map(|(n, t)| (n.as_str(), t))
             .collect();
         let dir = path.rsplit_once('/').map_or("", |(d, _)| d);
-        let mut cx = Cx {
-            file: *file,
-            diagnostics: &mut diagnostics,
-            timezone: &timezone,
-            dir,
-            is_file: project.is_file,
-        };
-        if path.ends_with(".org") {
-            cx.push(
-                cx.error(
-                    &codes::ORG_NOT_YET_SUPPORTED,
-                    "yuanme can't read Org Entries yet".into(),
-                    0..0,
-                )
-                .note("Org support arrives with the Org subset, before the first release"),
-            );
-            continue;
+        let mut found = Vec::new();
+        // Each file is its own boundary, so a crash in a parser fails that
+        // file and the rest are still checked (#15).
+        let read = yuanme_diag::catch_panic(project.files, *file, || {
+            let mut cx = Cx {
+                file: *file,
+                diagnostics: &mut found,
+                timezone: &timezone,
+                dir,
+                is_file: project.is_file,
+            };
+            if path.ends_with(".org") {
+                cx.push(
+                    cx.error(
+                        &codes::ORG_NOT_YET_SUPPORTED,
+                        "yuanme can't read Org Entries yet".into(),
+                        0..0,
+                    )
+                    .note("Org support arrives with the Org subset, before the first release"),
+                );
+                return None;
+            }
+            let head = entry::front_matter(text, &mut cx)?;
+            let document = markdown::parse(text, head.body.clone(), &mut cx);
+            entry::read((collection, c), &taxonomies, head, document, path, &mut cx)
+        });
+        diagnostics.append(&mut found);
+        match read {
+            Ok(entry) => entries.extend(entry),
+            Err(crash) => diagnostics.push(crash),
         }
-        let Some(head) = entry::front_matter(text, &mut cx) else {
-            continue;
-        };
-        entries.extend(entry::read(
-            (collection, c),
-            &taxonomies,
-            head,
-            path,
-            &mut cx,
-        ));
     }
 
     duplicate_slugs(&entries, &mut diagnostics);
@@ -253,11 +259,16 @@ pub fn resolve(
     if has_errors(&diagnostics) {
         return (None, sorted(diagnostics));
     }
+    let links = links(&entries, &routes, &mut diagnostics);
+    if has_errors(&diagnostics) {
+        return (None, sorted(diagnostics));
+    }
     let site = Site {
         entries,
         collections: lists,
         taxonomies,
         routes,
+        links,
         data,
     };
     (Some(site), sorted(diagnostics))
@@ -513,4 +524,132 @@ fn describe(kind: &RouteKind, entries: &[Entry]) -> String {
         RouteKind::Term { taxonomy, page, .. } => format!("page {page} of a `{taxonomy}` Term"),
         RouteKind::Terms { taxonomy } => format!("the `{taxonomy}` index"),
     }
+}
+
+/// Resolves every link to another file or a fragment (#16). A link to an
+/// Entry's source goes to its Route, and one that leads nowhere is an
+/// error; a URL or a `/` path is left as written.
+fn links(entries: &[Entry], routes: &[Route], diagnostics: &mut Vec<Diagnostic>) -> Vec<Links> {
+    let url_of: BTreeMap<usize, &str> = routes
+        .iter()
+        .filter_map(|r| match r.kind {
+            RouteKind::Entry(i) => Some((i, r.url.as_str())),
+            _ => None,
+        })
+        .collect();
+    let by_path: BTreeMap<&str, usize> = entries
+        .iter()
+        .enumerate()
+        .map(|(i, e)| (e.path.as_str(), i))
+        .collect();
+    let anchors: Vec<Vec<String>> = entries
+        .iter()
+        .map(|e| e.document.headings().into_iter().map(|h| h.id).collect())
+        .collect();
+    entries
+        .iter()
+        .enumerate()
+        .map(|(i, e)| {
+            let doc = &e.document;
+            let mut out = Links::new();
+            for id in doc.descendants(Document::ROOT) {
+                let node = doc.node(id);
+                let Kind::Link { url, .. } = &node.kind else { continue };
+                if is_external(url) {
+                    continue;
+                }
+                let (path, fragment) = url.split_once('#').map_or((url.as_str(), None), |(p, f)| (p, Some(f)));
+                let span = Span { file: e.file, range: node.span.clone() };
+                let target = if path.is_empty() {
+                    i
+                } else {
+                    let dir = e.path.rsplit_once('/').map_or("", |(d, _)| d);
+                    let resolved = normalize(&format!("{dir}/{}", percent_decode(path)));
+                    match by_path.get(resolved.as_str()) {
+                        Some(&j) => j,
+                        None => {
+                            let message = format!("no Entry is written in `{resolved}`");
+                            diagnostics.push(
+                                Diagnostic::error(&codes::LINK_UNRESOLVED, message, span)
+                                    .help("link to an Entry's file by its path from this one; a URL or a `/` path is left as it is"),
+                            );
+                            continue;
+                        }
+                    }
+                };
+                if let Some(fragment) = fragment {
+                    let fragment = percent_decode(fragment);
+                    if !anchors[target].contains(&fragment) {
+                        let page = &entries[target].path;
+                        let message = format!("`{page}` has no heading with the id `{fragment}`");
+                        let mut d = Diagnostic::error(&codes::LINK_UNRESOLVED, message, span);
+                        if let Some(near) = crate::config::similar(&fragment, anchors[target].iter().map(String::as_str)) {
+                            d = d.help(format!("the closest id is `{near}`"));
+                        }
+                        diagnostics.push(d);
+                        continue;
+                    }
+                }
+                if target != i {
+                    let route = url_of[&target];
+                    let href = match fragment {
+                        Some(f) => format!("{route}#{f}"),
+                        None => route.to_string(),
+                    };
+                    out.insert(id, href);
+                }
+            }
+            out
+        })
+        .collect()
+}
+
+/// A URL with a scheme, a protocol-relative one, or a path from the Site's
+/// root: none of them is a file of the project.
+fn is_external(url: &str) -> bool {
+    let scheme = url.split_once(':').is_some_and(|(s, _)| {
+        s.starts_with(|c: char| c.is_ascii_alphabetic())
+            && s.chars()
+                .all(|c| c.is_ascii_alphanumeric() || "+.-".contains(c))
+    });
+    scheme || url.starts_with('/')
+}
+
+/// Resolves `.` and `..` in a path from the project root.
+fn normalize(path: &str) -> String {
+    let mut out: Vec<&str> = Vec::new();
+    for seg in path.split('/') {
+        match seg {
+            "" | "." => {}
+            ".." => {
+                out.pop();
+            }
+            _ => out.push(seg),
+        }
+    }
+    out.join("/")
+}
+
+fn percent_decode(s: &str) -> String {
+    let bytes = s.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        let hex = |b: u8| (b as char).to_digit(16);
+        match (
+            bytes[i],
+            bytes.get(i + 1).and_then(|&b| hex(b)),
+            bytes.get(i + 2).and_then(|&b| hex(b)),
+        ) {
+            (b'%', Some(h), Some(l)) => {
+                out.push((h * 16 + l) as u8);
+                i += 3;
+            }
+            (b, _, _) => {
+                out.push(b);
+                i += 1;
+            }
+        }
+    }
+    String::from_utf8(out).unwrap_or_else(|_| s.to_string())
 }

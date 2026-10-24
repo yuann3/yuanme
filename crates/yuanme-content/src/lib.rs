@@ -1,7 +1,9 @@
 pub mod config;
 mod data;
+pub mod document;
 pub mod entry;
 pub mod fields;
+pub mod markdown;
 pub mod site;
 pub mod slug;
 pub mod smartypants;
