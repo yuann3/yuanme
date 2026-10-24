@@ -47,6 +47,20 @@ jobs:
       # x86_64 and arm64 encode the same bytes (#28).
       - run: cargo nextest run --locked --workspace
 
+  # #15's Gate: image encoding takes at most 75 ms of wall time per output
+  # on ubuntu-latest.
+  image-budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: cargo-nextest@0.9.148
+      - run: sudo apt-get install -y nasm
+      - run: cargo nextest run --release --locked -p yuanme-assets --run-ignored only --no-capture
+
   # The Org parser's guarantees (#15): no input panics or fails except by
   # running out of fuel or nesting too deep, and none parses slower than
   # 1 ms/KB + 1 ms, scaled to the runner's speed. libFuzzer's

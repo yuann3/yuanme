@@ -192,3 +192,35 @@ fn a_source_over_100_megapixels_is_refused_before_it_is_decoded() {
     assert!(probe(&png_header(10_000, 10_000)).is_ok());
     assert!(matches!(probe(b"GIF89a"), Err(Error::Decode(_))));
 }
+
+/// #15's Gate on `ubuntu-latest`, measured as #15 measured it: four photos
+/// at 160–640 px in AVIF, WebP and JPEG, all on one pool, as a median of
+/// five runs.
+#[test]
+#[ignore = "a Gate, timed in a release build on CI"]
+fn encoding_takes_at_most_75_ms_of_wall_time_per_output() {
+    let sources = ["beach.jpg", "fallingwater.jpg", "park.jpg", "shaokao.webp"].map(fixture);
+    let outputs: Vec<_> = [160, 240, 320, 480, 640]
+        .into_iter()
+        .flat_map(|w| [Format::Avif, Format::Webp, Format::Jpeg].map(|f| (w, f)))
+        .collect();
+    let settings = Settings::default();
+    let run = || {
+        let start = std::time::Instant::now();
+        sources.par_iter().for_each(|source| {
+            encode(source, &outputs, &settings).unwrap();
+        });
+        start.elapsed()
+    };
+    run();
+    let mut runs: Vec<_> = (0..5).map(|_| run()).collect();
+    runs.sort();
+    let count = (sources.len() * outputs.len()) as u32;
+    let per_output = runs[2] / count;
+    eprintln!(
+        "{count} outputs in {:?} on {} threads: {per_output:?} each",
+        runs[2],
+        rayon::current_num_threads()
+    );
+    assert!(per_output <= std::time::Duration::from_millis(75));
+}
