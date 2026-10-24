@@ -15,15 +15,16 @@ use crate::fields::{self, Cx, Value};
 use crate::site::Project;
 use crate::yaml::{self, Key, Node, Yaml};
 
+/// Every Data file's value, by name. A file with an error is reported and
+/// left out.
 pub(crate) fn read(
     config: &Config,
     project: &Project<'_>,
     timezone: &TimeZone,
     diagnostics: &mut Vec<Diagnostic>,
-) -> Option<BTreeMap<String, Value>> {
+) -> BTreeMap<String, Value> {
     let mut out = BTreeMap::new();
     let mut seen: BTreeMap<String, yuanme_diag::FileId> = BTreeMap::new();
-    let mut ok = true;
     for &file in &project.data {
         let path = project.files.path(file);
         let text = project.files.text(file);
@@ -39,7 +40,6 @@ pub(crate) fn read(
                 Diagnostic::error(&codes::ENTRY_DUPLICATE_DATA_FILE, message, span(file))
                     .secondary(span(first), "the other file"),
             );
-            ok = false;
             continue;
         }
         seen.insert(name.to_string(), file);
@@ -61,18 +61,14 @@ pub(crate) fn read(
             },
         };
         let Some(node) = node else {
-            ok = false;
             continue;
         };
         let value = match config.data.get(name) {
             Some(schema) => fields::value(&schema.kind, &node, &format!("data.{name}"), &mut cx),
             None => untyped(&node, &mut cx),
         };
-        match value {
-            Some(v) => {
-                out.insert(name.to_string(), v);
-            }
-            None => ok = false,
+        if let Some(v) = value {
+            out.insert(name.to_string(), v);
         }
     }
     for (name, schema) in &config.data {
@@ -88,10 +84,9 @@ pub(crate) fn read(
                     range: schema.at.clone(),
                 },
             ));
-            ok = false;
         }
     }
-    ok.then_some(out)
+    out
 }
 
 /// A Data file without a schema, read as it is written.

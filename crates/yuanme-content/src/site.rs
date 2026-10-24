@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::ops::Range;
 
 use jiff::tz::TimeZone;
-use yuanme_diag::{Diagnostic, FileId, Files, Span, codes};
+use yuanme_diag::{Diagnostic, FileId, Files, Level, Span, codes};
 
 use crate::config::{Collection, Config, SortKey, Taxonomy};
 use crate::data;
@@ -172,8 +172,9 @@ pub fn resolve(
         }
     }
 
+    // Every check reports its own errors, so the Diagnostics alone say
+    // whether anything failed.
     let mut entries = Vec::new();
-    let mut failed = false;
     for (collection, file) in &project.entries {
         let path = project.files.path(*file);
         let text = project.files.text(*file);
@@ -201,27 +202,24 @@ pub fn resolve(
                 )
                 .note("Org support arrives with the Org subset, before the first release"),
             );
-            failed = true;
             continue;
         }
         let Some(head) = entry::front_matter(text, &mut cx) else {
-            failed = true;
             continue;
         };
-        match entry::read((collection, c), &taxonomies, head, path, &mut cx) {
-            Some(e) => entries.push(e),
-            None => failed = true,
-        }
+        entries.extend(entry::read(
+            (collection, c),
+            &taxonomies,
+            head,
+            path,
+            &mut cx,
+        ));
     }
 
     duplicate_slugs(&entries, &mut diagnostics);
     let data = data::read(config, project, &timezone, &mut diagnostics);
 
-    if failed
-        || diagnostics
-            .iter()
-            .any(|d| d.level == yuanme_diag::Level::Error)
-    {
+    if has_errors(&diagnostics) {
         return (None, sorted(diagnostics));
     }
     if !drafts {
@@ -230,11 +228,10 @@ pub fn resolve(
     // A stable order whatever order the files came in.
     entries.sort_by(|a, b| (&a.collection, &a.slug).cmp(&(&b.collection, &b.slug)));
 
-    let listed = |e: &Entry| !e.unlisted;
     let mut lists = BTreeMap::new();
     for (name, c) in &collections {
         let mut ids: Vec<usize> = (0..entries.len())
-            .filter(|&i| entries[i].collection == *name && listed(&entries[i]))
+            .filter(|&i| entries[i].collection == *name && !entries[i].unlisted)
             .collect();
         sort(&mut ids, &entries, &c.sort);
         lists.insert(name.clone(), ids);
@@ -253,10 +250,7 @@ pub fn resolve(
         &taxonomies,
         &mut diagnostics,
     );
-    if diagnostics
-        .iter()
-        .any(|d| d.level == yuanme_diag::Level::Error)
-    {
+    if has_errors(&diagnostics) {
         return (None, sorted(diagnostics));
     }
     let site = Site {
@@ -264,9 +258,13 @@ pub fn resolve(
         collections: lists,
         taxonomies,
         routes,
-        data: data.expect("no errors"),
+        data,
     };
     (Some(site), sorted(diagnostics))
+}
+
+fn has_errors(diagnostics: &[Diagnostic]) -> bool {
+    diagnostics.iter().any(|d| d.level == Level::Error)
 }
 
 fn sorted(mut diagnostics: Vec<Diagnostic>) -> Vec<Diagnostic> {
@@ -422,16 +420,15 @@ fn routes(
     taxonomies: &BTreeMap<String, Vec<Term>>,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Vec<Route> {
-    let mut routes = Vec::new();
-    // Where each Route came from, for a collision.
-    let mut origin: Vec<Span> = Vec::new();
+    // Each Route, with where it came from for a collision.
+    let mut routes: Vec<(String, RouteKind, Span)> = Vec::new();
     for (i, e) in entries.iter().enumerate() {
         let url = collections[&e.collection].route.replace("{slug}", &e.slug);
-        routes.push((url, RouteKind::Entry(i)));
-        origin.push(Span {
+        let at = Span {
             file: e.file,
             range: e.slug_at.clone(),
-        });
+        };
+        routes.push((url, RouteKind::Entry(i), at));
     }
     for (name, c) in collections {
         let Some(list) = &c.list_route else { continue };
@@ -441,11 +438,11 @@ fn routes(
                 page: n + 1,
                 entries: page,
             };
-            routes.push((page_url(list, n + 1), kind));
-            origin.push(Span {
+            let at = Span {
                 file: config.file,
                 range: c.dir_at.clone(),
-            });
+            };
+            routes.push((page_url(list, n + 1), kind, at));
         }
     }
     for (name, t) in &config.taxonomies {
@@ -455,16 +452,14 @@ fn routes(
             .next()
             .expect("split yields one")
             .to_string();
-        routes.push((
-            index,
-            RouteKind::Terms {
-                taxonomy: name.clone(),
-            },
-        ));
-        origin.push(Span {
+        let kind = RouteKind::Terms {
+            taxonomy: name.clone(),
+        };
+        let at = Span {
             file: config.file,
             range: 0..0,
-        });
+        };
+        routes.push((index, kind, at));
         for (ti, term) in taxonomies[name].iter().enumerate() {
             let first = t.route.replace("{term}", &term.slug);
             for (n, page) in pages_of(&term.entries, t.paginate).into_iter().enumerate() {
@@ -474,18 +469,18 @@ fn routes(
                     page: n + 1,
                     entries: page,
                 };
-                routes.push((page_url(&first, n + 1), kind));
-                origin.push(Span {
+                let at = Span {
                     file: entries[term.entries.first().copied().unwrap_or(0)].file,
                     range: 0..0,
-                });
+                };
+                routes.push((page_url(&first, n + 1), kind, at));
             }
         }
     }
 
     let mut out: Vec<Route> = Vec::new();
     let mut taken: BTreeMap<String, usize> = BTreeMap::new();
-    for ((url, kind), at) in routes.into_iter().zip(origin) {
+    for (url, kind, at) in routes {
         let output = output_of(&url);
         if let Some(&first) = taken.get(&output) {
             let message = format!(
