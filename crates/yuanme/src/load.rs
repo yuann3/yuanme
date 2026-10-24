@@ -41,9 +41,11 @@ pub fn load(root: &Path, out: &Path) -> io::Result<Inputs> {
             !hidden && !skip.iter().any(|s| entry.path() == s)
         })
         .build();
+    let mut dirs = Vec::new();
     for entry in walk {
         let entry = entry.map_err(io::Error::other)?;
-        if !entry.file_type().is_some_and(|t| t.is_file()) {
+        let is_dir = entry.file_type().is_some_and(|t| t.is_dir());
+        if !is_dir && !entry.file_type().is_some_and(|t| t.is_file()) {
             continue;
         }
         let relative = entry.path().strip_prefix(root).expect("walked from root");
@@ -54,7 +56,11 @@ pub fn load(root: &Path, out: &Path) -> io::Result<Inputs> {
             )
         })?;
         let relative = relative.replace(std::path::MAIN_SEPARATOR, "/");
-        if relative.starts_with("static/") || EXTENSIONS.contains(&extension(&relative).as_str()) {
+        if is_dir {
+            dirs.push(relative);
+        } else if relative.starts_with("static/")
+            || EXTENSIONS.contains(&extension(&relative).as_str())
+        {
             paths.push(relative);
         }
     }
@@ -78,6 +84,9 @@ pub fn load(root: &Path, out: &Path) -> io::Result<Inputs> {
         .collect::<io::Result<_>>()?;
 
     let mut inputs = Inputs::default();
+    for dir in dirs {
+        inputs.insert_dir(dir);
+    }
     for (path, file) in files {
         match file {
             Loaded::Bytes(bytes) => inputs.insert(path, bytes),

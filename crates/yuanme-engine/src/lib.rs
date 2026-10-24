@@ -6,12 +6,13 @@ mod link;
 #[cfg(test)]
 mod tests;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
 use yuanme_content::config::{self, Config};
-use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
+use yuanme_content::site::{self, Project, RouteKind, Site};
+use yuanme_diag::{Code, Diagnostic, FileId, Files, Level, Span, codes};
 
 pub use cache::Cache;
 use link::link;
@@ -21,6 +22,8 @@ use link::link;
 #[derive(Clone, Default)]
 pub struct Inputs {
     files: BTreeMap<String, Input>,
+    /// Folders the walk found, so an empty Collection folder still exists.
+    dirs: BTreeSet<String>,
 }
 
 #[derive(Clone)]
@@ -43,6 +46,20 @@ impl Inputs {
 
     pub fn insert_streamed(&mut self, path: impl Into<String>, hash: blake3::Hash) {
         self.files.insert(path.into(), Input { hash, bytes: None });
+    }
+
+    pub fn insert_dir(&mut self, path: impl Into<String>) {
+        self.dirs.insert(path.into());
+    }
+
+    fn is_dir(&self, dir: &str) -> bool {
+        let under = format!("{dir}/");
+        self.dirs.contains(dir)
+            || self
+                .files
+                .range(under.clone()..)
+                .next()
+                .is_some_and(|(p, _)| p.starts_with(&under))
     }
 
     pub fn iter(&self) -> impl Iterator<Item = (&str, &Input)> {
@@ -92,24 +109,32 @@ impl Build {
 }
 
 /// `inputs` must hold `yuanme.toml`: finding it is what makes a folder a project.
-pub fn build(inputs: &Inputs, cache: &mut Cache, _mode: Mode) -> Build {
+pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let mut sources = Files::default();
-    let (config, diagnostics) = site_config(inputs, cache.engine_version(), &mut sources);
-    let Some(_config) = config else {
-        return Build {
-            files: BTreeMap::new(),
-            diagnostics,
-            sources,
-        };
+    let failed = |diagnostics, sources| Build {
+        files: BTreeMap::new(),
+        diagnostics,
+        sources,
     };
-    // parse (#46–#49) and resolve (#46) go here, ahead of render, reading
-    // `_config`; until they arrive a Site is its Static files. `_mode` is for
-    // what dev does differently: Drafts (#46), images on request (#62), the
-    // unsubset font (#52).
-    let (pages, statics) = rayon::join(render, || static_files(inputs));
-    // The assets stage (#56) runs here alongside render and hands link its
+    let (config, mut diagnostics) = site_config(inputs, cache.engine_version(), &mut sources);
+    let Some(config) = config else {
+        return failed(diagnostics, sources);
+    };
+    // Entries are parsed afresh each build until #47 caches them. `mode` is
+    // also for images on request (#62) and the unsubset font (#52).
+    let (site, more) = resolve(inputs, &config, mode == Mode::Dev, &mut sources);
+    diagnostics.extend(more);
+    let Some(site) = site else {
+        return failed(diagnostics, sources);
+    };
+    let statics = static_files(inputs);
+    diagnostics.extend(static_collisions(&config, &site, &statics));
+    if diagnostics.iter().any(|d| d.level == Level::Error) {
+        return failed(diagnostics, sources);
+    }
+    // The assets stage (#56) runs alongside render and hands link its
     // bundles.
-    let mut files = link(pages, Vec::new());
+    let mut files = link(render(&site), Vec::new());
     files.extend(statics);
 
     let build = Build {
@@ -134,29 +159,105 @@ fn site_config(
         .bytes
         .as_deref()
         .expect("yuanme.toml is read, not streamed");
+    match utf8(PATH, bytes, &codes::CONFIG_SYNTAX, sources) {
+        Ok(file) => config::parse(sources, file, engine),
+        Err(d) => (None, vec![d]),
+    }
+}
+
+/// Adds a text file to `sources`. Not UTF-8 is an error rather than a lossy
+/// copy, which could parse as something the Author never wrote.
+fn utf8(
+    path: &str,
+    bytes: &[u8],
+    code: &'static Code,
+    sources: &mut Files,
+) -> Result<FileId, Diagnostic> {
     match std::str::from_utf8(bytes) {
-        Ok(text) => {
-            let file = sources.add(PATH, text);
-            config::parse(sources, file, engine)
-        }
+        Ok(text) => Ok(sources.add(path, text)),
         Err(e) => {
-            // TOML is UTF-8, and a lossy copy could parse as something the
-            // Author never wrote.
             // The lossy copy matches the bytes up to the first bad one.
-            let file = sources.add(PATH, String::from_utf8_lossy(bytes));
+            let file = sources.add(path, String::from_utf8_lossy(bytes));
             let at = e.valid_up_to();
             let span = Span {
                 file,
                 range: at..at,
             };
-            let d = Diagnostic::error(&codes::CONFIG_SYNTAX, "yuanme.toml is not UTF-8", span);
-            (None, vec![d])
+            Err(Diagnostic::error(
+                code,
+                format!("{path} is not UTF-8"),
+                span,
+            ))
         }
     }
 }
 
+/// Reads every Entry and Data file and resolves the Site.
+fn resolve(
+    inputs: &Inputs,
+    config: &Config,
+    drafts: bool,
+    sources: &mut Files,
+) -> (Option<Site>, Vec<Diagnostic>) {
+    let (entries, data) = site::sources(config, inputs.files.keys().map(String::as_str));
+    let mut diagnostics = Vec::new();
+    let mut add = |path: &str| {
+        let bytes = inputs.files[path]
+            .bytes
+            .as_deref()
+            .expect("text is read, not streamed");
+        utf8(path, bytes, &codes::ENTRY_SYNTAX, sources)
+            .map_err(|d| diagnostics.push(d))
+            .ok()
+    };
+    let entries: Vec<_> = entries
+        .into_iter()
+        .filter_map(|(c, p)| Some((c, add(p)?)))
+        .collect();
+    let data: Vec<_> = data.into_iter().filter_map(&mut add).collect();
+    if !diagnostics.is_empty() {
+        return (None, diagnostics);
+    }
+    let is_file = |p: &str| inputs.files.contains_key(p);
+    let is_dir = |d: &str| inputs.is_dir(d);
+    let project = Project {
+        files: sources,
+        entries,
+        data,
+        is_file: &is_file,
+        is_dir: &is_dir,
+    };
+    site::resolve(config, &project, drafts)
+}
+
+/// A Static file and a Route that would write the same output path (#18).
+fn static_collisions(
+    config: &Config,
+    site: &Site,
+    statics: &[(String, Output)],
+) -> Vec<Diagnostic> {
+    let statics: BTreeSet<&str> = statics.iter().map(|(p, _)| p.as_str()).collect();
+    site.routes
+        .iter()
+        .filter(|r| statics.contains(r.output.as_str()))
+        .map(|r| {
+            let (what, file) = match r.kind {
+                RouteKind::Entry(i) => (site.entries[i].path.clone(), site.entries[i].file),
+                _ => (format!("the Route `{}`", r.url), config.file),
+            };
+            let message = format!(
+                "`static/{}` and {what} would both write `{}`",
+                r.output, r.output
+            );
+            let span = Span { file, range: 0..0 };
+            Diagnostic::error(&codes::ENTRY_OUTPUT_COLLISION, message, span)
+                .help("move the Static file, or change the Route")
+        })
+        .collect()
+}
+
 /// Pages with asset placeholders, by output path. Templates arrive with #54.
-fn render() -> Vec<(String, Vec<u8>)> {
+fn render(_site: &Site) -> Vec<(String, Vec<u8>)> {
     Vec::new()
 }
 

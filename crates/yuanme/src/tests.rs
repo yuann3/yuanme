@@ -201,3 +201,24 @@ fn a_failed_build_leaves_the_output_untouched() {
     assert_eq!(report.written, ["a.txt", "c.txt"]);
     assert_eq!(report.deleted, ["b.txt"]);
 }
+
+#[test]
+fn an_empty_collection_folder_on_disk_exists() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    write(
+        &root.join("yuanme.toml"),
+        format!("{CONFIG}[collections.posts]\nroute = \"/blog/{{slug}}/\"\n"),
+    );
+    let codes = || {
+        build(root)
+            .diagnostics
+            .iter()
+            .map(|d| d.code.name)
+            .collect::<Vec<_>>()
+    };
+
+    assert_eq!(codes(), ["config/invalid-value"]);
+    fs::create_dir_all(root.join("content/posts")).unwrap();
+    assert_eq!(codes(), [] as [&str; 0]);
+}

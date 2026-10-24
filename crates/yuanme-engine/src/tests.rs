@@ -223,3 +223,45 @@ fn a_pack_is_rewritten_only_when_it_changed() {
     cache.save().unwrap();
     assert_ne!(inode(), written);
 }
+
+#[test]
+fn content_is_resolved_and_its_errors_fail_the_build() {
+    let mut inputs = project();
+    inputs.insert(
+        "yuanme.toml",
+        [
+            CONFIG,
+            b"[collections.posts]\nroute = \"/blog/{slug}/\"\n".as_slice(),
+        ]
+        .concat(),
+    );
+    let codes = |inputs: &Inputs, mode| {
+        let build = build(inputs, &mut Cache::memory("1.0.0"), mode);
+        assert_eq!(build.failed(), !build.diagnostics.is_empty());
+        assert!(!build.failed() || build.files.is_empty());
+        build
+            .diagnostics
+            .iter()
+            .map(|d| d.code.name)
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(codes(&inputs, Mode::Build), ["config/invalid-value"]);
+    // An empty Collection folder exists.
+    inputs.insert_dir("content/posts");
+    assert_eq!(codes(&inputs, Mode::Build), [] as [&str; 0]);
+
+    // A Draft has a Route only in dev, where it meets the Static file.
+    inputs.insert(
+        "content/posts/wip.md",
+        b"---\ntitle: WIP\ndraft: true\n---\n".as_slice(),
+    );
+    inputs.insert("static/blog/wip/index.html", b"<p>old".as_slice());
+    assert_eq!(codes(&inputs, Mode::Build), [] as [&str; 0]);
+    assert_eq!(codes(&inputs, Mode::Dev), ["entry/output-collision"]);
+
+    inputs.insert(
+        "content/posts/b.md",
+        b"---\ntitle: caf\xe9\n---\n".as_slice(),
+    );
+    assert_eq!(codes(&inputs, Mode::Build), ["entry/syntax"]);
+}
