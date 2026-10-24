@@ -454,6 +454,8 @@ struct TitleEnds {
     source: (usize, usize),
     line_start: usize,
     end: usize,
+    /// Where the line ending ends, or the end of the input.
+    line_end: usize,
     /// By byte offset from `line_start`, up to where the line ending starts.
     ends: Vec<bool>,
 }
@@ -462,44 +464,49 @@ thread_local! {
     static TITLE_ENDS: RefCell<Option<TitleEnds>> = const { RefCell::new(None) };
 }
 
-/// Whether a headline's title ends at `input`: blanks, then maybe tags
-/// such as `:a:b:` and blanks, then the line's end. Plain text asks at every
-/// character of a title, and the tags parser ran to the line's end each
-/// time, so a title of many `:`-separated words took quadratic time (#15).
-/// Each line's answers are found in one pass from its end and remembered.
-pub(crate) fn ends_headline_title(input: OrgSource<'_>) -> bool {
+/// How much of `input` ends a headline's title there, or `None` if the
+/// title goes on: blanks, then maybe tags such as `:a:b:` and blanks, then
+/// the line ending. Plain text asks at every character of a title, and the
+/// tags parser ran to the line's end each time, so a title of many
+/// `:`-separated words took quadratic time (#15). Each line's answers are
+/// found in one pass from its end and remembered, with the line's end,
+/// where every match ends.
+pub(crate) fn headline_title_end(input: OrgSource<'_>) -> Option<usize> {
     let (text, at) = input.full_source_and_offset();
     let source = (text.as_ptr() as usize, text.len());
     let line_start = at - input.text_since_line_break().len();
     // Contents parsed again inside an object end before the full source.
     let end = at + input.len();
     TITLE_ENDS.with_borrow_mut(|memo| {
-        let ends = match memo {
+        let memo = match memo {
             Some(memo)
                 if memo.source == source && memo.line_start == line_start && memo.end == end =>
             {
-                &memo.ends
+                memo
             }
             _ => {
                 let line = &text[line_start..end];
-                let line = match line.find('\n') {
-                    Some(newline) => line[..newline]
-                        .strip_suffix('\r')
-                        .unwrap_or(&line[..newline]),
-                    None => line,
+                let (line, line_end) = match line.find('\n') {
+                    Some(newline) => (
+                        line[..newline]
+                            .strip_suffix('\r')
+                            .unwrap_or(&line[..newline]),
+                        line_start + newline + 1,
+                    ),
+                    None => (line, end),
                 };
-                &memo
-                    .insert(TitleEnds {
-                        source,
-                        line_start,
-                        end,
-                        ends: title_ends(line),
-                    })
-                    .ends
+                memo.insert(TitleEnds {
+                    source,
+                    line_start,
+                    end,
+                    line_end,
+                    ends: title_ends(line),
+                })
             }
         };
         // Past the ends is the line ending, which ends the title too.
-        ends.get(at - line_start).copied().unwrap_or(true)
+        let ends = memo.ends.get(at - line_start).copied().unwrap_or(true);
+        ends.then_some(memo.line_end - at)
     })
 }
 
