@@ -2,7 +2,7 @@
 //! knows: Slugs that collide, sort order, Terms, Routes and output paths.
 
 use std::cmp::Ordering;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
 use jiff::tz::TimeZone;
@@ -228,7 +228,10 @@ pub fn resolve(
     if has_errors(&diagnostics) {
         return (None, sorted(diagnostics));
     }
+    // Their files, which a link can name but not reach.
+    let mut left_out = BTreeSet::new();
     if !drafts {
+        left_out.extend(entries.iter().filter(|e| e.draft).map(|e| e.path.clone()));
         entries.retain(|e| !e.draft);
     }
     // A stable order whatever order the files came in.
@@ -259,7 +262,7 @@ pub fn resolve(
     if has_errors(&diagnostics) {
         return (None, sorted(diagnostics));
     }
-    let links = links(&entries, &routes, &mut diagnostics);
+    let links = links(&entries, &routes, &left_out, &mut diagnostics);
     if has_errors(&diagnostics) {
         return (None, sorted(diagnostics));
     }
@@ -345,7 +348,8 @@ fn terms(
         .collect();
     // Keyed by the Slug the spelling derives, which decides identity.
     let mut by_identity: BTreeMap<String, (String, Vec<usize>, Span)> = BTreeMap::new();
-    for (i, e) in entries.iter().enumerate() {
+    // An Unlisted Entry is in no Term, so a Term only it uses doesn't exist.
+    for (i, e) in entries.iter().enumerate().filter(|(_, e)| !e.unlisted) {
         for (spelled, at) in e.terms.get(name).into_iter().flatten() {
             let identity = slug::term_slug(spelled);
             let first = Span {
@@ -355,7 +359,8 @@ fn terms(
             let term = by_identity
                 .entry(identity)
                 .or_insert_with(|| (spelled.clone(), Vec::new(), first));
-            if !e.unlisted && !term.1.contains(&i) {
+            // An Entry can spell one Term twice.
+            if term.1.last() != Some(&i) {
                 term.1.push(i);
             }
         }
@@ -481,7 +486,7 @@ fn routes(
                     entries: page,
                 };
                 let at = Span {
-                    file: entries[term.entries.first().copied().unwrap_or(0)].file,
+                    file: entries[term.entries[0]].file,
                     range: 0..0,
                 };
                 routes.push((page_url(&first, n + 1), kind, at));
@@ -527,9 +532,15 @@ fn describe(kind: &RouteKind, entries: &[Entry]) -> String {
 }
 
 /// Resolves every link to another file or a fragment (#16). A link to an
-/// Entry's source goes to its Route, and one that leads nowhere is an
-/// error; a URL or a `/` path is left as written.
-fn links(entries: &[Entry], routes: &[Route], diagnostics: &mut Vec<Diagnostic>) -> Vec<Links> {
+/// Entry's source goes to its Route, and one that leads nowhere, such as to
+/// a Draft `left_out` of the build, is an error; a URL or a `/` path is
+/// left as written.
+fn links(
+    entries: &[Entry],
+    routes: &[Route],
+    left_out: &BTreeSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<Links> {
     let url_of: BTreeMap<usize, &str> = routes
         .iter()
         .filter_map(|r| match r.kind {
@@ -567,6 +578,14 @@ fn links(entries: &[Entry], routes: &[Route], diagnostics: &mut Vec<Diagnostic>)
                     let resolved = normalize(&format!("{dir}/{}", percent_decode(path)));
                     match by_path.get(resolved.as_str()) {
                         Some(&j) => j,
+                        None if left_out.contains(&resolved) => {
+                            let message = format!("`{resolved}` is a Draft, which this build leaves out");
+                            diagnostics.push(
+                                Diagnostic::error(&codes::LINK_UNRESOLVED, message, span)
+                                    .help("publish it by removing `draft: true`, or remove the link until it is"),
+                            );
+                            continue;
+                        }
                         None => {
                             let message = format!("no Entry is written in `{resolved}`");
                             diagnostics.push(
@@ -577,7 +596,8 @@ fn links(entries: &[Entry], routes: &[Route], diagnostics: &mut Vec<Diagnostic>)
                         }
                     }
                 };
-                if let Some(fragment) = fragment {
+                // `#` alone is the top of the page.
+                if let Some(fragment) = fragment.filter(|f| !f.is_empty()) {
                     let fragment = percent_decode(fragment);
                     if !anchors[target].contains(&fragment) {
                         let page = &entries[target].path;
@@ -590,7 +610,8 @@ fn links(entries: &[Entry], routes: &[Route], diagnostics: &mut Vec<Diagnostic>)
                         continue;
                     }
                 }
-                if target != i {
+                // `a.md#x` in `a.md` itself still needs its Route.
+                if !path.is_empty() {
                     let route = url_of[&target];
                     let href = match fragment {
                         Some(f) => format!("{route}#{f}"),

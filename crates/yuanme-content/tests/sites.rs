@@ -110,6 +110,7 @@ tags: [Rust, C++]
 series: Intro
 ---
 Hi. Read [the second](second/index.md#how-it-ends), [this](#hello),
+[this again](hello-world.md#hello), [the top](#),
 [About](../pages/about.md) and [the site](https://example.com/x).
 
 ## Hello
@@ -149,7 +150,7 @@ draft: true
 title: Secret
 date: 2025-06-01
 unlisted: true
-tags: [Rust]
+tags: [Rust, Hush]
 ---
 === content/posts/notes.txt
 not content
