@@ -20,10 +20,30 @@ pub enum Event<'a> {
         errors: usize,
         warnings: usize,
     },
+    Route(Route),
     Schema {
         name: String,
         schema: Value,
     },
+}
+
+/// One Route and what produces it, for `yuanme routes`.
+pub struct Route {
+    pub url: String,
+    pub output: String,
+    /// As `page.kind` names it: entry, list, term, index, template or feed.
+    pub kind: &'static str,
+    pub template: String,
+    /// The Entry file, for an Entry's Route.
+    pub entry: Option<String>,
+    /// The Collection of an Entry or list.
+    pub collection: Option<String>,
+    pub taxonomy: Option<String>,
+    pub term: Option<String>,
+    /// The page of a list or Term, from 1.
+    pub page: Option<usize>,
+    /// The name Site config gives a Template's Route or a feed.
+    pub name: Option<String>,
 }
 
 impl Event<'_> {
@@ -49,6 +69,28 @@ impl Event<'_> {
                 "errors": errors,
                 "warnings": warnings,
             }),
+            Event::Route(r) => {
+                let mut json = json!({
+                    "type": "route",
+                    "url": r.url,
+                    "output": r.output,
+                    "kind": r.kind,
+                    "template": r.template,
+                });
+                for (key, value) in [
+                    ("entry", r.entry.clone().map(Value::from)),
+                    ("collection", r.collection.clone().map(Value::from)),
+                    ("taxonomy", r.taxonomy.clone().map(Value::from)),
+                    ("term", r.term.clone().map(Value::from)),
+                    ("page", r.page.map(Value::from)),
+                    ("name", r.name.clone().map(Value::from)),
+                ] {
+                    if let Some(value) = value {
+                        json[key] = value;
+                    }
+                }
+                json
+            }
             Event::Schema { name, schema } => {
                 json!({ "type": "schema", "name": name, "schema": schema })
             }
@@ -218,6 +260,39 @@ pub fn schema() -> Value {
                 ("stack", json!({ "type": ["string", "null"] })),
             ],
             &[],
+        ),
+        event(
+            Some("route"),
+            "One Route and what produces it, from `yuanme routes`.",
+            &[
+                ("url", string.clone()),
+                (
+                    "output",
+                    json!({ "type": "string", "description": "The file it writes, from the output directory." }),
+                ),
+                (
+                    "kind",
+                    json!({ "enum": ["entry", "list", "term", "index", "template", "feed"] }),
+                ),
+                ("template", string.clone()),
+            ],
+            &[
+                (
+                    "entry",
+                    json!({ "type": "string", "description": "The Entry file, for an Entry's Route." }),
+                ),
+                ("collection", string.clone()),
+                ("taxonomy", string.clone()),
+                ("term", string.clone()),
+                (
+                    "page",
+                    json!({ "type": "integer", "minimum": 1, "description": "The page of a list or Term, from 1." }),
+                ),
+                (
+                    "name",
+                    json!({ "type": "string", "description": "The name Site config gives a Template's Route or a feed." }),
+                ),
+            ],
         ),
         event(
             Some("schema"),

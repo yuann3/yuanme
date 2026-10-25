@@ -1,0 +1,10 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: show(&events)
+---
+{"collection":"posts","entry":"content/posts/first.md","kind":"entry","output":"blog/first/index.html","template":"posts/entry.html","type":"route","url":"/blog/first/"}
+{"collection":"posts","kind":"list","output":"blog/index.html","page":1,"template":"posts/list.html","type":"route","url":"/blog/"}
+{"kind":"index","output":"tags/index.html","taxonomy":"tags","template":"tags/index.html","type":"route","url":"/tags/"}
+{"kind":"term","output":"tags/rust/index.html","page":1,"taxonomy":"tags","template":"tags/term.html","term":"Rust","type":"route","url":"/tags/rust/"}
+{"kind":"template","name":"home","output":"index.html","template":"home.html","type":"route","url":"/"}
+{"kind":"feed","name":"rss","output":"rss.xml","template":"rss.xml","type":"route","url":"/rss.xml"}

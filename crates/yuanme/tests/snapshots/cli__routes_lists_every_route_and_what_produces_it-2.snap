@@ -1,0 +1,10 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: human.stdout
+---
+/blog/first/  entry     content/posts/first.md  posts/entry.html
+/blog/        list      posts list              posts/list.html
+/tags/        index     tags index              tags/index.html
+/tags/rust/   term      tags `Rust`             tags/term.html
+/             template  home                    home.html
+/rss.xml      feed      rss                     rss.xml

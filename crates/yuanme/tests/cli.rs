@@ -321,6 +321,31 @@ fn check_reports_what_build_would_and_writes_no_site() {
 }
 
 #[test]
+fn routes_lists_every_route_and_what_produces_it() {
+    let dir = project(SITE);
+    let root = dir.path();
+    let (code, events) = json(root, &["routes"]);
+    assert_eq!(code, 0);
+    insta::assert_snapshot!(show(&events));
+    let human = yuanme(root, &["routes"]);
+    assert_eq!((human.code, human.stderr.as_str()), (0, ""));
+    insta::assert_snapshot!(human.stdout);
+
+    let (_, drafts) = json(root, &["routes", "--drafts"]);
+    assert_eq!(drafts.len(), events.len() + 1);
+    assert!(drafts.iter().any(|r| r["url"] == "/blog/wip/"));
+
+    // A broken Template doesn't hide the Routes; an Entry error does.
+    write(root, "=== templates/home.html\n{{ site.titel }}\n");
+    assert_eq!(json(root, &["routes"]), (0, events));
+    write(root, "=== content/posts/bad.md\n---\ntitle: Bad\n---\n");
+    let (code, events) = json(root, &["routes"]);
+    assert_eq!(code, 1);
+    assert!(events.iter().all(|e| e["type"] == "diagnostic"));
+    assert_eq!(events[0]["code"], "entry/missing-field");
+}
+
+#[test]
 fn schema_prints_each_schema() {
     let dir = project(SITE);
     let root = dir.path();
