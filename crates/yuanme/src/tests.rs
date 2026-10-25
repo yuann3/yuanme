@@ -1,10 +1,12 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-use yuanme_engine::{Build, Cache, Mode};
+use yuanme_content::site::RouteKind;
+use yuanme_engine::{Build, Cache, Inputs, Mode};
 
+use crate::docs;
 use crate::load::load;
 use crate::sync::{Report, sync};
 
@@ -222,4 +224,175 @@ fn an_empty_collection_folder_on_disk_exists() {
     assert_eq!(codes(), ["config/invalid-value"]);
     fs::create_dir_all(root.join("content/posts")).unwrap();
     assert_eq!(codes(), [] as [&str; 0]);
+}
+
+/// A project in memory: files by path, and folders that exist empty.
+#[derive(Clone, Default)]
+struct Project {
+    files: BTreeMap<String, String>,
+    dirs: BTreeSet<String>,
+}
+
+impl Project {
+    fn build(&self) -> Build {
+        let mut inputs = Inputs::default();
+        for (path, text) in &self.files {
+            inputs.insert(path.clone(), text.as_bytes());
+        }
+        for dir in &self.dirs {
+            inputs.insert_dir(dir.clone());
+        }
+        yuanme_engine::build(&inputs, &mut Cache::memory("test"), Mode::Build)
+    }
+
+    /// Builds, first adding what an example's Site config names and no
+    /// example wrote: an empty folder for each Collection and an empty
+    /// Template for each Route. An example is one complete file, so the
+    /// project supplies the rest.
+    fn build_with_stubs(&mut self) -> Build {
+        loop {
+            let build = self.build();
+            let before = (self.files.len(), self.dirs.len());
+            if let Some(config) = &build.config {
+                for collection in config.collections.values() {
+                    self.dirs.insert(collection.dir.clone());
+                }
+                if let Some(site) = &build.site {
+                    let templates = yuanme_render::template::route_templates(config, site);
+                    for (route, template) in site.routes.iter().zip(templates) {
+                        let builtin =
+                            matches!(route.kind, RouteKind::Feed { .. }) && template == "rss.xml";
+                        if !builtin {
+                            self.files
+                                .entry(format!("templates/{template}"))
+                                .or_default();
+                        }
+                    }
+                }
+            }
+            if before == (self.files.len(), self.dirs.len()) {
+                return build;
+            }
+        }
+    }
+}
+
+fn codes_of(build: &Build) -> Vec<&'static str> {
+    let codes: BTreeSet<_> = build.diagnostics.iter().map(|d| d.code.name).collect();
+    codes.into_iter().collect()
+}
+
+fn rendered(build: &Build) -> String {
+    let lines: Vec<String> = build
+        .diagnostics
+        .iter()
+        .map(|d| d.render_short(&build.sources))
+        .collect();
+    lines.join("\n")
+}
+
+/// A fenced block a docs page tests (#38): ```` ```LANG check [PATH] ````
+/// must check clean, and ```` ```LANG fail CODE [PATH] ```` must report
+/// exactly CODE.
+#[derive(Debug)]
+struct Example {
+    line: usize,
+    path: String,
+    fails_with: Option<String>,
+    text: String,
+}
+
+fn examples(page: &str, markdown: &str) -> Vec<Example> {
+    let mut out = Vec::new();
+    let mut lines = markdown.lines().enumerate();
+    while let Some((n, line)) = lines.next() {
+        let fence: String = line
+            .chars()
+            .take_while(|c| *c == '`' || *c == '~')
+            .collect();
+        if fence.len() < 3 {
+            continue;
+        }
+        let words: Vec<&str> = line[fence.len()..].split_whitespace().collect();
+        let mut text = String::new();
+        for (_, line) in lines.by_ref() {
+            if line.starts_with(&fence) && line[fence.len()..].trim().is_empty() {
+                break;
+            }
+            text.push_str(line);
+            text.push('\n');
+        }
+        let (fails_with, path) = match words.as_slice() {
+            [_, "check", rest @ ..] => (None, rest),
+            [_, "fail", code, rest @ ..] => (Some(code.to_string()), rest),
+            _ => continue,
+        };
+        let path = match (path, words[0]) {
+            ([path], _) => path.to_string(),
+            ([], "toml") => "yuanme.toml".into(),
+            ([], "md") => "content/posts/example.md".into(),
+            ([], "org") => "content/posts/example.org".into(),
+            _ => panic!("{page}:{}: say which file the example is", n + 1),
+        };
+        out.push(Example {
+            line: n + 1,
+            path,
+            fails_with,
+            text,
+        });
+    }
+    out
+}
+
+/// What an example starts from: the Site that `getting-started` makes,
+/// before its Templates and Entries.
+const BASE_CONFIG: &str = r#"[site]
+url = "https://example.com"
+title = "Example"
+
+[collections.posts]
+route = "/blog/{slug}/"
+list_route = "/blog/"
+"#;
+
+/// Each page's examples run in order in one project, so a page can build
+/// on what it showed earlier: a `check` example stays in it, and a `fail`
+/// one is taken out again.
+#[test]
+fn docs_examples_check_as_they_say() {
+    let mut tested = 0;
+    for name in docs::names().filter(|n| *n != "index") {
+        let page = docs::get(name).unwrap();
+        let mut project = Project::default();
+        project
+            .files
+            .insert("yuanme.toml".into(), BASE_CONFIG.into());
+        for example in examples(name, &page.body) {
+            let at = format!("docs {name}, line {} ({})", example.line, example.path);
+            tested += 1;
+            match &example.fails_with {
+                None => {
+                    project.files.insert(example.path, example.text);
+                    let build = project.build_with_stubs();
+                    assert!(
+                        build.diagnostics.is_empty(),
+                        "{at} should check clean:\n{}",
+                        rendered(&build)
+                    );
+                }
+                Some(code) => {
+                    let mut failing = project.clone();
+                    failing.files.insert(example.path, example.text);
+                    let build = failing.build();
+                    assert_eq!(
+                        codes_of(&build),
+                        [code.as_str()],
+                        "{at}:\n{}",
+                        rendered(&build)
+                    );
+                }
+            }
+        }
+    }
+    assert!(tested > 0, "no examples found");
 }
