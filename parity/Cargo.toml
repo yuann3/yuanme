@@ -1,0 +1,20 @@
+[package]
+name = "parity"
+description = "The parity test's URL and normalized-DOM checks: the Reference site against its Parity baseline."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+html5ever = "0.39"
+markup5ever_rcdom = "0.39.0"
+regex = "1.13.1"
+serde_json = "1.0.154"
+similar = "2.7.0"
+url = "2.5.8"
+walkdir = "2.5.0"
+
+[dev-dependencies]
+tempfile = "3.27.0"
