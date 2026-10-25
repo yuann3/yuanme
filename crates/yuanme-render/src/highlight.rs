@@ -8,7 +8,7 @@ use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
 
-use ferriki::{FontStyle, Highlighter, StandardAssetCatalogs};
+use ferriki::{FontStyle, Highlighter, StandardAssetCatalogs, TokenizeOptions};
 use yuanme_content::document::{Document, Kind, NodeId};
 
 use crate::html::text;
@@ -119,6 +119,14 @@ struct Look(usize, i32);
 
 const DECORATION: i32 = FontStyle::UNDERLINE.bits() | FontStyle::STRIKETHROUGH.bits();
 
+/// ferriki, like Shiki, stops tokenizing a line after 500 ms and leaves
+/// the rest of it in the wrong colours, so a slow or busy machine wrote
+/// different bytes. Without the limit, output depends only on the input;
+/// ferroni's retry limit on each match still bounds the time.
+fn untimed() -> TokenizeOptions {
+    TokenizeOptions::default().with_time_limit_millis(0)
+}
+
 thread_local! {
     // ferriki's Highlighter is !Send, so each rayon thread keeps its own
     // (ADR 0014).
@@ -158,7 +166,12 @@ pub fn block(grammar: Option<&str>, source: &str) -> String {
             .collect(),
         Some(grammar) => HIGHLIGHTER.with_borrow_mut(|h| {
             let result = h
-                .highlight_with_themes(source, grammar, &[("light", LIGHT.id), ("dark", DARK.id)])
+                .highlight_with_themes_and_options(
+                    source,
+                    grammar,
+                    &[("light", LIGHT.id), ("dark", DARK.id)],
+                    &untimed(),
+                )
                 .expect("an embedded grammar highlights any text");
             result
                 .tokens
