@@ -291,6 +291,26 @@ codes! {
         example: "<a href=\"{{ url('/abuot/') }}\">About</a>",
         fix: "Use a path the Site has, such as the one the help suggests. Every URL of a Site is declared in Site config.",
     }
+    ASSET_NOT_FOUND = "asset/not-found" {
+        meaning: "A `<link href>` or `<script src>` in a Page, or an `@import` or `url()` in a stylesheet, names a path that is no file of the project, no Static file and no URL of the Site. A path from `/` names a file from the project's root, such as `/styles/site.css` for `styles/site.css`, or a Static file without its `static/`; any other path is relative to the Page or the stylesheet. `@import \"pkg/x.css\"` also looks in `node_modules`.",
+        example: "<link rel=\"stylesheet\" href=\"/styles/sit.css\">\n(with styles/site.css)",
+        fix: "Correct the path, here `/styles/site.css`, or create the file. A Static file is named without `static/`. For a package, install it with `bun install`.",
+    }
+    ASSET_AMBIGUOUS_URL = "asset/ambiguous-url" {
+        meaning: "A URL names both a project file, which yuanme processes and hashes, and a Static file, which it copies unchanged: `/styles/site.css` is both `styles/site.css` and `static/styles/site.css`.",
+        example: "<link rel=\"stylesheet\" href=\"/styles/site.css\">\n(with both styles/site.css and static/styles/site.css)",
+        fix: "Delete or rename one of the two files.",
+    }
+    ASSET_CLASSIC_SCRIPT = "asset/classic-script" {
+        meaning: "A `<script src>` without `type=\"module\"` names a project file. yuanme bundles every Script as a module, so it can't load one as a classic script. Static files and `https://` URLs are left as they are.",
+        example: "<script src=\"/scripts/site.ts\"></script>",
+        fix: "Add `type=\"module\"`: `<script type=\"module\" src=\"/scripts/site.ts\"></script>`. A module is deferred and runs in strict mode, so check a script that relied on running at once. A file that must stay classic goes in `static/`.",
+    }
+    ASSET_INVALID_CSS = "asset/invalid-css" {
+        meaning: "A stylesheet can't be bundled: it isn't valid CSS or UTF-8, or it imports one file twice in ways that can't be merged, such as under two different `@layer`s.",
+        example: "a$b { color: red }",
+        fix: "Fix the CSS at the reported place. Here `$` is not part of a selector.",
+    }
     INTERNAL_PANIC = "internal/panic" {
         meaning: "yuanme crashed while processing a file. This is a bug in yuanme, not in the project.",
         example: "Any file can trigger it, if it reaches a bug in a parser or a renderer.",
