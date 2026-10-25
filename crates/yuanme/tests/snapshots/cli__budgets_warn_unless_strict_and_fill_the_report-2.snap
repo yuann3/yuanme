@@ -1,0 +1,16 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: "md.split_once(\"\\n## Budgets\\n\").unwrap().1"
+---
+
+Bytes are Brotli at quality 11. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 10 B of JS, 30.0 kB of text fonts, 55.0 kB of math font, 4 requests. An Entry's body isn't part of its Page's HTML.
+
+| Page | HTML | Body | CSS | JS | Text fonts | Math font | Requests |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `/about/` | 56 B |  | 0 B | 48 B, acknowledged | 0 B | 0 B | 1 |
+| `/` | 51 B |  | 0 B | 50 B, over | 0 B | 0 B | 1 |
+
+Over budget:
+
+- `/about/`: 48 B of JS, over its 10 B, within its Acknowledged overage of 1.0 kB
+- `/`: 50 B of JS, over its 10 B

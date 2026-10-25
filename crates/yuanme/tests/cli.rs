@@ -615,3 +615,112 @@ title: Sea
     let page = fs::read_to_string(root.join("dist/blog/sea/index.html")).unwrap();
     assert!(page.contains("<picture>"), "{page}");
 }
+
+#[test]
+fn budgets_warn_unless_strict_and_fill_the_report() {
+    let site = r#"=== yuanme.toml
+[site]
+url = "https://example.com"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.about]
+path = "/about/"
+template = "about.html"
+
+[budgets]
+js = 0.01
+
+[budgets.overages."/about/"]
+js = 1
+=== templates/home.html
+<script>console.log("a script of more than ten bytes")</script>
+=== templates/about.html
+<script>console.log("a script of more than ten bytes, acknowledged")</script>
+"#;
+    let dir = project(site);
+    let root = dir.path();
+    let (code, events) = json(root, &["build"]);
+    assert_eq!(code, 0, "a breach is a warning");
+    insta::assert_snapshot!(show(&events));
+    let budget = |events: &[Value]| -> Vec<(String, bool)> {
+        events
+            .iter()
+            .filter(|e| e["type"] == "budget")
+            .map(|e| {
+                (
+                    e["page"].as_str().unwrap().into(),
+                    e["acknowledged"] == true,
+                )
+            })
+            .collect()
+    };
+    // In the order of the Site's Routes, by name.
+    assert_eq!(
+        budget(&events),
+        [("/about/".to_string(), true), ("/".to_string(), false)]
+    );
+
+    let report = || -> Value {
+        serde_json::from_str(&fs::read_to_string(root.join(".yuanme/report.json")).unwrap())
+            .unwrap()
+    };
+    let budgets = &report()["budgets"];
+    assert_eq!(budgets["limits"]["js"], 10);
+    assert_eq!(budgets["limits"]["requests"], 4, "the Starters' number");
+    let home = &budgets["pages"][1];
+    assert_eq!(home["url"], "/");
+    let event = events.iter().find(|e| e["page"] == "/").unwrap();
+    assert_eq!(home["js"], event["value"]);
+    assert_eq!(home["requests"], 1);
+    let over: Vec<(&str, bool)> = budgets["over"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|o| (o["page"].as_str().unwrap(), o["acknowledged"] == true))
+        .collect();
+    assert_eq!(over, [("/about/", true), ("/", false)]);
+    let md = fs::read_to_string(root.join(".yuanme/report.md")).unwrap();
+    assert!(md.contains("\n## Budgets\n"), "{md}");
+    insta::assert_snapshot!(md.split_once("\n## Budgets\n").unwrap().1);
+
+    // Strict mode makes the breach an error and writes nothing, but the
+    // report still says why.
+    fs::remove_dir_all(root.join("dist")).unwrap();
+    let (code, events) = json(root, &["build", "--strict-budgets"]);
+    assert_eq!(code, 1);
+    let errors: Vec<&Value> = events.iter().filter(|e| e["level"] == "error").collect();
+    assert_eq!(errors.len(), 1, "{}", show(&events));
+    assert_eq!(errors[0]["code"], "budget/js");
+    assert!(
+        errors[0]["rendered"]
+            .as_str()
+            .unwrap()
+            .contains("`--strict-budgets` makes"),
+        "{}",
+        errors[0]["rendered"]
+    );
+    assert!(!root.join("dist").exists());
+    assert_eq!(report()["ok"], false);
+    assert_eq!(report()["budgets"]["over"][1]["page"], "/");
+    // As does --strict, and budgets.strict.
+    assert_eq!(json(root, &["build", "--strict"]).0, 1);
+    write(
+        root,
+        &site.replace("[budgets]\n", "[budgets]\nstrict = true\n"),
+    );
+    let (code, events) = json(root, &["build"]);
+    assert_eq!(code, 1);
+    assert!(show(&events).contains("`budgets.strict` makes"));
+    assert_eq!(json(root, &["check"]).0, 0, "check measures no Budget");
+
+    let (head, _) = site.split_once("[budgets]").unwrap();
+    let (_, templates) = site.split_once("=== templates/home.html").unwrap();
+    let off = head.replace("=== yuanme.toml\n", "=== yuanme.toml\nbudgets = false\n");
+    write(root, &format!("{off}=== templates/home.html{templates}"));
+    let (code, events) = json(root, &["build", "--strict-budgets"]);
+    assert_eq!((code, events.len()), (0, 2), "{}", show(&events));
+    assert_eq!(report()["budgets"], Value::Null);
+}

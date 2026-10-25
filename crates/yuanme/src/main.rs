@@ -77,6 +77,9 @@ enum Command {
     Build {
         #[command(flatten)]
         check: CheckArgs,
+        /// Make every warning about a Site budget an error, as `budgets.strict` does.
+        #[arg(long)]
+        strict_budgets: bool,
         /// Empty the output directory first, files yuanme didn't write included.
         #[arg(long)]
         clean: bool,
@@ -245,9 +248,13 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     match cli.command {
         Command::Build {
             check,
+            strict_budgets,
             clean,
             out: out_dir,
-        } => build(&root, out_dir.map(|d| root.join(d)), clean, &check, out),
+        } => {
+            let out_dir = out_dir.map(|d| root.join(d));
+            build(&root, out_dir, clean, &check, strict_budgets, out)
+        }
         Command::Check(check) => self::check(&root, &check, out),
         Command::New {
             collection,
@@ -270,8 +277,15 @@ struct Run {
 
 /// One build in memory. `out` is `--out`, which the walk leaves out; the
 /// adapter's output directory is `dist` or hidden. Only `yuanme build`
-/// encodes images: every other command builds as `check` does.
-fn engine_build(root: &Path, out: Option<&Path>, mode: Mode, strict: bool) -> io::Result<Run> {
+/// encodes images and measures the Site budgets: every other command builds
+/// as `check` does.
+fn engine_build(
+    root: &Path,
+    out: Option<&Path>,
+    mode: Mode,
+    strict: bool,
+    strict_budgets: bool,
+) -> io::Result<Run> {
     let started = Instant::now();
     let dist = root.join("dist");
     let inputs = load::load(root, out.unwrap_or(&dist))?;
@@ -290,13 +304,25 @@ fn engine_build(root: &Path, out: Option<&Path>, mode: Mode, strict: bool) -> io
         let dir = dir.to_string_lossy().replace('\\', "/");
         yuanme_engine::wrangler(&mut build, &text, &dir);
     }
-    if strict {
-        for d in &mut build.diagnostics {
-            if d.level == Level::Warning {
-                *d = d.clone().note("`--strict` makes every warning an error");
-                d.level = Level::Error;
+    let budgets_strict = build
+        .config
+        .as_ref()
+        .and_then(|c| c.budgets.as_ref())
+        .is_some_and(|b| b.strict);
+    for d in &mut build.diagnostics {
+        let budget = d.code.name.starts_with("budget/");
+        let why = match d.level {
+            Level::Warning if strict => "`--strict` makes every warning an error",
+            Level::Warning if budget && strict_budgets => {
+                "`--strict-budgets` makes every warning about a Site budget an error"
             }
-        }
+            Level::Warning if budget && budgets_strict => {
+                "`budgets.strict` makes every warning about a Site budget an error"
+            }
+            _ => continue,
+        };
+        *d = d.clone().note(why);
+        d.level = Level::Error;
     }
     Ok(Run {
         build,
@@ -347,6 +373,7 @@ fn build(
     out_dir: Option<PathBuf>,
     clean: bool,
     args: &CheckArgs,
+    strict_budgets: bool,
     out: &Out,
 ) -> Result<u8, Error> {
     if let Some(dir) = out_dir.as_ref().filter(|d| root.starts_with(d)) {
@@ -367,7 +394,7 @@ fn build(
         out: out_dir,
         load,
         took,
-    } = engine_build(root, out_dir.as_deref(), mode, args.strict)?;
+    } = engine_build(root, out_dir.as_deref(), mode, args.strict, strict_budgets)?;
     let out_dir = out_dir.as_path();
     schemas::write(
         &root.join(".yuanme/schemas"),
@@ -375,6 +402,11 @@ fn build(
         build.site.as_ref(),
     )?;
     out.diagnostics(&build.diagnostics, &build.sources);
+    if let Some(budgets) = build.config.as_ref().and_then(|c| c.budgets.as_ref()) {
+        for over in report::over(&build.budgets, budgets) {
+            out.event(Event::Budget(over));
+        }
+    }
 
     let writing = Instant::now();
     let written = if build.failed() {
@@ -470,7 +502,7 @@ fn check(root: &Path, args: &CheckArgs, out: &Out) -> Result<u8, Error> {
     let mode = Mode::Check {
         drafts: args.drafts,
     };
-    let Run { build, .. } = engine_build(root, None, mode, args.strict)?;
+    let Run { build, .. } = engine_build(root, None, mode, args.strict, false)?;
     schemas::write(
         &root.join(".yuanme/schemas"),
         build.config.as_ref(),
@@ -521,7 +553,7 @@ fn new(
     format: new::Format,
     out: &Out,
 ) -> Result<u8, Error> {
-    let run = engine_build(root, None, Mode::Check { drafts: false }, false)?;
+    let run = engine_build(root, None, Mode::Check { drafts: false }, false, false)?;
     let Some(config) = config_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };
@@ -559,7 +591,7 @@ fn new(
 }
 
 fn routes(root: &Path, drafts: bool, out: &Out) -> Result<u8, Error> {
-    let run = engine_build(root, None, Mode::Check { drafts }, false)?;
+    let run = engine_build(root, None, Mode::Check { drafts }, false, false)?;
     let Some((config, site)) = site_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };
@@ -696,7 +728,7 @@ fn unknown(what: &str, name: &str, choices: &[&str], otherwise: String) -> Error
 }
 
 fn schema(root: &Path, which: Which, out: &Out) -> Result<u8, Error> {
-    let run = engine_build(root, None, Mode::Check { drafts: false }, false)?;
+    let run = engine_build(root, None, Mode::Check { drafts: false }, false, false)?;
     let (name, mut schemas) = match which {
         Which::Entry { collection } => {
             let Some(config) = config_or_report(&run, out) else {

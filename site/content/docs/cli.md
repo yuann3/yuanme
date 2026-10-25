@@ -60,6 +60,7 @@ yuanme build [OPTIONS]
 
 - `--drafts`: Include Drafts.
 - `--strict`: Make every warning an error.
+- `--strict-budgets`: Make every warning about a Site budget an error, as `budgets.strict` does.
 - `--clean`: Empty the output directory first, files yuanme didn't write included.
 - `--out DIR`: The output directory, from the project root. By default `dist`, or `.vercel/output` with the vercel adapter.
 

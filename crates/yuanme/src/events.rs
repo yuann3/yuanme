@@ -21,6 +21,8 @@ pub enum Event<'a> {
         warnings: usize,
     },
     Route(Route),
+    /// A Page over a Site budget, acknowledged or not.
+    Budget(crate::report::Over),
     EntryCreated {
         path: String,
         url: String,
@@ -103,6 +105,15 @@ impl Event<'_> {
                 }
                 json
             }
+            Event::Budget(over) => json!({
+                "type": "budget",
+                "name": over.budget.key(),
+                "value": over.value,
+                "limit": over.limit,
+                "page": over.page,
+                "passed": false,
+                "acknowledged": over.acknowledged,
+            }),
             Event::EntryCreated {
                 path,
                 url,
@@ -128,8 +139,8 @@ impl Event<'_> {
 }
 
 /// The draft 2020-12 JSON Schema of every event, `yuanme schema events`.
-/// `budget`, `server-ready`, `reload` and `browser-console` are #21's, for
-/// the budgets (#66) and the dev server (#67) to emit.
+/// `server-ready`, `reload` and `browser-console` are #21's, for the dev
+/// server (#67) to emit.
 pub fn schema() -> Value {
     let string = json!({ "type": "string" });
     let strings = json!({ "type": "array", "items": { "type": "string" } });
@@ -245,7 +256,7 @@ pub fn schema() -> Value {
         ),
         event(
             Some("budget"),
-            "One Budget measured against its limit (#15).",
+            "A Page over one of its Site budgets (#15), whether or not an Acknowledged overage allows it. `yuanme build` prints one for each, after the Diagnostics; the build report has every number.",
             &[
                 ("name", string.clone()),
                 ("value", json!({ "type": "number" })),
