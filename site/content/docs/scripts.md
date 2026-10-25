@@ -62,9 +62,49 @@ A module is deferred and runs in strict mode. A file that must stay a classic sc
 
 ## TypeScript
 
-yuanme strips the types from `.ts` and `.mts` files and doesn't check them. It doesn't read `tsconfig.json`, so its `paths` don't apply to imports. yuanme doesn't type-check Scripts yet.
+yuanme strips the types from `.ts` and `.mts` files when it bundles them. The bundler doesn't read `tsconfig.json`, so its `paths` don't apply to imports.
 
 yuanme doesn't compile JSX either. JSX in a Script is `asset/jsx`; build the element with the DOM, or write it in a Template.
+
+### Check types
+
+Turn on `[typescript] check` in Site config, and `yuanme check` and `yuanme build` check the types of every TypeScript Script with TypeScript 7's `tsc`. Each type error is `asset/type-error`, which fails the build, at the name or value TypeScript puts it on, with TypeScript's message after its own code:
+
+```toml
+[typescript]
+check = true
+```
+
+```text
+scripts/site.ts:6:7: error[asset/type-error]: TS2322: Type 'string' is not assignable to type 'number'.
+```
+
+What is checked is what Pages load: each Script and Sidecar script, what they import, and every `.d.ts` file of the project, which may declare globals. A `.ts` file that no Page loads isn't checked.
+
+The first check downloads `tsc` 7.0.2 with `curl` from TypeScript's GitHub release, about 9 MB, or from the npm registry if that fails, and checks its SHA-256. No Node.js is needed. It is kept in the same cache folder as the Tailwind CLI (`yuanme docs styles`); in CI, cache that folder. To check offline, set `YUANME_TSC_BIN` to the `tsc` of TypeScript's 7.0.2 release, with the `lib.*.d.ts` files beside it as the release has them.
+
+The result is kept in `.yuanme/cache` under every TS, JS and JSON file of the project, so checking a project that hasn't changed doesn't run `tsc`. `package.json` stands for `node_modules`, which isn't read.
+
+### tsconfig.json
+
+Every yuanme command writes `.yuanme/types/yuanme.d.ts`, the types of `yuanme:router`, the Router's events, `mount`'s `ctx` and Data file imports. A `tsconfig.json` at the project root that includes it gives your editor the types the check uses:
+
+```json
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": { "/*": ["./*"] }
+  },
+  "include": ["**/*.ts", ".yuanme/types/yuanme.d.ts"],
+  "exclude": ["dist", "static", "node_modules"]
+}
+```
+
+`paths` makes an import from the project root, such as `/data/nav.yaml`, name a project file, as it does for the bundler. A Site without a `tsconfig.json` is checked with these options; with one, with its `compilerOptions`. Either way the check sets its own files, and `noEmit`. TypeScript 7 is strict by default. A Data file's import has the type `any`.
 
 ## Imports
 
@@ -199,7 +239,25 @@ A Sidecar script's top level runs once per document. Do a Page's work in an expo
 - `ctx.signal`: an `AbortSignal` that aborts before the Router swaps the Page out. A listener added with `{ signal: ctx.signal }` goes away with the Page.
 - `ctx.data`: an object of the Sidecar script's own, which lasts from Page to Page until the next full load.
 
-`mount` may return a function, which runs when the signal aborts: the clock above stops its timer there. With the Router off, each move between Pages is a full page load, so `mount` runs once per load and its cleanup never runs. A `mount` that throws is reported in the browser's console, and the other Sidecar scripts still mount.
+`mount` may return a function, which runs when the signal aborts: the clock above stops its timer there. In TypeScript, `MountContext` from `yuanme:mount` types `ctx`, and takes the type of `ctx.data`:
+
+```ts check templates/partials/clock.ts
+import type { MountContext } from "yuanme:mount";
+
+export function mount(ctx: MountContext<{ ticks?: number }>) {
+  const tick = () => {
+    ctx.data.ticks = (ctx.data.ticks ?? 0) + 1;
+    for (const el of document.querySelectorAll(".clock")) {
+      el.textContent = new Date().toLocaleTimeString();
+    }
+  };
+  tick();
+  const timer = setInterval(tick, 1000);
+  return () => clearInterval(timer);
+}
+```
+
+With the Router off, each move between Pages is a full page load, so `mount` runs once per load and its cleanup never runs. A `mount` that throws is reported in the browser's console, and the other Sidecar scripts still mount.
 
 ## The Router
 
@@ -270,7 +328,7 @@ With the Router on, it fires three events on `document`, which a Site-level Scri
 - `yuanme:page-load`, once the Page's Scripts have run and its Sidecar scripts are mounted: after the first load, and after each swap.
 
 ```ts check scripts/site.ts
-document.addEventListener("yuanme:before-swap", (event: any) => {
+document.addEventListener("yuanme:before-swap", (event) => {
   const swap = event.swap;
   event.swap = () => {
     document.documentElement.dataset.leaving = event.from.pathname;
@@ -340,5 +398,7 @@ The codes for Scripts:
 - `asset/invalid-script`: a Script isn't valid JavaScript, TypeScript or UTF-8, or a `<script type="module">` names a file that is no Script.
 - `asset/script-warning`: the bundler warns about a Script or a package it imports.
 - `asset/dependencies-not-installed`: an import of a package, with a `package.json` and no `node_modules`.
+- `asset/type-error`: with `[typescript] check = true`, `tsc` finds a type error.
+- `asset/tool-unavailable`: with `[typescript] check = true`, yuanme can't download `tsc`, or `YUANME_TSC_BIN` names no file.
 
 `yuanme docs CODE` explains each one.
