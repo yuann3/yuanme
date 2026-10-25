@@ -282,6 +282,48 @@ fn build_writes_the_site_and_its_yuanme_files() {
 }
 
 #[test]
+fn the_report_lists_what_went_into_each_script_bundle() {
+    let dir = project(
+        r#"=== yuanme.toml
+[site]
+url = "https://example.com"
+
+[routes.home]
+path = "/"
+template = "home.html"
+=== templates/home.html
+<head><script type="module" src="/scripts/site.ts"></script></head>
+=== scripts/site.ts
+import { greet } from "./greet";
+greet();
+=== scripts/greet.ts
+export const greet = (): void => console.log("hi");
+"#,
+    );
+    let root = dir.path();
+    assert_eq!(json(root, &["build"]).0, 0);
+    let report: Value =
+        serde_json::from_str(&fs::read_to_string(root.join(".yuanme/report.json")).unwrap())
+            .unwrap();
+    let [bundle] = report["scripts"].as_array().unwrap().as_slice() else {
+        panic!("{report:#}")
+    };
+    let file = bundle["file"].as_str().unwrap();
+    let written = fs::read(root.join("dist").join(file)).unwrap();
+    assert_eq!(bundle["bytes"], written.len());
+    let modules: Vec<&str> = bundle["modules"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|m| m["module"].as_str().unwrap())
+        .collect();
+    assert_eq!(modules, ["scripts/greet.ts", "scripts/site.ts"]);
+    let md = fs::read_to_string(root.join(".yuanme/report.md")).unwrap();
+    assert!(md.contains(&format!("`{file}`")), "{md}");
+    assert!(md.contains("| `scripts/greet.ts` |"), "{md}");
+}
+
+#[test]
 fn check_reports_what_build_would_and_writes_no_site() {
     let dir = project(SITE);
     let root = dir.path();

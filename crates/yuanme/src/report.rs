@@ -1,6 +1,6 @@
 //! The build report (#21), `.yuanme/report.md` and `.json`: every Page's
-//! size, how long each stage took, and what was written. #66 adds the
-//! Budgets and Acknowledged overages.
+//! size, what went into each Script bundle (#20), how long each stage took,
+//! and what was written. #66 adds the Budgets and Acknowledged overages.
 
 use std::fs;
 use std::io;
@@ -66,6 +66,11 @@ pub fn write(
         "warnings": count(Level::Warning),
         "stages": stages_json,
         "pages": pages.iter().map(|(url, bytes)| json!({ "url": url, "bytes": bytes })).collect::<Vec<_>>(),
+        "scripts": build.scripts.iter().map(|b| json!({
+            "file": b.file,
+            "bytes": b.size,
+            "modules": b.modules.iter().map(|(m, bytes)| json!({ "module": m, "bytes": bytes })).collect::<Vec<_>>(),
+        })).collect::<Vec<_>>(),
         "files": build.files.len(),
         "bytes": bytes,
         "written": written.map(|w| w.written.len()),
@@ -118,6 +123,20 @@ pub fn write(
         md.push_str("\n## Pages\n\n| Page | Size |\n|---|---:|\n");
         for (url, bytes) in &pages {
             md.push_str(&format!("| `{url}` | {} |\n", human(*bytes)));
+        }
+    }
+
+    if !build.scripts.is_empty() {
+        md.push_str("\n## Scripts\n");
+        for bundle in &build.scripts {
+            md.push_str(&format!(
+                "\n`{}`, {}\n\n| Module | Size |\n|---|---:|\n",
+                bundle.file,
+                human(bundle.size as u64)
+            ));
+            for (module, bytes) in &bundle.modules {
+                md.push_str(&format!("| `{module}` | {} |\n", human(*bytes as u64)));
+            }
         }
     }
 
