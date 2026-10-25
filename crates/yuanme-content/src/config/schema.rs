@@ -405,7 +405,11 @@ pub fn json_schema() -> Value {
         "$defs".into(),
         json!({ "field": field(true), "item": field(false) }),
     );
-    Value::Object(head)
+    // Sorted, as without serde_json's `preserve_order`, which a dependency
+    // (oxc_resolver) may turn on for the whole build.
+    let mut schema = Value::Object(head);
+    schema.sort_all_objects();
+    schema
 }
 
 fn table<'a>(keys: impl IntoIterator<Item = &'a Key>) -> Value {

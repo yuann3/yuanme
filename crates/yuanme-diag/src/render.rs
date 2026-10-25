@@ -55,7 +55,7 @@ impl Diagnostic {
                 json!({ "level": child_level(c.level), "message": c.message, "suggestions": suggestions })
             })
             .collect();
-        json!({
+        let mut json = json!({
             "type": "diagnostic",
             "level": self.level.as_str(),
             "code": self.code.name,
@@ -64,7 +64,11 @@ impl Diagnostic {
             "children": children,
             "docs": format!("yuanme docs {}", self.code.name),
             "rendered": self.render(files, false),
-        })
+        });
+        // Sorted, as without serde_json's `preserve_order`, which a
+        // dependency (oxc_resolver) may turn on for the whole build.
+        json.sort_all_objects();
+        json
     }
 
     /// rustc-style output with source snippets, for a terminal.
