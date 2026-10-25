@@ -7,8 +7,9 @@ fn main() -> ExitCode {
         Some("package-check") => package_check(),
         Some("vendor-check") => vendor_check(),
         Some("docs") => docs(),
+        Some("notices") => notices(),
         _ => {
-            eprintln!("usage: cargo xtask package-check | vendor-check | docs");
+            eprintln!("usage: cargo xtask package-check | vendor-check | docs | notices");
             ExitCode::FAILURE
         }
     }
@@ -192,6 +193,94 @@ fn files(dir: &Path) -> Vec<PathBuf> {
         }
     }
     out
+}
+
+/// Writes THIRD_PARTY_NOTICES.md, which every release archive carries
+/// (#27): each crate compiled into the binary under its licence, from
+/// cargo-about, then each NOTICE file beside data a crate embeds, such as
+/// the grammars and themes. Fails if a licence isn't one about.toml
+/// accepts, or if a vendored fork isn't listed with its own licence text.
+fn notices() -> ExitCode {
+    let root = root();
+    // Offline, so the text depends only on the lockfile's crates.
+    let fetch = Command::new(env!("CARGO"))
+        .args(["fetch", "--locked"])
+        .current_dir(root)
+        .status()
+        .expect("run cargo fetch");
+    if !fetch.success() {
+        return ExitCode::FAILURE;
+    }
+    let about = Command::new(env!("CARGO"))
+        .args(["about", "generate", "--frozen", "--config", "about.toml"])
+        .args(["--manifest-path", "crates/yuanme/Cargo.toml", "about.hbs"])
+        .current_dir(root)
+        .output()
+        .expect("run cargo about, from `cargo install --locked cargo-about`");
+    if !about.status.success() {
+        eprintln!("{}", String::from_utf8_lossy(&about.stderr));
+        return ExitCode::FAILURE;
+    }
+    let mut out = String::from_utf8(about.stdout).expect("cargo about prints UTF-8");
+
+    let mut ok = true;
+    for dir in std::fs::read_dir(root.join("vendor")).expect("read vendor/") {
+        let dir = dir.expect("read a vendored crate").path();
+        let manifest = std::fs::read_to_string(dir.join("Cargo.toml")).expect("read its manifest");
+        let name = manifest_value(&manifest, "name");
+        let licence = ["LICENSE", "COPYING"]
+            .iter()
+            .find_map(|f| std::fs::read_to_string(dir.join(f)).ok())
+            .expect("a vendored crate ships its licence");
+        let listed = out.split("\n### ").any(|section| {
+            section.contains(&format!("\n- [{name} ")) && words(section).contains(&words(&licence))
+        });
+        if !listed {
+            eprintln!("THIRD_PARTY_NOTICES.md doesn't list {name} with its own licence");
+            ok = false;
+        }
+    }
+
+    let mut embedded: Vec<PathBuf> = std::fs::read_dir(root.join("crates"))
+        .expect("read crates/")
+        .flat_map(|c| files(&c.expect("read a crate").path().join("src")))
+        .filter(|f| f.file_name() == Some("NOTICE".as_ref()))
+        .collect();
+    embedded.sort();
+    if embedded.is_empty() {
+        eprintln!("no NOTICE in crates/*/src: the grammars' licences would be missing");
+        ok = false;
+    }
+    for notice in embedded {
+        let relative = notice.strip_prefix(root).expect("under the root");
+        let text = std::fs::read_to_string(&notice).expect("read a NOTICE");
+        out.push_str(&format!(
+            "\n## {}\n\n```text\n{}\n```\n",
+            relative.parent().expect("in a folder").display(),
+            text.trim_end()
+        ));
+    }
+
+    if !ok {
+        return ExitCode::FAILURE;
+    }
+    std::fs::write(root.join("THIRD_PARTY_NOTICES.md"), out).expect("write THIRD_PARTY_NOTICES.md");
+    ExitCode::SUCCESS
+}
+
+/// A `key = "value"` line's value, from the manifest's first table.
+fn manifest_value<'a>(manifest: &'a str, key: &str) -> &'a str {
+    manifest
+        .lines()
+        .filter_map(|l| l.split_once('='))
+        .find(|(k, _)| k.trim() == key)
+        .map(|(_, v)| v.trim().trim_matches('"'))
+        .expect("the manifest sets it")
+}
+
+/// Text with its line breaks and indentation ignored.
+fn words(text: &str) -> String {
+    text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 /// Files Cargo adds to every package on its own.

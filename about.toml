@@ -1,0 +1,39 @@
+# cargo-about, for THIRD_PARTY_NOTICES.md (#27): `cargo xtask notices`.
+# ADR 0014's licences, plus the ones deny.toml allows per crate. A crate
+# under any other licence, or one cargo-about can't classify, fails it.
+accepted = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "0BSD",
+    "CC0-1.0",
+    "BSL-1.0",
+    "Unicode-3.0",
+    "MPL-2.0",
+    "Unicode-DFS-2016",
+]
+# The release targets, so a dependency of some other platform isn't listed.
+targets = [
+    "x86_64-unknown-linux-musl",
+    "aarch64-unknown-linux-musl",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+    "aarch64-pc-windows-msvc",
+]
+# Only what is compiled into the binary.
+ignore-build-dependencies = true
+ignore-dev-dependencies = true
+
+# cargo-about doesn't read a file named COPYING, and would print SPDX's
+# template, with no copyright line, in place of comrak's.
+[yuanme-comrak.clarify]
+license = "BSD-2-Clause"
+[[yuanme-comrak.clarify.files]]
+path = "COPYING"
+license = "BSD-2-Clause"
+checksum = "27293e2353ce5d83e07331ffc423051908b062787d148193b8927d50d9873bd5"
