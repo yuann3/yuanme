@@ -6,6 +6,7 @@ mod cache;
 mod highlight;
 pub mod image;
 mod link;
+mod links;
 #[cfg(test)]
 mod tests;
 
@@ -202,6 +203,11 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
     }
+    let rendered: BTreeMap<String, Vec<String>> = pages
+        .iter()
+        .filter(|p| p.output.ends_with(".html"))
+        .map(|p| (p.output.clone(), p.templates.clone()))
+        .collect();
     let stage = assets::assets(inputs, &config, &site.data, pages, &templates, &mut sources);
     diagnostics.extend(stage.diagnostics);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
@@ -211,6 +217,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     highlight::stylesheet(&mut pages, &mut assets);
     let mut files = link(pages, assets);
     files.extend(statics);
+    let more = links::links(&config, &site, &rendered, &files, &templates, &sources);
+    diagnostics.extend(more);
 
     let build = Build {
         files,

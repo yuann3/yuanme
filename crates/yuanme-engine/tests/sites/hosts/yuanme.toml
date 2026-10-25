@@ -1,0 +1,35 @@
+[site]
+url = "https://e.com"
+
+[collections.posts]
+route = "/blog/{slug}/"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"
+
+[host]
+adapter = "cloudflare"
+
+# Overrides yuanme's revalidating rule for one file.
+[[host.headers]]
+path = "/resume.pdf"
+headers = { "Cache-Control" = "public, max-age=3600" }
+
+# The same path as yuanme's first rule, which it joins.
+[[host.headers]]
+path = "/*"
+headers = { "X-Frame-Options" = "DENY" }
+
+[[host.redirects]]
+from = "/old-post/"
+to = "/blog/pew/"
+
+[[host.redirects]]
+from = "/talk"
+to = "https://example.com/talk"
+status = 302
