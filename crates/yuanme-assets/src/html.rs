@@ -35,6 +35,8 @@ pub struct Scan {
     /// just after the last `<link rel=stylesheet>`, or else just before
     /// `</head>`. `None` when the Page has neither.
     pub stylesheet_at: Option<usize>,
+    /// Every `class` attribute's value, decoded, in order.
+    pub classes: Vec<String>,
     /// Each `<style>`, and each `<script>` without `src` that runs.
     pub inline: Vec<Inline>,
 }
@@ -50,6 +52,7 @@ pub struct Inline {
 pub fn scan(html: &str) -> Scan {
     let bytes = html.as_bytes();
     let mut references = Vec::new();
+    let mut classes = Vec::new();
     let mut inline = Vec::new();
     let mut last_stylesheet = None;
     let mut head_end = None;
@@ -78,6 +81,9 @@ pub fn scan(html: &str) -> Scan {
         let (attributes, end) = attributes(html, name_end);
         i = end;
         let get = |name: &str| attributes.iter().find(|a| a.name == name);
+        if let Some(class) = get("class") {
+            classes.push(decode(class.value(html)));
+        }
         // Whether the element's text is a script, else a stylesheet.
         let mut text_is = None;
         match name.as_str() {
@@ -139,6 +145,7 @@ pub fn scan(html: &str) -> Scan {
     Scan {
         references,
         stylesheet_at: last_stylesheet.or(head_end),
+        classes,
         inline,
     }
 }
@@ -490,6 +497,18 @@ mod tests {
         );
         // `</header>` is not `</head>`.
         assert_eq!(scan("<body><header></header>").stylesheet_at, None);
+    }
+
+    /// The class tokens Tailwind is fed (#59).
+    #[test]
+    fn every_class_attribute_is_found_decoded_outside_comments_and_raw_text() {
+        let html = r#"<head><title><i class=no></title><style>.no{}</style></head>
+<body CLASS="page  dark:bg-black"><div class='px-4 [&amp;>p]:mt-2' class=no><!-- <b class=no> -->
+<svg class=icon><use href=#i /></svg><script>let s = '<b class=no>'</script><p class=>x</p></body>"#;
+        assert_eq!(
+            scan(html).classes,
+            ["page  dark:bg-black", "px-4 [&>p]:mt-2", "icon", ""]
+        );
     }
 
     #[test]

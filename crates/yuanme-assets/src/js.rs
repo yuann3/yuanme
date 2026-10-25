@@ -7,6 +7,14 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{
+    ExportAllDeclaration, ExportFromDeclaration, ImportDeclaration, ImportExpression,
+    StringLiteral, TemplateElement,
+};
+use oxc_ast_visit::Visit;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use rolldown::plugin::{
     HookLoadArgs, HookLoadOutput, HookLoadReturn, HookResolveIdArgs, HookResolveIdOutput,
     HookResolveIdReturn, HookUsage, Plugin, PluginContext, PluginContextResolveOptions,
@@ -579,6 +587,43 @@ impl Plugin for Files {
     }
 }
 
+/// The text of every string literal and template literal in the module
+/// `code`, in order: what a Script could write into a `class` (#59). The
+/// modules it imports are left out: a chunk's name changes with its hash.
+/// Code that doesn't parse has none.
+pub fn strings(code: &str) -> Vec<String> {
+    struct Strings(Vec<String>);
+    impl<'a> Visit<'a> for Strings {
+        fn visit_import_declaration(&mut self, _: &ImportDeclaration<'a>) {}
+        fn visit_import_expression(&mut self, _: &ImportExpression<'a>) {}
+        fn visit_export_from_declaration(&mut self, _: &ExportFromDeclaration<'a>) {}
+        fn visit_export_all_declaration(&mut self, _: &ExportAllDeclaration<'a>) {}
+        fn visit_string_literal(&mut self, it: &StringLiteral<'a>) {
+            // A lone surrogate can't be in a class name.
+            if let Some(text) = it.value.as_str() {
+                self.0.push(text.to_string());
+            }
+        }
+        fn visit_template_element(&mut self, it: &TemplateElement<'a>) {
+            let text = match it.value.cooked {
+                Some(cooked) => cooked.as_str(),
+                None => Some(it.value.raw.as_str()),
+            };
+            if let Some(text) = text {
+                self.0.push(text.to_string());
+            }
+        }
+    }
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, code, SourceType::mjs()).parse();
+    if parsed.fatal_error {
+        return Vec::new();
+    }
+    let mut strings = Strings(Vec::new());
+    strings.visit_program(&parsed.program);
+    strings.0
+}
+
 /// `a/./b/../c` → `a/c`, or `None` above the root.
 fn normalize(path: &str) -> Option<String> {
     let mut out: Vec<&str> = Vec::new();
@@ -602,4 +647,36 @@ fn has_scheme(url: &str) -> bool {
                 .chars()
                 .all(|c| c.is_ascii_alphanumeric() || "+-.".contains(c))
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The class tokens Tailwind is fed (#59): what a Script could put in
+    /// a `class`, and not its comments, regexes or names.
+    #[test]
+    fn strings_are_the_literals_and_template_text_of_a_module() {
+        let code = r#"// "comment"
+import { a } from "./shared-Dig5JG4F.js";
+export * from "./other-C0ffee00.js";
+export { b } from "./b-Aaaaaaaa.js";
+export const kept = "kept";
+import("./lazy-Bbbbbbbb.js");
+const flex = "px-4  py-2", re = /"no"/g;
+el.className = 'bg-red-500 \u0068over:x';
+el.classList.toggle(`text-${size} grid`, { "data-on": true });
+"#;
+        assert_eq!(
+            strings(code),
+            [
+                "kept",
+                "px-4  py-2",
+                "bg-red-500 hover:x",
+                "text-",
+                " grid",
+                "data-on"
+            ]
+        );
+    }
 }
