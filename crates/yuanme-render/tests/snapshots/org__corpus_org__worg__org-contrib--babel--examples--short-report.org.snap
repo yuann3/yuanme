@@ -45,7 +45,7 @@ document.</li>
 <li><code>C-c a m</code> YOURNAME will make an agenda of writing tasks assigned
 to you.</li>
 </ul>
-<h4 id="field-methods">Field Methods</h4>
+<h4 id="field-methods-1">Field Methods</h4>
 <h5 id="include-the-following-information-17">Include the following information: [1/7]</h5>
 <ul class="contains-task-list">
 <li class="task-list-item"><input type="checkbox" checked disabled> When the fieldwork was carried out.</li>
@@ -65,12 +65,12 @@ to you.</li>
 Fieldwork for the project was carried out between December 26, 2008
 and February 3, 2009 following an approved plan \cite{plan}.
 </code></pre>
-<h4 id="results">Results</h4>
+<h4 id="results-1">Results</h4>
 <ul>
 <li>Note the use of Org-mode tags to assign sections to authors Veronica and Eric.</li>
 <li>Discuss the artifacts and midden recovered during excavation.</li>
 </ul>
-<h5 id="artifacts">Artifacts</h5>
+<h5 id="artifacts-1">Artifacts</h5>
 <ul>
 <li>Use Sinoto’s classification of one-piece fishhooks.</li>
 <li>Cite Anell when describing two-piece fishhooks.</li>
@@ -82,7 +82,7 @@ cross-section.</li>
 
 % Enter text below this line
 </code></pre>
-<h5 id="midden">Midden</h5>
+<h5 id="midden-1">Midden</h5>
 <ul>
 <li>Use Kay for identifying and naming marine shells</li>
 <li>Cite Ziegler for information on fish habitats</li>

@@ -2,312 +2,219 @@
 source: crates/yuanme-render/tests/corpus.rs
 expression: render(&path)
 ---
-<p>We provide a review of probability concepts. Some of the review materials have been adapted from <a href="http://cs229.stanford.edu/section/cs229-prob.pdf">CS229 Probability Notes</a> and <a href="https://web.stanford.edu/class/stats310a/lnotes.pdf">STATS310 Probability Theory Notes</a>.</p>
-<h1 id="1-elements-of-probability">1. Elements of probability</h1>
-<p>We begin with a few basic elements of probability to establish the definition of probabilities on sets.</p>
-<h2 id="11-probability-spaces">1.1 Probability Spaces</h2>
-<p>The probability space (<code class="language-math math-display">\Omega, \mathcal{F}, \mathbf{P}</code>) is a fundamental framework for expressing a random process.
-The sample space <code class="language-math math-display">\Omega</code> is the set of all the outcomes of a random experiment.
-Here, each outcome <code class="language-math math-display">\omega \in \Omega</code> can be thought of as a complete description of the state of the real world at the end of the experiment.
-The event space <code class="language-math math-display">\mathcal{F}</code> is a subset of the set of  all possible sets of outcomes.
-It represents the collection of subsets of possible interest to us, where we denote elements of <code class="language-math math-display">\mathcal{F}</code> as events.
-The mapping <code class="language-math math-display">\mathbf{P}</code> assigns probabilities to each event <code class="language-math math-display">A \in \mathcal{F}</code>.
-For a probability space, <code class="language-math math-display">\mathcal{F}</code> is furthermore a <strong><code class="language-math math-display">\sigma</code>-algebra</strong>, and <code class="language-math math-display">\mathbf{P}</code> is a <strong>probability measure</strong>. We discuss properties of <code class="language-math math-display">\sigma</code>-algebras and probability measures below.</p>
-<p><strong><code class="language-math math-display">\sigma</code>-algebra</strong>: Let <code class="language-math math-display">2^{\Omega}</code> denote the power set of <code class="language-math math-display">\Omega</code>. We call <code class="language-math math-display">\mathcal{F} \subseteq 2^{\Omega}</code> a <code class="language-math math-display">\sigma</code>-algebra if</p>
-<ul>
-<li><code class="language-math math-display">\Omega \in \mathcal{F}</code>,</li>
-<li><em>(Closed under complement)</em> if <code class="language-math math-display">A \in\mathcal{F}</code>, then <code class="language-math math-display">A^C \in\mathcal{F}</code> (where <code class="language-math math-display">A^C = \Omega \backslash A</code> is the complement of <code class="language-math math-display">A</code>),</li>
-<li><em>(Closed under countable unions)</em> if <code class="language-math math-display">A_i \in \mathcal{F}</code> for <code class="language-math math-display">i = 1, 2, 3, \dots,</code>, then <code class="language-math math-display">\bigcup_i A_i \in \mathcal{F}</code>.</li>
-</ul>
-<p>A pair <code class="language-math math-display">(\Omega, \mathcal{F})</code> where <code class="language-math math-display">\mathcal{F}</code> is a <code class="language-math math-display">\sigma</code>-algebra is called a <strong>measurable space</strong>.</p>
-<p><strong>Probability measure</strong>: Given a measurable space <code class="language-math math-display">(\Omega, \mathcal{F})</code>, a measure <code class="language-math math-display">\mu</code> is any set function <code class="language-math math-display">\mu: \mathcal{F} \rightarrow [0, \infty]</code> that satisfies the following properties:</p>
-<ul>
-<li><code class="language-math math-display">\mu(A) \ge \mu(\emptyset) = 0</code> for all <code class="language-math math-display">A \in \mathcal{F}</code>.</li>
-<li><code class="language-math math-display">\mu\big(\bigcup_i A_i \big) = \sum_i \mu(A_i)</code> for any countable collection of disjoint sets <code class="language-math math-display">A_i \in \mathcal{F}</code>.</li>
-</ul>
-<p>When both of the above properties are satisfied and <code class="language-math math-display">\mu(\Omega) = 1</code>, we call <code class="language-math math-display">\mu</code> a probability measure and denote it as <code class="language-math math-display">\mathbf{P}</code>.</p>
-<p><strong>Example</strong>: Consider tossing a six-sided die. The sample space is <code class="language-math math-display">\Omega = \{1, 2, 3, 4, 5, 6\}</code>. We can define different event spaces and probability measures on this sample space. For example, the simplest event space is the trivial event space <code class="language-math math-display">\mathcal{F} = \{\emptyset, \Omega\}</code>. Note that this <code class="language-math math-display">\mathcal{F}</code> is a <code class="language-math math-display">\sigma</code>-algebra, as <code class="language-math math-display">\emptyset</code> and <code class="language-math math-display">\Omega</code> are complements of each other. The unique probability measure for this <code class="language-math math-display">\mathcal{F}</code> satisfying the requirements above is given by <code class="language-math math-display">P(\emptyset) = 0</code>, <code class="language-math math-display">P(\Omega) = 1</code>. Another event space is the set of all subsets of <code class="language-math math-display">\Omega</code>. We can construct a valid probability measure for this <code class="language-math math-display">\mathcal{F}</code> by assigning the probability of each set in the event space to be <code class="language-math math-display">\frac{i}{6}</code> where <code class="language-math math-display">i</code> is the number of elements of that set; for example, <code class="language-math math-display">P(\{1, 2, 3, 4\}) = \frac{4}{6}</code> and <code class="language-math math-display">P(\{1, 2, 3\}) = \frac{3}{6}</code>. Intuitively, this probability measure could correspond to the probability that a random fair die roll belongs to a given subset of <code class="language-math math-display">\Omega</code>.</p>
-<h3 id="additional-properties"><strong>Additional Properties</strong>:</h3>
-<ul>
-<li><code class="language-math math-display">A \subseteq B \implies P(A) \leq P(B)</code>.</li>
-<li><code class="language-math math-display">P(A \cap B) \leq \min(P(A), P(B))</code>.</li>
-<li><strong>Union Bound:</strong> <code class="language-math math-display">P(A \cup B) \leq P(A) + P(B)</code>.</li>
-<li><code class="language-math math-display">P(\Omega - A) = 1 - P(A)</code>.</li>
-<li><strong>Law of Total Probability:</strong> If <code class="language-math math-display">A_1, \dotsc, A_k</code> are a set of disjoint events such that <code class="language-math math-display">\bigcup^k_{i=1} A_i = \Omega</code>, then <code class="language-math math-display">\sum^k_{i=1} P(A_i) = 1</code>.</li>
-</ul>
-<h2 id="12-conditional-probability">1.2 Conditional probability</h2>
-<p>Let <code class="language-math math-display">B</code> be an event with non-zero probability. The conditional probability of any event <code class="language-math math-display">A</code> given <code class="language-math math-display">B</code> is defined as</p>
-<p><code class="language-math math-display"> P(A \mid B) = \frac {P(A \cap B)}{P(B)}. </code></p>
-<p>In other words, <code class="language-math math-display">P(A \mid B)</code> is the probability measure of the event <code class="language-math math-display">A</code> after observing the occurrence of event <code class="language-math math-display">B</code>.</p>
-<h2 id="13-chain-rule">1.3 Chain Rule</h2>
-<p>Let <code class="language-math math-display">A_1, \dotsc, A_k</code> be events, <code class="language-math math-display">P(A_i) >0</code>. Then the chain rule states that:</p>
-<p><code class="language-math math-display">
-\begin{align*}
-&#x26; P(A_1 \cap A_2 \cap \dotsb \cap A_k) \\
-&#x26;= P(A_1) P(A_2 | A_1) P(A_3 | A_2 \cap A_1 ) \dotsb P(A_k | A_1 \cap A_2 \cap \dotsb \cap A_{k-1})
-\end{align*}
-</code></p>
-<p>Note that for <code class="language-math math-display">k=2</code> events, this is just the definition of conditional probability:</p>
-<p><code class="language-math math-display"> P(A_1 \cap A_2) = P(A_1) P(A_2 | A_1) </code></p>
-<p>In general, the chain rule is derived by applying the definition of conditional probability multiple times, as in the following example:</p>
-<p><code class="language-math math-display">
-\begin{align*}
-&#x26; P(A_1 \cap A_2 \cap A_3 \cap A_4) \\
-&#x26;= P(A_1 \cap A_2 \cap A_3) P(A_4 \mid A_1 \cap A_2 \cap A_3) \\
-&#x26;= P(A_1 \cap A_2) P(A_3 \mid A_1 \cap A_2) P(A_4 \mid A_1 \cap A_2 \cap A_3) \\
-&#x26;= P(A_1) P(A_2 \mid A_1) P(A_3 \mid A_1 \cap A_2) P(A_4 \mid A_1 \cap A_2 \cap A_3)
-\end{align*}
-</code></p>
-<h2 id="14-independence">1.4 Independence</h2>
-<p>Two events are called <strong>independent</strong> if <code class="language-math math-display">P(A \cap B) = P(A)P(B)</code>, or equivalently, <code class="language-math math-display">P(A \mid B) = P(A)</code>. Intuitively, <code class="language-math math-display">A</code> and <code class="language-math math-display">B</code> are independent means that observing <code class="language-math math-display">B</code> does not have any effect on the probability of <code class="language-math math-display">A</code>.</p>
-<h1 id="2-random-variables">2. Random variables</h1>
-<p>Oftentimes, we do not care to know the probability of a particular event. Instead, we want to know probabilities over some <em>function</em> of these events. For example, consider an experiment in which we flip 10 coins. Here, the elements of the sample space <code class="language-math math-display">\Omega</code> are 10-length sequences of heads and tails, and the event space <code class="language-math math-display">\mathcal{F}</code> is all subsets of <code class="language-math math-display">\Omega</code>. We observe sequences of coin flips; for instance, <code class="language-math math-display">\omega_0 = \langle H, H, T, H, T, H, H, T, T, T \rangle \in \Omega</code>. However, in practice we may not care to directly know the particular probability <code class="language-math math-display">P(\omega_0)</code> of a sequence or even the probability over a set of sequences in <code class="language-math math-display">\mathcal{F}</code>. Instead, we might want to know the number of coins that come up heads or the length of the longest run of tails. These quantities are functions of <code class="language-math math-display">\omega \in \Omega</code>, which we refer to as <strong>random variables</strong>.</p>
-<p>More formally, define a mapping <code class="language-math math-display">X : \Omega \to E</code> between two measurable spaces <code class="language-math math-display">(\Omega, \mathcal{F})</code> and <code class="language-math math-display">(E, \mathcal{E})</code>, where <code class="language-math math-display">\mathcal{E}</code> is a <code class="language-math math-display">\sigma</code>-algebra on <code class="language-math math-display">E</code>. Then, <code class="language-math math-display">X</code> is a random variable if <code class="language-math math-display">X^{-1}(B) := \{\omega: X(\omega) \in B \} \in \mathcal{F}</code> for all <code class="language-math math-display">B \in \mathcal{E}</code>. Intuitively, this means that every set <code class="language-math math-display">B</code> is associated with a set of outcomes that belongs to <code class="language-math math-display">\mathcal{F}</code> and has a well-defined probability. Typically, we denote random variables using upper case letters <code class="language-math math-display">X(\omega)</code> or more simply <code class="language-math math-display">X</code> (where the dependence on the random outcome <code class="language-math math-display">\omega</code> is implied). We denote the value that a random variable may take on using lower case letters <code class="language-math math-display">x</code>. Thus, <code class="language-math math-display">X = x</code> denotes the event that the random variable <code class="language-math math-display">X</code> takes on the value <code class="language-math math-display">x \in E</code>.</p>
-<p><strong>Example</strong>: In our experiment above, suppose that <code class="language-math math-display">X(\omega)</code> is the number of heads which occur in the sequence of tosses <code class="language-math math-display">\omega</code>. Given that only 10 coins are tossed, <code class="language-math math-display">X(\omega)</code> can take only a finite number of values (0 through 10), so it is known as a discrete random variable. Here, the probability of the set associated with a random variable <code class="language-math math-display">X</code> taking on some specific value <code class="language-math math-display">k</code> is <code class="language-math math-display">P(X = k) := P(\{\omega : X(\omega) = k\}) = P(\omega \in \text{all sequences with k heads})</code>. Note that the set of all sequences with <code class="language-math math-display">k</code> heads is an element of <code class="language-math math-display">\mathcal{F}</code>, given that <code class="language-math math-display">\mathcal{F}</code> consists of all subsets of <code class="language-math math-display">\Omega</code>.</p>
-<p><strong>Example</strong>: Suppose that <code class="language-math math-display">X(\omega)</code> is a random variable indicating the amount of time it takes for a radioactive particle to decay (<code class="language-math math-display">\omega</code> for this example could be some underlying characterization of the particle that changes as it decays). In this case, <code class="language-math math-display">X(\omega)</code> takes on an infinite number of possible values, so it is called a continuous random variable. We denote the probability that <code class="language-math math-display">X</code> takes on a value between two real constants <code class="language-math math-display">a</code> and <code class="language-math math-display">b</code> (where <code class="language-math math-display">a &#x3C; b</code>) as <code class="language-math math-display">P(a \leq X \leq b) := P(\{\omega : a \leq X(\omega) \leq b\})</code>.</p>
-<p>When describing the event that a random variable takes on a certain value, we often use the <strong>indicator function</strong> <code class="language-math math-display">\mathbf{1}\{A\}</code> which takes value 1 when event <code class="language-math math-display">A</code> happens and 0 otherwise. For example, for a random variable <code class="language-math math-display">X</code>,</p>
-<p><code class="language-math math-display">
-\mathbf{1}\{X > 3\} = \begin{cases}
-1, &#x26; \text{if }X > 3 \\
-0, &#x26; \text{otherwise}
-\end{cases}
-</code></p>
-<p>In order to specify the probability measures used when dealing with random variables, it is often convenient to specify alternative functions from which the probability measure governing an experiment immediately follows. In the following three sections, we describe these functions: the cumulative distribution function (CDF), the probability mass function (PMF) for discrete random variables, and the probability density function (PDF) for continuous random variables. For the rest of this section, we suppose that <code class="language-math math-display">X</code> takes on real values, i.e., <code class="language-math math-display">E = \mathbb{R}</code>.</p>
-<h2 id="21-cumulative-distribution-functions">2.1 Cumulative distribution functions</h2>
-<p>A <strong>cumulative distribution function</strong> (CDF) is a function <code class="language-math math-display">F_X : \mathbb{R} \to [0, 1]</code> which specifies a probability measure as</p>
-<p><code class="language-math math-display"> F_X(x) = P(X \leq x). </code></p>
-<p>By using this function, one can calculate the probability that <code class="language-math math-display">X</code> takes on a value between any two real constants <code class="language-math math-display">a</code> and <code class="language-math math-display">b</code> (where <code class="language-math math-display">a &#x3C; b</code>).</p>
-<h3 id="properties"><strong>Properties</strong>:</h3>
-<!--Figure 1: A cumulative distribution function (CDF).-->
-<ul>
-<li><code class="language-math math-display">0 \leq F_X(x) \leq 1</code>. This follows from the definition of the probability measure.</li>
-<li><code class="language-math math-display">\lim_{x \to -\infty} F_X(x) = 0</code>. As <code class="language-math math-display">x</code> approaches <code class="language-math math-display">-\infty</code>, the corresponding set of <code class="language-math math-display">\omega</code> where <code class="language-math math-display">X(\omega) \le x</code> approaches <code class="language-math math-display">\emptyset</code>, for which <code class="language-math math-display">P(\emptyset) = 0</code>.</li>
-<li><code class="language-math math-display">\lim_{x \to +\infty} F_X(x) = 1</code>. As <code class="language-math math-display">x</code> approaches <code class="language-math math-display">\infty</code>, the corresponding set of <code class="language-math math-display">\omega</code> where <code class="language-math math-display">X(\omega) \le x</code> approaches <code class="language-math math-display">\Omega</code>, for which <code class="language-math math-display">P(\Omega) = 1</code>.</li>
-<li><code class="language-math math-display">x \leq y \implies F_X(x) \leq F_X(y)</code>. This follows from the fact that the event that <code class="language-math math-display">X \le x</code> is a subset of <code class="language-math math-display">X \le y</code> for <code class="language-math math-display">x \leq y</code>.</li>
-</ul>
-<h2 id="22-probability-mass-functions">2.2 Probability mass functions</h2>
-<p>Suppose a random variable <code class="language-math math-display">X</code> takes on a finite set of possible values (i.e., <code class="language-math math-display">X</code> is a discrete random variable).
-A simpler way to represent the probability measure associated with a random variable is to directly specify the probability of each value that the random variable can assume.
-Let <code class="language-math math-display">Val(X)</code> refer to the set of possible values that the random variable <code class="language-math math-display">X</code> may assume; for example, if <code class="language-math math-display">X(\omega)</code> is a random variable indicating the number of heads out of ten tosses of coin, then <code class="language-math math-display">Val(X) = \{0, 1, 2, \dotsc, 10\}</code>.
-Then, a <strong>probability mass function</strong> (PMF) is a function <code class="language-math math-display">p_X : Val(X) \to [0, 1]</code> such that <code class="language-math math-display">p_X(x) = P(X = x)</code>.</p>
-<h3 id="properties-1"><strong>Properties</strong>:</h3>
-<ul>
-<li><code class="language-math math-display">0 \leq p_X(x) \leq 1</code>.</li>
-<li><code class="language-math math-display">\sum_{x \in A} p_X(x) = P(X \in A)</code>. This follows by the property that probability measures apply over countable unions of disjoint sets.</li>
-<li><code class="language-math math-display">\sum_{x \in Val(X)} p_X(x) = 1</code>. Applying the previous property, we have that <code class="language-math math-display">\sum_{x \in Val(X)} p_X(x) = P(X \in Val(X)) = P(\Omega) = 1</code>.</li>
-</ul>
-<h2 id="23-probability-density-functions">2.3 Probability density functions</h2>
-<p>For some continuous random variables, the cumulative distribution function <code class="language-math math-display">F_X(x)</code> is differentiable everywhere. In these cases, we define the <strong>probability density function</strong> (PDF) as the derivative of the CDF, i.e.,</p>
-<p><code class="language-math math-display"> f_X(x) = \frac{dF_X(x)}{dx}. </code></p>
-<p>Note that the PDF for a continuous random variable may not always exist (i.e., if <code class="language-math math-display">F_X(x)</code> is not differentiable everywhere).</p>
-<p>According to the properties of differentiation, for very small <code class="language-math math-display">\delta x</code>,</p>
-<p><code class="language-math math-display"> P(x \leq X \leq x + \delta x) \approx f_X(x) \delta x. </code></p>
-<p>Both CDFs and PDFs (when they exist) can be used for calculating the probabilities of different events. But it should be emphasized that the value of PDF at any given point <code class="language-math math-display">x</code> is not the probability of that event, i.e., <code class="language-math math-display">f_X(x) \neq P(X = x)</code>. Because <code class="language-math math-display">X</code> can take on infinitely many values, it holds that <code class="language-math math-display">P(X = x) = 0</code>. On the other hand, <code class="language-math math-display">f_X(x)</code> can take on values larger than one (but the integral of <code class="language-math math-display">f_X(x)</code> over any subset of <code class="language-math math-display">\Re</code> will be at most one).</p>
-<h3 id="properties-2"><strong>Properties</strong>:</h3>
-<ul>
-<li><code class="language-math math-display">f_X(x) \geq 0</code>.</li>
-<li><code class="language-math math-display">\int^{\infty}_{-\infty} f_X(x) dx = 1</code>.</li>
-<li><code class="language-math math-display">\int_{x \in A} f_X(x) dx = P(X \in A)</code>.</li>
-</ul>
-<h2 id="24-expectation">2.4 Expectation</h2>
-<p>Suppose that <code class="language-math math-display">X</code> is a discrete random variable with PMF <code class="language-math math-display">p_X(x)</code> and <code class="language-math math-display">g : \Re \to \Re</code> is an arbitrary function. In this case, <code class="language-math math-display">g(X)</code> can be considered a random variable, and we define the <strong>expectation</strong> or <strong>expected value</strong> of <code class="language-math math-display">g(X)</code> as</p>
-<p><code class="language-math math-display"> \E[g(X)] = \sum_{x \in Val(X)} g(x)p_X(x). </code></p>
-<p>If <code class="language-math math-display">X</code> is a continuous random variable with PDF <code class="language-math math-display">f_X(x)</code>, then the expected value of g(X) is defined as</p>
-<p><code class="language-math math-display"> \E[g(X)] = \int^{\infty}_{-\infty} g(x)f_X(x)dx. </code></p>
-<p>Intuitively, the expectation of <code class="language-math math-display">g(X)</code> can be thought of as a “weighted average” of the values that <code class="language-math math-display">g(x)</code> can take on, where the weights are given by <code class="language-math math-display">p_X(x)</code> or <code class="language-math math-display">f_X(x)</code> which add up to <code class="language-math math-display">1</code> over all <code class="language-math math-display">x</code>. As a special case of the above, note that the expectation, <code class="language-math math-display">\E[X]</code> of a random variable itself is found by letting <code class="language-math math-display">g(x) = x</code>; this is also known as the mean of the random variable <code class="language-math math-display">X</code>.</p>
-<h3 id="properties-3"><strong>Properties</strong>:</h3>
-<ul>
-<li><code class="language-math math-display">\E[a] = a</code> for any constant <code class="language-math math-display">a \in \Re</code>.</li>
-<li><code class="language-math math-display">\E[af(X)] = a\E[f(X)]</code> for any constant <code class="language-math math-display">a \in \Re</code>.</li>
-<li>(Linearity of Expectation) <code class="language-math math-display">\E[f(X) + g(X)] = \E[f(X)] + \E[g(X)]</code>.</li>
-<li>For a discrete random variable <code class="language-math math-display">X</code>, <code class="language-math math-display">\E[\mathbf{1}\{X = k\}] = P(X = k)</code>.</li>
-</ul>
-<h2 id="25-variance">2.5 Variance</h2>
-<p>The variance of a random variable <code class="language-math math-display">X</code> is a measure of how concentrated the distribution of a random variable <code class="language-math math-display">X</code> is around its mean. Formally, the variance of a random variable <code class="language-math math-display">X</code> is defined as <code class="language-math math-display">Var[X] = \E[(X - \E[X])^2]</code>.</p>
-<p>Using the <strong>properties</strong> in the previous section, we can derive an alternate expression for the variance:</p>
-<p><code class="language-math math-display">
-\begin{align*}
-&#x26; \E[(X - \E[X])^2] \\
-&#x26;= \E[X^2 - 2\E[X]X + \E[X]^2] \\
-&#x26;= \E[X^2] - 2\E[X]\E[X] + \E[X]^2 \\
-&#x26;= \E[X^2] - \E[X]^2
-\end{align*}
-</code></p>
-<p>where the second equality follows from linearity of expectations and the fact that <code class="language-math math-display">\E[X]</code> is actually a
-constant with respect to the outer expectation.</p>
-<h3 id="properties-4"><strong>Properties</strong>:</h3>
-<ul>
-<li><code class="language-math math-display">Var[a] = 0</code> for any constant <code class="language-math math-display">a \in \Re</code>.</li>
-<li><code class="language-math math-display">Var[af(X)] = a^2 Var[f(X)]</code> for any constant <code class="language-math math-display">a \in \Re</code>.</li>
-</ul>
-<p><strong>Example</strong>: Calculate the mean and the variance of the uniform random variable <code class="language-math math-display">X</code> with PDF <code class="language-math math-display">f_X(x) = 1, \forall x \in [0, 1], 0</code> elsewhere.</p>
-<p><code class="language-math math-display">
-\begin{align*}
-\E[X] &#x26;= \int^{\infty}_{-\infty} x f_X(x) dx = \int^1_0 x dx = \frac{1}{2} \\
-\E[X^2] &#x26;= \int^{\infty}_{-\infty} x^2 f_X(x)dx = \int^1_0 x^2 dx = \frac{1}{3} \\
-Var[X] &#x26;= \E[X^2] - \E[X]^2 = \frac{1}{3} - \frac{1}{4} = \frac{1}{12}
-\end{align*}
-</code></p>
-<p><strong>Example</strong>: Suppose that <code class="language-math math-display">g(x) = \mathbf{1}\{x \in A\}</code> for some subset <code class="language-math math-display">A \subseteq \Omega</code>. What is <code class="language-math math-display">\E[g(X)]</code>?</p>
-<ul>
-<li>Discrete case:</li>
-</ul>
-<p><code class="language-math math-display">
-\E[g(X)] = \sum_{x \in Val(X)} \mathbf{1}\{x \in A \} P_X(x) = \sum_{x \in A} P_X(x) = P(X \in A)
-</code></p>
-<ul>
-<li>Continuous case:</li>
-</ul>
-<p><code class="language-math math-display">
-\E[g(X)] = \int_{-\infty}^\infty \mathbf{1}\{x \in A \} f_X(x) dx = \int_{x\in A} f_X(x) dx = P(X \in A)
-</code></p>
-<h2 id="26-some-common-random-variables">2.6 Some common random variables</h2>
-<h3 id="discrete-random-variables">Discrete random variables</h3>
-<ul>
-<li><strong><code class="language-math math-display">X \sim \text{Bernoulli}(p)</code></strong> (where <code class="language-math math-display">0 \leq p \leq 1</code>): the outcome of a coin flip (<code class="language-math math-display">H=1, T=0</code>) for a coin that comes up heads with probability <code class="language-math math-display">p</code>.</li>
-</ul>
-<p><code class="language-math math-display">
-p_X(x) = \begin{cases}
-p, &#x26; \text{if }x = 1 \\
-1-p, &#x26; \text{if }x = 0
-\end{cases}
-</code></p>
-<ul>
-<li><strong><code class="language-math math-display">X \sim \text{Binomial}(n, p)</code></strong> (where <code class="language-math math-display">0 \leq p \leq 1</code>): the number of heads in <code class="language-math math-display">n</code> independent flips of a coin with heads probability <code class="language-math math-display">p</code>.</li>
-</ul>
-<p><code class="language-math math-display"> p_X(x) = \binom{n}{x} \cdot p^x (1-p)^{n-x} </code></p>
-<ul>
-<li><strong><code class="language-math math-display">X \sim \text{Geometric}(p)</code></strong> (where <code class="language-math math-display">p > 0</code>): the number of flips of a coin until the first heads, for a coin that comes up heads with probability <code class="language-math math-display">p</code>.</li>
-</ul>
-<p><code class="language-math math-display"> p_X(x) = p(1 - p)^{x-1} </code></p>
-<ul>
-<li><strong><code class="language-math math-display">X \sim \text{Poisson}(\lambda)</code></strong> (where <code class="language-math math-display">\lambda</code> > 0): a probability distribution over the nonnegative integers used for modeling the frequency of rare events.</li>
-</ul>
-<p><code class="language-math math-display"> p_X(x) = e^{-\lambda} \frac{\lambda^x}{x!} </code></p>
-<h3 id="continuous-random-variables">Continuous random variables</h3>
-<ul>
-<li><strong><code class="language-math math-display">X \sim \text{Uniform}(a, b)</code></strong> (where <code class="language-math math-display">a &#x3C; b</code>): equal probability density to every value between <code class="language-math math-display">a</code> and <code class="language-math math-display">b</code> on the real line.</li>
-</ul>
-<p><code class="language-math math-display">
-f_X(x) = \begin{cases}
-\frac{1}{b-a}, &#x26; \text{if }a \leq x \leq b \\
-0, &#x26; \text{otherwise}
-\end{cases}
-</code></p>
-<ul>
-<li><strong><code class="language-math math-display">X \sim \text{Exponential}(\lambda)</code></strong> (where <code class="language-math math-display">\lambda</code> > 0): decaying probability density over the nonnegative reals.</li>
-</ul>
-<p><code class="language-math math-display">
-f_X(x) = \begin{cases}
-\lambda e^{-\lambda x}, &#x26; \text{if }x \geq 0 \\
-0, &#x26; \text{otherwise}
-\end{cases}
-</code></p>
-<ul>
-<li><strong><code class="language-math math-display">X \sim \text{Normal}(\mu, \sigma^2)</code></strong>: also known as the Gaussian distribution</li>
-</ul>
-<p><code class="language-math math-display"> f_X(x) = \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}} </code></p>
-<h1 id="3-two-random-variables">3. Two random variables</h1>
-<p>Thus far, we have considered single random variables. In many situations, however, there may be more than one quantity that we are interested in knowing during a random experiment. For instance, in an experiment where we flip a coin ten times, we may care about both <code class="language-math math-display">X(\omega) = </code> the number of heads that come up as well as <code class="language-math math-display">Y(\omega) = </code> the length of the longest run of consecutive heads. In this section, we consider the setting of two random variables. We first discuss joint and marginal CDFs, then joint and marginal PMFs and PDFs.</p>
-<h2 id="31-joint-and-marginal-cumulative-distribution-functions">3.1 Joint and marginal cumulative distribution functions</h2>
-<p>Suppose that we have two random variables <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code>. One way to work with these two random variables is to consider each of them separately. If we do that we will need the CDFs <code class="language-math math-display">F_X(x)</code> and <code class="language-math math-display">F_Y (y)</code>. But if we want to know about the values that <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> assume simultaneously during outcomes of a random experiment, we require a more complicated structure known as the <strong>joint cumulative distribution function</strong> of <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code>, defined by</p>
-<p><code class="language-math math-display"> F_{XY} (x, y) = P(X \leq x, Y \leq y). </code></p>
-<p>It can be shown that by knowing the joint cumulative distribution function, the probability of any event involving <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> can be calculated.</p>
-<p>The joint CDF <code class="language-math math-display">F_{XY} (x, y)</code> and the cumulative distribution functions <code class="language-math math-display">F_X(x)</code> and <code class="language-math math-display">F_Y (y)</code> of each variable separately are related by</p>
-<p><code class="language-math math-display">
-\begin{align*}
-F_X(x) &#x26;= \lim_{y \to \infty} F_{XY} (x, y) \\
-F_Y(y) &#x26;= \lim_{x \to \infty} F_{XY} (x, y)
-\end{align*}
-</code></p>
-<p>Here, we call <code class="language-math math-display">F_X(x)</code> and <code class="language-math math-display">F_Y(y)</code> the <strong>marginal cumulative distribution functions</strong> of <code class="language-math math-display">F_{XY} (x, y)</code>.</p>
-<h3 id="properties-5"><strong>Properties</strong>:</h3>
-<p>The properties of CDFs on a single random variable also translate over to joint cumulative distribution functions.</p>
-<ul>
-<li><code class="language-math math-display">0 \leq F_{XY} (x, y) \leq 1</code>.</li>
-<li><code class="language-math math-display">\lim_{x,y\to \infty} F_{XY} (x, y) = 1</code>.</li>
-<li><code class="language-math math-display">\lim_{x,y\to -\infty} F_{XY} (x, y) = 0</code>.</li>
-</ul>
-<h2 id="32-joint-and-marginal-probability-mass-functions">3.2 Joint and marginal probability mass functions</h2>
-<p>If <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are discrete random variables, then the joint probability mass function <code class="language-math math-display">p_{XY} : Val(X) \times Val(Y) \to [0, 1]</code> is defined by</p>
-<p><code class="language-math math-display"> p_{XY}(x, y) = P(X = x, Y = y). </code></p>
-<p>Here, <code class="language-math math-display">0 \leq p_{XY}(x, y) \leq 1</code> for all <code class="language-math math-display">x, y,</code> and <code class="language-math math-display">\sum_{x \in Val(X)} \sum_{y \in Val(Y)} p_{XY}(x, y) = 1</code>.</p>
-<p>How does the joint PMF over two variables relate to the probability mass function for each variable separately? It turns out that</p>
-<p><code class="language-math math-display"> p_X(x) = \sum_y p_{XY} (x, y). </code></p>
-<p>and similarly for <code class="language-math math-display">p_Y(y)</code>. In this case, we refer to <code class="language-math math-display">p_X(x)</code> as the <strong>marginal probability mass function</strong> of <code class="language-math math-display">X</code>. In statistics, the process of forming the marginal distribution with respect to one variable by summing out the other variable is often known as “marginalization.”</p>
-<h2 id="33-joint-and-marginal-probability-density-functions">3.3 Joint and marginal probability density functions</h2>
-<p>Let <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> be two continuous random variables with joint cumulative distribution function <code class="language-math math-display">F_{XY}</code>. In the case that <code class="language-math math-display">F_{XY}(x, y)</code> is everywhere differentiable in both <code class="language-math math-display">x</code> and <code class="language-math math-display">y</code>, then we can define the joint probability density function,</p>
-<p><code class="language-math math-display"> f_{XY}(x, y) = \frac{\partial^2F_{XY}(x, y)}{\partial x \partial y} </code></p>
-<p>Like in the single-dimensional case, <code class="language-math math-display">f_{XY} (x, y) \neq P(X = x, Y = y)</code>, but rather</p>
-<p><code class="language-math math-display"> \int \int_{(x,y) \in A} f_{XY} (x, y) dx dy = P((X, Y) \in A). </code></p>
-<p>Note that the values of the probability density function <code class="language-math math-display">f_{XY}(x, y)</code> are always nonnegative, but they may be greater than 1. Nonetheless, it must be the case that <code class="language-math math-display">\int^{\infty}_{-\infty} \int^{\infty}_{-\infty} f_{XY}(x,y) = 1</code>.</p>
-<p>Analogous to the discrete case, we define</p>
-<p><code class="language-math math-display"> f_X(x) = \int^{\infty}_{-\infty} f_{XY} (x, y)dy </code></p>
-<p>as the <strong>marginal probability density function</strong> (or <strong>marginal density</strong>) of <code class="language-math math-display">X</code>, and similarly for <code class="language-math math-display">f_Y (y)</code>.</p>
-<h2 id="34-conditional-distributions">3.4 Conditional distributions</h2>
-<p>Conditional distributions seek to answer the question, what is the probability distribution over <code class="language-math math-display">Y</code>, when we know that <code class="language-math math-display">X</code> must take on a certain value <code class="language-math math-display">x</code>? In the discrete case, the conditional probability mass function of <code class="language-math math-display">Y</code> given <code class="language-math math-display">X</code> is simply</p>
-<p><code class="language-math math-display"> p_{Y \mid X} (y \mid x) = \frac{p_{XY}(x, y)}{p_X(x)}, </code></p>
-<p>assuming that <code class="language-math math-display">p_X(x) \neq 0</code>.</p>
-<p>In the continuous case, the situation is technically a little more complicated because the probability that a continuous random variable <code class="language-math math-display">X</code> takes on a specific value <code class="language-math math-display">x</code> is equal to zero. Ignoring this technical point, we simply define, by analogy to the discrete case, the <em>conditional probability density</em> of <code class="language-math math-display">Y</code> given <code class="language-math math-display">X = x</code> to be</p>
-<p><code class="language-math math-display"> f_{Y \mid X}(y \mid x) = \frac{f_{XY} (x, y)}{f_X(x)} </code>,</p>
-<p>provided <code class="language-math math-display">f_X(x) \neq 0</code>.</p>
-<h2 id="35-chain-rule">3.5 Chain rule</h2>
-<p>The chain rule we derived earlier in Section 1.3 for events can be applied to random variables as follows:</p>
-<p><code class="language-math math-display">
-\begin{align*}
-&#x26; p_{X_1, \cdots X_n} (x_1, \cdots, x_n) \\
-&#x26;= p_{X_1} (x_1) p_{X_2 \mid X_1} (x_2 \mid x_1) \cdots p_{X_n \mid X_1, \cdots, X_{n-1}} (x_n \mid x_1, \cdots, x_{n-1})
-\end{align*}
-</code></p>
-<h2 id="36-bayes-rule">3.6 Bayes’ rule</h2>
-<p>A useful formula that often arises when trying to derive expressions for conditional probability is <strong>Bayes’ rule</strong>, which arises from applying the chain rule:</p>
-<p><code class="language-math math-display">
-P_{Y \mid X}(y \mid x) = \frac{P_{XY}(x, y)}{P_X(x)} = \frac{P_{X \mid Y} (x \mid y) P_Y(y)}{\sum_{y' \in Val(Y)} P_{X \mid Y} (x \mid y') P_Y(y')}.
-</code></p>
-<p>If the random variables <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are continuous,</p>
-<p><code class="language-math math-display">
-f_{Y \mid X}(y\mid x) = \frac{f_{XY}(x, y)}{f_X(x)} = \frac{f_{X \mid Y} (x \mid y) f_Y(y)}{\int^{\infty}_{- \infty} f_{X\mid Y} (x \mid y') f_Y (y') dy'}.
-</code></p>
-<h2 id="37-independence">3.7 Independence</h2>
-<p>Two random variables <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are independent if <code class="language-math math-display">F_{XY} (x, y) = F_X(x)F_Y(y)</code> for all values of <code class="language-math math-display">x</code> and <code class="language-math math-display">y</code>. Equivalently,</p>
-<ul>
-<li>For discrete random variables, <code class="language-math math-display">p_{XY} (x, y) = p_X(x)p_Y(y)</code> for all <code class="language-math math-display">x \in Val(X)</code>, <code class="language-math math-display">y \in Val(Y)</code>.</li>
-<li>For discrete random variables, <code class="language-math math-display">p_{Y\mid X}(y \mid x) = p_Y(y)</code> whenever <code class="language-math math-display">p_X(x) \neq 0</code> for all <code class="language-math math-display">y \in Val(Y)</code>.</li>
-<li>For continuous random variables, <code class="language-math math-display">f_{XY} (x, y) = f_X(x)f_Y(y)</code> for all <code class="language-math math-display">x, y \in \Re</code>.</li>
-<li>For continuous random variables, <code class="language-math math-display">f_{Y\mid X}(y \mid x) = f_Y(y)</code> whenever <code class="language-math math-display">f_X(x) \neq 0</code> for all <code class="language-math math-display">y \in \Re</code>.</li>
-</ul>
-<p>Informally, two random variables <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are independent if “knowing” the value of one variable will never have any effect on the conditional probability distribution of the other variable, that is, you know all the information about the pair <code class="language-math math-display">(X, Y)</code> by just knowing <code class="language-math math-display">f(x)</code> and <code class="language-math math-display">f(y)</code>. The following lemma formalizes this observation:</p>
-<p><strong>Lemma 3.1.</strong> If <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are independent, then for any subsets <code class="language-math math-display">A, B \subseteq \Re</code>, we have,</p>
-<p><code class="language-math math-display"> P(X \in A, Y \in B) = P(X \in A)P(Y \in B). </code></p>
-<p>By using the above lemma, one can prove that if <code class="language-math math-display">X</code> is independent of <code class="language-math math-display">Y</code> then any function of <code class="language-math math-display">X</code> is independent of any function of <code class="language-math math-display">Y</code>.</p>
-<h2 id="38-expectation-and-covariance">3.8 Expectation and covariance</h2>
-<p>Suppose that we have two discrete random variables <code class="language-math math-display">X, Y</code> and <code class="language-math math-display">g : \Re^2 \to \Re</code> is a function of these two random variables. Then the expected value of <code class="language-math math-display">g</code> is defined as</p>
-<p><code class="language-math math-display">
-\E[g(X,Y)] = \sum_{x \in Val(X)} \sum_{y \in Val(Y)} g(x, y)p_{XY}(x, y).
-</code></p>
-<p>For continuous random variables <code class="language-math math-display">X, Y</code>, the analogous expression is</p>
-<p><code class="language-math math-display">
-\E[g(X, Y)] = \int^{\infty}_{-\infty} \int^{\infty}_{-\infty} g(x, y)f_{XY}(x, y)dxdy.
-</code></p>
-<p>We can use the concept of expectation to study the relationship of two random variables with each other. In particular, the covariance of two random variables <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> is defined as</p>
-<p><code class="language-math math-display"> Cov[X, Y] = \E[(X - \E[X])(Y - \E[Y])] </code></p>
-<p>Intuitively, the covariance of <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> measures how often and by how much <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are both greater than or less than their respective means. If larger values of <code class="language-math math-display">X</code> correspond with larger values of <code class="language-math math-display">Y</code> and vice versa, then covariance is positive. If larger values of <code class="language-math math-display">X</code> correspond with smaller values of <code class="language-math math-display">Y</code> and vice versa, then covariance is negative. Using an argument similar to that for variance, we can rewrite this as</p>
-<p><code class="language-math math-display">
-\begin{align*}
-Cov[X, Y]
-&#x26;= \E[(X - \E[X])(Y - \E[Y])] \\
-&#x26;= \E[XY - X\E[Y] - Y \E[X] + \E[X]\E[Y]] \\
-&#x26;= \E[XY] - \E[X]\E[Y] - \E[Y]\E[X] + \E[X]\E[Y] \\
-&#x26;= \E[XY] - \E[X]\E[Y].
-\end{align*}
-</code></p>
-<p>Here, the key step in showing the equality of the two forms of covariance is in the third equality, where we use the fact that <code class="language-math math-display">\E[X]</code> and <code class="language-math math-display">\E[Y]</code> are actually constants which can be pulled out of the expectation. When <code class="language-math math-display">Cov[X, Y] = 0</code>, we say that <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are uncorrelated.</p>
-<h3 id="properties-6"><strong>Properties</strong>:</h3>
-<ul>
-<li>(Linearity of expectation) <code class="language-math math-display">\E[f(X, Y) + g(X, Y)] = \E[f(X, Y)] + \E[g(X, Y)]</code>.</li>
-<li><code class="language-math math-display">Var[X + Y] = Var[X] + Var[Y] + 2Cov[X, Y]</code>.</li>
-<li>If <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are independent, then <code class="language-math math-display">Cov[X, Y] = 0</code>. However, if <code class="language-math math-display">Cov[X, Y] = 0</code>, it is not necessarily true that <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are independent. For example, let <code class="language-math math-display">X \sim \text{Uniform}(-1, 1)</code> and let <code class="language-math math-display">Y = X^2</code>. Then, <code class="language-math math-display">Cov[X, Y] = \E[X^3] - \E[X]\E[X^2] = \E[X^3] - 0\cdot \E[X^2] = 0</code> even though <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are not independent.</li>
-<li>If <code class="language-math math-display">X</code> and <code class="language-math math-display">Y</code> are independent, then <code class="language-math math-display">\E[f(X)g(Y)] = \E[f(X)]\E[g(Y)]</code>.</li>
-</ul>
-<br/>
-<p>|<a href="../../">Index</a> | <a href="../introduction/">Previous</a> | <a href="../applications/">Next</a>|</p>
+error[math/unsupported]: unknown command "\dotsc"
+  --> cs228-notes/preliminaries--probabilityreview.md:41:43
+   |
+41 | - **Law of Total Probability:** If $$A_1, \dotsc, A_k$$ are a set of disjoint events such that $$\bigcup^k_{i=1} A_i = \Omega$$, the...
+   |                                           ^^^^^^ unknown command
+   |
+   = help: define `\dotsc` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\dotsc"
+  --> cs228-notes/preliminaries--probabilityreview.md:54:12
+   |
+54 | Let $$A_1, \dotsc, A_k$$ be events, $$P(A_i) >0$$. Then the chain rule states that:
+   |            ^^^^^^ unknown command
+   |
+   = help: define `\dotsc` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\dotsb"
+  --> cs228-notes/preliminaries--probabilityreview.md:58:23
+   |
+58 | & P(A_1 \cap A_2 \cap \dotsb \cap A_k) \\
+   |                       ^^^^^^ unknown command
+   |
+   = help: define `\dotsb` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\dotsc"
+   --> cs228-notes/preliminaries--probabilityreview.md:125:231
+    |
+125 | ...ut of ten tosses of coin, then $$Val(X) = \{0, 1, 2, \dotsc, 10\}$$.
+    |                                                         ^^^^^^ unknown command
+    |
+    = help: define `\dotsc` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:159:4
+    |
+159 | $$ \E[g(X)] = \sum_{x \in Val(X)} g(x)p_X(x). $$
+    |    ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:163:4
+    |
+163 | $$ \E[g(X)] = \int^{\infty}_{-\infty} g(x)f_X(x)dx. $$
+    |    ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:165:280
+    |
+165 | ...pecial case of the above, note that the expectation, $$\E[X]$$ of a random variable itself is found by letting $$g(x) = x$$; thi...
+    |                                                           ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:168:5
+    |
+168 | - $$\E[a] = a$$ for any constant $$a \in \Re$$.
+    |     ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:169:5
+    |
+169 | - $$\E[af(X)] = a\E[f(X)]$$ for any constant $$a \in \Re$$.
+    |     ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:170:32
+    |
+170 | - (Linearity of Expectation) $$\E[f(X) + g(X)] = \E[f(X)] + \E[g(X)]$$.
+    |                                ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:171:43
+    |
+171 | - For a discrete random variable $$X$$, $$\E[\mathbf{1}\{X = k\}] = P(X = k)$$.
+    |                                           ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:176:213
+    |
+176 | ...ce of a random variable $$X$$ is defined as $$Var[X] = \E[(X - \E[X])^2]$$.
+    |                                                           ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:182:3
+    |
+182 | & \E[(X - \E[X])^2] \\
+    |   ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:189:86
+    |
+189 | where the second equality follows from linearity of expectations and the fact that $$\E[X]$$ is actually a
+    |                                                                                      ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:200:1
+    |
+200 | \E[X] &= \int^{\infty}_{-\infty} x f_X(x) dx = \int^1_0 x dx = \frac{1}{2} \\
+    | ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:206:110
+    |
+206 | **Example**: Suppose that $$g(x) = \mathbf{1}\{x \in A\}$$ for some subset $$A \subseteq \Omega$$. What is $$\E[g(X)]$$?
+    |                                                                                                              ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:211:1
+    |
+211 | \E[g(X)] = \sum_{x \in Val(X)} \mathbf{1}\{x \in A \} P_X(x) = \sum_{x \in A} P_X(x) = P(X \in A)
+    | ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:217:1
+    |
+217 | \E[g(X)] = \int_{-\infty}^\infty \mathbf{1}\{x \in A \} f_X(x) dx = \int_{x\in A} f_X(x) dx = P(X \in A)
+    | ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:390:1
+    |
+390 | \E[g(X,Y)] = \sum_{x \in Val(X)} \sum_{y \in Val(Y)} g(x, y)p_{XY}(x, y).
+    | ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:396:1
+    |
+396 | \E[g(X, Y)] = \int^{\infty}_{-\infty} \int^{\infty}_{-\infty} g(x, y)f_{XY}(x, y)dxdy.
+    | ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:401:16
+    |
+401 | $$ Cov[X, Y] = \E[(X - \E[X])(Y - \E[Y])] $$
+    |                ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:408:4
+    |
+408 | &= \E[(X - \E[X])(Y - \E[Y])] \\
+    |    ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:415:130
+    |
+415 | ...is in the third equality, where we use the fact that $$\E[X]$$ and $$\E[Y]$$ are actually constants which can be pulled out of t...
+    |                                                           ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:415:144
+    |
+415 | ...d equality, where we use the fact that $$\E[X]$$ and $$\E[Y]$$ are actually constants which can be pulled out of the expectation...
+    |                                                           ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:418:32
+    |
+418 | - (Linearity of expectation) $$\E[f(X, Y) + g(X, Y)] = \E[f(X, Y)] + \E[g(X, Y)]$$.
+    |                                ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:420:250
+    |
+420 | ...orm}(-1, 1)$$ and let $$Y = X^2$$. Then, $$Cov[X, Y] = \E[X^3] - \E[X]\E[X^2] = \E[X^3] - 0\cdot \E[X^2] = 0$$ even though $$X$$...
+    |                                                           ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\E"
+   --> cs228-notes/preliminaries--probabilityreview.md:421:46
+    |
+421 | - If $$X$$ and $$Y$$ are independent, then $$\E[f(X)g(Y)] = \E[f(X)]\E[g(Y)]$$.
+    |                                              ^^ unknown command
+    |
+    = help: define `\E` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more

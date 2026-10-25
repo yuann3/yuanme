@@ -6,7 +6,7 @@
 //! only the whole Site knows, such as where a link goes, is kept beside it,
 //! keyed by [`NodeId`].
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -21,15 +21,15 @@ pub struct Document {
     pub(crate) names: Names,
 }
 
-/// What an Org link can name in a Document besides a heading's id (#16),
+/// What a link can name in a Document besides a heading's id (#16),
 /// each with the id it leads to, which is empty for the top of the page. A
-/// Markdown Document names nothing here.
+/// Markdown Document names only its numbered equations here.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) struct Names {
     /// `:ID:` properties, and where each is written.
     pub ids: Vec<(String, String, Range<usize>)>,
-    /// `<<target>>`s and `#+NAME`s, which a fuzzy link finds before a
-    /// headline.
+    /// `<<target>>`s, `#+NAME`s and numbered equations' Labels, which a
+    /// fuzzy link finds before a headline.
     pub targets: BTreeMap<String, String>,
     /// Headline titles as written, which `*Title` and fuzzy links find.
     pub titles: BTreeMap<String, String>,
@@ -50,8 +50,8 @@ pub struct Node {
 pub enum Kind {
     Root,
     Paragraph,
-    /// A generated `id` differs from every other heading's; two written
-    /// `{#id}`s can still be the same until Labels are checked (#50).
+    /// A written `id` is a Label, unique in the Entry (ADR 0010); a
+    /// generated one differs from every Label and every other heading's.
     /// `attrs` are the others an `{…}` on the heading gives it, such as
     /// `class`.
     Heading {
@@ -139,10 +139,36 @@ pub enum Kind {
         label: String,
         number: usize,
     },
+    /// `mathml` is what math-core made of `tex`, with the Entry's macros
+    /// and equation numbers; it is empty where `tex` has an error.
     Math {
         display: bool,
         tex: String,
+        mathml: String,
     },
+    /// Org's `\ref{label}` or `\eqref{label}` in prose: the number of the
+    /// equation the Label names, as `3`, or `(3)` with `parens`. `number`
+    /// is empty where the Label has none.
+    Ref {
+        label: String,
+        parens: bool,
+        number: String,
+    },
+}
+
+impl Kind {
+    /// A [`Kind::Ref`] as its text: `3` or `(3)`.
+    pub fn ref_text(&self) -> String {
+        match self {
+            Kind::Ref {
+                parens: true,
+                number,
+                ..
+            } => format!("({number})"),
+            Kind::Ref { number, .. } => number.clone(),
+            _ => unreachable!("a Ref"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -242,6 +268,7 @@ impl Document {
         match &node.kind {
             Kind::Text(s) | Kind::Code(s) | Kind::Timestamp { text: s, .. } => out.push_str(s),
             Kind::Math { tex, .. } => out.push_str(tex),
+            Kind::Ref { .. } => out.push_str(&node.kind.ref_text()),
             Kind::FootnoteReference { number, .. } => out.push_str(&number.to_string()),
             _ => {}
         }
@@ -276,6 +303,18 @@ impl Document {
     /// site shows (#18).
     pub fn word_count(&self) -> u64 {
         word_count(&self.all_text())
+    }
+
+    /// Every character the Entry's math shows, for the math font's subset
+    /// (#17, #52).
+    pub fn math_chars(&self) -> BTreeSet<char> {
+        let mut out = BTreeSet::new();
+        for id in self.descendants(Self::ROOT) {
+            if let Kind::Math { mathml, .. } = &self.node(id).kind {
+                out.extend(crate::math::text_chars(mathml));
+            }
+        }
+        out
     }
 
     pub fn headings(&self) -> Vec<Heading> {

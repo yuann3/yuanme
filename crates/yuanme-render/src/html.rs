@@ -236,17 +236,21 @@ impl Writer<'_> {
             }
             Kind::LineBreak => self.out.push_str("<br>\n"),
             Kind::FootnoteReference { label, number } => self.reference(label, *number),
+            Kind::Ref { .. } => self.out.push_str(&text(&node.kind.ref_text())),
             // Until math renders (#50), its TeX shows as code.
             Kind::Math {
                 display: false,
                 tex,
+                ..
             } => {
                 self.out.push_str(&format!(
                     "<code class=\"language-math math-inline\">{}</code>",
                     text(tex)
                 ));
             }
-            Kind::Math { display: true, tex } => {
+            Kind::Math {
+                display: true, tex, ..
+            } => {
                 self.out.push_str(&format!(
                     "<code class=\"language-math math-display\">{}</code>",
                     text(tex)

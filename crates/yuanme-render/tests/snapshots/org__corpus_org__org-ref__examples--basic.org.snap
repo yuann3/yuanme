@@ -2,6 +2,44 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\maketitle"
+ --> org-ref/examples--basic.org:7:1
+  |
+7 | \maketitle
+  | ^^^^^^^^^^ unknown command
+  |
+  = help: define `\maketitle` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+  = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\tableofcontents"
+ --> org-ref/examples--basic.org:8:1
+  |
+8 | \tableofcontents
+  | ^^^^^^^^^^^^^^^^ unknown command
+  |
+  = help: define `\tableofcontents` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+  = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected closing token "\end{...}", but reached end of input
+  --> org-ref/examples--basic.org:39:17
+   |
+39 | \begin{equation}\label{eq-int}
+   |                 ^ a group was never closed
+   |
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: found "\label", which may only appear in a numbered equation environment
+  --> org-ref/examples--basic.org:39:17
+   |
+39 | \begin{equation}\label{eq-int}
+   |                 ^^^^^^ cannot be used here
+   |
+   = help: only `equation`, `align`, `gather` and `multline` are numbered, and so take a `\label`; `$$…$$` and `\[…\]` aren't
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\end{...}"
+  --> org-ref/examples--basic.org:41:1
+   |
+41 | \end{equation}
+   | ^^^^^^^^^^^^^^ no matching opening for this
+   |
+   = note: run `yuanme docs math/unsupported` for more
 error[link/unresolved]: nothing here is called `cite:&kitchin-2015-examp-effec`: no `<<target>>`, `#+NAME` or headline title
   --> org-ref/examples--basic.org:21:11
    |

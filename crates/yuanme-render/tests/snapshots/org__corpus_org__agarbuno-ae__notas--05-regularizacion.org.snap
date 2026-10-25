@@ -2,6 +2,21 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\newpage"
+   --> agarbuno-ae/notas--05-regularizacion.org:142:1
+    |
+142 | \newpage
+    | ^^^^^^^^ unknown command
+    |
+    = help: define `\newpage` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> agarbuno-ae/notas--05-regularizacion.org:289:54
+    |
+289 | Es una métrica de correlación entre predicción ($\hat y$) y respuesta ($y$)
+    |                                                      ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
 <div class="NOTES">
 <p><strong>Profesor</strong>: Alfredo Garbuno Iñigo | Primavera, 2023 | Métodos de selección.<br>
 <strong>Objetivo</strong>: Detalles en métodos de selección de variables. Veremos las estrategias de regularización y penalización para ajustar modelos controlando el sesgo predictivo hacia el conjunto de entrenamiento. Utilizaremos validación cruzada para probar configuraciones y elegir la <em>mejor</em>. Hablaremos sobre reducción de dimensiones y su combinación con métodos predictivos.<br>

@@ -320,6 +320,17 @@ error[org/unsupported-construct]: inline calls and source blocks aren't in the O
     |
     = help: yuanme never runs code; use `~code~` to show code, or paste in the result
     = note: run `yuanme docs org/unsupported-construct` for more
+error[math/duplicate-label]: the Label `i-have-a-name` is given twice
+   --> org-mode-testing/babel.org:105:9
+    |
+ 97 | #+name: i-have-a-name
+    |         ------------- first given here, to an element
+...
+105 | #+name: i-have-a-name
+    |         ^^^^^^^^^^^^^ given again here, to an element
+    |
+    = help: rename one of them: every Label in an Entry becomes an id on its Page
+    = note: run `yuanme docs math/duplicate-label` for more
 <h2 id="noweb-header-argument-expansion"><code>:noweb</code> header argument expansion</h2>
 <pre id="noweb-example"><code class="language-emacs-lisp">(message "expanded1")
 </code></pre>

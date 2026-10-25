@@ -2,6 +2,110 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/invalid-label]: `ob-maxima/draw` isn't a valid Label
+  --> org-mode-testing/ob-maxima-test.org:29:9
+   |
+29 | #+name: ob-maxima/draw
+   |         ^^^^^^^^^^^^^^
+   |
+   = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+   = note: run `yuanme docs math/invalid-label` for more
+help: use `ob-maxima-draw`
+   |
+29 - #+name: ob-maxima/draw
+29 + #+name: ob-maxima-draw
+   |
+error[math/invalid-label]: `ob-maxima/batch+verbatim` isn't a valid Label
+   --> org-mode-testing/ob-maxima-test.org:110:9
+    |
+110 | #+name: ob-maxima/batch+verbatim
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `ob-maxima-batch-verbatim`
+    |
+110 - #+name: ob-maxima/batch+verbatim
+110 + #+name: ob-maxima-batch-verbatim
+    |
+error[math/invalid-label]: `ob-maxima/batch+verbatim+quiet` isn't a valid Label
+   --> org-mode-testing/ob-maxima-test.org:116:9
+    |
+116 | #+name: ob-maxima/batch+verbatim+quiet
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `ob-maxima-batch-verbatim-quiet`
+    |
+116 - #+name: ob-maxima/batch+verbatim+quiet
+116 + #+name: ob-maxima-batch-verbatim-quiet
+    |
+error[math/invalid-label]: `ob-maxima/batch+verbatim+:lisp` isn't a valid Label
+   --> org-mode-testing/ob-maxima-test.org:122:9
+    |
+122 | #+name: ob-maxima/batch+verbatim+:lisp
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `ob-maxima-batch-verbatim-:lisp`
+    |
+122 - #+name: ob-maxima/batch+verbatim+:lisp
+122 + #+name: ob-maxima-batch-verbatim-:lisp
+    |
+error[math/invalid-label]: `ob-maxima/batch+verbatim+empty-string` isn't a valid Label
+   --> org-mode-testing/ob-maxima-test.org:127:9
+    |
+127 | #+name: ob-maxima/batch+verbatim+empty-string
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `ob-maxima-batch-verbatim-empty-string`
+    |
+127 - #+name: ob-maxima/batch+verbatim+empty-string
+127 + #+name: ob-maxima-batch-verbatim-empty-string
+    |
+error[math/invalid-label]: `ob-maxima/batch+verbatim+whitespace-string` isn't a valid Label
+   --> org-mode-testing/ob-maxima-test.org:132:9
+    |
+132 | #+name: ob-maxima/batch+verbatim+whitespace-string
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `ob-maxima-batch-verbatim-whitespace-string`
+    |
+132 - #+name: ob-maxima/batch+verbatim+whitespace-string
+132 + #+name: ob-maxima-batch-verbatim-whitespace-string
+    |
+error[math/invalid-label]: `ob-maxima/batch+verbatim+syntax-error` isn't a valid Label
+   --> org-mode-testing/ob-maxima-test.org:137:9
+    |
+137 | #+name: ob-maxima/batch+verbatim+syntax-error
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `ob-maxima-batch-verbatim-syntax-error`
+    |
+137 - #+name: ob-maxima/batch+verbatim+syntax-error
+137 + #+name: ob-maxima-batch-verbatim-syntax-error
+    |
+error[math/invalid-label]: `ob-maxima/batch+verbatim+eof-error` isn't a valid Label
+   --> org-mode-testing/ob-maxima-test.org:142:9
+    |
+142 | #+name: ob-maxima/batch+verbatim+eof-error
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `ob-maxima-batch-verbatim-eof-error`
+    |
+142 - #+name: ob-maxima/batch+verbatim+eof-error
+142 + #+name: ob-maxima-batch-verbatim-eof-error
+    |
 <h2 id="simple-tests">Simple tests</h2>
 <pre><code class="language-maxima">print(s);
 </code></pre>

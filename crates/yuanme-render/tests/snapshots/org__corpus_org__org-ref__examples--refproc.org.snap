@@ -2,6 +2,30 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/named-environment]: an equation is labelled with `\label`, not `#+NAME`
+  --> org-ref/examples--refproc.org:55:9
+   |
+55 | #+name: q1
+   |         ^^
+   |
+   = help: remove the `#+NAME` and write `\label{q1}` inside the environment
+   = note: run `yuanme docs math/named-environment` for more
+error[math/named-environment]: an equation is labelled with `\label`, not `#+NAME`
+  --> org-ref/examples--refproc.org:61:9
+   |
+61 | #+name: q2
+   |         ^^
+   |
+   = help: remove the `#+NAME` and write `\label{q2}` inside the environment
+   = note: run `yuanme docs math/named-environment` for more
+error[math/named-environment]: an equation is labelled with `\label`, not `#+NAME`
+  --> org-ref/examples--refproc.org:67:9
+   |
+67 | #+name: q3
+   |         ^^
+   |
+   = help: remove the `#+NAME` and write `\label{q3}` inside the environment
+   = note: run `yuanme docs math/named-environment` for more
 <h2 id="sec-intro">Introduction</h2>
 <p>This document is a set of examples to see how the org-ref cross-reference processor works. Go to <a href="#build">build</a> to run the preprocessor and do the exports.</p>
 <h3 id="sec-headings">section references</h3>

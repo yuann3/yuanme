@@ -2,6 +2,53 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\mathds"
+   --> libreim-pac/introduccion.org:188:17
+    |
+188 | \[h_{a,b,c,d} = \mathds{1}_{[a,b]\times [c,d]\]
+    |                 ^^^^^^^ unknown command
+    |
+    = help: define `\mathds` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mathds"
+   --> libreim-pac/introduccion.org:212:88
+    |
+212 | Tomamos $R_1 = [a,b^{\ast}] \times [c,d]$ un rectángulo verificando $L_{\mathcal{D},f}(\mathds{1}_{R_1}) \le \epsilon/4$, con $a\le...
+    |                                                                                        ^^^^^^^ unknown command
+    |
+    = help: define `\mathds` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "}"
+   --> libreim-pac/introduccion.org:309:52
+    |
+309 | Entonces, notando $\bar{h} = ERM_{\mathcal{H}}(S_z)}$, para $h \in \mathcal{H}$ arbitrario:
+    |                                                    ^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mathds"
+   --> libreim-pac/introduccion.org:434:62
+    |
+434 | \[L_{\mathcal{D}_i} (A(S^i_j)) = \frac{1}{|C|} \sum_{x\in C} \mathds{1}_{[A(S^i_j)(x) \neq f_i(x)]} = \frac{1}{2m} \sum_{x \in C} \...
+    |                                                              ^^^^^^^ unknown command
+    |
+    = help: define `\mathds` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mathds"
+   --> libreim-pac/introduccion.org:441:57
+    |
+441 | \frac{1}{T} \sum_{i=1}^{T}  \frac{1}{2m} \sum_{x \in C} \mathds{1}_{[A(S^i_j)(x) \neq f_i(x)]} \ge \\
+    |                                                         ^^^^^^^ unknown command
+    |
+    = help: define `\mathds` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mathds"
+   --> libreim-pac/introduccion.org:449:43
+    |
+449 | \[\frac{1}{2} \frac{1}{T} \sum_{i=1}^{T}  \mathds{1}_{[A(S^i_j)(v_r) \neq f_i(v_r)]} = \frac{1}{2} \frac{1}{T} \frac{T}{2} = \frac{...
+    |                                           ^^^^^^^ unknown command
+    |
+    = help: define `\mathds` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 <p>Estos apuntes son una adptación en su mayoría del contenido del libro cite:shwartz_understanding_ml</p>
 <h2 id="introducción">Introducción</h2>
 <p>Damos unas notaciones/definiciones básicas que utilizaremos de aquí en adelante.</p>

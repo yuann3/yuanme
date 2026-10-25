@@ -2,6 +2,14 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\LaTeX"
+   --> worg/org-contrib--babel--languages--ob-doc-gnuplot.org:128:5
+    |
+128 |     \LaTeX PDF), what should appear? Just the code block itself? Only
+    |     ^^^^^^ unknown command
+    |
+    = help: define `\LaTeX` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
   <div id="subtitle" style="float: center; text-align: center;">
   <p>
   Org-babel support for

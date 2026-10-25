@@ -1106,6 +1106,165 @@ error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
       |
       = help: yuanme never runs code; paste in the results the call wrote
       = note: run `yuanme docs org/unsupported-construct` for more
+error[math/unsupported]: unknown command "\LaTeX"
+    --> tecosaur/config.org:8749:11
+     |
+8749 | markdown, \LaTeX) so I'll turn it off for this, and manually enable it for more
+     |           ^^^^^^ unknown command
+     |
+     = help: define `\LaTeX` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\chapter"
+     --> tecosaur/config.org:11681:34
+      |
+11681 | It can also be nice to have big =\chapter=​s.
+      |                                  ^^^^^^^^ unknown command
+      |
+      = help: define `\chapter` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+      = note: run `yuanme docs math/unsupported` for more
+error[math/invalid-label]: `Keybinding to delete the previous line` isn't a valid Label
+   --> tecosaur/config.org:206:9
+    |
+206 | #+name: Keybinding to delete the previous line
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `Keybinding-to-delete-the-previous-line`
+    |
+206 - #+name: Keybinding to delete the previous line
+206 + #+name: Keybinding-to-delete-the-previous-line
+    |
+error[math/invalid-label]: `Prompt for buffer after split` isn't a valid Label
+   --> tecosaur/config.org:216:9
+    |
+216 | #+name: Prompt for buffer after split
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `Prompt-for-buffer-after-split`
+    |
+216 - #+name: Prompt for buffer after split
+216 + #+name: Prompt-for-buffer-after-split
+    |
+error[math/invalid-label]: `emacsclient service` isn't a valid Label
+    --> tecosaur/config.org:3539:9
+     |
+3539 | #+name: emacsclient service
+     |         ^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = note: run `yuanme docs math/invalid-label` for more
+help: use `emacsclient-service`
+     |
+3539 - #+name: emacsclient service
+3539 + #+name: emacsclient-service
+     |
+error[math/invalid-label]: `daemon initialisation` isn't a valid Label
+    --> tecosaur/config.org:3605:9
+     |
+3605 | #+name: daemon initialisation
+     |         ^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = note: run `yuanme docs math/invalid-label` for more
+help: use `daemon-initialisation`
+     |
+3605 - #+name: daemon initialisation
+3605 + #+name: daemon-initialisation
+     |
+error[math/invalid-label]: `Install mu from source` isn't a valid Label
+    --> tecosaur/config.org:7364:9
+     |
+7364 | #+name: Install mu from source
+     |         ^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = note: run `yuanme docs math/invalid-label` for more
+help: use `Install-mu-from-source`
+     |
+7364 - #+name: Install mu from source
+7364 + #+name: Install-mu-from-source
+     |
+error[math/invalid-label]: `Install gsasl from source` isn't a valid Label
+    --> tecosaur/config.org:7406:9
+     |
+7406 | #+name: Install gsasl from source
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = note: run `yuanme docs math/invalid-label` for more
+help: use `Install-gsasl-from-source`
+     |
+7406 - #+name: Install gsasl from source
+7406 + #+name: Install-gsasl-from-source
+     |
+error[math/invalid-label]: `Install msmtp from source` isn't a valid Label
+    --> tecosaur/config.org:7425:9
+     |
+7425 | #+name: Install msmtp from source
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = note: run `yuanme docs math/invalid-label` for more
+help: use `Install-msmtp-from-source`
+     |
+7425 - #+name: Install msmtp from source
+7425 + #+name: Install-msmtp-from-source
+     |
+error[math/invalid-label]: `Literate programming workflow` isn't a valid Label
+    --> tecosaur/config.org:8205:9
+     |
+8205 | #+name: Literate programming workflow
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = note: run `yuanme docs math/invalid-label` for more
+help: use `Literate-programming-workflow`
+     |
+8205 - #+name: Literate programming workflow
+8205 + #+name: Literate-programming-workflow
+     |
+error[math/invalid-label]: `Example Org Flowchart` isn't a valid Label
+    --> tecosaur/config.org:8219:9
+     |
+8219 | #+name: Example Org Flowchart
+     |         ^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = note: run `yuanme docs math/invalid-label` for more
+help: use `Example-Org-Flowchart`
+     |
+8219 - #+name: Example Org Flowchart
+8219 + #+name: Example-Org-Flowchart
+     |
+error[math/invalid-label]: `Src blocks` isn't a valid Label
+     --> tecosaur/config.org:11034:9
+      |
+11034 | #+name: Src blocks
+      |         ^^^^^^^^^^
+      |
+      = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+      = note: run `yuanme docs math/invalid-label` for more
+help: use `Src-blocks`
+      |
+11034 - #+name: Src blocks
+11034 + #+name: Src-blocks
+      |
+error[math/invalid-label]: `Example, fixed width, and property blocks` isn't a valid Label
+     --> tecosaur/config.org:11155:9
+      |
+11155 | #+name: Example, fixed width, and property blocks
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      |
+      = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+      = note: run `yuanme docs math/invalid-label` for more
+help: use `Example-fixed-width-and-property-blocks`
+      |
+11155 - #+name: Example, fixed width, and property blocks
+11155 + #+name: Example-fixed-width-and-property-blocks
+      |
 error[link/unresolved]: nothing here is called `xkcd:456`: no `<<target>>`, `#+NAME` or headline title
   --> tecosaur/config.org:72:1
    |
@@ -1468,7 +1627,7 @@ change the action to open the Emacs daemon, but it should be possible.</p>
 to write to a temporary file, and having a file watcher started in other Emacs
 instances, in a similar manner to <a href="#rebuild-mail-index-while-using-mu4e">Rebuild mail index while using mu4e</a>.</p>
 <h2 id="rudimentary-configuration">Rudimentary configuration</h2>
-<h3 id="confpkg">Confpkg</h3>
+<h3 id="confpkg-1">Confpkg</h3>
 <h4 id="motivation">Motivation</h4>
 <p>Previously, all of my configuration was directly tangled into <code>config.el</code>. This
 <em>almost</em> satisfies my use. Occasionally though, I’d want to apply or extract a
@@ -1539,7 +1698,7 @@ calls in the buffer.</p>
             (org-babel-lob-execute-maybe)))))
   (quit (revert-buffer t t t)))
 </code></pre>
-<p>See the <a href="#bootstrap">Bootstrap</a> section for an explanation of the <code>&#x3C;&#x3C;bootstrap>></code> noweb reference.</p>
+<p>See the <a href="#bootstrap-1">Bootstrap</a> section for an explanation of the <code>&#x3C;&#x3C;bootstrap>></code> noweb reference.</p>
 <pre><code class="language-emacs-lisp">&#x3C;&#x3C;confpkg-prepare()>>
 </code></pre>
 <h4 id="setup">Setup</h4>
@@ -2191,7 +2350,7 @@ the function from the hook and call the <code>config.el</code> creation function
 <p>Within <code>confpkg-tangle-finalise</code> we carefully order each step so that
 the most important steps go first, to minimise the impact should a particular
 step fail.</p>
-<h4 id="bootstrap">Bootstrap</h4>
+<h4 id="bootstrap-1">Bootstrap</h4>
 <p>This system makes use of some recent commits introduced to Org, such as <a href="https://git.savannah.gnu.org/cgit/emacs/org-mode.git/commit/?id=cb8bf4a0d">this
 noweb expansion bugfix</a> which will be included in Org 9.5.4. This is
 problematic if using Emacs 28.2 or older, so to get around this we must go

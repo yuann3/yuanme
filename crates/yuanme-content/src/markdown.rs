@@ -7,10 +7,11 @@ use std::ops::Range;
 use comrak::nodes::{AstNode, ListType, NodeBlockDirective, NodeValue, Sourcepos, TableAlignment};
 use comrak::{Arena, Options};
 use jiff::tz::TimeZone;
-use yuanme_diag::{Diagnostic, FileId, Files, codes};
+use yuanme_diag::{Diagnostic, FileId, Files, Level, codes};
 
 use crate::document::{Align, Checkbox, Document, Kind, NodeId, footnote_identifier};
 use crate::fields::Cx;
+use crate::math;
 use crate::slug::Slugger;
 use crate::smartypants::{self, Dashes, Piece};
 
@@ -46,12 +47,18 @@ pub fn document(
         dir: "",
         is_file: &|_| false,
     };
-    let doc = parse(files.text(file), body, &mut cx);
+    let doc = parse(files.text(file), body, &[], &mut cx);
     (doc, diagnostics)
 }
 
-/// Parses an Entry's body, `text[body]`. Spans are bytes in `text`.
-pub(crate) fn parse(text: &str, body: Range<usize>, cx: &mut Cx<'_>) -> Option<Document> {
+/// Parses an Entry's body, `text[body]`, with the Site's math `macros`.
+/// Spans are bytes in `text`.
+pub(crate) fn parse(
+    text: &str,
+    body: Range<usize>,
+    macros: &[(String, String)],
+    cx: &mut Cx<'_>,
+) -> Option<Document> {
     let source = &text[body.clone()];
     let arena = Arena::new();
     let root = match comrak::parse_document_bounded(&arena, source, &options()) {
@@ -86,7 +93,13 @@ pub(crate) fn parse(text: &str, body: Range<usize>, cx: &mut Cx<'_>) -> Option<D
     let Lower { mut doc, ok, .. } = lower;
     number_footnotes(&mut doc);
     smarten(&mut doc, Dashes::Default, &BTreeSet::new());
-    heading_ids(&mut doc);
+    let before = cx.diagnostics.len();
+    let labels = math::render(&mut doc, text, cx.file, macros, cx.diagnostics);
+    let ok = ok
+        && !cx.diagnostics[before..]
+            .iter()
+            .any(|d| d.level == Level::Error);
+    heading_ids(&mut doc, &labels);
     ok.then_some(doc)
 }
 
@@ -171,19 +184,13 @@ fn prose(doc: &Document, id: NodeId, out: &mut Vec<NodeId>) {
 }
 
 /// Each heading without an `{#id}` gets one from its smartened text, as
-/// Astro gives it, but never one an `{#id}` already took.
-pub(crate) fn heading_ids(doc: &mut Document) {
+/// Astro gives it, but never one of the Entry's `labels`, which hold every
+/// `{#id}`.
+pub(crate) fn heading_ids(doc: &mut Document, labels: &BTreeSet<String>) {
     let headings: Vec<NodeId> = doc
         .descendants(Document::ROOT)
         .into_iter()
         .filter(|&id| matches!(doc.node(id).kind, Kind::Heading { .. }))
-        .collect();
-    let written: BTreeSet<String> = headings
-        .iter()
-        .filter_map(|&id| match &doc.node(id).kind {
-            Kind::Heading { id: anchor, .. } if !anchor.is_empty() => Some(anchor.clone()),
-            _ => None,
-        })
         .collect();
     let mut slugger = Slugger::default();
     for id in headings {
@@ -192,7 +199,7 @@ pub(crate) fn heading_ids(doc: &mut Document) {
         }
         let text = doc.text(id);
         let mut new = slugger.heading_id(&text);
-        while written.contains(&new) {
+        while labels.contains(&new) {
             new = slugger.heading_id(&text);
         }
         if let Kind::Heading { id: anchor, .. } = doc.kind_mut(id) {
@@ -302,6 +309,7 @@ impl Lower<'_, '_> {
                 Kind::Math {
                     display: true,
                     tex: c.literal.clone(),
+                    mathml: String::new(),
                 }
             }
             // mdast's values, which the writer and word count follow, end
@@ -363,6 +371,7 @@ impl Lower<'_, '_> {
             NodeValue::Math(m) => Kind::Math {
                 display: m.display_math,
                 tex: m.literal.clone(),
+                mathml: String::new(),
             },
             other => unreachable!("an extension yuanme leaves off: {other:?}"),
         };

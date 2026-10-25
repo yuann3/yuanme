@@ -18,6 +18,21 @@ error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
     |
     = help: yuanme never runs code; paste in the results the call wrote
     = note: run `yuanme docs org/unsupported-construct` for more
+error[math/unsupported]: found "\h[dash]line", which may only appear directly after a `\\` or at the beginning of an array or matrix
+   --> worg/library-of-babel.org:276:67
+    |
+276 | | hline     | the string to use as hline separator, defaults to "\\hline" |
+    |                                                                   ^^^^^^ cannot be used here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\multicolumn"
+   --> worg/library-of-babel.org:327:3
+    |
+327 | | \multicolumn{2}{l}{This is a footnote to the \emph{arguments} table.} |
+    |   ^^^^^^^^^^^^ unknown command
+    |
+    = help: define `\multicolumn` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 <h2 id="introduction">Introduction</h2>
 <p>The Library of Babel is an extensible collection of ready-made and
 easily-shortcut-callable source-code blocks for handling common tasks.
@@ -60,7 +75,7 @@ as a table in traditional Org-mode table syntax.</p>
 nil
 </code></pre>
 <h3 id="remote-files">Remote files</h3>
-<h4 id="json">json</h4>
+<h4 id="json-1">json</h4>
 <p>Read local or remote file in <a href="http://www.json.org/">json</a> format into emacs-lisp objects.</p>
 <pre id="json"><code class="language-emacs-lisp">(require 'json)
 (cond
@@ -173,7 +188,7 @@ beyond, if present, are ignored.</p>
 </code></pre>
 <h2 id="tables">Tables</h2>
 <h3 id="latex-table-export">LaTeX Table Export</h3>
-<h4 id="booktabs">booktabs</h4>
+<h4 id="booktabs-1">booktabs</h4>
 <p>This source block can be used to wrap a table in the latex <code>booktabs</code>
 environment. The source block adds a <code>toprule</code> and <code>bottomrule</code> (so
 don’t use <code>hline</code> at the top or bottom of the table).  The <code>hline</code>
@@ -238,7 +253,7 @@ optional.</p>
                       (to-tab (cddr table)))
             (to-tab table))))))
 </code></pre>
-<h4 id="longtable">longtable</h4>
+<h4 id="longtable-1">longtable</h4>
 <p>This block can be used to wrap a table in the latex <code>longtable</code>
 environment, it takes the following arguments – all but the first two
 are optional.</p>
@@ -311,7 +326,7 @@ are optional.</p>
                              lis)) table)
                  (list :lend " \\\\" :sep " &#x26; " :hline hline)))))
 </code></pre>
-<h4 id="booktabs-notes">booktabs-notes</h4>
+<h4 id="booktabs-notes-1">booktabs-notes</h4>
 <p>This source block builds on <a href="#booktabs">booktabs</a>.  It accepts two additional
 arguments, both of which are optional.</p>
 
@@ -693,7 +708,7 @@ Fraga.  It was modified slightly by Tom Dye.</p>
 
 
 <table id="gantttesttable"><thead><tr><th></th><th>type</th><th>label</th><th>activity</th><th>depends</th><th>start</th><th>duration</th><th>end</th><th>align</th></tr></thead><tbody><tr><td>1</td><td>date</td><td>Start</td><td></td><td></td><td>0</td><td></td><td>0</td><td></td></tr><tr><td>2</td><td>task</td><td>1.1</td><td>Lit survey</td><td></td><td>0</td><td>3</td><td>3</td><td>right</td></tr><tr><td>3</td><td>task</td><td>1.2</td><td>Develop model</td><td>2</td><td>3</td><td>9</td><td>12</td><td>right</td></tr><tr><td>4</td><td>milestone</td><td>M1</td><td>model</td><td>3</td><td>12</td><td></td><td>12</td><td></td></tr><tr><td>5</td><td>task</td><td>1.3</td><td>Implement</td><td>3</td><td>12</td><td>6</td><td>18</td><td>left</td></tr><tr><td>6</td><td>date</td><td>Y1</td><td></td><td></td><td>12</td><td></td><td>12</td><td></td></tr><tr><td>7</td><td>milestone</td><td>M2</td><td>software</td><td>5</td><td>18</td><td></td><td>18</td><td></td></tr><tr><td>8</td><td>task</td><td>2.1</td><td>Surrogate</td><td>3</td><td>15</td><td>6</td><td>21</td><td>left</td></tr><tr><td>9</td><td>task</td><td>2.2</td><td>Implement</td><td>7</td><td>21</td><td>3</td><td>24</td><td>left</td></tr><tr><td>10</td><td>milestone</td><td>M3</td><td>software</td><td>8</td><td>24</td><td></td><td>24</td><td></td></tr><tr><td>11</td><td>date</td><td>End</td><td></td><td></td><td>24</td><td></td><td>24</td><td></td></tr></tbody></table>
-<h3 id="elispgantt">elispgantt</h3>
+<h3 id="elispgantt-1">elispgantt</h3>
 <pre id="elispgantt"><code class="language-emacs-lisp">(let ((dates "")
       (entries (nthcdr 2 table))
       (milestones "")

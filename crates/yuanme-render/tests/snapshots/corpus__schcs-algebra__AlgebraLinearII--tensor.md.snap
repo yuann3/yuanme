@@ -258,3 +258,91 @@ error[markdown/empty-directive]: a directive needs a name before `{#thm-tensor-m
     |
     = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
     = note: run `yuanme docs markdown/empty-directive` for more
+error[math/unsupported]: unknown command "\F"
+  --> schcs-algebra/AlgebraLinearII--tensor.md:14:29
+   |
+14 | Nesta página $U$ e $V$ são $\F$-espaços vetoriais com algum corpo $\F$. 
+   |                             ^^ unknown command
+   |
+   = help: define `\F` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\F"
+  --> schcs-algebra/AlgebraLinearII--tensor.md:14:68
+   |
+14 | Nesta página $U$ e $V$ são $\F$-espaços vetoriais com algum corpo $\F$. 
+   |                                                                    ^^ unknown command
+   |
+   = help: define `\F` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\F"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:230:8
+    |
+230 | Sejam $\F$ e $\K$ corpos tais que $\F\subseteq \K$. Um $\K$-espaço pode ser considerado como um $\F$-espaço restringindo o múltiplo...
+    |        ^^ unknown command
+    |
+    = help: define `\F` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\K"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:230:15
+    |
+230 | Sejam $\F$ e $\K$ corpos tais que $\F\subseteq \K$. Um $\K$-espaço pode ser considerado como um $\F$-espaço restringindo o múltiplo...
+    |               ^^ unknown command
+    |
+    = help: define `\K` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\F"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:230:36
+    |
+230 | Sejam $\F$ e $\K$ corpos tais que $\F\subseteq \K$. Um $\K$-espaço pode ser considerado como um $\F$-espaço restringindo o múltiplo...
+    |                                    ^^ unknown command
+    |
+    = help: define `\F` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\K"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:230:57
+    |
+230 | Sejam $\F$ e $\K$ corpos tais que $\F\subseteq \K$. Um $\K$-espaço pode ser considerado como um $\F$-espaço restringindo o múltiplo...
+    |                                                         ^^ unknown command
+    |
+    = help: define `\K` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\F"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:230:98
+    |
+230 | Sejam $\F$ e $\K$ corpos tais que $\F\subseteq \K$. Um $\K$-espaço pode ser considerado como um $\F$-espaço restringindo o múltiplo...
+    |                                                                                                  ^^ unknown command
+    |
+    = help: define `\F` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\F"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:230:147
+    |
+230 | ...o um $\F$-espaço restringindo o múltiplo escalar para $\F$. Muitas vezes, nós queremos o contrário; ou seja, nós temos um $\F$-e...
+    |                                                           ^^ unknown command
+    |
+    = help: define `\F` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\F"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:230:215
+    |
+230 | ...ezes, nós queremos o contrário; ou seja, nós temos um $\F$-espaço $V$ que queremos considerar como um $\K$-espaço. 
+    |                                                           ^^ unknown command
+    |
+    = help: define `\F` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\K"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:230:263
+    |
+230 | ...os um $\F$-espaço $V$ que queremos considerar como um $\K$-espaço. 
+    |                                                           ^^ unknown command
+    |
+    = help: define `\K` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\C"
+   --> schcs-algebra/AlgebraLinearII--tensor.md:232:65
+    |
+232 | um $\R$-espaço  $V$ possui autovalor, consideramos $V$ como um $\C$-espaço.
+    |                                                                 ^^ unknown command
+    |
+    = help: define `\C` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more

@@ -9330,6 +9330,128 @@ error[org/unsupported-construct]: `:EXPORT_HUGO_OUTPUTS:` properties aren't in t
      |
      = help: one Org file is one Entry, and its keywords set its fields
      = note: run `yuanme docs org/unsupported-construct` for more
+error[math/unsupported]: unknown command "\substack"
+    --> ox-hugo/test--site--content-org--all-posts.org:4103:9
+     |
+4103 | \[\sum_{\substack{0<i<m\\0<j<n}}\]
+     |         ^^^^^^^^^ unknown command
+     |
+     = help: define `\substack` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected closing token "\end{...}", but reached end of input
+    --> ox-hugo/test--site--content-org--all-posts.org:4145:18
+     |
+4145 | \begin{equation*}\begin{tikzpicture}
+     |                  ^ a group was never closed
+     |
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown environment "tikzpicture"
+    --> ox-hugo/test--site--content-org--all-posts.org:4145:24
+     |
+4145 | \begin{equation*}\begin{tikzpicture}
+     |                        ^^^^^^^^^^^^^ unknown environment
+     |
+     = help: yuanme renders `equation`, `align`, `gather` and `multline`, starred or not, and inside them `aligned`, `gathered`, `cases`, the `matrix` family and `array`
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\draw"
+    --> ox-hugo/test--site--content-org--all-posts.org:4146:3
+     |
+4146 |   \draw[gray, thick] (-1,1) -- (1,-1);
+     |   ^^^^^ unknown command
+     |
+     = help: define `\draw` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown environment "tikzpicture"
+    --> ox-hugo/test--site--content-org--all-posts.org:4147:5
+     |
+4147 | \end{tikzpicture}\end{equation*}
+     |     ^^^^^^^^^^^^^ unknown environment
+     |
+     = help: yuanme renders `equation`, `align`, `gather` and `multline`, starred or not, and inside them `aligned`, `gathered`, `cases`, the `matrix` family and `array`
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\end{...}"
+    --> ox-hugo/test--site--content-org--all-posts.org:4147:18
+     |
+4147 | \end{tikzpicture}\end{equation*}
+     |                  ^^^^^^^^^^^^^^^ no matching opening for this
+     |
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\draw"
+    --> ox-hugo/test--site--content-org--all-posts.org:4996:1
+     |
+4996 | \draw (0,0) circle (1in);
+     | ^^^^^ unknown command
+     |
+     = help: define `\draw` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected column specification, found "x"
+    --> ox-hugo/test--site--content-org--all-posts.org:8027:25
+     |
+8027 |     \left[ \begin{array}{x} x_1 \\ ⋮ \\ ⋮ \\ x_n \end{array}\right] +
+     |                         ^^^ expected a column spec here
+     |
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected column specification, found "a"
+    --> ox-hugo/test--site--content-org--all-posts.org:8063:21
+     |
+8063 | \left[ \begin{array}{a} a_1 \\ ⋮ \\ a_s \end{array}\right]
+     |                     ^^^ expected a column spec here
+     |
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected column specification, found "a"
+    --> ox-hugo/test--site--content-org--all-posts.org:8101:21
+     |
+8101 | \left[ \begin{array}{a} a^l_1 \\ ⋮ \\ a^l_{d_l} \end{array}\right]
+     |                     ^^^ expected a column spec here
+     |
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected column specification, found "v"
+    --> ox-hugo/test--site--content-org--all-posts.org:8215:40
+     |
+8215 | 这里 $Δv$ 是向量： $Δv = \left[ \begin{array}{v} Δv_1 \\ Δv_2
+     |                                              ^^^ expected a column spec here
+     |
+     = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected column specification, found "C"
+    --> ox-hugo/test--site--content-org--all-posts.org:8216:56
+     |
+8216 | \end{array}\right]$ ， $∇C$  是梯度向量 $\left[ \begin{array}{C}
+     |                                                              ^^^ expected a column spec here
+     |
+     = note: run `yuanme docs math/unsupported` for more
+error[math/duplicate-label]: the Label `external-target` is given twice
+    --> ox-hugo/test--site--content-org--all-posts.org:3908:3
+     |
+3903 | *** External target
+     | ------------------- first given here, to a heading
+...
+3908 | <<external-target>>
+     |   ^^^^^^^^^^^^^^^ given again here, to a target
+     |
+     = help: rename one of them: every Label in an Entry becomes an id on its Page
+     = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `eq:1` is given twice
+    --> ox-hugo/test--site--content-org--all-posts.org:4023:8
+     |
+3795 | \label{eq:1}
+     |        ---- first given here, to an equation
+...
+4023 | \label{eq:1}
+     |        ^^^^ given again here, to an equation
+     |
+     = help: rename one of them: every Label in an Entry becomes an id on its Page
+     = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `eq:2` is given twice
+    --> ox-hugo/test--site--content-org--all-posts.org:4030:12
+     |
+3809 | \label{eq:2}
+     |        ---- first given here, to an equation
+...
+4030 |     \label{eq:2}
+     |            ^^^^ given again here, to an equation
+     |
+     = help: rename one of them: every Label in an Entry becomes an id on its Page
+     = note: run `yuanme docs math/duplicate-label` for more
 error[link/unresolved]: no headline here is titled `Delta 102.1.1`
     --> ox-hugo/test--site--content-org--all-posts.org:3710:11
      |
@@ -12226,7 +12348,7 @@ paragraph 2</p>
 \label{eq:1}
 C = W\log_{2} (1+\mathrm{SNR})
 \end{equation}</code>
-<p><strong>Here we refer to equation <code class="language-math math-inline">\ref{eq:2}</code>.</strong></p>
+<p><strong>Here we refer to equation 2.</strong></p>
 <p>Below, <em>lorem-ipsum</em> is added to increase page content so that the
 link jump is evident:</p>
 <p>Here’s the same equation again, but with a different label:</p>
@@ -12234,7 +12356,7 @@ link jump is evident:</p>
 \label{eq:2}
 C = W\log_{2} (1+\mathrm{SNR})
 \end{equation}</code>
-<p><strong>Here we refer to equation <code class="language-math math-inline">\ref{eq:1}</code>.</strong></p>
+<p><strong>Here we refer to equation 1.</strong></p>
 <h4 id="radio-targets">Radio targets</h4>
 <div class="description">
 <p>Testing <a href="https://orgmode.org/manual/Radio-Targets.html">Radio Targets</a></p>
@@ -13925,7 +14047,7 @@ ghi
 文本</p>
 <p><a href="https://emacs-china.org/t/ox-hugo-auto-fill-mode-markdown/9547/5">Reference</a></p>
 <h2 id="section-inheritance">Section Inheritance</h2>
-<h3 id="section-a">Section A</h3>
+<h3 id="section-a-1">Section A</h3>
 <h4 id="post-a1">Post A1</h4>
 <p>This post should be created in <code>content/section-a/</code>.</p>
 <h4 id="category-x">Category X</h4>

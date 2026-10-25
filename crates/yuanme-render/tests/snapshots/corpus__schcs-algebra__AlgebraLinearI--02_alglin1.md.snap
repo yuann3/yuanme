@@ -138,3 +138,19 @@ error[markdown/empty-directive]: a directive needs a name before `{.proof}`
     |
     = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
     = note: run `yuanme docs markdown/empty-directive` for more
+error[math/unsupported]: unknown command "\ul"
+   --> schcs-algebra/AlgebraLinearI--02_alglin1.md:167:16
+    |
+167 | $$W\cap Y' = \{\ul{0}\}.$$ A não eficiencia de $W+Y$ surge do fato que
+    |                ^^^ unknown command
+    |
+    = help: define `\ul` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\ul"
+   --> schcs-algebra/AlgebraLinearI--02_alglin1.md:168:16
+    |
+168 | $W\cap Y\neq \{\ul{0}\}$. Damos nome especial para somas eficientes:
+    |                ^^^ unknown command
+    |
+    = help: define `\ul` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more

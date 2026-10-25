@@ -3696,7 +3696,7 @@ C = W\log_{2} (1+\mathrm{SNR})
 <p>Equation referencing will also work <strong><strong>but it requires MathJax</strong></strong>. <a href="#mathjax-config-example">Here</a>
 is a MathJax configuration that is known to work for this referencing
 feature. <code>\label{SOMELABEL}</code> labeled equations can be referenced using
-<code>\ref{SOMELABEL}</code><sup><a href="#user-content-fn-12" id="user-content-fnref-12" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup>. So <code>\ref{eq:1}</code> will render as <code class="language-math math-inline">\ref{eq:1}</code>
+<code>\ref{SOMELABEL}</code><sup><a href="#user-content-fn-12" id="user-content-fnref-12" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup>. So <code>\ref{eq:1}</code> will render as 1
 and link to the equation above.</p>
 <h5 id="mathjax-config-example">MathJax config example</h5>
 <p>Here’s how MathJax is configured for this website:</p>

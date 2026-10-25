@@ -10,6 +10,261 @@ error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
   |
   = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
   = note: run `yuanme docs org/setupfile` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:230:60
+    |
+230 |     \lim_{n \rightarrow \infty} \mathcal{P}\Big( G(n,r(n)) \mbox{ non è connesso} \Big) > 0
+    |                                                            ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:244:41
+    |
+244 |       \(\mathcal{E}_{\geq 1} \implies G \mbox{ disconnesso}\). In termini insiemistici invece l'implicazione si può tradurre come
+    |                                         ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:245:78
+    |
+245 |       operatore di /sottoinsieme/, ovvero \(\mathcal{E}_{\geq 1} \subseteq G \mbox{ disconnesso}\).
+    |                                                                              ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:246:45
+    |
+246 |       Perciò avremo che \(\mathcal{P}\Big(G \mbox{ disconnesso}\Big) \geq \mathcal{P}(\mathcal{E}_{\geq 1})\).
+    |                                             ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:266:23
+    |
+266 |     \mathcal{P}\Big(G \mbox{ disconnesso}\Big) \geq \sum_{i \in \left[ n \right]} \mathcal{P}\left( \mathcal{E}_{i!} \right)
+    |                       ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected closing token "\end{...}", but reached end of input
+   --> alessandrostr95/org--AR--04.org:389:20
+    |
+389 |      \begin{align*}
+    |                    ^ a group was never closed
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\end{...}"
+   --> alessandrostr95/org--AR--04.org:393:6
+    |
+393 |      \end{align*}
+    |      ^^^^^^^^^^^^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected closing token "\end{...}", but reached end of input
+   --> alessandrostr95/org--AR--04.org:437:20
+    |
+437 |      \begin{align*}
+    |                    ^ a group was never closed
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: there must be a parenthesis after "\left", but not found
+   --> alessandrostr95/org--AR--04.org:439:25
+    |
+439 |        &= 2 \times \left( \frac{L \times r}{2} - \frac{\sqrt{3}}{4}r^2 \right)\\
+    |                         ^ expected a delimiter here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:439:55
+    |
+439 |        &= 2 \times \left( \frac{L \times r}{2} - \frac{\sqrt{3}}{4}r^2 \right)\\
+    |                                                       ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\right"
+   --> alessandrostr95/org--AR--04.org:439:72
+    |
+439 |        &= 2 \times \left( \frac{L \times r}{2} - \frac{\sqrt{3}}{4}r^2 \right)\\
+    |                                                                        ^^^^^^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: there must be a parenthesis after "\left", but not found
+   --> alessandrostr95/org--AR--04.org:440:25
+    |
+440 |        &= 2 \times \left( \frac{\frac{2\pi}{3} r \times r}{2} - \frac{\sqrt{3}}{4}r^2 \right)\\
+    |                         ^ expected a delimiter here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:440:32
+    |
+440 |        &= 2 \times \left( \frac{\frac{2\pi}{3} r \times r}{2} - \frac{\sqrt{3}}{4}r^2 \right)\\
+    |                                ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:440:70
+    |
+440 |        &= 2 \times \left( \frac{\frac{2\pi}{3} r \times r}{2} - \frac{\sqrt{3}}{4}r^2 \right)\\
+    |                                                                      ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\right"
+   --> alessandrostr95/org--AR--04.org:440:87
+    |
+440 |        &= 2 \times \left( \frac{\frac{2\pi}{3} r \times r}{2} - \frac{\sqrt{3}}{4}r^2 \right)\\
+    |                                                                                       ^^^^^^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:441:36
+    |
+441 |        &= \frac{2\pi}{3}r^2 - \frac{\sqrt{3}}{2}r^2\\
+    |                                    ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: there must be a parenthesis after "\left", but not found
+   --> alessandrostr95/org--AR--04.org:442:21
+    |
+442 |        &= 2r^2 \left( \frac{\pi}{3} - \frac{\sqrt{3}}{4} \right)
+    |                     ^ expected a delimiter here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:442:44
+    |
+442 |        &= 2r^2 \left( \frac{\pi}{3} - \frac{\sqrt{3}}{4} \right)
+    |                                            ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\right"
+   --> alessandrostr95/org--AR--04.org:442:58
+    |
+442 |        &= 2r^2 \left( \frac{\pi}{3} - \frac{\sqrt{3}}{4} \right)
+    |                                                          ^^^^^^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\end{...}"
+   --> alessandrostr95/org--AR--04.org:443:6
+    |
+443 |      \end{align*}
+    |      ^^^^^^^^^^^^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected closing token "\end{...}", but reached end of input
+   --> alessandrostr95/org--AR--04.org:447:20
+    |
+447 |      \begin{align*}
+    |                    ^ a group was never closed
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: there must be a parenthesis after "\left", but not found
+   --> alessandrostr95/org--AR--04.org:450:35
+    |
+450 |        &\geq 2\pi r^2 - 2r^2 \left( \frac{\pi}{3} - \frac{\sqrt{3}}{4} \right)\\
+    |                                   ^ expected a delimiter here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:450:58
+    |
+450 |        &\geq 2\pi r^2 - 2r^2 \left( \frac{\pi}{3} - \frac{\sqrt{3}}{4} \right)\\
+    |                                                          ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\right"
+   --> alessandrostr95/org--AR--04.org:450:72
+    |
+450 |        &\geq 2\pi r^2 - 2r^2 \left( \frac{\pi}{3} - \frac{\sqrt{3}}{4} \right)\\
+    |                                                                        ^^^^^^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:451:48
+    |
+451 |        &= 2\pi r^2 - \frac{2}{3}\pi r^2 + \frac{\sqrt{3}}{2}r^2\\
+    |                                                ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:452:59
+    |
+452 |        &= \frac{4}{3}\pi r^2 + \frac{\pi}{\pi} \cdot \frac{\sqrt{3}}{2}r^2\\
+    |                                                           ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: there must be a parenthesis after "\left", but not found
+   --> alessandrostr95/org--AR--04.org:453:24
+    |
+453 |        &= \pi r^2 \left(\frac{4}{3} +  \frac{\sqrt{3}}{2 \pi}\right)\\
+    |                        ^ expected a delimiter here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected argument but reached end of input
+   --> alessandrostr95/org--AR--04.org:453:45
+    |
+453 |        &= \pi r^2 \left(\frac{4}{3} +  \frac{\sqrt{3}}{2 \pi}\right)\\
+    |                                             ^ expected an argument here
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\right"
+   --> alessandrostr95/org--AR--04.org:453:62
+    |
+453 |        &= \pi r^2 \left(\frac{4}{3} +  \frac{\sqrt{3}}{2 \pi}\right)\\
+    |                                                              ^^^^^^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\end{...}"
+   --> alessandrostr95/org--AR--04.org:455:6
+    |
+455 |      \end{align*}
+    |      ^^^^^^^^^^^^ no matching opening for this
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:508:22
+    |
+508 |       \mathcal{P}( G \mbox{ disconnesso} ) &\geq \sum_{i \in \left[ n \right]}  \mathcal{P}( \mathcal{E}_{i!} )\\
+    |                      ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:516:19
+    |
+516 |     \mathcal{P}(G \mbox{ disconnesso}) >
+    |                   ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:538:19
+    |
+538 |     \mathcal{P}(G \mbox{ disconnesso}) > n\left(1 - \pi r^2 \right)^{n-1} - ( 1 + \varepsilon )e^{-2c}
+    |                   ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:541:68
+    |
+541 |     Per dimostrare che \(\lim_{n \rightarrow \infty} \mathcal{P}(G \mbox{ disconnesso}) > 0\) basta dimostrare che da un certo $n$ ...
+    |                                                                    ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--AR--04.org:608:19
+    |
+608 |     \mathcal{P}(G \mbox{ disconnesso}) > n\left(1 - \pi r^2 \right)^{n-1} - ( 1 + \varepsilon )e^{-2c} > ( 1 + \varepsilon )e^{-2c}...
+    |                   ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 <h2 id="grafi-geometrici-aleatori-e-reti-wireless">Grafi geometrici aleatori e reti wireless</h2>
 <p>I modelli fin’ora visti (Erdős–Rényi e rich-get-richer) sono tutti modelli di tipo <em>virtuale</em>, ovvero
 descrivono le <em>connessioni logiche</em> tra i nodi, trascurando del tutto l’implementazione fisica della rete.

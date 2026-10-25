@@ -210,7 +210,7 @@ pub fn resolve(
                 is_file: project.is_file,
             };
             if path.ends_with(".org") {
-                let read = org::read(text, *file);
+                let read = org::read(text, *file, &config.math.macros);
                 cx.diagnostics.extend(read.diagnostics);
                 // A file that didn't parse has no keywords to check.
                 read.document.as_ref()?;
@@ -228,7 +228,7 @@ pub fn resolve(
                 return entry::read((collection, c), &taxonomies, head, document, path, &mut cx);
             }
             let head = entry::front_matter(text, &mut cx)?;
-            let document = markdown::parse(text, head.body.clone(), &mut cx);
+            let document = markdown::parse(text, head.body.clone(), &config.math.macros, &mut cx);
             entry::read((collection, c), &taxonomies, head, document, path, &mut cx)
         });
         diagnostics.append(&mut found);

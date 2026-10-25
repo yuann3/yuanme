@@ -2,6 +2,116 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/duplicate-label]: the Label `simple` is given twice
+  --> org-mode-testing/ob-C-test.org:13:11
+   |
+ 7 | #+source: simple
+   |           ------ first given here, to an element
+...
+13 | #+source: simple
+   |           ^^^^^^ given again here, to an element
+   |
+   = help: rename one of them: every Label in an Entry becomes an id on its Page
+   = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `simple` is given twice
+  --> org-mode-testing/ob-C-test.org:19:11
+   |
+ 7 | #+source: simple
+   |           ------ first given here, to an element
+...
+19 | #+source: simple
+   |           ^^^^^^ given again here, to an element
+   |
+   = help: rename one of them: every Label in an Entry becomes an id on its Page
+   = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `integer_var` is given twice
+  --> org-mode-testing/ob-C-test.org:30:11
+   |
+24 | #+source: integer_var
+   |           ----------- first given here, to an element
+...
+30 | #+source: integer_var
+   |           ^^^^^^^^^^^ given again here, to an element
+   |
+   = help: rename one of them: every Label in an Entry becomes an id on its Page
+   = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `two_var` is given twice
+  --> org-mode-testing/ob-C-test.org:41:11
+   |
+35 | #+source: two_var
+   |           ------- first given here, to an element
+...
+41 | #+source: two_var
+   |           ^^^^^^^ given again here, to an element
+   |
+   = help: rename one of them: every Label in an Entry becomes an id on its Page
+   = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `string_var` is given twice
+  --> org-mode-testing/ob-C-test.org:52:11
+   |
+46 | #+source: string_var
+   |           ---------- first given here, to an element
+...
+52 | #+source: string_var
+   |           ^^^^^^^^^^ given again here, to an element
+   |
+   = help: rename one of them: every Label in an Entry becomes an id on its Page
+   = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `array` is given twice
+  --> org-mode-testing/ob-C-test.org:75:11
+   |
+67 | #+source: array
+   |           ----- first given here, to an element
+...
+75 | #+source: array
+   |           ^^^^^ given again here, to an element
+   |
+   = help: rename one of them: every Label in an Entry becomes an id on its Page
+   = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `list_var` is given twice
+  --> org-mode-testing/ob-C-test.org:94:11
+   |
+89 | #+source: list_var
+   |           -------- first given here, to an element
+...
+94 | #+source: list_var
+   |           ^^^^^^^^ given again here, to an element
+   |
+   = help: rename one of them: every Label in an Entry becomes an id on its Page
+   = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `vector_var` is given twice
+   --> org-mode-testing/ob-C-test.org:104:11
+    |
+ 99 | #+source: vector_var
+    |           ---------- first given here, to an element
+...
+104 | #+source: vector_var
+    |           ^^^^^^^^^^ given again here, to an element
+    |
+    = help: rename one of them: every Label in an Entry becomes an id on its Page
+    = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `list_list_var` is given twice
+   --> org-mode-testing/ob-C-test.org:115:11
+    |
+109 | #+source: list_list_var
+    |           ------------- first given here, to an element
+...
+115 | #+source: list_list_var
+    |           ^^^^^^^^^^^^^ given again here, to an element
+    |
+    = help: rename one of them: every Label in an Entry becomes an id on its Page
+    = note: run `yuanme docs math/duplicate-label` for more
+error[math/duplicate-label]: the Label `inhomogeneous_table` is given twice
+   --> org-mode-testing/ob-C-test.org:152:11
+    |
+137 | #+source: inhomogeneous_table
+    |           ------------------- first given here, to an element
+...
+152 | #+source: inhomogeneous_table
+    |           ^^^^^^^^^^^^^^^^^^^ given again here, to an element
+    |
+    = help: rename one of them: every Label in an Entry becomes an id on its Page
+    = note: run `yuanme docs math/duplicate-label` for more
 <h2 id="simple-tests">Simple tests</h2>
 <pre id="simple"><code class="language-cpp">std::cout &#x3C;&#x3C; 42;
 return 0;
@@ -29,7 +139,7 @@ return 0;
 <pre id="define"><code class="language-cpp">std::cout &#x3C;&#x3C; N;
 return 0;
 </code></pre>
-<h2 id="array">Array</h2>
+<h2 id="array-1">Array</h2>
 <pre id="array"><code class="language-cpp">for (int i=1; i&#x3C;3; i++) {
   std::cout &#x3C;&#x3C; i &#x3C;&#x3C; '\n';
 }

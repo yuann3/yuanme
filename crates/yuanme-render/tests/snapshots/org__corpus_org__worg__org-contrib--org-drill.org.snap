@@ -409,7 +409,7 @@ org-drill-cram RET</code>). This works the same as a normal drill session,
 except that all items are considered due for review unless you
 reviewed them within the last 12 hours (you can change the number of
 hours by customising the variable <code>org-drill-cram-hours</code>).</p>
-<h2 id="leeches">Leeches</h2>
+<h2 id="leeches-1">Leeches</h2>
 <p><a id="leeches"></a></p>
 <p>From the Anki website, <a href="http://ichi2.net/anki/wiki/Leeches">http://ichi2.net/anki/wiki/Leeches</a>:</p>
 <blockquote>

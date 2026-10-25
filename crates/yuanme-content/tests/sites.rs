@@ -793,6 +793,84 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "content/posts/a.md",
         "[b](b.md)",
     ),
+    // Math: LaTeX yuanme can't render, at the place in the file math-core
+    // found it, in a Markdown and an Org Entry.
+    (
+        "math/unsupported",
+        "---\ntitle: A\n---\nSo:\n\n$$\n\\begin{eqnarray} a &=& b \\end{eqnarray}\n$$\n",
+        "content/posts/a.md",
+        "{eqnarray}",
+    ),
+    (
+        "math/unsupported",
+        "=== content/posts/a.org\n#+TITLE: A\n\nSo \\(\\DeclareMathOperator{\\tr}{tr} \\tr A\\).\n",
+        "content/posts/a.org",
+        "\\DeclareMathOperator",
+    ),
+    (
+        "math/unsupported",
+        "=== content/posts/a.org\n#+TITLE: A\n\n\\begin{eqnarray}\na &=& b\n\\end{eqnarray}\n",
+        "content/posts/a.org",
+        "{eqnarray}",
+    ),
+    (
+        "math/unsupported",
+        "---\ntitle: A\n---\n$$ E = mc^2 \\label{eq:e} $$\n",
+        "content/posts/a.md",
+        "\\label",
+    ),
+    // An `\eqref` to a Label no equation has, an Org `\ref` too, and one
+    // to an equation without a number.
+    (
+        "math/unknown-label",
+        "---\ntitle: A\n---\n$$\\begin{equation} E \\label{eq:gauss} \\end{equation}$$\n\nBy $\\eqref{eq:gaus}$.\n",
+        "content/posts/a.md",
+        "eq:gaus",
+    ),
+    (
+        "math/unknown-label",
+        "=== content/posts/a.org\n#+TITLE: A\n\nBy \\ref{eq:none}.\n",
+        "content/posts/a.org",
+        "eq:none",
+    ),
+    (
+        "math/unknown-label",
+        "---\ntitle: A\n---\n$$\\begin{equation*} E \\label{eq:e} \\end{equation*}$$\n\nBy $\\eqref{eq:e}$.\n",
+        "content/posts/a.md",
+        "eq:e",
+    ),
+    // One namespace: a heading's `{#id}` and an equation's `\label`, two
+    // `{#id}`s, and Org's `#+NAME` and `<<target>>`.
+    (
+        "math/duplicate-label",
+        "---\ntitle: A\n---\n## Energy {#energy}\n\n$$\\begin{equation} E \\label{energy} \\end{equation}$$\n",
+        "content/posts/a.md",
+        "energy",
+    ),
+    (
+        "math/duplicate-label",
+        "---\ntitle: A\n---\n## One {#x}\n\n## Two {#x}\n",
+        "content/posts/a.md",
+        "x",
+    ),
+    (
+        "math/duplicate-label",
+        "=== content/posts/a.org\n#+TITLE: A\n\n#+NAME: tbl\n| a |\n\nSee <<tbl>>.\n",
+        "content/posts/a.org",
+        "tbl",
+    ),
+    (
+        "math/invalid-label",
+        "---\ntitle: A\n---\n$$\\begin{equation} E \\label{eq/e} \\end{equation}$$\n",
+        "content/posts/a.md",
+        "eq/e",
+    ),
+    (
+        "math/named-environment",
+        "=== content/posts/a.org\n#+TITLE: A\n\n#+NAME: eq:e\n\\begin{equation}\nE\n\\end{equation}\n",
+        "content/posts/a.org",
+        "eq:e",
+    ),
     // Config the content contradicts.
     (
         "config/invalid-value",
@@ -867,7 +945,7 @@ fn every_entry_code_has_a_case_here() {
         .iter()
         .map(|c| c.name)
         .filter(|n| {
-            ["entry/", "org/", "markdown/", "link/"]
+            ["entry/", "org/", "markdown/", "math/", "link/"]
                 .iter()
                 .any(|a| n.starts_with(a))
         })

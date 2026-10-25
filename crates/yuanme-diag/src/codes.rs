@@ -211,6 +211,31 @@ codes! {
         example: ":::a\n:::a\n:::a\n(and so on, a few hundred times)",
         fix: "Close the blocks that start at the reported line, or nest them less deeply.",
     }
+    MATH_UNSUPPORTED = "math/unsupported" {
+        meaning: "Math uses LaTeX that yuanme can't render, or isn't valid LaTeX: an unknown command or environment, a group that is never closed, or `\\label` outside a numbered environment. yuanme renders math to MathML when it builds, and fails the build rather than show the TeX.",
+        example: "$$\\begin{eqnarray} a &=& b \\end{eqnarray}$$",
+        fix: "Use what the help suggests, such as `align` for `eqnarray`, or define a missing command in `[math.macros]` in yuanme.toml.",
+    }
+    MATH_UNKNOWN_LABEL = "math/unknown-label" {
+        meaning: "An `\\eqref`, or an Org `\\ref`, names a Label that no numbered equation in the Entry has.",
+        example: "$$\\begin{equation} E = mc^2 \\label{eq:energy} \\end{equation}$$\n\nBy $\\eqref{eq:enrgy}$, …",
+        fix: "Use the Label the equation has, which the help suggests when one is close, or give the equation a `\\label`.",
+    }
+    MATH_DUPLICATE_LABEL = "math/duplicate-label" {
+        meaning: "Two things in one Entry have the same Label. Equations' `\\label`s, heading ids and Org's `#+NAME`s and `<<targets>>` share one namespace, because each becomes an `id` on the Page.",
+        example: "## Energy {#energy}\n\n$$\\begin{equation} E = mc^2 \\label{energy} \\end{equation}$$",
+        fix: "Rename one of them. A prefix that says what it labels, such as `eq:energy`, keeps them apart.",
+    }
+    MATH_INVALID_LABEL = "math/invalid-label" {
+        meaning: "A Label has a character other than letters, digits, `:`, `_`, `.` and `-`. A Label becomes an `id` and a link's `#fragment` exactly as written, so it is kept to characters that need no escaping.",
+        example: "$$\\begin{equation} E = mc^2 \\label{eq energy} \\end{equation}$$",
+        fix: "Use the Label the help suggests, here `eq-energy`, and change its references to match.",
+    }
+    MATH_NAMED_ENVIRONMENT = "math/named-environment" {
+        meaning: "An Org LaTeX environment has a `#+NAME`. Equations are labelled with `\\label` inside the math in both Source formats, which is also how `\\eqref` finds them.",
+        example: "#+NAME: eq:energy\n\\begin{equation}\nE = mc^2\n\\end{equation}",
+        fix: "Remove the `#+NAME` and put `\\label{eq:energy}` inside the environment.",
+    }
     LINK_UNRESOLVED = "link/unresolved" {
         meaning: "A link to another file or a fragment doesn't lead anywhere in the Site: no Entry has that file as its source, or the page has no element with that id.",
         example: "[the setup](setup.md#install), where setup.md has no `## Install` heading",

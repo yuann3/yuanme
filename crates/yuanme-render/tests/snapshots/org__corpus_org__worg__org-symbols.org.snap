@@ -2,6 +2,1270 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:25:47
+   |
+25 | | nbsp           | =~=                     | $\mbox{~}$                     | =&nbsp;=      | &nbsp;      |                         ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:26:47
+   |
+26 | | iexcl          | =!`=                    | $\mbox{!`}$                    | =&iexcl;=     | &iexcl;     | !                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:27:47
+   |
+27 | | cent           | =\textcent{}=           | $\mbox{\textcent{}}$           | =&cent;=      | &cent;      | cent                    ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:28:47
+   |
+28 | | pound          | =\pounds{}=             | $\mbox{\pounds{}}$             | =&pound;=     | &pound;     | pound                   ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:29:47
+   |
+29 | | curren         | =\textcurrency{}=       | $\mbox{\textcurrency{}}$       | =&curren;=    | &curren;    | curr.                   ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:30:47
+   |
+30 | | yen            | =\textyen{}=            | $\mbox{\textyen{}}$            | =&yen;=       | &yen;       | yen                     ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:31:47
+   |
+31 | | brvbar         | =\textbrokenbar{}=      | $\mbox{\textbrokenbar{}}$      | =&brvbar;=    | &brvbar;    | \vert                   ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:33:48
+   |
+33 | | sect           | =\S=                     | $\mbox{\S}$                     | =&sect;=      | &sect;      | paragraph             ...
+   |                                                ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:34:47
+   |
+34 | | uml            | =\textasciidieresis{}=  | $\mbox{\textasciidieresis{}}$  | =&uml;=       | &uml;       | [diaeresis]             ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:35:47
+   |
+35 | | copy           | =\textcopyright{}=      | $\mbox{\textcopyright{}}$      | =&copy;=      | &copy;      | (c)                     ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:36:47
+   |
+36 | | ordf           | =\textordfeminine{}=    | $\mbox{\textordfeminine{}}$    | =&ordf;=      | &ordf;      | _a_                     ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:37:47
+   |
+37 | | laquo          | =\guillemotleft{}=      | $\mbox{\guillemotleft{}}$      | =&laquo;=     | &laquo;     | <<                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:38:47
+   |
+38 | | not            | =\textlnot{}=           | $\mbox{\textlnot{}}$           | =&not;=       | &not;       | [angled dash]           ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:39:47
+   |
+39 | | shy            | =\-=                    | $\mbox{\-}$                    | =&shy;=       | &shy;       |                         ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:40:47
+   |
+40 | | reg            | =\textregistered{}=     | $\mbox{\textregistered{}}$     | =&reg;=       | &reg;       | (r)                     ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:41:47
+   |
+41 | | macr           | =\textasciimacron{}=    | $\mbox{\textasciimacron{}}$    | =&macr;=      | &macr;      | [macron]                ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:42:47
+   |
+42 | | deg            | =\textdegree{}=         | $\mbox{\textdegree{}}$         | =deg=         | deg         | degree                  ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:43:47
+   |
+43 | | pm             | =\textpm{}=             | $\mbox{\textpm{}}$             | =&plusmn;=    | &plusmn;    | +-                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:44:47
+   |
+44 | | plusmn         | =\textpm{}=             | $\mbox{\textpm{}}$             | =&plusmn;=    | &plusmn;    | +-                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:45:47
+   |
+45 | | sup2           | =\texttwosuperior{}=    | $\mbox{\texttwosuperior{}}$    | =&sup2;=      | &sup2;      | ^2                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:46:47
+   |
+46 | | sup3           | =\textthreesuperior{}=  | $\mbox{\textthreesuperior{}}$  | =&sup3;=      | &sup3;      | ^3                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:48:47
+   |
+48 | | micro          | =\textmu{}=             | $\mbox{\textmu{}}$             | =&micro;=     | &micro;     | micro                   ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:49:47
+   |
+49 | | para           | =\P{}=                  | $\mbox{\P{}}$                  | =&para;=      | &para;      | [pilcrow]               ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:50:47
+   |
+50 | | middot         | =\textperiodcentered{}= | $\mbox{\textperiodcentered{}}$ | =&middot;=    | &middot;    | .                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:53:47
+   |
+53 | | cedil          | =\c{}=                  | $\mbox{\c{}}$                  | =&cedil;=     | &cedil;     | [cedilla]               ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:54:47
+   |
+54 | | sup1           | =\textonesuperior{}=    | $\mbox{\textonesuperior{}}$    | =&sup1;=      | &sup1;      | ^1                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:55:47
+   |
+55 | | ordm           | =\textordmasculine{}=   | $\mbox{\textordmasculine{}}$   | =&ordm;=      | &ordm;      | _o_                     ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:56:47
+   |
+56 | | raquo          | =\guillemotright{}=     | $\mbox{\guillemotright{}}$     | =&raquo;=     | &raquo;     | >>                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:57:47
+   |
+57 | | iquest         | =?`=                    | $\mbox{?`}$                    | =&iquest;=    | &iquest;    | ?                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:58:47
+   |
+58 | | Agrave         | =\`{A}=                 | $\mbox{\`{A}}$                 | =&Agrave;=    | &Agrave;    | A                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:59:47
+   |
+59 | | Aacute         | =\'{A}=                 | $\mbox{\'{A}}$                 | =&Aacute;=    | &Aacute;    | A                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:60:47
+   |
+60 | | Acirc          | =\^{A}=                 | $\mbox{\^{A}}$                    | =&Acirc;=     | &Acirc;     | A                    ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:61:47
+   |
+61 | | Atilde         | =\~{A}=                 | $\mbox{\~{A}}$                 | =&Atilde;=    | &Atilde;    | A                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:62:47
+   |
+62 | | Auml           | =\"{A}=                 | $\mbox{\"{A}}$                 | =&Auml;=      | &Auml;      | Ae                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:63:51
+   |
+63 | | Aring          | =\AA{}=                     | $\mbox{\AA{}}$                     | =&Aring;=     | &Aring;     | A               ...
+   |                                                   ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:64:51
+   |
+64 | | AA             | =\AA{}=                     | $\mbox{\AA{}}$                     | =&Aring;=     | &Aring;     | A               ...
+   |                                                   ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:65:47
+   |
+65 | | AElig          | =\AE{}=                 | $\mbox{\AE{}}$                 | =&AElig;=     | &AElig;     | AE                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:66:47
+   |
+66 | | Ccedil         | =\c{C}=                 | $\mbox{\c{C}}$                 | =&Ccedil;=    | &Ccedil;    | C                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:67:47
+   |
+67 | | Egrave         | =\`{E}=                 | $\mbox{\`{E}}$                 | =&Egrave;=    | &Egrave;    | E                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:68:47
+   |
+68 | | Eacute         | =\'{E}=                 | $\mbox{\'{E}}$                 | =&Eacute;=    | &Eacute;    | E                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:69:47
+   |
+69 | | Ecirc          | =\^{E}=                 | $\mbox{\^{E}}$                    | =&Ecirc;=     | &Ecirc;     | E                    ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:70:47
+   |
+70 | | Euml           | =\"{E}=                 | $\mbox{\"{E}}$                 | =&Euml;=      | &Euml;      | E                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:71:47
+   |
+71 | | Igrave         | =\`{I}=                 | $\mbox{\`{I}}$                 | =&Igrave;=    | &Igrave;    | I                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:72:47
+   |
+72 | | Iacute         | =\'{I}=                 | $\mbox{\'{I}}$                 | =&Iacute;=    | &Iacute;    | I                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:73:47
+   |
+73 | | Icirc          | =\^{I}=                 | $\mbox{\^{I}}$                    | =&Icirc;=     | &Icirc;     | I                    ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:74:47
+   |
+74 | | Iuml           | =\"{I}=                 | $\mbox{\"{I}}$                 | =&Iuml;=      | &Iuml;      | I                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:75:47
+   |
+75 | | ETH            | =\DH{}=                 | $\mbox{\DH{}}$                 | =&ETH;=       | &ETH;       | D                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:76:47
+   |
+76 | | Ntilde         | =\~{N}=                 | $\mbox{\~{N}}$                 | =&Ntilde;=    | &Ntilde;    | N                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:77:47
+   |
+77 | | Ograve         | =\`{O}=                 | $\mbox{\`{O}}$                 | =&Ograve;=    | &Ograve;    | O                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:78:47
+   |
+78 | | Oacute         | =\'{O}=                 | $\mbox{\'{O}}$                 | =&Oacute;=    | &Oacute;    | O                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:79:47
+   |
+79 | | Ocirc          | =\^{O}=                 | $\mbox{\^{O}}$                    | =&Ocirc;=     | &Ocirc;     | O                    ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:80:47
+   |
+80 | | Otilde         | =\~{O}=                 | $\mbox{\~{O}}$                 | =&Otilde;=    | &Otilde;    | O                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:81:47
+   |
+81 | | Ouml           | =\"{O}=                 | $\mbox{\"{O}}$                 | =&Ouml;=      | &Ouml;      | Oe                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:82:47
+   |
+82 | | times          | =\texttimes{}=          | $\mbox{\texttimes{}}$          | =&times;=     | &times;     | *                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:83:47
+   |
+83 | | Oslash         | =\O=                    | $\mbox{\O}$                    | =&Oslash;=    | &Oslash;    | O                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:84:47
+   |
+84 | | Ugrave         | =\`{U}=                 | $\mbox{\`{U}}$                 | =&Ugrave;=    | &Ugrave;    | U                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:85:47
+   |
+85 | | Uacute         | =\'{U}=                 | $\mbox{\'{U}}$                 | =&Uacute;=    | &Uacute;    | U                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:86:47
+   |
+86 | | Ucirc          | =\^{U}=                 | $\mbox{\^{U}}$                    | =&Ucirc;=     | &Ucirc;     | U                    ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:87:47
+   |
+87 | | Uuml           | =\"{U}=                 | $\mbox{\"{U}}$                 | =&Uuml;=      | &Uuml;      | Ue                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:88:47
+   |
+88 | | Yacute         | =\'{Y}=                 | $\mbox{\'{Y}}$                 | =&Yacute;=    | &Yacute;    | Y                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:89:47
+   |
+89 | | THORN          | =\TH{}=                 | $\mbox{\TH{}}$                 | =&THORN;=     | &THORN;     | TH                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:90:47
+   |
+90 | | szlig          | =\ss{}=                 | $\mbox{\ss{}}$                 | =&szlig;=     | &szlig;     | ss                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:91:47
+   |
+91 | | agrave         | =\`{a}=                 | $\mbox{\`{a}}$                 | =&agrave;=    | &agrave;    | a                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:92:47
+   |
+92 | | aacute         | =\'{a}=                 | $\mbox{\'{a}}$                 | =&aacute;=    | &aacute;    | a                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:93:47
+   |
+93 | | acirc          | =\^{a}=                 | $\mbox{\^{a}}$                    | =&acirc;=     | &acirc;     | a                    ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:94:47
+   |
+94 | | atilde         | =\~{a}=                 | $\mbox{\~{a}}$                 | =&atilde;=    | &atilde;    | a                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:95:47
+   |
+95 | | auml           | =\"{a}=                 | $\mbox{\"{a}}$                 | =&auml;=      | &auml;      | ae                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:96:47
+   |
+96 | | aring          | =\aa{}=                 | $\mbox{\aa{}}$                 | =&aring;=     | &aring;     | a                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:97:47
+   |
+97 | | aelig          | =\ae{}=                 | $\mbox{\ae{}}$                 | =&aelig;=     | &aelig;     | ae                      ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+  --> worg/org-symbols.org:98:47
+   |
+98 | | ccedil         | =\c{c}=                 | $\mbox{\c{c}}$                 | =&ccedil;=    | &ccedil;    | c                       ...
+   |                                               ^^^^^ unknown command
+   |
+   = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:100:47
+    |
+100 | | egrave         | =\`{e}=                 | $\mbox{\`{e}}$                 | =&egrave;=    | &egrave;    | e                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:101:47
+    |
+101 | | eacute         | =\'{e}=                 | $\mbox{\'{e}}$                 | =&eacute;=    | &eacute;    | e                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:102:47
+    |
+102 | | ecirc          | =\^{e}=                 | $\mbox{\^{e}}$                    | =&ecirc;=     | &ecirc;     | e                   ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:103:47
+    |
+103 | | euml           | =\"{e}=                 | $\mbox{\"{e}}$                 | =&euml;=      | &euml;      | e                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:104:47
+    |
+104 | | igrave         | =\`{i}=                 | $\mbox{\`{i}}$                 | =&igrave;=    | &igrave;    | i                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:105:47
+    |
+105 | | iacute         | =\'{i}=                 | $\mbox{\'{i}}$                 | =&iacute;=    | &iacute;    | i                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:106:47
+    |
+106 | | icirc          | =\^{i}=                 | $\mbox{\^{i}}$                    | =&icirc;=     | &icirc;     | i                   ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:107:47
+    |
+107 | | iuml           | =\"{i}=                 | $\mbox{\"{i}}$                 | =&iuml;=      | &iuml;      | i                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:108:47
+    |
+108 | | eth            | =\dh{}=                 | $\mbox{\dh{}}$                 | =&eth;=       | &eth;       | dh                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:109:47
+    |
+109 | | ntilde         | =\~{n}=                 | $\mbox{\~{n}}$                 | =&ntilde;=    | &ntilde;    | n                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:110:47
+    |
+110 | | ograve         | =\`{o}=                 | $\mbox{\`{o}}$                 | =&ograve;=    | &ograve;    | o                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:111:47
+    |
+111 | | oacute         | =\'{o}=                 | $\mbox{\'{o}}$                 | =&oacute;=    | &oacute;    | o                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:112:47
+    |
+112 | | ocirc          | =\^{o}=                 | $\mbox{\^{o}}$                    | =&ocirc;=     | &ocirc;     | o                   ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:113:47
+    |
+113 | | otilde         | =\~{o}=                 | $\mbox{\~{o}}$                 | =&otilde;=    | &otilde;    | o                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:114:47
+    |
+114 | | ouml           | =\"{o}=                 | $\mbox{\"{o}}$                 | =&ouml;=      | &ouml;      | oe                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:115:47
+    |
+115 | | oslash         | =\o{}=                  | $\mbox{\o{}}$                  | =&oslash;=    | &oslash;    | o                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:116:47
+    |
+116 | | ugrave         | =\`{u}=                 | $\mbox{\`{u}}$                 | =&ugrave;=    | &ugrave;    | u                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:117:47
+    |
+117 | | uacute         | =\'{u}=                 | $\mbox{\'{u}}$                 | =&uacute;=    | &uacute;    | u                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:118:47
+    |
+118 | | ucirc          | =\^{u}=                 | $\mbox{\^{u}}$                    | =&ucirc;=     | &ucirc;     | u                   ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:119:47
+    |
+119 | | uuml           | =\"{u}=                 | $\mbox{\"{u}}$                 | =&uuml;=      | &uuml;      | ue                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:120:47
+    |
+120 | | yacute         | =\'{y}=                 | $\mbox{\'{y}}$                 | =&yacute;=    | &yacute;    | y                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:121:47
+    |
+121 | | thorn          | =\th{}=                 | $\mbox{\th{}}$                 | =&thorn;=     | &thorn;     | th                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:122:47
+    |
+122 | | yuml           | =\"{y}=                 | $\mbox{\"{y}}$                 | =&yuml;=      | &yuml;      | y                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:123:47
+    |
+123 | | fnof           | =\textit{f}=            | $\mbox{\textit{f}}$            | =&fnof;=      | &fnof;      | f                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:124:47
+    |
+124 | | Alpha          | =A=                     | $\mbox{A}$                     | =&Alpha;=     | &Alpha;     | Alpha                  ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:125:47
+    |
+125 | | Beta           | =B=                     | $\mbox{B}$                     | =&Beta;=      | &Beta;      | Beta                   ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:128:47
+    |
+128 | | Epsilon        | =E=                     | $\mbox{E}$                     | =&Epsilon;=   | &Epsilon;   | Epsilon                ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:129:47
+    |
+129 | | Zeta           | =Z=                     | $\mbox{Z}$                     | =&Zeta;=      | &Zeta;      | Zeta                   ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:130:47
+    |
+130 | | Eta            | =H=                     | $\mbox{H}$                     | =&Eta;=       | &Eta;       | Eta                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:132:47
+    |
+132 | | Iota           | =I=                     | $\mbox{I}$                     | =&Iota;=      | &Iota;      | Iota                   ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:133:47
+    |
+133 | | Kappa          | =K=                     | $\mbox{K}$                     | =&Kappa;=     | &Kappa;     | Kappa                  ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:135:47
+    |
+135 | | Mu             | =M=                     | $\mbox{M}$                     | =&Mu;=        | &Mu;        | Mu                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:136:47
+    |
+136 | | Nu             | =N=                     | $\mbox{N}$                     | =&Nu;=        | &Nu;        | Nu                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:138:47
+    |
+138 | | Omicron        | =O=                     | $\mbox{O}$                     | =&Omicron;=   | &Omicron;   | Omicron                ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:140:47
+    |
+140 | | Rho            | =P=                     | $\mbox{P}$                     | =&Rho;=       | &Rho;       | Rho                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:142:47
+    |
+142 | | Tau            | =T=                     | $\mbox{T}$                     | =&Tau;=       | &Tau;       | Tau                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:145:47
+    |
+145 | | Chi            | =X=                     | $\mbox{X}$                     | =&Chi;=       | &Chi;       | Chi                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:163:47
+    |
+163 | | omicron        | =\textit{o}=            | $\mbox{\textit{o}}$            | =&omicron;=   | &omicron;   | omicron                ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:179:47
+    |
+179 | | bull           | =\textbullet{}=         | $\mbox{\textbullet{}}$         | =&bull;=      | &bull;      | *                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:180:47
+    |
+180 | | bullet         | =\textbullet{}=         | $\mbox{\textbullet{}}$         | =&bull;=      | &bull;      | *                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:181:53
+    |
+181 | | hellip         | =\dots{}=                     | $\mbox{\dots{}}$                     | =&hellip;=    | &hellip;    | ...        ...
+    |                                                     ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:182:53
+    |
+182 | | dots           | =\dots{}=                     | $\mbox{\dots{}}$                     | =&hellip;=    | &hellip;    | ...        ...
+    |                                                     ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:186:47
+    |
+186 | | frasl          | =/=                     | $\mbox{/}$                     | =&frasl;=     | &frasl;     | /                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:190:47
+    |
+190 | | trade          | =\texttrademark{}=      | $\mbox{\texttrademark{}}$      | =&trade;=     | &trade;     | TM                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:286:47
+    |
+286 | | blacksmile     | =\blacksmiley{}=        | $\mbox{\blacksmiley{}}$        | =&#9787;=     | &#9787;     | :-)                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:287:47
+    |
+287 | | sad            | =\frownie{}=            | $\mbox{\frownie{}}$            | =&#9785;=     | &#9785;     | :-(                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:288:47
+    |
+288 | | quot           | =\textquotedbl{}=       | $\mbox{\textquotedbl{}}$       | =&quot;=      | &quot;      | "                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:289:47
+    |
+289 | | amp            | =\&=                    | $\mbox{\&}$                    | =&amp;=       | &amp;       | &                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:290:47
+    |
+290 | | lt             | =\textless{}=           | $\mbox{\textless{}}$           | =&lt;=        | &lt;        | <                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:291:47
+    |
+291 | | gt             | =\textgreater{}=        | $\mbox{\textgreater{}}$        | =&gt;=        | &gt;        | >                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:292:47
+    |
+292 | | OElig          | =\OE{}=                 | $\mbox{\OE{}}$                 | =&OElig;=     | &OElig;     | OE                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:293:47
+    |
+293 | | oelig          | =\oe{}=                 | $\mbox{\oe{}}$                 | =&oelig;=     | &oelig;     | oe                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:294:47
+    |
+294 | | Scaron         | =\v{S}=                 | $\mbox{\v{S}}$                 | =&Scaron;=    | &Scaron;    | S                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:295:47
+    |
+295 | | scaron         | =\v{s}=                 | $\mbox{\v{s}}$                 | =&scaron;=    | &scaron;    | s                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:296:47
+    |
+296 | | Yuml           | =\"{Y}=                 | $\mbox{\"{Y}}$                 | =&Yuml;=      | &Yuml;      | Y                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:298:47
+    |
+298 | | tilde          | =~{}=                   | $\mbox{~{}}$                   | =&tilde;=     | &tilde;     | ~                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:299:47
+    |
+299 | | ensp           | =\hspace*{.5em}=        | $\mbox{\hspace*{.5em}}$        | =&ensp;=      | &ensp;      |                        ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:300:47
+    |
+300 | | emsp           | =\hspace*{1em}=         | $\mbox{\hspace*{1em}}$         | =&emsp;=      | &emsp;      |                        ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:301:47
+    |
+301 | | thinsp         | =\hspace*{.2em}=        | $\mbox{\hspace*{.2em}}$        | =&thinsp;=    | &thinsp;    |                        ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:302:47
+    |
+302 | | zwnj           | =\/{}=                  | $\mbox{\/{}}$                  | =&zwnj;=      | &zwnj;      |                        ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:303:45
+    |
+303 | | zwj            | ==                    | $\mbox{}$                      | =&zwj;=       | &zwj;       |                          ...
+    |                                             ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:304:45
+    |
+304 | | lrm            | ==                    | $\mbox{}$                      | =&lrm;=       | &lrm;       |                          ...
+    |                                             ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:305:45
+    |
+305 | | rlm            | ==                    | $\mbox{}$                      | =&rlm;=       | &rlm;       |                          ...
+    |                                             ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:306:47
+    |
+306 | | ndash          | =--=                    | $\mbox{--}$                    | =&ndash;=     | &ndash;     | -                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:307:47
+    |
+307 | | mdash          | =---=                   | $\mbox{---}$                   | =&mdash;=     | &mdash;     | --                     ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:308:47
+    |
+308 | | lsquo          | =\textquoteleft{}=      | $\mbox{\textquoteleft{}}$      | =&lsquo;=     | &lsquo;     | `                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:309:47
+    |
+309 | | rsquo          | =\textquoteright{}=     | $\mbox{\textquoteright{}}$     | =&rsquo;=     | &rsquo;     | '                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:310:47
+    |
+310 | | sbquo          | =\quotesinglbase{}=     | $\mbox{\quotesinglbase{}}$     | =&sbquo;=     | &sbquo;     | ,                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:311:47
+    |
+311 | | ldquo          | =\textquotedblleft{}=   | $\mbox{\textquotedblleft{}}$   | =&ldquo;=     | &ldquo;     | "                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:312:47
+    |
+312 | | rdquo          | =\textquotedblright{}=  | $\mbox{\textquotedblright{}}$  | =&rdquo;=     | &rdquo;     | "                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:313:47
+    |
+313 | | bdquo          | =\quotedblbase{}=       | $\mbox{\quotedblbase{}}$       | =&bdquo;=     | &bdquo;     | "                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:314:47
+    |
+314 | | dagger         | =\textdagger{}=         | $\mbox{\textdagger{}}$         | =&dagger;=    | &dagger;    | [dagger]               ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:315:47
+    |
+315 | | Dagger         | =\textdaggerdbl{}=      | $\mbox{\textdaggerdbl{}}$      | =&Dagger;=    | &Dagger;    | [doubledagger]         ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:316:47
+    |
+316 | | permil         | =\textperthousand{}=    | $\mbox{\textperthousand{}}$    | =&permil;=    | &permil;    | per thousand           ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:317:47
+    |
+317 | | lsaquo         | =\guilsinglleft{}=      | $\mbox{\guilsinglleft{}}$      | =&lsaquo;=    | &lsaquo;    | <                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:318:47
+    |
+318 | | rsaquo         | =\guilsinglright{}=     | $\mbox{\guilsinglright{}}$     | =&rsaquo;=    | &rsaquo;    | >                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:319:47
+    |
+319 | | euro           | =\texteuro{}=           | $\mbox{\texteuro{}}$           | =&euro;=      | &euro;      | EUR                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:320:52
+    |
+320 | | EUR            | =\EUR{}=                     | $\mbox{\EUR{}}$                     | =&euro;=      | &euro;      | EUR          ...
+    |                                                    ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:321:47
+    |
+321 | | EURdig         | =\EURdig{}=             | $\mbox{\EURdig{}}$             | =&euro;=      | &euro;      | EUR                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:322:47
+    |
+322 | | EURhv          | =\EURhv{}=              | $\mbox{\EURhv{}}$              | =&euro;=      | &euro;      | EUR                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:323:47
+    |
+323 | | EURcr          | =\EURcr{}=              | $\mbox{\EURcr{}}$              | =&euro;=      | &euro;      | EUR                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:324:47
+    |
+324 | | EURtm          | =\EURtm{}=              | $\mbox{\EURtm{}}$              | =&euro;=      | &euro;      | EUR                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:357:47
+    |
+357 | | frac12         | =\textonehalf{}=        | $\mbox{\textonehalf{}}$        | =&frac12;=    | &frac12;    | 1/2                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:358:47
+    |
+358 | | frac14         | =\textonequarter{}=     | $\mbox{\textonequarter{}}$     | =&frac14;=    | &frac14;    | 1/4                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:359:47
+    |
+359 | | frac34         | =\textthreequarters{}=  | $\mbox{\textthreequarters{}}$  | =&frac34;=    | &frac34;    | 3/4                    ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:360:47
+    |
+360 | | div            | =\textdiv{}=            | $\mbox{\textdiv{}}$            | =&divide;=    | &divide;    | /                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:361:47
+    |
+361 | | acute          | =\textasciiacute{}=     | $\mbox{\textasciiacute{}}$     | =&acute;=     | &acute;     | '                      ...
+    |                                               ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> worg/org-symbols.org:363:55
+    |
+363 | | smiley         | =\smiley{}=                     | $\mbox{\smiley{}}$                     | =&#9786;=     | &#9786;     | :-)    ...
+    |                                                       ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 <h2 id="here-is-a-table-of-symbols-for-org-mode">Here is a table of symbols for Org-mode</h2>
 
 

@@ -3,6 +3,7 @@ mod data;
 pub mod document;
 pub mod entry;
 pub mod fields;
+mod label;
 pub mod markdown;
 mod math;
 pub mod org;

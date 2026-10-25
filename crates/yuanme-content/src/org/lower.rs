@@ -17,8 +17,8 @@ use yuanme_org::types::{
 
 use super::{Keyword, Read};
 use crate::document::{Align, Checkbox, Document, Kind, NodeId, footnote_identifier};
-use crate::markdown;
 use crate::smartypants::Dashes;
+use crate::{markdown, math};
 
 /// How `x_y` and `x^{y}` read: `^:{}` by default, so `snake_case` stays
 /// as it is (Org divergence 1).
@@ -42,7 +42,12 @@ enum Search {
 /// Image links ox-html shows as images (`org-html-inline-image-rules`).
 const IMAGES: &[&str] = &["avif", "gif", "jpeg", "jpg", "png", "svg", "webp"];
 
-pub(super) fn lower(text: &str, file: FileId, parsed: &OrgDocument<'_>) -> Read {
+pub(super) fn lower(
+    text: &str,
+    file: FileId,
+    parsed: &OrgDocument<'_>,
+    macros: &[(String, String)],
+) -> Read {
     let mut l = Lower {
         text,
         file,
@@ -75,7 +80,7 @@ pub(super) fn lower(text: &str, file: FileId, parsed: &OrgDocument<'_>) -> Read 
     for h in &parsed.children {
         l.heading(h, selecting, false);
     }
-    l.finish();
+    l.finish(macros);
     let preamble_end = preamble_end(text, parsed);
     Read {
         document: Some(l.doc),
@@ -495,14 +500,7 @@ impl<'s> Lower<'s> {
                 c.source,
                 "yuanme never runs code; paste in the results the call wrote",
             ),
-            Element::LatexEnvironment(env) => {
-                let kind = Kind::Math {
-                    display: true,
-                    tex: line(env.value),
-                };
-                let id = self.doc.push(parent, kind, at);
-                self.decorate(&env.affiliated_keywords, id, false);
-            }
+            Element::LatexEnvironment(env) => self.environment(env.value, &env.affiliated_keywords, parent, at),
             // Read, not rendered (#16).
             Element::Comment(_)
             | Element::CommentBlock(_)
@@ -513,11 +511,72 @@ impl<'s> Lower<'s> {
         }
     }
 
+    /// A LaTeX environment standing alone, which is display math when it
+    /// is one an equation can be.
+    fn environment(
+        &mut self,
+        value: &'s str,
+        a: &AffiliatedKeywords<'s>,
+        parent: NodeId,
+        at: Range<usize>,
+    ) {
+        let indent = value.len() - value.trim_start().len();
+        let name = value[indent..]
+            .strip_prefix("\\begin{")
+            .and_then(|v| v.split_once('}'))
+            .map_or("", |(name, _)| name);
+        // math-core reports an environment it doesn't have; one it has
+        // only goes inside math, as LaTeX has it.
+        if INNER.contains(&name) {
+            let start = offset(self.text, value) + indent + "\\begin{".len();
+            let d = Diagnostic::error(
+                &codes::MATH_UNSUPPORTED,
+                format!("`{name}` goes inside math, not on its own"),
+                self.span(start..start + name.len()),
+            )
+            .help("put it inside `\\[…\\]`, or inside `equation` to number it");
+            self.diagnostics.push(d);
+        }
+        if let Some(name_at) = self.affiliated_at(a, "name") {
+            let label = match a.keywords.get("name") {
+                Some(AffiliatedKeywordValue::SingleString(n)) => n.trim(),
+                _ => "",
+            };
+            let d = Diagnostic::error(
+                &codes::MATH_NAMED_ENVIRONMENT,
+                "an equation is labelled with `\\label`, not `#+NAME`",
+                self.span(name_at),
+            )
+            .help(format!(
+                "remove the `#+NAME` and write `\\label{{{label}}}` inside the environment"
+            ));
+            self.diagnostics.push(d);
+            // So a link to it isn't reported too.
+            self.doc
+                .names
+                .targets
+                .entry(squash(label))
+                .or_insert_with(|| label.into());
+        }
+        let kind = Kind::Math {
+            display: true,
+            tex: line(value),
+            mathml: String::new(),
+        };
+        let id = self.doc.push(parent, kind, at);
+        self.affiliated(a, id, false);
+    }
+
     /// `#+NAME` as the element's id, `#+ATTR_HTML` as its attributes where
     /// `attributes` says it takes them, and a warning for a caption it
     /// can't show.
     fn decorate(&mut self, a: &AffiliatedKeywords<'s>, id: NodeId, attributes: bool) {
         self.name(a, id);
+        self.affiliated(a, id, attributes);
+    }
+
+    /// `decorate` without the `#+NAME`.
+    fn affiliated(&mut self, a: &AffiliatedKeywords<'s>, id: NodeId, attributes: bool) {
         if attributes {
             let attrs = self.attr_html(a);
             self.doc.attrs_mut(id).extend(attrs);
@@ -1055,6 +1114,21 @@ impl<'s> Lower<'s> {
             }
             Object::LatexFragment(f) => {
                 let v = f.value;
+                // `\ref{label}` and `\eqref{label}` in prose are the Engine's
+                // to number, as they name equations across the Entry.
+                for (command, parens) in [("\\ref{", false), ("\\eqref{", true)] {
+                    if let Some(label) = v.strip_prefix(command).and_then(|l| l.strip_suffix('}'))
+                        && !label.contains(['{', '}'])
+                    {
+                        let kind = Kind::Ref {
+                            label: label.trim().into(),
+                            parens,
+                            number: String::new(),
+                        };
+                        self.doc.push(parent, kind, at);
+                        return;
+                    }
+                }
                 let (display, tex) = if let Some(t) = strip(v, "\\(", "\\)") {
                     (false, t)
                 } else if let Some(t) = strip(v, "\\[", "\\]") {
@@ -1069,6 +1143,7 @@ impl<'s> Lower<'s> {
                 let kind = Kind::Math {
                     display,
                     tex: tex.into(),
+                    mathml: String::new(),
                 };
                 self.doc.push(parent, kind, at);
             }
@@ -1284,7 +1359,7 @@ impl<'s> Lower<'s> {
 
     /// What only the whole file says: footnote numbers, smart punctuation,
     /// heading ids, and where in-page links go.
-    fn finish(&mut self) {
+    fn finish(&mut self, macros: &[(String, String)]) {
         for (key, at) in std::mem::take(&mut self.references) {
             if !self.definitions.contains(&key) {
                 let message = format!("the footnote `{}` is never defined", key.to_lowercase());
@@ -1295,7 +1370,14 @@ impl<'s> Lower<'s> {
         }
         markdown::number_footnotes(&mut self.doc);
         markdown::smarten(&mut self.doc, Dashes::Oldschool, &self.verbatim);
-        markdown::heading_ids(&mut self.doc);
+        let labels = math::render(
+            &mut self.doc,
+            self.text,
+            self.file,
+            macros,
+            &mut self.diagnostics,
+        );
+        markdown::heading_ids(&mut self.doc, &labels);
         let anchor = |doc: &Document, id: NodeId| match &doc.node(id).kind {
             Kind::Heading { id, .. } => id.clone(),
             _ => unreachable!("a heading"),
@@ -1446,6 +1528,14 @@ fn standalone_image<'a, 's>(objects: &'a [Object<'s>]) -> Option<&'a Object<'s>>
     }
     image
 }
+
+/// The environments math-core has that go inside math rather than stand
+/// alone as an equation, as `equation`, `align`, `gather` and `multline`
+/// do (#17).
+const INNER: &[&str] = &[
+    "aligned", "gathered", "cases", "dcases", "rcases", "drcases", "matrix", "pmatrix", "bmatrix",
+    "Bmatrix", "vmatrix", "Vmatrix", "array", "darray", "subarray",
+];
 
 /// `inner` between `open` and `close`.
 fn strip<'a>(s: &'a str, open: &str, close: &str) -> Option<&'a str> {

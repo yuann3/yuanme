@@ -11,6 +11,19 @@ error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
     |
     = help: yuanme never runs code; paste in the results the call wrote
     = note: run `yuanme docs org/unsupported-construct` for more
+error[math/invalid-label]: `basic-elisp(n=0)` isn't a valid Label
+   --> worg/org-contrib--babel--intro.org:844:14
+    |
+844 |      #+name: basic-elisp(n=0)
+    |              ^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `basic-elisp-n-0`
+    |
+844 -      #+name: basic-elisp(n=0)
+844 +      #+name: basic-elisp-n-0
+    |
 <h2 id="introduction">Preamble</h2>
 <p>Babel is about letting <a href="languages/index.org">many different languages</a> work together.
 Programming languages live in code blocks inside natural language <a href="https://orgmode.org/">Org</a>

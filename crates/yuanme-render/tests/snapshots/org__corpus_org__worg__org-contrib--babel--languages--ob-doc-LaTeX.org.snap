@@ -2,6 +2,14 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\usepackage"
+   --> worg/org-contrib--babel--languages--ob-doc-LaTeX.org:169:5
+    |
+169 | '("\\usepackage{tikz}").  The =:fit= header argument invokes the [[http://www.ctan.org/tex-archive/macros/latex/contrib/preview][LaTeX
+    |     ^^^^^^^^^^^ unknown command
+    |
+    = help: define `\usepackage` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 <div id="subtitle" style="float: center; text-align: center;">
   <p>
     Org Mode support for <a href="http://www.tug.org/">LaTeX</a>

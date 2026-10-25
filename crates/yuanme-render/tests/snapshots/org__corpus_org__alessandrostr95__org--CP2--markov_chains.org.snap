@@ -10,6 +10,86 @@ error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
   |
   = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
   = note: run `yuanme docs org/setupfile` for more
+error[math/named-environment]: an equation is labelled with `\label`, not `#+NAME`
+  --> alessandrostr95/org--CP2--markov_chains.org:13:11
+   |
+13 |   #+NAME: eqn:1
+   |           ^^^^^
+   |
+   = help: remove the `#+NAME` and write `\label{eqn:1}` inside the environment
+   = note: run `yuanme docs math/named-environment` for more
+error[math/named-environment]: an equation is labelled with `\label`, not `#+NAME`
+  --> alessandrostr95/org--CP2--markov_chains.org:84:12
+   |
+84 |    #+NAME: eqn:2
+   |            ^^^^^
+   |
+   = help: remove the `#+NAME` and write `\label{eqn:2}` inside the environment
+   = note: run `yuanme docs math/named-environment` for more
+error[math/unsupported]: `cases` goes inside math, not on its own
+   --> alessandrostr95/org--CP2--markov_chains.org:504:13
+    |
+504 |      \begin{cases}
+    |             ^^^^^
+    |
+    = help: put it inside `\[…\]`, or inside `equation` to number it
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: `cases` goes inside math, not on its own
+   --> alessandrostr95/org--CP2--markov_chains.org:509:13
+    |
+509 |      \begin{cases}
+    |             ^^^^^
+    |
+    = help: put it inside `\[…\]`, or inside `equation` to number it
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: `cases` goes inside math, not on its own
+   --> alessandrostr95/org--CP2--markov_chains.org:514:13
+    |
+514 |      \begin{cases}
+    |             ^^^^^
+    |
+    = help: put it inside `\[…\]`, or inside `equation` to number it
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--CP2--markov_chains.org:233:42
+    |
+233 |        \sum_{t \geq 1} t \cdot r^t_{ij} &\mbox{se } \sum_{t \geq 1} r^t_{ij} = 1\\
+    |                                          ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--CP2--markov_chains.org:247:22
+    |
+247 |       \frac{i}{i+1} &\mbox{se } j = i + 1\\
+    |                      ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--CP2--markov_chains.org:449:11
+    |
+449 |        I &\mbox{se } t \mbox{ è pari}\\
+    |           ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--CP2--markov_chains.org:456:11
+    |
+456 |        1 &\mbox{se } t \mbox{ è pari}\\
+    |           ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\mbox"
+   --> alessandrostr95/org--CP2--markov_chains.org:463:11
+    |
+463 |        0 &\mbox{se } t \mbox{ è pari}\\
+    |           ^^^^^ unknown command
+    |
+    = help: define `\mbox` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 <h2 id="catene-di-markov">Catene di Markov</h2>
 <p>Sia una <em>famiglia</em> di variabili aleatorie <code class="language-math math-inline">\lbrace X_t : t \in I \rbrace</code>, tale che tutte le variabili aleatorie sono definite su di un insieme
 <strong>discreto</strong> <code class="language-math math-inline">V</code>, e con <code class="language-math math-inline">t \in I \subseteq \mathbb{N}</code>.

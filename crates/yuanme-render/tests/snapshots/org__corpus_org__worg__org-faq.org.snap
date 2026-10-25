@@ -34,6 +34,51 @@ error[org/unsupported-construct]: `info:` links aren't in the Org subset
      |
      = help: link to a URL, another Entry's file, or a heading in this one
      = note: run `yuanme docs org/unsupported-construct` for more
+error[math/invalid-label]: `confirm-shell/elisp-link` isn't a valid Label
+    --> worg/org-faq.org:1777:1
+     |
+1777 | ** Why do I have to confirm the execution of each shell/elisp link?
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = help: use `confirm-shell-elisp-link`
+     = note: run `yuanme docs math/invalid-label` for more
+error[math/invalid-label]: `table-fields-starting-with-=` isn't a valid Label
+    --> worg/org-faq.org:2225:1
+     |
+2225 | ** How can I get table fields starting with "="?
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = help: use `table-fields-starting-with`
+     = note: run `yuanme docs math/invalid-label` for more
+error[math/invalid-label]: `Appointments/Diary` isn't a valid Label
+    --> worg/org-faq.org:3128:1
+     |
+3128 | * Appointments and Diary
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = help: use `Appointments-Diary`
+     = note: run `yuanme docs math/invalid-label` for more
+error[math/invalid-label]: `add-Org-scheduled/deadlined-entries-to-diary!` isn't a valid Label
+    --> worg/org-faq.org:3168:1
+     |
+3168 | ** I want to add my Org scheduled/deadlined entries in my diary!
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = help: use `add-Org-scheduled-deadlined-entries-to-diary`
+     = note: run `yuanme docs math/invalid-label` for more
+error[math/invalid-label]: `Problems-with-LaTeX-macros-with-#+latex-or-#+begin_latex` isn't a valid Label
+    --> worg/org-faq.org:4369:1
+     |
+4369 | ** Problems with LaTeX macros with =#+latex= or =#+begin_latex=
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+     = help: use `Problems-with-LaTeX-macros-with-latex-or-begin_latex`
+     = note: run `yuanme docs math/invalid-label` for more
 <p><em>You can also explore <a href="https://orgmode.org/worg/org-faq/">this FAQ from another interface</a>.</em></p>
 <h2 id="Already-faq">Is my question already a Frequently Asked Questions?</h2>
 <p>You can find answers by asking on the mailing list, but people will

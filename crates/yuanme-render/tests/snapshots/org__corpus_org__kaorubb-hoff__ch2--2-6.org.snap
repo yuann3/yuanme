@@ -10,6 +10,36 @@ error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
   |
   = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
   = note: run `yuanme docs org/setupfile` for more
+error[math/unsupported]: `aligned` goes inside math, not on its own
+  --> kaorubb-hoff/ch2--2-6.org:41:12
+   |
+41 |     \begin{aligned}
+   |            ^^^^^^^
+   |
+   = help: put it inside `\[…\]`, or inside `equation` to number it
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: expected closing token "\end{...}", but reached end of input
+  --> kaorubb-hoff/ch2--2-6.org:39:17
+   |
+39 | \begin{equation}
+   |                 ^ a group was never closed
+   |
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: found "\label", which may only appear in a numbered equation environment
+  --> kaorubb-hoff/ch2--2-6.org:40:1
+   |
+40 | \label{2.6ans2}
+   | ^^^^^^ cannot be used here
+   |
+   = help: only `equation`, `align`, `gather` and `multline` are numbered, and so take a `\label`; `$$…$$` and `\[…\]` aren't
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unmatched closing token: "\end{...}"
+  --> kaorubb-hoff/ch2--2-6.org:49:1
+   |
+49 | \end{equation}
+   | ^^^^^^^^^^^^^^ no matching opening for this
+   |
+   = note: run `yuanme docs math/unsupported` for more
 <h2 id="answer">Answer</h2>
 <p><code class="language-math math-inline"> A \perp B \mid C </code> means that</p>
 <code class="language-math math-display">\begin{equation}

@@ -36,6 +36,14 @@ error[org/unsupported-construct]: radio targets and links aren't in the Org subs
     |
     = help: use a `<<target>>` and link to it with `[[target][text]]`
     = note: run `yuanme docs org/unsupported-construct` for more
+error[math/unsupported]: unknown command "\part"
+   --> worg/org-tutorials--org-publish-html-tutorial.org:686:5
+    |
+686 |   | \part       | ~\part~                  |
+    |     ^^^^^ unknown command
+    |
+    = help: define `\part` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 <h2 id="introduction">Introduction</h2>
 <p>This Tutorial describes one of many ways to publishing Org-mode files to
 XHTML. We use the publishing mechanism to keep the <code>*.html</code> files separated

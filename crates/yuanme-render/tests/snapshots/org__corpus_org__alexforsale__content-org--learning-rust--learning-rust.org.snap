@@ -51,7 +51,7 @@ warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
     = note: only an image alone in its paragraph shows a caption
     = note: run `yuanme docs org/no-effect` for more
 <p>This will be a part of a series on my rust-learning journey. The goal of this post is to document my process of creating a simple program that determine if the number given is a perfect number<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>. And also list the perfect number until the given number.</p>
-<h2 id="imports">Imports</h2>
+<h2 id="imports-1">Imports</h2>
 <pre id="imports"><code class="language-rust">use std::io;
 </code></pre>
 <p>This is the common input / output modules.</p>

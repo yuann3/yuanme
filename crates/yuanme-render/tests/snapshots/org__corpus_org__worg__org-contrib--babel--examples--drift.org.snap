@@ -2,6 +2,45 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/invalid-label]: `simpledrift(N=1000, X1=600, ngens=100)` isn't a valid Label
+  --> worg/org-contrib--babel--examples--drift.org:64:9
+   |
+64 | #+name: simpledrift(N=1000, X1=600, ngens=100)
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+   = note: run `yuanme docs math/invalid-label` for more
+help: use `simpledrift-N-1000-X1-600-ngens-100`
+   |
+64 - #+name: simpledrift(N=1000, X1=600, ngens=100)
+64 + #+name: simpledrift-N-1000-X1-600-ngens-100
+   |
+error[math/invalid-label]: `drift(N=1000, X1=600, nreps=10, ngens=100)` isn't a valid Label
+   --> worg/org-contrib--babel--examples--drift.org:107:9
+    |
+107 | #+name: drift(N=1000, X1=600, nreps=10, ngens=100)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `drift-N-1000-X1-600-nreps-10-ngens-100`
+    |
+107 - #+name: drift(N=1000, X1=600, nreps=10, ngens=100)
+107 + #+name: drift-N-1000-X1-600-nreps-10-ngens-100
+    |
+error[math/invalid-label]: `compare-times(N=1000, X1=600, nreps=1000, ngens=100)` isn't a valid Label
+   --> worg/org-contrib--babel--examples--drift.org:116:9
+    |
+116 | #+name: compare-times(N=1000, X1=600, nreps=1000, ngens=100)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: a Label is letters, digits, `:`, `_`, `.` and `-`, as it becomes an id
+    = note: run `yuanme docs math/invalid-label` for more
+help: use `compare-times-N-1000-X1-600-nreps-1000-ngens-100`
+    |
+116 - #+name: compare-times(N=1000, X1=600, nreps=1000, ngens=100)
+116 + #+name: compare-times-N-1000-X1-600-nreps-1000-ngens-100
+    |
 <h2 id="a-simple-model-of-evolution">A simple model of evolution</h2>
 <p>Evolution is the result of changes in the genetic composition of
 populations over time. One of the simplest models of evolution is as

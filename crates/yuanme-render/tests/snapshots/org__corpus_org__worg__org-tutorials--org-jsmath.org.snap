@@ -2,6 +2,14 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\ref"
+   --> worg/org-tutorials--org-jsmath.org:149:72
+    |
+149 | [fn:3] The Math delimiters are necessary to tell jsMath to process the \ref
+    |                                                                        ^^^^ unknown command
+    |
+    = help: inside math, use `\eqref`, which gives `(n)`
+    = note: run `yuanme docs math/unsupported` for more
 <h2 id="why-bother">Why bother</h2>
 <p>Here are some advantages and disadvantages about using jsMath instead of images.</p>
 <dl>

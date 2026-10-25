@@ -2,6 +2,14 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\command"
+    --> worg/org-tutorials--org-latex-export.org:1510:1
+     |
+1510 | \command[⟨prenote⟩][⟨postnote⟩]{⟨keys⟩}
+     | ^^^^^^^^ unknown command
+     |
+     = help: define `\command` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+     = note: run `yuanme docs math/unsupported` for more
 <h2 id="start-up">Start up</h2>
 <p>Org-mode LaTeX export is easy.  Place the following code in your
 .emacs and you’re ready to go.</p>

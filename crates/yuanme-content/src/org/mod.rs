@@ -41,7 +41,7 @@ pub(crate) struct Read {
 /// The Document is there even when the file has errors, as long as it
 /// parsed; an Entry with an error fails.
 pub fn document(files: &Files, file: FileId) -> (Option<Document>, Vec<Diagnostic>) {
-    let read = read(files.text(file), file);
+    let read = read(files.text(file), file, &[]);
     (read.document, read.diagnostics)
 }
 
@@ -59,16 +59,16 @@ impl FileAccessInterface for NoFiles {
 /// room above that for lowering the tree it built.
 const STACK: usize = 8 << 20;
 
-/// Reads `text`, an Org file, on a thread of its own: its stack is big
-/// enough for the deepest tree organic builds, whatever thread the caller
-/// is on. A panic there goes on unwinding here, for the caller's
-/// `catch_panic`.
-pub(crate) fn read(text: &str, file: FileId) -> Read {
+/// Reads `text`, an Org file, with the Site's math `macros`, on a thread of
+/// its own: its stack is big enough for the deepest tree organic builds,
+/// whatever thread the caller is on. A panic there goes on unwinding here,
+/// for the caller's `catch_panic`.
+pub(crate) fn read(text: &str, file: FileId, macros: &[(String, String)]) -> Read {
     std::thread::scope(|scope| {
         let worker = std::thread::Builder::new()
             .name("org".into())
             .stack_size(STACK)
-            .spawn_scoped(scope, || read_here(text, file))
+            .spawn_scoped(scope, || read_here(text, file, macros))
             .expect("start a thread to parse Org");
         worker
             .join()
@@ -76,13 +76,13 @@ pub(crate) fn read(text: &str, file: FileId) -> Read {
     })
 }
 
-fn read_here(text: &str, file: FileId) -> Read {
+fn read_here(text: &str, file: FileId, macros: &[(String, String)]) -> Read {
     let settings = GlobalSettings {
         file_access: &NoFiles,
         ..GlobalSettings::default()
     };
     match parse_with_settings(text, &settings) {
-        Ok(parsed) => lower::lower(text, file, &parsed),
+        Ok(parsed) => lower::lower(text, file, &parsed, macros),
         Err(e) => {
             let d = match e {
                 ParseError::OutOfFuel { opener } => Diagnostic::error(

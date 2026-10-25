@@ -2,6 +2,14 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+error[math/unsupported]: unknown command "\C"
+   --> worg/org-tutorials--org-outside-org.org:185:2
+    |
+185 | "\C-c @". The prefix can only be changed before outline (minor) mode is
+    |  ^^ unknown command
+    |
+    = help: define `\C` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 <h2 id="introduction">Introduction</h2>
 <p>Once one gets used to Org-mode, it’s hard to live without it. Even its most
 basic feature, the hierarchical tree-like structuring of files, can be
