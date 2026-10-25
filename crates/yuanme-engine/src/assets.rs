@@ -388,7 +388,7 @@ fn placeholder_of(index: usize) -> String {
 }
 
 /// The `?query#fragment` of a URL, kept after its path is replaced.
-fn suffix(url: &str) -> &str {
+pub(crate) fn suffix(url: &str) -> &str {
     url.find(['?', '#']).map_or("", |i| &url[i..])
 }
 
@@ -807,7 +807,7 @@ fn css_string(s: &str) -> String {
     out
 }
 
-fn has_scheme(url: &str) -> bool {
+pub(crate) fn has_scheme(url: &str) -> bool {
     let Some(colon) = url.find(':') else {
         return false;
     };
@@ -820,7 +820,7 @@ fn has_scheme(url: &str) -> bool {
 
 /// `/a/./b/../c` → `/a/c`. A `..` above the root stays at the root, as
 /// browsers resolve it.
-fn normalize(path: &str) -> String {
+pub(crate) fn normalize(path: &str) -> String {
     let segments: Vec<&str> = path[1..].split('/').collect();
     let mut out: Vec<&str> = Vec::new();
     for (i, segment) in segments.iter().enumerate() {
@@ -839,7 +839,7 @@ fn normalize(path: &str) -> String {
     format!("/{}", out.join("/"))
 }
 
-fn percent_decode(path: &str) -> Option<String> {
+pub(crate) fn percent_decode(path: &str) -> Option<String> {
     let bytes = path.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
     let mut i = 0;
