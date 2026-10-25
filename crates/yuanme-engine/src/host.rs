@@ -626,48 +626,59 @@ const TEXT: &[&str] = &[
     ".webmanifest",
 ];
 
-/// A `.br` at quality 11 and a `.gz` beside each text file. Brotli at 11
-/// takes about a second per MB, so its output is cached by the input's
-/// bytes (ADR 0011).
+/// A `.br` at quality 11 and a `.gz` beside each text file.
 fn precompressed(files: &BTreeMap<String, Output>, cache: &mut Cache) -> Vec<(String, Vec<u8>)> {
-    let text: Vec<(&String, &Arc<[u8]>)> = files
+    let text: Vec<(&String, &[u8])> = files
         .iter()
         .filter(|(path, _)| TEXT.iter().any(|e| path.ends_with(e)))
         .filter_map(|(path, output)| match &output.body {
-            Body::Bytes(bytes) => Some((path, bytes)),
+            Body::Bytes(bytes) => Some((path, &bytes[..])),
             _ => None,
         })
         .collect();
-    let keys: Vec<blake3::Hash> = text
-        .iter()
-        .map(|(_, bytes)| {
-            let mut key = cache.key("brotli");
-            key.update(bytes);
-            key.finalize()
-        })
-        .collect();
-    let cached: Vec<Option<Arc<[u8]>>> = keys.iter().map(|k| cache.get("brotli", k)).collect();
-    let made: Vec<(Arc<[u8]>, bool, Vec<u8>)> = text
-        .par_iter()
-        .zip(cached)
-        .map(|((_, bytes), cached)| {
-            let fresh = cached.is_none();
-            let br = cached.unwrap_or_else(|| brotli(bytes).into());
-            (br, fresh, gzip(bytes))
-        })
-        .collect();
+    let bytes: Vec<&[u8]> = text.iter().map(|(_, bytes)| *bytes).collect();
+    let br = brotli(&bytes, cache);
+    let gz: Vec<Vec<u8>> = bytes.par_iter().map(|bytes| gzip(bytes)).collect();
     let mut out = Vec::new();
-    for (((path, _), key), (br, fresh, gz)) in text.iter().zip(keys).zip(made) {
-        if fresh {
-            cache.insert("brotli", key, br.clone());
-        }
+    for (((path, _), br), gz) in text.iter().zip(br).zip(gz) {
         out.push((format!("{path}.br"), br.to_vec()));
         out.push((format!("{path}.gz"), gz));
     }
     out
 }
 
-fn brotli(bytes: &[u8]) -> Vec<u8> {
+/// Each of `texts` at Brotli quality 11, which takes about a second per MB,
+/// so it is cached by the input's bytes (ADR 0011). The Site budgets (#15)
+/// share the cache with the `.br` files.
+pub(crate) fn brotli(texts: &[&[u8]], cache: &mut Cache) -> Vec<Arc<[u8]>> {
+    let keys: Vec<blake3::Hash> = texts
+        .iter()
+        .map(|bytes| {
+            let mut key = cache.key("brotli");
+            key.update(bytes);
+            key.finalize()
+        })
+        .collect();
+    let cached: Vec<Option<Arc<[u8]>>> = keys.iter().map(|k| cache.get("brotli", k)).collect();
+    let made: Vec<(Arc<[u8]>, bool)> = texts
+        .par_iter()
+        .zip(cached)
+        .map(|(bytes, cached)| match cached {
+            Some(br) => (br, false),
+            None => (compress(bytes).into(), true),
+        })
+        .collect();
+    let mut out = Vec::with_capacity(made.len());
+    for (key, (br, fresh)) in keys.into_iter().zip(made) {
+        if fresh {
+            cache.insert("brotli", key, br.clone());
+        }
+        out.push(br);
+    }
+    out
+}
+
+fn compress(bytes: &[u8]) -> Vec<u8> {
     let params = brotli::enc::BrotliEncoderParams {
         quality: 11,
         lgwin: 22,
