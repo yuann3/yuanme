@@ -75,7 +75,12 @@ pub fn adversarial(data: &[u8]) -> String {
 /// input.
 pub fn check(text: &str) {
     if let Some(doc) = parse(text) {
-        let _ = yuanme_render::html::body(&doc, &Default::default(), &Default::default());
+        let _ = yuanme_render::html::body(
+            &doc,
+            &Default::default(),
+            &Default::default(),
+            &Default::default(),
+        );
     }
 }
 
