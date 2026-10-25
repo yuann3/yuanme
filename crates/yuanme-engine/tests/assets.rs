@@ -169,6 +169,15 @@ const ERRORS: &[(&str, Over, &str, &str)] = &[
         "no-such-package",
     ),
     (
+        "asset/dependencies-not-installed",
+        &[
+            ("package.json", b"{}"),
+            ("styles/post.css", b"@import \"no-such-package\";\n"),
+        ],
+        "styles/post.css",
+        "no-such-package",
+    ),
+    (
         "asset/ambiguous-url",
         &[("static/styles/post.css", b"article {}")],
         "templates/posts/entry.html",

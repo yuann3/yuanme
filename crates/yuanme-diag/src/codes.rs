@@ -316,6 +316,11 @@ codes! {
         example: "a$b { color: red }",
         fix: "Fix the CSS at the reported place. Here `$` is not part of a selector.",
     }
+    ASSET_DEPENDENCIES_NOT_INSTALLED = "asset/dependencies-not-installed" {
+        meaning: "A stylesheet imports a package, and the project has a `package.json` but no `node_modules`. yuanme reads packages from `node_modules` and never runs a package manager itself.",
+        example: "@import \"@fontsource/geist\";\n(with package.json and no node_modules)",
+        fix: "Run `bun install` in the project's folder, then build again.",
+    }
     INTERNAL_PANIC = "internal/panic" {
         meaning: "yuanme crashed while processing a file. This is a bug in yuanme, not in the project.",
         example: "Any file can trigger it, if it reaches a bug in a parser or a renderer.",

@@ -408,6 +408,16 @@ impl Project<'_> {
             .map_err(|e| Problem::new(&codes::ASSET_NOT_FOUND, format!("can't read `{path}`: {e}")))
     }
 
+    /// Whether the project names packages it hasn't installed.
+    fn dependencies_missing(&self) -> bool {
+        self.inputs.files.contains_key("package.json")
+            && self
+                .inputs
+                .root
+                .as_ref()
+                .is_none_or(|root| !root.join("node_modules").is_dir())
+    }
+
     fn is_source(&self, path: &str) -> bool {
         self.inputs.files.contains_key(path)
             || (path.starts_with("node_modules/")
@@ -456,6 +466,16 @@ impl css::Project for Project<'_> {
             // `pkg/x.css` is a relative path first, as in postcss-import
             // and Tailwind, and then a package.
             Err(e) if e.code == &codes::ASSET_NOT_FOUND && !specifier.starts_with(['.', '/']) => {
+                if self.dependencies_missing() {
+                    let message = format!(
+                        "`{specifier}` can't be found: the project has a `package.json` but no `node_modules`"
+                    );
+                    return Err(
+                        Problem::new(&codes::ASSET_DEPENDENCIES_NOT_INSTALLED, message)
+                            .help("run `bun install`")
+                            .url(specifier),
+                    );
+                }
                 let Some(packages) = &self.packages else {
                     return Err(e);
                 };
