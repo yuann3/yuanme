@@ -934,6 +934,7 @@ fn every_entry_code_has_a_case_here() {
         .filter(|c| !c.starts_with("config/"))
         .chain([
             "markdown/no-effect",
+            "math/tex-delimiter",
             "org/no-effect",
             "org/wrong-weekday",
             "org/too-deep",
@@ -969,6 +970,27 @@ fn every_mistake_across_the_site_is_reported() {
             ("content/posts/a.md", "entry/out-of-range"),
             ("content/posts/b.md", "entry/missing-field"),
             ("content/posts/b.md", "entry/invalid-date"),
+        ]
+    );
+}
+
+#[test]
+fn latex_delimiters_in_markdown_warn_and_the_entry_still_builds() {
+    let files = "---\ntitle: A\n---\nThe area is \\(\\pi r^2\\).\n\nNot `\\(x\\)`, $[a, b]$ or \\[1].\n\n\\begin{equation}\nx\n\\end{equation}\n";
+    let (sources, site, diagnostics) = resolve(&fixture(files), false);
+    assert!(site.is_some());
+    let got: Vec<_> = diagnostics
+        .iter()
+        .map(|d| {
+            let at = d.primary();
+            (d.code.name, &sources.text(at.file)[at.range.clone()])
+        })
+        .collect();
+    assert_eq!(
+        got,
+        [
+            ("math/tex-delimiter", "\\("),
+            ("math/tex-delimiter", "\\begin{equation}"),
         ]
     );
 }

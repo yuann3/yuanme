@@ -236,6 +236,11 @@ codes! {
         example: "#+NAME: eq:energy\n\\begin{equation}\nE = mc^2\n\\end{equation}",
         fix: "Remove the `#+NAME` and put `\\label{eq:energy}` inside the environment.",
     }
+    MATH_TEX_DELIMITER = "math/tex-delimiter" {
+        meaning: "A Markdown paragraph has `\\(…\\)`, `\\[…\\]` or a bare `\\begin{…}`, which Markdown doesn't read as math: there `\\(` and `\\[` are escaped brackets, as on GitHub and in Pandoc. The paragraph is shown as written.",
+        example: "The area is \\(\\pi r^2\\).",
+        fix: "Write inline math as `$…$` and display math as `$$…$$`, with any environment inside the `$$`.",
+    }
     LINK_UNRESOLVED = "link/unresolved" {
         meaning: "A link to another file or a fragment doesn't lead anywhere in the Site: no Entry has that file as its source, or the page has no element with that id.",
         example: "[the setup](setup.md#install), where setup.md has no `## Install` heading",

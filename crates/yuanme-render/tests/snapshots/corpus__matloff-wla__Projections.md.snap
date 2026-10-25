@@ -50,3 +50,12 @@ error[markdown/empty-directive]: a directive needs a name before `{.callout-note
     |
     = help: yuanme reads `:::name[Title]{#id}`, such as `:::theorem{#thm:main}` or `:::proof`; Pandoc's `::: {.name}` divs aren't read
     = note: run `yuanme docs markdown/empty-directive` for more
+warning[math/tex-delimiter]: an environment isn't math in Markdown on its own
+   --> matloff-wla/Projections.md:641:3
+    |
+641 |   \begin{align}
+    |   ^^^^^^^^^^^^^
+    |
+    = help: put it inside `$$…$$`
+    = note: in Markdown `\(` and `\[` are escaped brackets, as on GitHub and in Pandoc
+    = note: run `yuanme docs math/tex-delimiter` for more

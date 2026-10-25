@@ -2,6 +2,33 @@
 source: crates/yuanme-render/tests/corpus.rs
 expression: render(&path)
 ---
+warning[math/tex-delimiter]: `\[…\]` isn't math in Markdown
+  --> hugo-docs/content--en--content-management--mathematics.md:26:1
+   |
+26 | \[
+   | ^^
+   |
+   = help: write display math as `$$…$$`
+   = note: in Markdown `\(` and `\[` are escaped brackets, as on GitHub and in Pandoc
+   = note: run `yuanme docs math/tex-delimiter` for more
+warning[math/tex-delimiter]: `\(…\)` isn't math in Markdown
+  --> hugo-docs/content--en--content-management--mathematics.md:55:15
+   |
+55 |   inline = [['\(', '\)']]
+   |               ^^
+   |
+   = help: write inline math as `$…$`
+   = note: in Markdown `\(` and `\[` are escaped brackets, as on GitHub and in Pandoc
+   = note: run `yuanme docs math/tex-delimiter` for more
+warning[math/tex-delimiter]: `\[…\]` isn't math in Markdown
+  --> hugo-docs/content--en--content-management--mathematics.md:72:14
+   |
+72 |   block = [['\[', '\]'], ['$$', '$$']]
+   |              ^^
+   |
+   = help: write display math as `$$…$$`
+   = note: in Markdown `\(` and `\[` are escaped brackets, as on GitHub and in Pandoc
+   = note: run `yuanme docs math/tex-delimiter` for more
 error[math/unsupported]: unknown command "\ce"
    --> hugo-docs/content--en--content-management--mathematics.md:210:7
     |

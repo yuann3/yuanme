@@ -91,6 +91,7 @@ pub(crate) fn parse(
         lower.node(child, Document::ROOT);
     }
     let Lower { mut doc, ok, .. } = lower;
+    tex_delimiters(&doc, text, cx);
     number_footnotes(&mut doc);
     smarten(&mut doc, Dashes::Default, &BTreeSet::new());
     let before = cx.diagnostics.len();
@@ -101,6 +102,70 @@ pub(crate) fn parse(
             .any(|d| d.level == Level::Error);
     heading_ids(&mut doc, &labels);
     ok.then_some(doc)
+}
+
+/// Warns on each paragraph with math written as LaTeX writes it, which
+/// Markdown reads as text (#17): `\(…\)`, `\[…\]` or `\begin{…}`.
+fn tex_delimiters(doc: &Document, text: &str, cx: &mut Cx<'_>) {
+    for id in doc.descendants(Document::ROOT) {
+        let node = doc.node(id);
+        if !matches!(node.kind, Kind::Paragraph) {
+            continue;
+        }
+        // The paragraph as written, with what isn't prose blanked out.
+        let mut prose = text[node.span.clone()].as_bytes().to_vec();
+        for c in doc.descendants(id) {
+            let inner = &doc.node(c);
+            if matches!(
+                inner.kind,
+                Kind::Code(_) | Kind::HtmlInline(_) | Kind::Math { .. }
+            ) {
+                let from = inner.span.start.saturating_sub(node.span.start);
+                let to = (inner.span.end - node.span.start).min(prose.len());
+                prose[from.min(to)..to].fill(b' ');
+            }
+        }
+        let prose = String::from_utf8_lossy(&prose);
+        let paired = |open: &str, close: &str| {
+            let i = prose.find(open)?;
+            prose[i + 2..].contains(close).then_some(i..i + 2)
+        };
+        let found = paired("\\(", "\\)")
+            .map(|at| {
+                (
+                    at,
+                    "`\\(…\\)` isn't math in Markdown",
+                    "write inline math as `$…$`",
+                )
+            })
+            .or_else(|| {
+                paired("\\[", "\\]").map(|at| {
+                    (
+                        at,
+                        "`\\[…\\]` isn't math in Markdown",
+                        "write display math as `$$…$$`",
+                    )
+                })
+            })
+            .or_else(|| {
+                let i = prose.find("\\begin{")?;
+                let end = prose[i..].find('}').map_or(i + 7, |e| i + e + 1);
+                Some((
+                    i..end,
+                    "an environment isn't math in Markdown on its own",
+                    "put it inside `$$…$$`",
+                ))
+            });
+        if let Some((at, message, help)) = found {
+            let at = node.span.start + at.start..node.span.start + at.end;
+            let d = Diagnostic::warning(&codes::MATH_TEX_DELIMITER, message, cx.span(at))
+                .help(help)
+                .note(
+                    "in Markdown `\\(` and `\\[` are escaped brackets, as on GitHub and in Pandoc",
+                );
+            cx.push(d);
+        }
+    }
 }
 
 /// Numbers each footnote reference in the order the writer meets them:
