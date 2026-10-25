@@ -1,0 +1,78 @@
+# Each release archive, on the platform it is for, before the GitHub Release
+# is made (dist-workspace.toml's global-artifacts-jobs): its checksum, its
+# files, and its binary building a Site.
+name: Release smoke test
+
+on:
+  workflow_call:
+    inputs:
+      plan:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: x86_64-unknown-linux-musl, runner: ubuntu-24.04, archive: tar.xz }
+          - { target: aarch64-unknown-linux-musl, runner: ubuntu-24.04-arm, archive: tar.xz }
+          - { target: x86_64-apple-darwin, runner: macos-15-intel, archive: tar.xz }
+          - { target: aarch64-apple-darwin, runner: macos-15, archive: tar.xz }
+          - { target: x86_64-pc-windows-msvc, runner: windows-2022, archive: zip }
+          - { target: aarch64-pc-windows-msvc, runner: windows-11-arm, archive: zip }
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      ARCHIVE: yuanme-${{ matrix.target }}.${{ matrix.archive }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: artifacts-build-local-${{ matrix.target }}
+          path: artifacts
+      - name: Checksum
+        working-directory: artifacts
+        run: |
+          if command -v sha256sum > /dev/null; then sha256sum -c "$ARCHIVE.sha256"; else shasum -a 256 -c "$ARCHIVE.sha256"; fi
+      - name: Unpack
+        run: |
+          mkdir unpacked
+          if [ "${{ matrix.archive }}" = zip ]; then
+            unzip -q "artifacts/$ARCHIVE" -d unpacked
+          else
+            tar -xf "artifacts/$ARCHIVE" -C unpacked --strip-components 1
+          fi
+          ls -l unpacked
+      # #37's list, and nothing else.
+      - name: Archive contents
+        run: |
+          exe=yuanme; [ "${{ matrix.archive }}" = zip ] && exe=yuanme.exe
+          expected=$(printf '%s\n' LICENSE-APACHE LICENSE-MIT README.md THIRD_PARTY_NOTICES.md "$exe" | sort)
+          actual=$(ls unpacked | sort)
+          if [ "$expected" != "$actual" ]; then
+            echo "::error::$ARCHIVE has:"; echo "$actual"; exit 1
+          fi
+          grep -q 'Independent JPEG Group' unpacked/THIRD_PARTY_NOTICES.md
+          grep -q 'yuanme-comrak' unpacked/THIRD_PARTY_NOTICES.md
+          grep -q 'catppuccin' unpacked/THIRD_PARTY_NOTICES.md
+      - name: Static binary
+        if: runner.os == 'Linux'
+        run: |
+          file unpacked/yuanme
+          file unpacked/yuanme | grep -Eq 'static(ally|-pie) linked'
+      - name: Build a Site
+        run: |
+          unpacked/yuanme --version
+          cp -R crates/yuanme-engine/tests/sites/assets site
+          unpacked/yuanme build -C site --strict
+          test -f site/dist/index.html
+          ls site/dist/assets

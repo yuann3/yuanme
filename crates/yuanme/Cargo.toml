@@ -6,6 +6,8 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+# The Homebrew formula's; the docs site's once it exists.
+homepage = "https://github.com/yuann3/yuanme"
 include = ["/src", "/build.rs"]
 
 [dependencies]

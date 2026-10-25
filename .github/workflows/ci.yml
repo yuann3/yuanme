@@ -4,12 +4,20 @@ on:
   push:
     branches: [main]
   pull_request:
+  # The release runs all of it before it publishes (dist-workspace.toml).
+  workflow_call:
+    inputs:
+      # dist's release plan, which CI doesn't read.
+      plan:
+        type: string
 
 permissions:
   contents: read
 
+# Called by the release, github.workflow is the release's name, so a
+# release and a push to the same branch don't cancel each other.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:

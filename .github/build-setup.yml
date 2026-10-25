@@ -1,0 +1,29 @@
+# Steps dist runs in each build job before `dist build` (dist-workspace.toml).
+- name: Install cargo-about
+  uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+  with:
+    tool: cargo-about@0.9.2
+- name: Write THIRD_PARTY_NOTICES.md
+  run: cargo xtask notices
+# Pinned, where dist would `pip3 install` whatever is newest.
+- name: Install zig
+  if: runner.os == 'Linux'
+  uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+  with:
+    version: 0.15.2
+- name: Install cargo-zigbuild
+  if: runner.os == 'Linux'
+  uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+  with:
+    tool: cargo-zigbuild@0.23.4
+# Chocolatey's nasm isn't put on PATH.
+- name: Put nasm on PATH
+  if: runner.os == 'Windows'
+  shell: bash
+  run: echo 'C:\Program Files\NASM' >> "$GITHUB_PATH"
+# MSVC can't assemble rav1e's aarch64 assembly, which is GNU syntax;
+# clang-cl, which the runner has, can.
+- name: Use clang-cl for aarch64 Windows
+  if: runner.os == 'Windows'
+  shell: bash
+  run: echo 'CC_aarch64_pc_windows_msvc=clang-cl' >> "$GITHUB_ENV"

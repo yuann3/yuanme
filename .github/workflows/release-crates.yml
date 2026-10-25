@@ -1,0 +1,31 @@
+# Publishes every crate to crates.io once the GitHub Release exists
+# (dist-workspace.toml's publish-jobs): `yuanme` at the release's version,
+# and the library crates at 0.0.N, which exist only so `cargo install
+# --locked yuanme` builds (ADR 0015).
+name: Release crates
+
+on:
+  workflow_call:
+    inputs:
+      plan:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install
+      # Publishing builds each crate from its tarball; rav1e's x86_64
+      # assembly needs nasm (#27).
+      - run: sudo apt-get install -y nasm
+      # In dependency order, each one waiting until crates.io has the last.
+      - run: cargo publish --workspace --exclude xtask --locked
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
