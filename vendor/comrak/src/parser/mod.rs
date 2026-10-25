@@ -769,9 +769,28 @@ where
         if matched >= fence_length {
             self.advance_offset(line, matched, false);
 
-            // The last child, like an indented codeblock, could be left open.
-            // Make sure it's finalized.
-            if container.last_child_is_open() {
+            // Every block still open inside the directive ends with it, as
+            // a line that doesn't continue them would end them: deepest
+            // first, so a list item's paragraph gets its own end and not
+            // one guessed from its start.
+            let mut inside = Vec::new();
+            let mut open = Some(self.current);
+            while let Some(n) = open {
+                if n.same_node(container) {
+                    break;
+                }
+                inside.push(n);
+                open = n.parent();
+            }
+            if open.is_some() {
+                for n in inside {
+                    if n.data().open {
+                        self.finalize(n);
+                    }
+                }
+            } else if container.last_child_is_open() {
+                // The last child, like an indented codeblock, could be left
+                // open. Make sure it's finalized.
                 let mut child = container.last_child().unwrap();
                 // Descend to the deepest-last open child before finalizing it.
                 // Stop descending when encountering a `List` node because

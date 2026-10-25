@@ -121,6 +121,29 @@ fn sourcepos_with_list() {
 }
 
 #[test]
+fn sourcepos_with_list_ends_at_the_items_last_byte() {
+    // The item and its paragraph end where their line does, not at their
+    // start, which split the `é` they end in.
+    assert_ast_match!(
+        [extension.block_directive],
+        ":::foo\n"
+        "1. aé\n"
+        ":::\n",
+        (document (1:1-3:3) [
+            (block_directive (1:1-3:3) [
+                (list (2:1-2:6) [
+                    (item (2:1-2:6) [
+                        (paragraph (2:4-2:6) [
+                            (text (2:4-2:6) "aé")
+                        ])
+                    ])
+                ])
+            ])
+        ])
+    );
+}
+
+#[test]
 fn sourcepos_in_blockquote() {
     assert_ast_match!(
         [extension.block_directive],
@@ -136,5 +159,18 @@ fn sourcepos_in_blockquote() {
                 ])
             ])
         ])
+    );
+}
+
+#[test]
+fn info_with_colons() {
+    html_opts!(
+        [extension.block_directive],
+        concat!("::::theorem[Proof: one]{#thm:a}\n", "a\n", "::::\n",),
+        concat!(
+            "<div class=\"theorem[Proof: one]{#thm:a}\">\n",
+            "<p>a</p>\n",
+            "</div>\n",
+        ),
     );
 }

@@ -121,18 +121,13 @@ pub fn open_block_directive_fence(s: &str) -> Option<usize> {
                             255
                         }
                     };
+                    cursor += 1;
                     match yych {
-                        0x00..=0x09 | 0x0B..=0x0C | 0x0E..=0x39 | 0x3B..=0xFE => {
-                            cursor += 1;
+                        0x00..=0x09 | 0x0B..=0x0C | 0x0E..=0xFE => {
                             yystate = 7;
                             continue 'yyl;
                         }
-                        0x3A => {
-                            yystate = 5;
-                            continue 'yyl;
-                        }
                         _ => {
-                            cursor += 1;
                             yystate = 8;
                             continue 'yyl;
                         }

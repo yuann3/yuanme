@@ -14,7 +14,7 @@ readme = false
 # `cargo xtask vendor-check` fails if the two differ (#47).
 [package.metadata.fork]
 repository = "https://github.com/yuann3/comrak"
-rev = "5c14241418654c10b6a5129ee535b5831c231d9b"
+rev = "f2bec8de9961b66489ccfb01b016961baae0a23a"
 
 [lib]
 name = "comrak"
