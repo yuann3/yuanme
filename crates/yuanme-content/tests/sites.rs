@@ -931,3 +931,91 @@ fn spans_after_a_lone_carriage_return_point_at_the_right_text() {
         "[b](b.md)"
     );
 }
+
+/// Front matter as the JSON a schema validates.
+fn front_matter(text: &str) -> serde_json::Value {
+    use yuanme_content::yaml::{self, Node, Yaml};
+    fn json(n: &Node) -> serde_json::Value {
+        match &n.value {
+            Yaml::Null => serde_json::Value::Null,
+            Yaml::Bool(b) => (*b).into(),
+            Yaml::Int(i) => (*i).into(),
+            Yaml::Float(f) => (*f).into(),
+            Yaml::Str(s) => s.as_str().into(),
+            Yaml::Seq(items) => items.iter().map(json).collect(),
+            Yaml::Map(entries) => entries
+                .iter()
+                .map(|(k, v)| (k.name.clone(), json(v)))
+                .collect(),
+        }
+    }
+    let yaml = text
+        .strip_prefix("---\n")
+        .and_then(|rest| rest.split_once("---\n"))
+        .map_or("", |(yaml, _)| yaml);
+    json(&yaml::parse(yaml, 0).unwrap())
+}
+
+/// `yuanme schema entry` and `schema data` agree with what a build
+/// accepts: every Entry and Data file that resolves validates, and front
+/// matter the Engine rejects for its fields fails.
+#[test]
+fn the_front_matter_and_data_schemas_accept_what_resolves() {
+    let config_of = |fixture: &str| {
+        let mut files = Files::default();
+        let text = &project(fixture)[0].1;
+        let file = files.add("yuanme.toml", text.as_str());
+        config::parse(&files, file, "1.0.0").0.unwrap()
+    };
+    let validator = |config: &config::Config, collection: &str| {
+        let collections = site::collections(config);
+        let schema = config::entry_schema(config, collection, &collections[collection]);
+        jsonschema::validator_for(&schema).unwrap()
+    };
+
+    let (_, site, diagnostics) = resolve(BLOG, true);
+    assert!(site.is_some(), "{diagnostics:#?}");
+    let config = config_of(BLOG);
+    for (path, text) in project(BLOG) {
+        let Some(rest) = path.strip_prefix("content/") else {
+            continue;
+        };
+        let Some((collection, _)) = rest.split_once('/').filter(|_| path.ends_with(".md")) else {
+            continue;
+        };
+        let errors: Vec<String> = validator(&config, collection)
+            .iter_errors(&front_matter(&text))
+            .map(|e| e.to_string())
+            .collect();
+        assert!(errors.is_empty(), "{path}: {errors:?}");
+    }
+    let nav = config::data_schema("nav", &config.data["nav"]);
+    assert!(jsonschema::is_valid(
+        &nav,
+        &serde_json::json!([{ "name": "Blog", "href": "/blog/" }])
+    ));
+    assert!(!jsonschema::is_valid(
+        &nav,
+        &serde_json::json!([{ "name": "Blog", "url": "/blog/" }])
+    ));
+
+    let config = config_of(BASE);
+    let schema = validator(&config, "posts");
+    for wrong in [
+        "---\ntitle: Hi\nn: 0\n---\n",
+        "---\ntitle: Hi\nn: 2.5\n---\n",
+        "---\ntitle: Hi\nkind: poem\n---\n",
+        "---\ntitel: Hi\n---\n",
+        "---\ntitle: [Hi]\n---\n",
+        "---\ntitle: Hi\ntags: rust\n---\n",
+        "---\ntitle: Hi\nseries: [a, b]\n---\n",
+        "---\ntitle: Hi\ndraft: yes\n---\n",
+    ] {
+        let (_, site, _) = resolve(&fixture(wrong), false);
+        assert!(site.is_none(), "the Engine accepts {wrong:?}");
+        assert!(
+            !schema.is_valid(&front_matter(wrong)),
+            "the schema accepts {wrong:?}"
+        );
+    }
+}

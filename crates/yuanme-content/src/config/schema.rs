@@ -2,7 +2,11 @@
 //! JSON Schema read, so the two can't disagree. Each key's `doc` is the
 //! text an editor shows on hover and the docs show for it (#21).
 
+use std::collections::BTreeMap;
+
 use serde_json::{Map, Value, json};
+
+use super::{Collection, Config, DataSchema, Field, FieldType};
 
 pub(crate) struct Key {
     pub name: &'static str,
@@ -479,4 +483,190 @@ fn field(in_table: bool) -> Value {
         })
         .collect();
     json!({ "oneOf": types })
+}
+
+/// The draft 2020-12 JSON Schema of the front matter of `collection`'s
+/// Entries, named `name` (#21): the fields every Entry shares, its declared
+/// fields and its Taxonomies. Org keywords set the same fields.
+pub fn entry_schema(config: &Config, name: &str, collection: &Collection) -> Value {
+    let string = FieldType::String {
+        min: None,
+        max: None,
+    };
+    let built_in = |kind: FieldType, optional: bool, doc: &str| Field {
+        kind,
+        optional,
+        default: None,
+        description: Some(doc.into()),
+    };
+    let mut fields = BTreeMap::from([
+        (
+            "title".to_string(),
+            built_in(string.clone(), false, "The Entry's title."),
+        ),
+        (
+            "date".into(),
+            built_in(FieldType::Date, true, "When the Entry was published."),
+        ),
+        (
+            "updated".into(),
+            built_in(FieldType::Date, true, "When the Entry was last changed."),
+        ),
+        (
+            "slug".into(),
+            built_in(
+                string,
+                true,
+                "Its URL-safe name, which defaults to one from the file's path.",
+            ),
+        ),
+        (
+            "draft".into(),
+            built_in(
+                FieldType::Bool,
+                true,
+                "Shown while previewing, absent from the published Site.",
+            ),
+        ),
+        (
+            "unlisted".into(),
+            built_in(
+                FieldType::Bool,
+                true,
+                "Published, but left out of every list, Taxonomy, feed and sitemap.",
+            ),
+        ),
+    ]);
+    for (field, f) in &collection.fields {
+        // A declared `date` only makes the built-in required.
+        match fields.get_mut(field) {
+            Some(date) => date.optional = f.optional,
+            None => {
+                fields.insert(field.clone(), f.clone());
+            }
+        }
+    }
+    let mut schema = object(&fields);
+    for (t, taxonomy) in &config.taxonomies {
+        if !taxonomy.collections.iter().any(|c| c == name) {
+            continue;
+        }
+        let terms = match taxonomy.single {
+            true => json!({ "type": "string", "description": format!("Its Term of `{t}`.") }),
+            false => json!({
+                "type": "array",
+                "items": { "type": "string" },
+                "description": format!("Its Terms of `{t}`."),
+            }),
+        };
+        schema["properties"][t] = terms;
+    }
+    head(schema, &format!("Front matter of `{name}` Entries."))
+}
+
+/// The draft 2020-12 JSON Schema of the Data file `[data.<name>]` declares.
+pub fn data_schema(name: &str, data: &DataSchema) -> Value {
+    head(field_type(&data.kind), &format!("The Data file `{name}`."))
+}
+
+fn head(mut schema: Value, description: &str) -> Value {
+    schema["$schema"] = "https://json-schema.org/draft/2020-12/schema".into();
+    schema["description"] = description.into();
+    schema.sort_all_objects();
+    schema
+}
+
+/// A closed object: unknown keys are errors (#18).
+fn object(fields: &BTreeMap<String, Field>) -> Value {
+    let mut properties = Map::new();
+    let mut required = Vec::new();
+    for (name, f) in fields {
+        let mut property = field_type(&f.kind);
+        if let Some(doc) = &f.description {
+            property["description"] = doc.as_str().into();
+        }
+        if let Some(default) = &f.default {
+            property["default"] = toml_json(default);
+        }
+        if !f.optional {
+            required.push(name.as_str());
+        }
+        properties.insert(name.clone(), property);
+    }
+    json!({
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": false,
+    })
+}
+
+fn field_type(kind: &FieldType) -> Value {
+    let bounds =
+        |schema: &mut Value, lo: &str, hi: &str, min: Option<Value>, max: Option<Value>| {
+            if let Some(min) = min {
+                schema[lo] = min;
+            }
+            if let Some(max) = max {
+                schema[hi] = max;
+            }
+        };
+    match kind {
+        FieldType::String { min, max } => {
+            let mut s = json!({ "type": "string" });
+            bounds(
+                &mut s,
+                "minLength",
+                "maxLength",
+                min.map(Value::from),
+                max.map(Value::from),
+            );
+            s
+        }
+        FieldType::Int { min, max } => {
+            let mut s = json!({ "type": "integer" });
+            bounds(
+                &mut s,
+                "minimum",
+                "maximum",
+                min.map(Value::from),
+                max.map(Value::from),
+            );
+            s
+        }
+        FieldType::Float { min, max } => {
+            let mut s = json!({ "type": "number" });
+            bounds(
+                &mut s,
+                "minimum",
+                "maximum",
+                min.map(Value::from),
+                max.map(Value::from),
+            );
+            s
+        }
+        FieldType::Bool => json!({ "type": "boolean" }),
+        FieldType::Date => json!({ "type": "string", "format": "date" }),
+        // Without an offset it is in `site.timezone`, which `date-time` forbids.
+        FieldType::Datetime => json!({ "type": "string" }),
+        FieldType::Url => shape(&Shape::Url),
+        FieldType::Image => json!({ "type": "string" }),
+        FieldType::Enum(values) => json!({ "enum": values }),
+        FieldType::List { items, unique } => {
+            json!({ "type": "array", "items": field_type(items), "uniqueItems": unique })
+        }
+        FieldType::Object(fields) => object(fields),
+    }
+}
+
+fn toml_json(v: &toml::Value) -> Value {
+    match v {
+        toml::Value::String(s) => s.as_str().into(),
+        toml::Value::Integer(i) => (*i).into(),
+        toml::Value::Float(f) => (*f).into(),
+        toml::Value::Boolean(b) => (*b).into(),
+        toml::Value::Datetime(d) => d.to_string().into(),
+        toml::Value::Array(items) => items.iter().map(toml_json).collect(),
+        toml::Value::Table(t) => t.iter().map(|(k, v)| (k.clone(), toml_json(v))).collect(),
+    }
 }

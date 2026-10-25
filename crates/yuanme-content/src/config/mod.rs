@@ -15,9 +15,9 @@ use yuanme_diag::{Diagnostic, FileId, Files, codes};
 
 pub use check::similar;
 use check::{Checker, kind, parse_browser_version, parse_version};
-pub use schema::json_schema;
 #[cfg(test)]
 use schema::{Key, Shape};
+pub use schema::{data_schema, entry_schema, json_schema};
 
 #[derive(Debug)]
 pub struct Config {
