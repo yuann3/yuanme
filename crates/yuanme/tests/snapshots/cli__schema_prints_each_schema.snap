@@ -1,0 +1,62 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: "yuanme(root, &[\"schema\", \"entry\", \"posts\"]).stdout"
+---
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Front matter of `posts` Entries.",
+  "properties": {
+    "date": {
+      "description": "When the Entry was published.",
+      "format": "date",
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "draft": {
+      "description": "Shown while previewing, absent from the published Site.",
+      "type": "boolean"
+    },
+    "hero": {
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "essay",
+        "note"
+      ]
+    },
+    "slug": {
+      "description": "Its URL-safe name, which defaults to one from the file's path.",
+      "type": "string"
+    },
+    "tags": {
+      "description": "Its Terms of `tags`.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "title": {
+      "description": "The Entry's title.",
+      "type": "string"
+    },
+    "unlisted": {
+      "description": "Published, but left out of every list, Taxonomy, feed and sitemap.",
+      "type": "boolean"
+    },
+    "updated": {
+      "description": "When the Entry was last changed.",
+      "format": "date",
+      "type": "string"
+    }
+  },
+  "required": [
+    "description",
+    "kind",
+    "title"
+  ],
+  "type": "object"
+}

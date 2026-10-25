@@ -1,0 +1,7 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: summary
+---
+content/posts/org.org:4:3: warning[org/no-effect]: `#+AUTHOR` has no effect in yuanme
+templates/posts/list.html:1:14: error[template/unknown-filter]: there is no filter `lenght`
+check found 1 error and 1 warning
