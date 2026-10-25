@@ -220,7 +220,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     files.extend(statics);
     let more = links::links(&config, &site, &rendered, &files, &templates, &sources);
     diagnostics.extend(more);
-    let (files, more) = host::host(&config, files, mode != Mode::Dev);
+    let (files, more) = host::host(&config, files, mode != Mode::Dev, cache);
     diagnostics.extend(more);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));

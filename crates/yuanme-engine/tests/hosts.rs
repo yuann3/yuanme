@@ -4,6 +4,7 @@
 
 use std::collections::BTreeMap;
 use std::fmt::Write;
+use std::io::Read;
 use std::path::Path;
 
 use yuanme_engine::{Body, Build, Cache, Inputs, Mode, build};
@@ -109,7 +110,11 @@ fn each_adapter_writes_the_files_its_host_reads() {
     // The static adapter writes nothing of its own.
     let plain = run(&with_host("adapter = \"static\""));
     for adapter in ADAPTERS {
-        let build = run(&with_host(&format!("adapter = \"{adapter}\"")));
+        let mut host = format!("adapter = \"{adapter}\"");
+        if *adapter == "static" {
+            host.push_str("\nprecompress = true");
+        }
+        let build = run(&with_host(&host));
         assert!(!build.failed(), "{adapter}:\n{}", diagnostics(&build));
         insta::assert_snapshot!(format!("adapter_{adapter}"), show(&build, &plain));
     }
@@ -314,6 +319,33 @@ fn every_host_redirects_as_site_config_says_and_pages_need_no_redirect() {
         "{stub}"
     );
     assert!(file(&build, "talk.html").contains("url=https://example.com/talk"));
+}
+
+#[test]
+fn precompressed_files_decode_to_their_text_and_others_get_none() {
+    let build = run(&with_host("adapter = \"static\"\nprecompress = true"));
+    assert!(!build.failed(), "{}", diagnostics(&build));
+    let css = stylesheet(&build)[1..].to_string();
+    for path in [
+        "index.html",
+        "blog/pew/index.html",
+        "404.html",
+        "sitemap-0.xml",
+        &css,
+    ] {
+        let original = bytes(&build, path);
+        let mut br = Vec::new();
+        brotli::Decompressor::new(bytes(&build, &format!("{path}.br")), 4096)
+            .read_to_end(&mut br)
+            .unwrap();
+        assert_eq!(br, original, "{path}.br");
+        let mut gz = Vec::new();
+        flate2::read::GzDecoder::new(bytes(&build, &format!("{path}.gz")))
+            .read_to_end(&mut gz)
+            .unwrap();
+        assert_eq!(gz, original, "{path}.gz");
+    }
+    assert!(!build.files.contains_key("resume.pdf.br"));
 }
 
 /// A mistake: files over the fixture's, with `yuanme.toml+` appended to

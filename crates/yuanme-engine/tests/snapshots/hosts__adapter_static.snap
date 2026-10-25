@@ -3,9 +3,33 @@ source: crates/yuanme-engine/tests/hosts.rs
 expression: "show(&build, &plain)"
 ---
 404.html
+=== 404.html.br
+<44 bytes>
+=== 404.html.gz
+<74 bytes>
 assets/site-84f6e9bacfe776e5.css
+=== assets/site-84f6e9bacfe776e5.css.br
+<19 bytes>
+=== assets/site-84f6e9bacfe776e5.css.gz
+<35 bytes>
 blog/pew/index.html
+=== blog/pew/index.html.br
+<119 bytes>
+=== blog/pew/index.html.gz
+<182 bytes>
 index.html
+=== index.html.br
+<165 bytes>
+=== index.html.gz
+<239 bytes>
 resume.pdf
 sitemap-0.xml
+=== sitemap-0.xml.br
+<105 bytes>
+=== sitemap-0.xml.gz
+<148 bytes>
 sitemap-index.xml
+=== sitemap-index.xml.br
+<106 bytes>
+=== sitemap-index.xml.gz
+<145 bytes>

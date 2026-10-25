@@ -4,12 +4,15 @@
 
 use std::collections::BTreeMap;
 use std::fmt::Write;
+use std::io::Write as _;
 use std::ops::Range;
+use std::sync::Arc;
 
+use rayon::prelude::*;
 use yuanme_content::config::{Adapter, Config, HeaderRule};
 use yuanme_diag::{Diagnostic, Span, codes};
 
-use crate::{Body, Output};
+use crate::{Body, Cache, Output};
 
 /// For hashed files, whose name changes with their bytes (#15).
 const IMMUTABLE: &str = "public, max-age=31536000, immutable";
@@ -110,6 +113,7 @@ pub(crate) fn host(
     config: &Config,
     mut files: BTreeMap<String, Output>,
     render: bool,
+    cache: &mut Cache,
 ) -> (BTreeMap<String, Output>, Vec<Diagnostic>) {
     let at = |range: Range<usize>| Span {
         file: config.file,
@@ -312,6 +316,7 @@ pub(crate) fn host(
                 }
             }
         }
+        Adapter::Static if host.precompress => written.extend(precompressed(&files, cache)),
         Adapter::Static => {}
     }
     for (path, bytes) in written {
@@ -483,4 +488,78 @@ fn custom_domain(url: &str) -> Option<&str> {
     let rest = url.split_once("://").map_or(url, |(_, rest)| rest);
     let domain = rest.split(['/', ':']).next().unwrap_or(rest);
     (!domain.is_empty() && !domain.ends_with(".github.io")).then_some(domain)
+}
+
+/// Text that Caddy's `precompressed` and nginx's `brotli_static` and
+/// `gzip_static` serve from a sibling file.
+const TEXT: &[&str] = &[
+    ".html",
+    ".css",
+    ".js",
+    ".mjs",
+    ".json",
+    ".xml",
+    ".txt",
+    ".svg",
+    ".webmanifest",
+];
+
+/// A `.br` at quality 11 and a `.gz` beside each text file. Brotli at 11
+/// takes about a second per MB, so its output is cached by the input's
+/// bytes (ADR 0011).
+fn precompressed(files: &BTreeMap<String, Output>, cache: &mut Cache) -> Vec<(String, Vec<u8>)> {
+    let text: Vec<(&String, &Arc<[u8]>)> = files
+        .iter()
+        .filter(|(path, _)| TEXT.iter().any(|e| path.ends_with(e)))
+        .filter_map(|(path, output)| match &output.body {
+            Body::Bytes(bytes) => Some((path, bytes)),
+            _ => None,
+        })
+        .collect();
+    let keys: Vec<blake3::Hash> = text
+        .iter()
+        .map(|(_, bytes)| {
+            let mut key = cache.key("brotli");
+            key.update(bytes);
+            key.finalize()
+        })
+        .collect();
+    let cached: Vec<Option<Arc<[u8]>>> = keys.iter().map(|k| cache.get("brotli", k)).collect();
+    let made: Vec<(Arc<[u8]>, bool, Vec<u8>)> = text
+        .par_iter()
+        .zip(cached)
+        .map(|((_, bytes), cached)| {
+            let fresh = cached.is_none();
+            let br = cached.unwrap_or_else(|| brotli(bytes).into());
+            (br, fresh, gzip(bytes))
+        })
+        .collect();
+    let mut out = Vec::new();
+    for (((path, _), key), (br, fresh, gz)) in text.iter().zip(keys).zip(made) {
+        if fresh {
+            cache.insert("brotli", key, br.clone());
+        }
+        out.push((format!("{path}.br"), br.to_vec()));
+        out.push((format!("{path}.gz"), gz));
+    }
+    out
+}
+
+fn brotli(bytes: &[u8]) -> Vec<u8> {
+    let params = brotli::enc::BrotliEncoderParams {
+        quality: 11,
+        lgwin: 22,
+        ..Default::default()
+    };
+    let mut out = Vec::new();
+    brotli::BrotliCompress(&mut &bytes[..], &mut out, &params).expect("writing to memory");
+    out
+}
+
+/// No file name and a zero time in its header, so the bytes are the same
+/// every build.
+fn gzip(bytes: &[u8]) -> Vec<u8> {
+    let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::best());
+    encoder.write_all(bytes).expect("writing to memory");
+    encoder.finish().expect("writing to memory")
 }
