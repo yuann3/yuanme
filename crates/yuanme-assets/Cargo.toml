@@ -24,8 +24,15 @@ mozjpeg-rs = "=0.9.2"
 libwebp-sys = "=0.14.4"
 # MPL-2.0, used unmodified (ADR 0014).
 lightningcss = { version = "=1.0.0-alpha.72", default-features = false, features = ["bundler"] }
-# rolldown 1.2.15's, so #58 adds no second copy.
+# One family, bumped together: rolldown's own crates and oxc float under
+# its `^` requirements, so the lockfile is what holds them (#27).
+rolldown = "=1.2.15"
+rolldown_common = "=1.2.15"
+rolldown_error = "=1.2.15"
+# rolldown 1.2.15's.
 oxc_resolver = "=11.24.3"
+# rolldown runs on it; one current-thread runtime per build.
+tokio = { version = "1.52.3", features = ["rt"] }
 elsa = "1.11.2"
 
 [features]
