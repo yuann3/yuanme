@@ -1,0 +1,4 @@
+.row {
+  background: url(../../img/arrow.svg) no-repeat;
+  &:hover { color: red }
+}

@@ -105,7 +105,8 @@ fn site_config_that_is_not_utf8_is_an_error_not_a_lossy_guess() {
 
 #[test]
 fn link_names_assets_by_the_hash_of_their_final_bytes() {
-    let font = b"FONT".to_vec();
+    // A font holds NUL bytes, which are not placeholders.
+    let font = b"wOF2\0\x01\0".to_vec();
     let font_hash = blake3::hash(&font).to_hex();
     let font_url = format!("/assets/math-{}.woff2", &font_hash[..16]);
     // The stylesheet's name must cover the font's name, or a new font would
@@ -122,11 +123,12 @@ fn link_names_assets_by_the_hash_of_their_final_bytes() {
             b"<link href=\"\0asset:1\0\"><p>\0asset:0\0".to_vec(),
         )],
         vec![
-            link::Asset {
+            link::Asset::Copy {
                 name: "math.woff2".into(),
-                bytes: font.clone(),
+                body: Body::Bytes(font.clone().into()),
+                hash: blake3::hash(&font),
             },
-            link::Asset {
+            link::Asset::Linked {
                 name: "site.css".into(),
                 bytes: b"@font-face{src:url(\0asset:0\0)}".to_vec(),
             },
@@ -286,16 +288,21 @@ fn templates_render_each_route_and_the_sitemap_and_sidecars_are_not_templates() 
         b"<h1>{{ entry.title }}</h1>{{ entry.content }}".as_slice(),
     );
     // A Sidecar, which is CSS, not Jinja: `{#` would open a comment.
-    inputs.insert("templates/posts/entry.css", b"a{#x}".as_slice());
+    inputs.insert("templates/posts/entry.css", b"a{#x{color:red}}".as_slice());
     inputs.insert("static/robots.txt", b"".as_slice());
 
     let build = build(&inputs, &mut Cache::memory("1.0.0"), Mode::Build);
 
     assert!(!build.failed(), "{:#?}", build.diagnostics);
     let paths: Vec<_> = build.files.keys().map(String::as_str).collect();
+    let sidecars = format!(
+        "assets/sidecars-{}.css",
+        &blake3::hash(b"a #x{color:red}").to_hex()[..16]
+    );
     assert_eq!(
         paths,
         [
+            sidecars.as_str(),
             "blog/pew/index.html",
             "robots.txt",
             "sitemap-0.xml",

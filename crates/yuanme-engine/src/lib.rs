@@ -1,6 +1,7 @@
 //! The one seam every caller crosses: `build` turns a snapshot of the
 //! project into every file of the Site, in memory (ADR 0011).
 
+mod assets;
 mod cache;
 pub mod image;
 mod link;
@@ -171,13 +172,12 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources);
     }
-    // The assets stage (#56) runs alongside render, hands link its bundles
-    // and gives each Page the Sidecars of `page.templates`.
-    let pages = pages
-        .into_iter()
-        .map(|p| (p.output, p.text.into_bytes()))
-        .collect();
-    let mut files = link(pages, Vec::new());
+    let stage = assets::assets(inputs, &config, pages, &templates, &mut sources);
+    diagnostics.extend(stage.diagnostics);
+    if diagnostics.iter().any(|d| d.level == Level::Error) {
+        return failed(diagnostics, sources);
+    }
+    let mut files = link(stage.pages, stage.assets);
     files.extend(statics);
 
     let build = Build {

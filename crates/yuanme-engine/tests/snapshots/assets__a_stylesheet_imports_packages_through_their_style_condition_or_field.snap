@@ -1,0 +1,21 @@
+---
+source: crates/yuanme-engine/tests/assets.rs
+expression: show(&hoisted)
+---
+=== assets/geist-latin-400-a5b2cacbf565eeeb.woff2
+<10 bytes>
+=== assets/site-012cfbca5ce4797f.css
+@font-face{font-family:Geist;src:url("/assets/geist-latin-400-a5b2cacbf565eeeb.woff2")format("woff2")}.mono{font-family:Geist Mono}.plain{color:red}
+=== index.html
+<head><link rel="stylesheet" href="/assets/site-012cfbca5ce4797f.css"></head>
+=== sitemap-0.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://e.com/</loc></url>
+</urlset>
+
+=== sitemap-index.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemap><loc>https://e.com/sitemap-0.xml</loc></sitemap>
+</sitemapindex>

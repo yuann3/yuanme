@@ -1,0 +1,4 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ entry.title }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="../../styles/post.css?v=2">{% endblock %}
+{% block body %}<article>{{ entry.content }}</article>{% endblock %}

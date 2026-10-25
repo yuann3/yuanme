@@ -1,0 +1,84 @@
+---
+source: crates/yuanme-engine/tests/assets.rs
+expression: "show(&run(&load(&fixture(\"assets\"))))"
+---
+=== 404.html
+<p>Not found.</p>
+=== assets/arrow-99fb5b4d72fb002d.svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>
+
+=== assets/geist-0445ae2734ee3381.woff2
+<13 bytes>
+=== assets/grain-4d90aca33920c263.png
+<copied from img/grain.png>
+=== assets/post-3cc3f4bb7f2cf9db.css
+article{color:#333}
+=== assets/sidecars-3aaa90badd8a9573.css
+.row{background:url("/assets/arrow-99fb5b4d72fb002d.svg") no-repeat}.row:hover{color:red}
+=== assets/site-d2105a12062f54c6.css
+@font-face{font-family:Geist;src:url("/assets/geist-0445ae2734ee3381.woff2")format("woff2");font-display:swap}body{background:url("/assets/grain-4d90aca33920c263.png");min-height:100dvh}.logo{background-image:url("/logo.svg")}.noise{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E")}.glow{filter:url("#glow")}
+=== blog/pew/index.html
+<!doctype html>
+<html>
+<head>
+<title>Pew</title>
+<link rel="preload" as="font" type="font/woff2" href="/assets/geist-0445ae2734ee3381.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site-d2105a12062f54c6.css">
+<link rel="icon" href="/favicon.svg">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+<link rel="preconnect" href="https://fonts.example">
+<script type="module" src="/scripts/site.ts"></script>
+<script type="application/ld+json">{"name": "e"}</script>
+<style>body { margin: 0 }</style>
+<link rel="stylesheet" href="/assets/post-3cc3f4bb7f2cf9db.css?v=2"><link rel="stylesheet" href="/assets/sidecars-3aaa90badd8a9573.css"></head>
+<body><article><p>Hi.</p></article></body>
+</html>
+=== favicon.svg
+<svg xmlns="http://www.w3.org/2000/svg"/>
+
+=== index.html
+<!doctype html>
+<html>
+<head>
+<title>Home</title>
+<link rel="preload" as="font" type="font/woff2" href="/assets/geist-0445ae2734ee3381.woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site-d2105a12062f54c6.css"><link rel="stylesheet" href="/assets/sidecars-3aaa90badd8a9573.css">
+<link rel="icon" href="/favicon.svg">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+<link rel="preconnect" href="https://fonts.example">
+<script type="module" src="/scripts/site.ts"></script>
+<script type="application/ld+json">{"name": "e"}</script>
+<style>body { margin: 0 }</style>
+</head>
+<body><a class="row" href="/blog/pew/">Pew</a></body>
+</html>
+=== logo.svg
+<svg xmlns="http://www.w3.org/2000/svg"/>
+
+=== rss.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>https://e.com</title>
+<link>https://e.com/</link>
+<description></description>
+<item>
+<title>Pew</title>
+<link>https://e.com/blog/pew/</link>
+<guid isPermaLink="true">https://e.com/blog/pew/</guid>
+<pubDate>Thu, 02 Jan 2025 00:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>
+=== sitemap-0.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://e.com/</loc></url>
+<url><loc>https://e.com/blog/pew/</loc></url>
+</urlset>
+
+=== sitemap-index.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemap><loc>https://e.com/sitemap-0.xml</loc></sitemap>
+</sitemapindex>

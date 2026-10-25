@@ -1,0 +1,26 @@
+---
+source: crates/yuanme-engine/tests/assets.rs
+expression: diagnostics(&build)
+---
+error[asset/not-found]: `/styles/sit.css` names no file of the project
+ --> templates/home.html:2:46
+  |
+2 | {% block head %}<link rel="stylesheet" href="/styles/sit.css">
+  |                                              ^^^^^^^^^^^^^^^
+  |
+  = help: did you mean `/styles/site.css`?
+  = note: in the Page written to `index.html`
+  = note: run `yuanme docs asset/not-found` for more
+error[asset/classic-script]: `/scripts/site.ts` is loaded as a classic script
+ --> templates/home.html:3:14
+  |
+3 | <script src="/scripts/site.ts"></script>{% endblock %}
+  |              ^^^^^^^^^^^^^^^^
+  |
+  = help: yuanme bundles Scripts as modules
+  = note: in the Page written to `index.html`
+  = note: run `yuanme docs asset/classic-script` for more
+help: add `type="module"`
+  |
+3 | <script type="module" src="/scripts/site.ts"></script>{% endblock %}
+  |         +++++++++++++

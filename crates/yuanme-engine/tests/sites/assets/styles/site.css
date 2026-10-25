@@ -1,0 +1,11 @@
+@import "parts/type.css";
+
+body {
+  background: url("/img/grain.png");
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.logo { background-image: url(../logo.svg) }
+.noise { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E") }
+.glow { filter: url(#glow) }

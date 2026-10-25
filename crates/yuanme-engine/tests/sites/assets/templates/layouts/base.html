@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head>
+<title>{% block title %}{% endblock %}</title>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/geist.woff2" crossorigin>
+<link rel="stylesheet" href="/styles/site.css">
+<link rel="icon" href="/favicon.svg">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+<link rel="preconnect" href="https://fonts.example">
+<script type="module" src="/scripts/site.ts"></script>
+<script type="application/ld+json">{"name": "e"}</script>
+<style>body { margin: 0 }</style>
+{% block head %}{% endblock %}
+</head>
+<body>{% block body %}{% endblock %}</body>
+</html>

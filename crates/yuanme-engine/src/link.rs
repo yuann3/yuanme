@@ -9,10 +9,17 @@ use crate::{Body, Output};
 
 /// A file the Engine processed, such as a CSS bundle, which is named by the
 /// hash of its bytes under `/assets/`.
-pub(crate) struct Asset {
-    /// The name before hashing, such as `site.css`.
-    pub name: String,
-    pub bytes: Vec<u8>,
+pub(crate) enum Asset {
+    /// Final already, such as a font. Its bytes may hold NUL, so they are
+    /// never searched for placeholders.
+    Copy {
+        /// The name before hashing, such as `geist.woff2`.
+        name: String,
+        body: Body,
+        hash: blake3::Hash,
+    },
+    /// Holds placeholders, as a stylesheet does for its fonts.
+    Linked { name: String, bytes: Vec<u8> },
 }
 
 /// Swaps every placeholder for its asset's hashed URL and hashes every file.
@@ -25,11 +32,16 @@ pub(crate) fn link(pages: Vec<(String, Vec<u8>)>, assets: Vec<Asset>) -> BTreeMa
     let mut urls = Vec::with_capacity(assets.len());
     let mut files = BTreeMap::new();
     for asset in assets {
-        let bytes = substitute(&asset.bytes, &urls);
-        let hash = blake3::hash(&bytes);
-        let path = hashed_path(&asset.name, &hash);
+        let (name, body, hash) = match asset {
+            Asset::Copy { name, body, hash } => (name, body, hash),
+            Asset::Linked { name, bytes } => {
+                let bytes = substitute(&bytes, &urls);
+                let hash = blake3::hash(&bytes);
+                (name, Body::Bytes(bytes.into()), hash)
+            }
+        };
+        let path = hashed_path(&name, &hash);
         urls.push(format!("/{path}"));
-        let body = Body::Bytes(bytes.into());
         files.insert(path, Output { body, hash });
     }
     let pages: Vec<_> = pages

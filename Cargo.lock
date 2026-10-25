@@ -2726,6 +2726,7 @@ version = "0.0.0"
 dependencies = [
  "blake3",
  "image",
+ "insta",
  "rayon",
  "tempfile",
  "yuanme-assets",

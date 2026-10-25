@@ -1,0 +1,17 @@
+[site]
+url = "https://e.com"
+
+[collections.posts]
+route = "/blog/{slug}/"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"
+
+[feeds.rss]
+collections = ["posts"]
+path = "/rss.xml"
