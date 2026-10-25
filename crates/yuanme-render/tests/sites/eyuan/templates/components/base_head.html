@@ -1,5 +1,5 @@
-{# props: title: string, description: string, image?: string, article_date?: date #}
-{% macro base_head(title, description, image="/blog-placeholder-1.jpg", article_date=none) %}
+{# props: title: string, description: string, og_image?: string, article_date?: date #}
+{% macro base_head(title, description, og_image="/blog-placeholder-1.jpg", article_date=none) %}
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
@@ -14,12 +14,12 @@
 <meta property="og:url" content="{{ page.canonical }}" />
 <meta property="og:title" content="{{ title }}" />
 <meta property="og:description" content="{{ description }}" />
-<meta property="og:image" content="{{ absolute_url(image) }}" />
+<meta property="og:image" content="{{ absolute_url(og_image) }}" />
 {% if article_date %}
 <meta property="article:author" content="{{ site.author }}" />
 <meta property="article:published_time" content="{{ article_date|dateformat(format="%Y-%m-%d") }}" />
 {% endif %}
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:title" content="{{ title }}" />
-<meta property="twitter:image" content="{{ absolute_url(image) }}" />
+<meta property="twitter:image" content="{{ absolute_url(og_image) }}" />
 {% endmacro %}

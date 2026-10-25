@@ -1,10 +1,10 @@
-{# vars: title: string, description?: string, section?: enum(about|projects|writing|resume), image?: string, article_date?: date #}
+{# vars: title: string, description?: string, section?: enum(about|projects|writing|resume), og_image?: string, article_date?: date #}
 {% from "components/base_head.html" import base_head %}
 {% from "components/wordmark.html" import wordmark %}
 <!doctype html>
 <html lang="{{ site.language }}" data-state="{{ 'expanded' if section is defined else 'idle' }}"{{ {"data-section": section}|attrs }}>
   <head>
-    {{ base_head(title=title, description=description|default(site.description), image=image, article_date=article_date) }}
+    {{ base_head(title=title, description=description|default(site.description), og_image=og_image, article_date=article_date) }}
     {% include "partials/film_css.html" %}
   </head>
   <body>

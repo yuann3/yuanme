@@ -202,7 +202,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     }
     let (code, more) = highlight::code(&site, &sources, cache);
     diagnostics.extend(more);
-    let images = images::Images::new(inputs, cache, &config);
+    let images = Arc::new(images::Images::new(inputs, cache, &config, &templates));
     let (pictures, more) = images.bodies(&site);
     diagnostics.extend(more);
     let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
@@ -214,8 +214,12 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         &static_urls,
         &code,
         &pictures,
+        images.clone(),
     );
     diagnostics.extend(more);
+    let Ok(images) = Arc::try_unwrap(images) else {
+        unreachable!("render has dropped its Environment")
+    };
     let used = images.into_used();
     // Routes were checked against Static files before render; this is the
     // sitemap's files.

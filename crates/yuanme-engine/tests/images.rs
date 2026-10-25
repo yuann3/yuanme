@@ -249,3 +249,89 @@ fn an_image_that_fails_to_encode_is_an_error_at_its_reference() {
     assert!(!checked.failed());
     insta::assert_snapshot!(rendered(&inputs));
 }
+
+const HERO: &str = r#"<!doctype html>
+<html lang="en">
+<head>
+<title>{{ entry.title }}</title>
+<meta property="og:image" content="{{ absolute_url(image(entry.cover, width=300, format="jpeg").url) }}">
+</head>
+<body>
+{% set hero = image(entry.cover, widths=[240, 480], sizes="(min-width: 768px) 720px, 100vw") %}
+{{ hero | picture(alt=entry.title, priority=true, class="hero") }}
+<p>{{ hero.width }}×{{ hero.height }}, {{ hero.sources | length }} source</p>
+{{ image(entry.cover, widths=[240], formats=["webp"], quality=50) | picture(alt="Small", loading="eager") }}
+{{ image("/photos/logo.svg") | picture(alt="", priority=true, attrs={"data-logo": true}) }}
+{{ entry.content }}
+</body>
+</html>
+"#;
+
+fn heroes(template: &str) -> Inputs {
+    let config = format!("{CONFIG}\n[collections.posts.fields]\ncover = {{ type = \"image\" }}\n");
+    let mut inputs = project(&[
+        ("templates/posts/entry.html", template.as_bytes()),
+        (
+            "content/posts/sea/index.md",
+            b"---\ntitle: Sea\ncover: beach.jpg\n---\nSome text.\n",
+        ),
+        ("content/posts/sea/beach.jpg", &jpeg(600, 400)),
+        ("photos/logo.svg", SVG.as_bytes()),
+    ]);
+    inputs.insert("yuanme.toml", config.into_bytes());
+    inputs
+}
+
+/// `image()` names the outputs of an `image` field or a path, and
+/// `picture` writes them; `priority` preloads the image from the head.
+/// `width=` with one `format=` is one file, as for `og:image`.
+#[test]
+fn templates_make_pictures_with_image() {
+    let build = build(&heroes(HERO), &mut Cache::memory("1.0.0"), Mode::Build);
+    assert!(build.diagnostics.is_empty(), "{}", diagnostics(&build));
+    insta::assert_snapshot!(show(&build));
+}
+
+#[test]
+fn rendered_image_function_diagnostics() {
+    let mut inputs = project(&[
+        ("content/posts/sea/index.md", b"---\ntitle: Sea\n---\n"),
+        ("photos/logo.svg", SVG.as_bytes()),
+    ]);
+    let mut config = CONFIG.to_string();
+    let templates = [
+        (
+            "remote",
+            r#"{{ image("https://example.com/cat.jpg") | picture(alt="A cat") }}"#,
+        ),
+        (
+            "missing",
+            r#"{{ image("/photos/lgo.svg") | picture(alt="") }}"#,
+        ),
+        (
+            "both",
+            r#"{{ image("/photos/logo.svg", width=240, widths=[480]) | picture(alt="") }}"#,
+        ),
+        (
+            "no-alt",
+            r#"{{ image("/photos/logo.svg") | picture(class="logo") }}"#,
+        ),
+        (
+            "not-an-image",
+            r#"{{ "/photos/logo.svg" | picture(alt="") }}"#,
+        ),
+    ];
+    for (name, text) in templates {
+        writeln!(
+            config,
+            "[routes.{name}]\npath = \"/{name}/\"\ntemplate = \"{name}.html\""
+        )
+        .unwrap();
+        inputs.insert(
+            format!("templates/{name}.html"),
+            format!("{text}\n").into_bytes(),
+        );
+    }
+    inputs.insert("yuanme.toml", config.into_bytes());
+    insta::assert_snapshot!(rendered(&inputs));
+}

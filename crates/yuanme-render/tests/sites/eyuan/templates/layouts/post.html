@@ -3,7 +3,7 @@
 {% set title = entry.title %}
 {% set description = entry.description %}
 {% set section = "writing" %}
-{% set image = entry.og_image|default("/og-image/" ~ entry.slug ~ ".png") %}
+{% set og_image = entry.og_image|default("/og-image/" ~ entry.slug ~ ".png") %}
 {% set article_date = entry.modified %}
 {% block content %}
   {{ panel_header(title=entry.title) }}

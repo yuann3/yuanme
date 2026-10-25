@@ -4,11 +4,13 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
 use std::path::Path;
+use std::sync::Arc;
 
 use yuanme_content::config::{self, Config};
 use yuanme_content::site::{self, Project, Site};
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
 use yuanme_render::highlight;
+use yuanme_render::image::{self, Image, Images, Request};
 use yuanme_render::template::{self, Page};
 
 /// Every file under `dir`, by its path from `dir`.
@@ -64,6 +66,20 @@ fn fixture(base: &str, files: &str) -> Vec<(String, String)> {
     out
 }
 
+/// A project with no image, whose Templates call no `image()`; the Engine's
+/// tests call it.
+struct NoImages;
+
+impl Images for NoImages {
+    fn image(&self, src: &str, _: &Request, _: &str) -> Result<Image, image::Error> {
+        self.check(src).map(|_| unreachable!())
+    }
+
+    fn check(&self, src: &str) -> Result<(), image::Error> {
+        Err((&codes::IMAGE_NOT_FOUND, format!("no image at `{src}`")))
+    }
+}
+
 /// Resolves the project and renders it. The project's content must be
 /// right; only its Templates may fail.
 fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
@@ -76,6 +92,7 @@ fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
         &project.statics,
         &project.code,
         &vec![Default::default(); project.site.entries.len()],
+        Arc::new(NoImages),
     );
     (project.files, pages, diagnostics)
 }
@@ -215,6 +232,7 @@ fn every_page_sees_what_its_context_schema_says() {
         &project.statics,
         &project.code,
         &vec![Default::default(); project.site.entries.len()],
+        Arc::new(NoImages),
     );
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
     let mut kinds = BTreeSet::new();
@@ -689,7 +707,7 @@ const SEEDS: &[(&str, &str, &str, &str, &str, &str)] = &[
     ("projects/entry.html", "ui.prose(", "ui.prosa(", "template/unknown-filter", "projects/entry.html", "prosa"),
     ("projects/entry.html", "entry.title|lower", "entry.title|lowercase", "template/unknown-filter", "projects/entry.html", "lowercase"),
     ("layouts/shell.html", "section is defined else 'idle'", "section is definded else 'idle'", "template/unknown-filter", "layouts/shell.html", "definded"),
-    ("components/base_head.html", "{{ absolute_url(image) }}", "{{ absolute_uri(image) }}", "template/unknown-filter", "components/base_head.html", "absolute_uri"),
+    ("components/base_head.html", "{{ absolute_url(og_image) }}", "{{ absolute_uri(og_image) }}", "template/unknown-filter", "components/base_head.html", "absolute_uri"),
     ("projects/entry.html", "entry.title|lower", "entry.title.lower()", "template/unknown-filter", "projects/entry.html", "lower"),
     ("components/formatted_date.html", "<time datetime=\"{{ date|dateformat(format=", "<time datetime=\"{{ date|dateformat(fromat=", "template/bad-filter-argument", "components/formatted_date.html", "fromat"),
     ("components/base_head.html", "dateformat(format=\"%Y-%m-%d\")", "dateformat(format=\"iso\")", "template/bad-filter-argument", "components/base_head.html", "\"iso\""),

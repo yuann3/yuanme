@@ -381,10 +381,15 @@ codes! {
         example: "![](plot.png)",
         fix: "Describe what the image shows: `![Sales by month, rising through June](plot.png)`. In Org, write a `#+CAPTION:` or `#+ATTR_HTML: :alt …` line above the link.",
     }
+    IMAGE_REMOTE = "image/remote" {
+        meaning: "`image()` is given a remote URL. yuanme never fetches a remote image, so it can't know its size or make smaller copies of it. A remote image in an Entry's body, or in an `<img>`, is left as it is.",
+        example: "{{ image(\"https://example.com/cat.jpg\") | picture(alt=\"A cat\") }}",
+        fix: "Save the image in the project and pass its path, or write an `<img>` with the URL, `width` and `height`.",
+    }
     IMAGE_INVALID = "image/invalid" {
-        meaning: "An image can't be processed: it isn't an image yuanme reads, it is damaged, or it is over 100 megapixels. yuanme resizes JPEG, PNG, WebP and GIF, and copies SVG, AVIF and animated images as they are.",
+        meaning: "An image can't be processed: it isn't an image yuanme reads, it is damaged, it is over 100 megapixels, or it is a Static file, which is copied as it is. yuanme resizes JPEG, PNG, WebP and GIF, and copies SVG, AVIF and animated images as they are.",
         example: "![Sales by month](plot.png)\n(where plot.png is really a PDF)",
-        fix: "Export the image again as JPEG or PNG, under 100 megapixels.",
+        fix: "Export the image again as JPEG or PNG, under 100 megapixels. Move an image out of `static/` to have it processed, or name a Static file by its URL, without `static/`.",
     }
     LINK_REDIRECTED = "link/redirected" {
         meaning: "A Page links to a URL of the Site that hosts answer with a redirect, which costs the visitor a round trip: a Page's URL without its trailing `/` or with `index.html` on the end, a `.html` file, a `[[host.redirects]]` rule's `from`, or the Site's address with or without `www.`. Every internal link should be the URL a Page is served at, such as `/about/`.",

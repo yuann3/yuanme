@@ -3,7 +3,7 @@ title: "Images"
 description: "How Entry bodies name images, what yuanme makes of them, the image field type, and the [images] settings."
 ---
 
-yuanme resizes and converts the images in Entry bodies: each becomes a set of smaller AVIF and JPEG files, and the Page loads the one that fits the screen. Templates have no image helper yet; an `<img>` in a Template names a Static file.
+yuanme resizes and converts the images in Entry bodies and the ones Templates pass to `image()`: each becomes a set of smaller AVIF and JPEG files, and the Page loads the one that fits the screen.
 
 ## Images in Entry bodies
 
@@ -92,46 +92,75 @@ fields = { cover = { type = "image", optional = true } }
 Its value is one of:
 
 - a path relative to the Entry's folder, such as `cover.png` for an image beside it;
-- a path from the project root, starting with `/`, such as `/static/img/cat.svg`;
+- a path from the project root, starting with `/`, such as `/images/cat.svg`;
 - an `http://` or `https://` URL, which isn't checked.
 
-```xml check static/img/cat.svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/></svg>
-```
-
-```md check content/posts/trip.md
+```md check content/posts/hello/index.md
 ---
-title: Trip
-cover: /static/img/cat.svg
+title: Hello
+cover: cat.svg
 ---
 
-Some text.
+![A black circle](cat.svg)
 ```
 
 yuanme checks that a path names a file of the project. One that doesn't is `image/not-found`:
 
-```md fail image/not-found content/posts/trip.md
+```md fail image/not-found content/posts/hello/index.md
 ---
-title: Trip
-cover: cat.svg
+title: Hello
+cover: dog.svg
 ---
 ```
 
-A Template sees the field as text: the file's path from the project root, such as `static/img/cat.svg`, or the URL as written. yuanme doesn't process the image a field names yet, so keep it in `static/` and drop `static/` from the path to make its URL:
+A Template sees the field as text: the file's path from the project root, such as `content/posts/hello/cat.svg`, or the URL as written. Pass it to `image()`.
+
+## Images in Templates
+
+`image(src)` makes an image's smaller copies, as a body image gets, and `picture` writes the `<picture>` for them:
 
 ```jinja check templates/posts/entry.html
 <!doctype html>
 <html lang="en">
+<head>
 <title>{{ entry.title }}</title>
+</head>
+<body>
 {% if entry.cover %}
-<img src="/{{ entry.cover | replace('static/', '') }}" alt="" width="16" height="16">
+{{ image(entry.cover, sizes="(min-width: 768px) 720px, 100vw") | picture(alt="", priority=true) }}
 {% endif %}
 <h1>{{ entry.title }}</h1>
 {{ entry.content }}
+</body>
 </html>
 ```
 
-Give every `<img>` in a Template its `width` and `height`; yuanme doesn't add them. An `<img src>` that names no Page, Static file or asset of the build is a `link/broken` warning. For a remote URL, write `{{ entry.cover }}` as it is. A Component prop can have the type `image` too; `yuanme docs components` shows props.
+`src` is a path from the project root, with a leading `/` or without, as an `image` field gives it. A remote URL is `image/remote`: yuanme never fetches an image, so it can't know its size. Write an `<img>` with its `width` and `height` for one.
+
+`image()` takes these keyword arguments, each defaulting to its `[images]` setting:
+
+- `widths`: the widths to make, such as `[800, 1600]`; or `width` for one.
+- `formats`: the `<source>` formats before the fallback, `"avif"` and `"webp"`.
+- `format`: one format for every file, with no `<source>`: `"avif"`, `"webp"`, `"jpeg"` or `"png"`.
+- `quality`: from 1 to 100, for every format.
+- `sizes`: how wide the image is shown.
+
+It returns an Image, whose fields a Template can read: `width` and `height`, of `url`, the largest fallback file; `srcset` and `sizes`; and `sources`, each with a `type` and a `srcset`. `width=` with one `format=` makes one file, as `og:image` wants:
+
+```jinja
+{% if entry.cover %}
+<meta property="og:image" content="{{ absolute_url(image(entry.cover, width=1200, format="jpeg").url) }}">
+{% endif %}
+```
+
+`picture` takes:
+
+- `alt`, which is required: what the image shows, or `alt=""` for one that is only decoration;
+- `priority=true` for the image that is the largest on the screen as the Page opens, such as a cover: it isn't lazy, it gets `fetchpriority="high"`, and the Page's `<head>` gets a `<link rel="preload">` for it, so the browser fetches it first;
+- `loading`, `"lazy"`, the default, or `"eager"`;
+- `class`, and `attrs`, a map of more attributes for the `<img>`, as the `attrs` filter takes.
+
+An SVG, an AVIF or an animated image is copied as it is, so its Image has `url` alone, with `width` and `height` when the file says. An image in `static/` is a Static file, copied as it is: `image()` of one is `image/invalid`, so keep the images you pass to it elsewhere. An `<img>` you write yourself is left alone; give it its `width` and `height`.
 
 ## Settings
 

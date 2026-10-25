@@ -1,0 +1,41 @@
+---
+source: crates/yuanme-engine/tests/images.rs
+expression: show(&build)
+---
+=== _headers
+<171 bytes>
+=== assets/beach-240-644bd39551c76fc4.webp
+<578 bytes>
+=== assets/beach-240-74779adb2f758509.jpg
+<1795 bytes>
+=== assets/beach-240-8f024b933e245a50.jpg
+<1345 bytes>
+=== assets/beach-240-f9a368816919d563.avif
+<871 bytes>
+=== assets/beach-300-27f136979af7a198.jpg
+<2733 bytes>
+=== assets/beach-480-147683c334df07d7.jpg
+<5716 bytes>
+=== assets/beach-480-bc2bbef45e4a063a.avif
+<1624 bytes>
+=== assets/logo-577d7422ea94ce1f.svg
+<66 bytes>
+=== blog/sea/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Sea</title>
+<meta property="og:image" content="https://e.com/assets/beach-300-27f136979af7a198.jpg">
+<link rel="preload" as="image" type="image/avif" imagesrcset="/assets/beach-240-f9a368816919d563.avif 240w, /assets/beach-480-bc2bbef45e4a063a.avif 480w" imagesizes="(min-width: 768px) 720px, 100vw" fetchpriority="high"><link rel="preload" as="image" imagesrcset="/assets/logo-577d7422ea94ce1f.svg" fetchpriority="high"></head>
+<body>
+<picture><source type="image/avif" srcset="/assets/beach-240-f9a368816919d563.avif 240w, /assets/beach-480-bc2bbef45e4a063a.avif 480w" sizes="(min-width: 768px) 720px, 100vw"><img src="/assets/beach-480-147683c334df07d7.jpg" srcset="/assets/beach-240-74779adb2f758509.jpg 240w, /assets/beach-480-147683c334df07d7.jpg 480w" sizes="(min-width: 768px) 720px, 100vw" width="480" height="320" alt="Sea" fetchpriority="high" decoding="async" class="hero"></picture>
+<p>480×320, 1 source</p>
+<picture><source type="image/webp" srcset="/assets/beach-240-644bd39551c76fc4.webp 240w" sizes="100vw"><img src="/assets/beach-240-8f024b933e245a50.jpg" srcset="/assets/beach-240-8f024b933e245a50.jpg 240w" sizes="100vw" width="240" height="160" alt="Small" loading="eager" decoding="async"></picture>
+<img src="/assets/logo-577d7422ea94ce1f.svg" width="40" height="30" alt="" fetchpriority="high" decoding="async" data-logo>
+<p>Some text.</p>
+</body>
+</html>
+=== sitemap-0.xml
+<156 bytes>
+=== sitemap-index.xml
+<180 bytes>

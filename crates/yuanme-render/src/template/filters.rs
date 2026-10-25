@@ -1,7 +1,7 @@
 //! The filters and functions the Engine adds to Jinja's (#19).
 
 use std::cmp::Ordering;
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 use std::sync::Arc;
 
@@ -9,12 +9,13 @@ use jiff::civil::Date;
 use jiff::tz::TimeZone;
 use jiff::{Timestamp, Zoned};
 use minijinja::value::{Kwargs, Value, ValueKind};
-use minijinja::{Environment, Error, ErrorKind};
+use minijinja::{Environment, Error, ErrorKind, State};
 use yuanme_content::document::{Document, Kind, Links};
 use yuanme_content::{config, markdown, org};
 use yuanme_diag::{Code, Diagnostic, Files, Level, codes};
 
 use crate::highlight;
+use crate::image::{self, Image, Images, Picture, Request};
 
 /// What the filters read from the Site.
 pub(super) struct Site {
@@ -25,8 +26,12 @@ pub(super) struct Site {
     pub urls: BTreeSet<String>,
 }
 
-pub(super) fn add(env: &mut Environment<'_>, site: Site) {
+pub(super) fn add(env: &mut Environment<'_>, site: Site, images: Arc<dyn Images>) {
     let site = Arc::new(site);
+    env.add_function("image", move |state: &State, src: &str, kw: Kwargs| {
+        self::image(&*images, state, src, kw)
+    });
+    env.add_filter("picture", picture);
     env.add_filter("sort_by", sort_by);
     let s = site.clone();
     env.add_filter("dateformat", move |v: Value, kw: Kwargs| {
@@ -314,4 +319,186 @@ fn fragment(
         _ => html,
     };
     Ok(Value::from_safe_string(html))
+}
+
+/// The kinds of image `image()` writes, as `format=` names them.
+const FORMATS: [&str; 4] = ["avif", "webp", "jpeg", "png"];
+
+/// `image(src, width=, widths=, format=, formats=, quality=, sizes=)`: an
+/// Image, whose outputs are named now and encoded after render (#28).
+fn image(images: &dyn Images, state: &State, src: &str, kw: Kwargs) -> Result<Value, Error> {
+    let width: Option<u32> = kw.get("width")?;
+    let widths: Option<Vec<u32>> = kw.get("widths")?;
+    let format: Option<String> = kw.get("format")?;
+    let formats: Option<Vec<String>> = kw.get("formats")?;
+    let quality: Option<i64> = kw.get("quality")?;
+    let sizes: Option<String> = kw.get("sizes")?;
+    kw.assert_all_used()?;
+    let widths = match (width, widths) {
+        (Some(_), Some(_)) => {
+            return Err(bad_argument(
+                "`image` takes `width` for one width or `widths` for several, not both".into(),
+            ));
+        }
+        (Some(w), None) => Some(vec![w]),
+        (None, widths) => widths,
+    };
+    if let Some(widths) = &widths {
+        if widths.is_empty() {
+            return Err(bad_argument("`widths` needs at least one width".into()));
+        }
+        // WebP's limit, as `[images] widths` has.
+        if let Some(w) = widths.iter().find(|w| !(1..=16383).contains(*w)) {
+            return Err(bad_argument(format!(
+                "`{w}` is no width: a width is from 1 to 16383 pixels"
+            )));
+        }
+    }
+    if format.is_some() && formats.is_some() {
+        return Err(bad_argument(
+            "`image` takes `format` for one format or `formats` for the `<source>`s, not both"
+                .into(),
+        ));
+    }
+    if let Some(f) = format.as_deref().filter(|f| !FORMATS.contains(f)) {
+        return Err(bad_argument(format!(
+            "`format` is one of \"avif\", \"webp\", \"jpeg\" and \"png\", not \"{f}\""
+        )));
+    }
+    if let Some(f) = formats
+        .iter()
+        .flatten()
+        .find(|f| !FORMATS[..2].contains(&f.as_str()))
+    {
+        return Err(bad_argument(format!(
+            "`formats` lists the `<source>`s before the fallback, \"avif\" and \"webp\", not \"{f}\"; for one format, use `format=`"
+        )));
+    }
+    let quality = match quality {
+        Some(q) => Some(
+            u8::try_from(q)
+                .ok()
+                .filter(|q| (1..=100).contains(q))
+                .ok_or_else(|| bad_argument(format!("`quality` is from 1 to 100, not {q}")))?,
+        ),
+        None => None,
+    };
+    let request = Request {
+        widths,
+        formats,
+        format,
+        quality,
+        sizes,
+    };
+    let image = images
+        .image(src, &request, state.name())
+        .map_err(|(code, message)| coded(code, format!("`image`: {message}")))?;
+    let mut m = BTreeMap::from([
+        ("url", Value::from(image.url)),
+        ("srcset", Value::from(image.srcset)),
+        ("sizes", Value::from(image.sizes)),
+    ]);
+    if let Some((width, height)) = image.size {
+        m.insert("width", Value::from(width));
+        m.insert("height", Value::from(height));
+    }
+    let sources: Vec<Value> = image
+        .sources
+        .into_iter()
+        .map(|(ty, srcset)| {
+            Value::from(BTreeMap::from([
+                ("type", Value::from(ty)),
+                ("srcset", Value::from(srcset)),
+            ]))
+        })
+        .collect();
+    m.insert("sources", Value::from(sources));
+    Ok(Value::from(m))
+}
+
+/// The preloads that `picture(priority=true)` asks for, which go in the
+/// Page's head once it is rendered.
+#[derive(Default)]
+pub(super) struct Preloads(pub Vec<String>);
+
+/// `image | picture(alt=, priority=, class=, loading=, attrs=)`: the
+/// `<picture>` an Image becomes.
+fn picture(state: &mut State, image: Value, kw: Kwargs) -> Result<Value, Error> {
+    let alt: Option<String> = kw.get("alt")?;
+    let priority: Option<bool> = kw.get("priority")?;
+    let class: Option<String> = kw.get("class")?;
+    let loading: Option<String> = kw.get("loading")?;
+    let more: Option<Value> = kw.get("attrs")?;
+    kw.assert_all_used()?;
+    let Some(alt) = alt else {
+        return Err(bad_argument(
+            "`picture` needs `alt`, which says what the image shows; `alt=\"\"` marks one that is only decoration".into(),
+        ));
+    };
+    let loading = loading.unwrap_or_else(|| "lazy".into());
+    if !["lazy", "eager"].contains(&loading.as_str()) {
+        return Err(bad_argument(format!(
+            "`loading` is \"lazy\" or \"eager\", not \"{loading}\""
+        )));
+    }
+    let image = image_of(&image)?;
+    let mut attrs = String::new();
+    if let Some(class) = class {
+        attrs.push_str(&format!(" class=\"{}\"", escape(&class)));
+    }
+    if let Some(more) = more {
+        attrs.push_str(&self::attrs(more)?.to_string());
+    }
+    let priority = priority.unwrap_or(false);
+    if priority {
+        let preload = image::preload(&image);
+        let preloads = &mut state.get_or_insert_extension(Preloads::default()).0;
+        if !preloads.contains(&preload) {
+            preloads.push(preload);
+        }
+    }
+    let p = Picture {
+        alt: &alt,
+        priority,
+        loading: &loading,
+        attrs,
+    };
+    Ok(Value::from_safe_string(image::picture(&image, &p)))
+}
+
+/// An Image `image()` returned.
+fn image_of(v: &Value) -> Result<Image, Error> {
+    let not = || {
+        bad_argument(format!(
+            "`picture` takes an Image from `image()`, such as `image(entry.cover) | picture(alt=\"…\")`, not {}",
+            v.kind()
+        ))
+    };
+    if v.kind() != ValueKind::Map {
+        return Err(not());
+    }
+    let text = |key: &str| -> Result<String, Error> {
+        let field = v.get_attr(key)?;
+        field.as_str().map(str::to_string).ok_or_else(not)
+    };
+    let number = |key: &str| v.get_attr(key).ok().and_then(|n| u32::try_from(n).ok());
+    let mut sources = Vec::new();
+    for s in v.get_attr("sources")?.try_iter().map_err(|_| not())? {
+        let field = |key: &str| {
+            s.get_attr(key)
+                .ok()
+                .and_then(|f| f.as_str().map(str::to_string))
+        };
+        match (field("type"), field("srcset")) {
+            (Some(ty), Some(srcset)) => sources.push((ty, srcset)),
+            _ => return Err(not()),
+        }
+    }
+    Ok(Image {
+        size: number("width").zip(number("height")),
+        url: text("url")?,
+        srcset: text("srcset")?,
+        sizes: text("sizes")?,
+        sources,
+    })
 }

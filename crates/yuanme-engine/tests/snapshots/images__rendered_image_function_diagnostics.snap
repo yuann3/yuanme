@@ -1,0 +1,44 @@
+---
+source: crates/yuanme-engine/tests/images.rs
+expression: rendered(&inputs)
+---
+error[template/bad-filter-argument]: `image` takes `width` for one width or `widths` for several, not both
+ --> templates/both.html:1:4
+  |
+1 | {{ image("/photos/logo.svg", width=240, widths=[480]) | picture(alt="") }}
+  |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: while rendering `/both/`
+  = note: run `yuanme docs template/bad-filter-argument` for more
+error[image/not-found]: `image`: no image at `photos/lgo.svg`; did you mean `photos/logo.svg`?
+ --> templates/missing.html:1:4
+  |
+1 | {{ image("/photos/lgo.svg") | picture(alt="") }}
+  |    ^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: while rendering `/missing/`
+  = note: run `yuanme docs image/not-found` for more
+error[template/bad-filter-argument]: `picture` needs `alt`, which says what the image shows; `alt=""` marks one that is only decoration
+ --> templates/no-alt.html:1:32
+  |
+1 | {{ image("/photos/logo.svg") | picture(class="logo") }}
+  |                                ^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: while rendering `/no-alt/`
+  = note: run `yuanme docs template/bad-filter-argument` for more
+error[template/bad-filter-argument]: `picture` takes an Image from `image()`, such as `image(entry.cover) | picture(alt="…")`, not string
+ --> templates/not-an-image.html:1:25
+  |
+1 | {{ "/photos/logo.svg" | picture(alt="") }}
+  |                         ^^^^^^^^^^^^^^^
+  |
+  = note: while rendering `/not-an-image/`
+  = note: run `yuanme docs template/bad-filter-argument` for more
+error[image/remote]: `image`: `https://example.com/cat.jpg` is remote, and yuanme never fetches an image to size it
+ --> templates/remote.html:1:4
+  |
+1 | {{ image("https://example.com/cat.jpg") | picture(alt="A cat") }}
+  |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: while rendering `/remote/`
+  = note: run `yuanme docs image/remote` for more

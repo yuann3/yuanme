@@ -1,7 +1,7 @@
-//! The Site's images (#28): what each body image becomes. A raster is
-//! resized and encoded through [`crate::image`], named before render so a
-//! Page can point at its variants; an SVG or an animated image is copied
-//! with a hash instead.
+//! The Site's images (#28): what each body image and `image()` call
+//! becomes. A raster is resized and encoded through [`crate::image`], named
+//! before render so a Page can point at its variants; an SVG or an
+//! animated image is copied with a hash instead.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
@@ -10,6 +10,7 @@ use yuanme_content::config::{self, Config};
 use yuanme_content::document::{Document, Kind, NodeId};
 use yuanme_content::entry::SourceFormat;
 use yuanme_content::site::Site;
+use yuanme_diag::FileId;
 use yuanme_diag::{Diagnostic, Span, codes};
 use yuanme_render::html::{self, Pictures};
 use yuanme_render::image::{Error, Image, Picture, Request, picture};
@@ -51,6 +52,8 @@ pub(crate) struct Images {
     /// Every Static file, which is copied as it is, unprobed.
     statics: BTreeSet<String>,
     config: config::Images,
+    /// Each Template's file, for an error encoding what it named.
+    templates: BTreeMap<String, FileId>,
     used: Mutex<Used>,
 }
 
@@ -61,7 +64,12 @@ impl Images {
     /// Probes every image of the project but the Static files, before
     /// render, since a probe writes the cache: it reads only a header, and
     /// only on a cache miss.
-    pub fn new(inputs: &Inputs, cache: &mut Cache, config: &Config) -> Images {
+    pub fn new(
+        inputs: &Inputs,
+        cache: &mut Cache,
+        config: &Config,
+        templates: &BTreeMap<String, FileId>,
+    ) -> Images {
         let mut names = Inputs::default();
         let mut sources = BTreeMap::new();
         let mut statics = BTreeSet::new();
@@ -94,6 +102,7 @@ impl Images {
             sources,
             statics,
             config: config.images.clone(),
+            templates: templates.clone(),
             used: Mutex::new(Used::default()),
         }
     }
@@ -102,16 +111,33 @@ impl Images {
         self.used.into_inner().expect("recording doesn't panic")
     }
 
+    /// The image file at `path`, from the project root, if it can be
+    /// processed.
+    fn source(&self, path: &str) -> Result<&Source, Error> {
+        match self.sources.get(path) {
+            Some(Source::Invalid(why)) => Err((&codes::IMAGE_INVALID, format!("`{path}`: {why}"))),
+            Some(source) => Ok(source),
+            None if self.statics.contains(path) => {
+                let url = &path["static".len()..];
+                let message = format!(
+                    "`{path}` is a Static file, which is copied as it is, to `{url}`; move it out of `static/` to have it processed"
+                );
+                Err((&codes::IMAGE_INVALID, message))
+            }
+            None => {
+                let mut message = format!("no image at `{path}`");
+                if let Some(near) = config::similar(path, self.sources.keys().map(String::as_str)) {
+                    message.push_str(&format!("; did you mean `{near}`?"));
+                }
+                Err((&codes::IMAGE_NOT_FOUND, message))
+            }
+        }
+    }
+
     /// The Image `path`, from the project root, makes. `at` is where it is
     /// named, if that is known.
-    pub fn image(&self, path: &str, request: &Request, at: Option<&Span>) -> Result<Image, Error> {
-        let source = self.sources.get(path).ok_or_else(|| {
-            let mut message = format!("no image at `{path}`");
-            if let Some(near) = config::similar(path, self.sources.keys().map(String::as_str)) {
-                message.push_str(&format!("; did you mean `{near}`?"));
-            }
-            (&codes::IMAGE_NOT_FOUND, message)
-        })?;
+    fn resolve(&self, path: &str, request: &Request, at: Option<&Span>) -> Result<Image, Error> {
+        let source = self.source(path)?;
         let mut used = self.used.lock().expect("recording doesn't panic");
         if let Some(at) = at {
             used.at
@@ -119,9 +145,7 @@ impl Images {
                 .or_insert_with(|| at.clone());
         }
         let probe = match source {
-            Source::Invalid(why) => {
-                return Err((&codes::IMAGE_INVALID, format!("`{path}`: {why}")));
-            }
+            Source::Invalid(_) => unreachable!("an error from source()"),
             Source::Copy(size) => {
                 let name = path.rsplit('/').next().unwrap_or(path);
                 let copy = hashed_path(name, &self.inputs.files[path].hash);
@@ -230,7 +254,7 @@ impl Images {
                     {
                         continue;
                     }
-                    let image = match self.image(&path, &Request::default(), Some(&span)) {
+                    let image = match self.resolve(&path, &Request::default(), Some(&span)) {
                         Ok(image) => image,
                         Err((code, message)) => {
                             let mut d = Diagnostic::error(code, message, span);
@@ -291,6 +315,31 @@ impl Images {
             .collect();
         (pictures, diagnostics)
     }
+}
+
+/// `image(src)`'s `src` is a path from the project root, with a `/` or
+/// without, as an `image` field gives it.
+impl yuanme_render::image::Images for Images {
+    fn image(&self, src: &str, request: &Request, template: &str) -> Result<Image, Error> {
+        let path = from_root(src)?;
+        let at = self
+            .templates
+            .get(template)
+            .map(|&file| Span { file, range: 0..0 });
+        self.resolve(path, request, at.as_ref())
+    }
+
+    fn check(&self, src: &str) -> Result<(), Error> {
+        self.source(from_root(src)?).map(|_| ())
+    }
+}
+
+fn from_root(src: &str) -> Result<&str, Error> {
+    if src.starts_with("//") || has_scheme(src) {
+        let message = format!("`{src}` is remote, and yuanme never fetches an image to size it");
+        return Err((&codes::IMAGE_REMOTE, message));
+    }
+    Ok(src.strip_prefix('/').unwrap_or(src))
 }
 
 /// The project file a body image's URL names, from the Entry's folder

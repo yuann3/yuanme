@@ -36,6 +36,16 @@ pub struct Request {
 /// Why `image()` can't give an Image: a Diagnostic's code and message.
 pub type Error = (&'static Code, String);
 
+/// What `image()` asks of the Engine, which knows the project's images.
+pub trait Images: Send + Sync {
+    /// The Image `src` makes, as `image()` was given it, or else why it
+    /// can't. `template` is the Template that calls `image()`.
+    fn image(&self, src: &str, request: &Request, template: &str) -> Result<Image, Error>;
+
+    /// Whether `image(src)` can make an Image, for `check`, which makes none.
+    fn check(&self, src: &str) -> Result<(), Error>;
+}
+
 /// How the `picture` filter or a body writes one Image.
 pub struct Picture<'a> {
     pub alt: &'a str,
@@ -88,21 +98,23 @@ pub fn picture(image: &Image, p: &Picture<'_>) -> String {
 }
 
 /// The `<link rel="preload">` that fetches a priority Image from the head,
-/// in the format a browser picks first.
+/// in the format a browser picks first. It names the file in
+/// `imagesrcset` even when there is one, since the assets stage takes a
+/// `<link href>` for a project file to bundle or copy.
 pub fn preload(image: &Image) -> String {
     let (ty, srcset) = match image.sources.first() {
         Some((ty, srcset)) => (format!(" type=\"{}\"", escape(ty)), srcset),
         None => (String::new(), &image.srcset),
     };
+    let mut out = format!("<link rel=\"preload\" as=\"image\"{ty}");
     match srcset.is_empty() {
-        true => format!(
-            "<link rel=\"preload\" as=\"image\" href=\"{}\" fetchpriority=\"high\">",
-            escape(&image.url)
-        ),
-        false => format!(
-            "<link rel=\"preload\" as=\"image\"{ty} imagesrcset=\"{}\" imagesizes=\"{}\" fetchpriority=\"high\">",
+        true => out.push_str(&format!(" imagesrcset=\"{}\"", escape(&image.url))),
+        false => out.push_str(&format!(
+            " imagesrcset=\"{}\" imagesizes=\"{}\"",
             escape(srcset),
             escape(&image.sizes)
-        ),
+        )),
     }
+    out.push_str(" fetchpriority=\"high\">");
+    out
 }

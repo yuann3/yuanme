@@ -7,6 +7,7 @@ mod filters;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
+use std::sync::Arc;
 
 use jiff::tz::TimeZone;
 use minijinja::machinery::{Token, tokenize};
@@ -18,10 +19,12 @@ use yuanme_content::config::{Collection, Config};
 use yuanme_content::site::{self, RouteKind, Site};
 use yuanme_diag::{Code, Diagnostic, FileId, Files, Span, codes};
 
+use crate::image::Images;
+
 pub use check::context_schemas;
 use context::Context;
-use filters::Coded;
 pub use filters::escape;
+use filters::{Coded, Preloads};
 
 /// The built-in feed Template. `templates/rss.xml` replaces it.
 const RSS: (&str, &str) = ("rss.xml", include_str!("rss.xml"));
@@ -49,8 +52,12 @@ pub struct Page {
 /// `templates/` in `files`, by its path there; `statics` is the URL of
 /// every Static file, which `url()` accepts as well as Routes; `code` is
 /// each Entry's highlighted code blocks, and `pictures` its processed
-/// images. Any error fails the whole render, after every Page has been
+/// images; `images` makes what `image()` returns. Any error fails the whole render, after every Page has been
 /// tried.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "each is one input of the build, which a struct would only rename"
+)]
 pub fn render(
     config: &Config,
     site: &Site,
@@ -59,6 +66,7 @@ pub fn render(
     statics: &BTreeSet<String>,
     code: &[crate::highlight::Code],
     pictures: &[crate::html::Pictures],
+    images: Arc<dyn Images>,
 ) -> (Vec<Page>, Vec<Diagnostic>) {
     let origin = config.site.url.trim_end_matches('/').to_string();
     let sitemap = sitemap(site, &origin);
@@ -104,6 +112,7 @@ pub fn render(
             timezone: TimeZone::get(&config.site.timezone).expect("config checked the zone"),
             urls,
         },
+        images.clone(),
     );
 
     let mut diagnostics = Diagnostics::default();
@@ -157,12 +166,23 @@ pub fn render(
             .zip(&chosen)
             .map(|(route, (name, at))| {
                 let template = env.get_template(name).expect("added above");
-                match template.render(context.page(route)) {
-                    Ok(text) => Ok(Page {
-                        output: route.output.clone(),
-                        text,
-                        templates: closure(name, &uses),
-                    }),
+                match template.render_captured(context.page(route)) {
+                    Ok(captured) => {
+                        let preloads = captured
+                            .state()
+                            .get_extension::<Preloads>()
+                            .map(|p| p.0.concat())
+                            .unwrap_or_default();
+                        let mut text = captured.into_output();
+                        if !preloads.is_empty() {
+                            text.insert_str(head_end(&text), &preloads);
+                        }
+                        Ok(Page {
+                            output: route.output.clone(),
+                            text,
+                            templates: closure(name, &uses),
+                        })
+                    }
                     Err(e) => Err(diagnostic(&e, files, templates, Some(at))
                         .note(format!("while rendering `{}`", route.url))),
                 }
@@ -181,6 +201,20 @@ pub fn render(
     }
     pages.extend(sitemap);
     (pages, Vec::new())
+}
+
+/// Where a preload goes: before `</head>`, or else after the doctype, since
+/// a `<link>` before `<body>` is in the head.
+fn head_end(html: &str) -> usize {
+    let lower = html.to_ascii_lowercase();
+    if let Some(at) = lower.find("</head>") {
+        return at;
+    }
+    let start = lower.len() - lower.trim_start().len();
+    match lower[start..].starts_with("<!doctype") {
+        true => lower[start..].find('>').map_or(start, |e| start + e + 1),
+        false => start,
+    }
 }
 
 /// Each Route's Template, in `site.routes`' order, as Site config chooses it.
