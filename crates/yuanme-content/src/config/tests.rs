@@ -102,6 +102,19 @@ items = { type = "object", fields = { label = { type = "string" }, href = { type
 R = '\mathbb{R}'
 norm = '\left\lVert #1 \right\rVert'
 
+[math.theorems.claim]
+label = "Claim"
+counter = "claim"
+
+[math.theorems.remark]
+counter = "theorem"
+
+[math.theorems.definition]
+label = "Def."
+counter = false
+
+[math.theorems.axiom]
+
 [build]
 targets = { chrome = "120", safari = "16.4.1" }
 
@@ -244,6 +257,19 @@ quality = { jpeg = 90 }
             ),
         ]
     );
+    // Kinds of the Author's own, and changes to the built-in ones, which
+    // keep what isn't changed.
+    let kind = |name: &str| {
+        let k = &config.math.theorems[name];
+        (k.label.as_str(), k.counter.as_deref())
+    };
+    assert_eq!(kind("claim"), ("Claim", Some("claim")));
+    assert_eq!(kind("remark"), ("Remark", Some("theorem")));
+    assert_eq!(kind("definition"), ("Def.", None));
+    assert_eq!(kind("axiom"), ("Axiom", Some("theorem")));
+    assert_eq!(kind("lemma"), ("Lemma", Some("theorem")));
+    assert_eq!(kind("proof"), ("Proof", None));
+    assert_eq!(config.math.theorems.len(), 13);
 
     // Only the browsers listed: one left out is not supported.
     let targets: Vec<_> = config.build.targets.iter().collect();
@@ -406,6 +432,12 @@ const CASES: &[(&str, &str, &str)] = &[
         "chorme",
     ),
     ("config/wrong-type", "site = \"x\"\n", "\"x\""),
+    // A kind is numbered on a named counter or not at all.
+    (
+        "config/wrong-type",
+        "[site]\nurl = \"https://e.com\"\n[math.theorems.claim]\ncounter = true\n",
+        "true",
+    ),
     (
         "config/wrong-type",
         "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{slug}/\"\nsort = [\"a\", 2]\n",

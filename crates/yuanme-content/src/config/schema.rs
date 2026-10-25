@@ -71,6 +71,8 @@ pub(crate) enum Shape {
     /// An integer or a float.
     Number,
     Bool,
+    /// A Theorem kind's counter: its name, or `false` for none.
+    Counter,
     Strings,
     /// An array of one shape, such as `[images] widths`.
     Array(&'static Shape),
@@ -175,11 +177,31 @@ const QUALITY: &[Key] = &[
     Key::optional("webp", Shape::Int { min: 1, max: 100 }, "Defaults to 80."),
 ];
 
-const MATH: &[Key] = &[Key::optional(
-    "macros",
-    Shape::Map(&Shape::String),
-    "LaTeX macros for every Entry's math, by name without the backslash: `R = '\\mathbb{R}'`, or with arguments, `norm = '\\left\\lVert #1 \\right\\rVert'`.",
-)];
+const MATH: &[Key] = &[
+    Key::optional(
+        "macros",
+        Shape::Map(&Shape::String),
+        "LaTeX macros for every Entry's math, by name without the backslash: `R = '\\mathbb{R}'`, or with arguments, `norm = '\\left\\lVert #1 \\right\\rVert'`.",
+    ),
+    Key::optional(
+        "theorems",
+        Shape::Map(&Shape::Table(THEOREM)),
+        "Theorem block kinds, by the name a block is written with: `[math.theorems.claim]` makes `:::claim` in Markdown and `#+begin_claim` in Org Theorem blocks. The built-in kinds are theorem, lemma, proposition, corollary, conjecture, definition, example and exercise, numbered on one shared counter, and remark, note and proof, unnumbered; a table here changes one of them or adds a kind.",
+    ),
+];
+
+const THEOREM: &[Key] = &[
+    Key::optional(
+        "label",
+        Shape::String,
+        "What the kind's blocks are called on the Page, as in \"Claim 2\". Defaults to the built-in kind's, or to the name with its first letter capitalized.",
+    ),
+    Key::optional(
+        "counter",
+        Shape::Counter,
+        "The counter the kind's blocks are numbered on, per Entry: \"theorem\", which the built-in numbered kinds share, a name of its own, or false for unnumbered blocks. Defaults to the built-in kind's, or to \"theorem\".",
+    ),
+];
 
 const HOST: &[Key] = &[
     Key::optional(
@@ -629,6 +651,7 @@ fn shape(shape: &Shape) -> Value {
         Shape::Array(item) => json!({ "type": "array", "items": self::shape(item) }),
         Shape::Number => json!({ "type": "number" }),
         Shape::Bool => json!({ "type": "boolean" }),
+        Shape::Counter => json!({ "anyOf": [{ "type": "string" }, { "const": false }] }),
         Shape::Strings => json!({ "type": "array", "items": { "type": "string" } }),
         Shape::Table(keys) => table(keys.iter()),
         Shape::Tables(keys) => json!({ "type": "array", "items": table(keys.iter()) }),

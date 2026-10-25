@@ -354,6 +354,13 @@ fn kind(schema: &Value) -> String {
     if let Some(reference) = schema["$ref"].as_str() {
         return format!("a {}, below", def(reference));
     }
+    if let Some(options) = schema["anyOf"].as_array() {
+        let options: Vec<String> = options.iter().map(kind).collect();
+        return options.join(" or ");
+    }
+    if let Some(value) = schema.get("const") {
+        return format!("`{value}`");
+    }
     match schema["type"].as_str() {
         Some("string") => "string".into(),
         Some("integer") => "integer".into(),

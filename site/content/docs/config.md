@@ -124,6 +124,13 @@ How math renders.
 
 - `macros` (table of strings): LaTeX macros for every Entry's math, by name without the backslash: `R = '\mathbb{R}'`, or with arguments, `norm = '\left\lVert #1 \right\rVert'`.
 
+### `[math.theorems.NAME]`
+
+Theorem block kinds, by the name a block is written with: `[math.theorems.claim]` makes `:::claim` in Markdown and `#+begin_claim` in Org Theorem blocks. The built-in kinds are theorem, lemma, proposition, corollary, conjecture, definition, example and exercise, numbered on one shared counter, and remark, note and proof, unnumbered; a table here changes one of them or adds a kind.
+
+- `counter` (string or `false`): The counter the kind's blocks are numbered on, per Entry: "theorem", which the built-in numbered kinds share, a name of its own, or false for unnumbered blocks. Defaults to the built-in kind's, or to "theorem".
+- `label` (string): What the kind's blocks are called on the Page, as in "Claim 2". Defaults to the built-in kind's, or to the name with its first letter capitalized.
+
 ### `[routes.NAME]`
 
 Pages made by a Template alone, such as the home page or the 404 page.

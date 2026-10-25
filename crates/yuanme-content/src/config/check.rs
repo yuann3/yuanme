@@ -207,6 +207,7 @@ impl Checker {
             }
             (Shape::String, DeValue::String(_))
             | (Shape::Bool, DeValue::Boolean(_))
+            | (Shape::Counter, DeValue::String(_) | DeValue::Boolean(false))
             | (Shape::Number, DeValue::Float(_)) => {}
             (Shape::Url, DeValue::String(s)) => self.url(s, at, path),
             (Shape::Choice(choices), DeValue::String(s)) => {
@@ -269,6 +270,7 @@ impl Checker {
             (Shape::Int { .. }, _) => wrong(self, "an integer"),
             (Shape::Number, _) => wrong(self, "a number"),
             (Shape::Bool, _) => wrong(self, "a boolean"),
+            (Shape::Counter, _) => wrong(self, "a counter's name or `false`"),
             (Shape::Strings, _) => wrong(self, "an array of strings"),
             (Shape::Array(_), _) => wrong(self, "an array"),
             (Shape::Tables(_), _) => wrong(self, "an array of tables"),
