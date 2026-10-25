@@ -43,3 +43,8 @@ rav1e.opt-level = 3
 yuanme-ravif.opt-level = 3
 zune-jpeg.opt-level = 3
 yuanme-assets.opt-level = 3
+
+# What releases are built with (dist-workspace.toml).
+[profile.dist]
+inherits = "release"
+lto = "thin"
