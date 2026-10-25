@@ -75,4 +75,10 @@ jobs:
           cp -R crates/yuanme-engine/tests/sites/assets site
           unpacked/yuanme build -C site --strict
           test -f site/dist/index.html
-          ls site/dist/assets
+      # The same on every platform (#28); the run's summary lists all six.
+      - name: Site hash
+        working-directory: site/dist
+        run: |
+          sum() { if command -v sha256sum > /dev/null; then sha256sum "$@"; else shasum -a 256 "$@"; fi; }
+          find . -type f | LC_ALL=C sort | while read -r f; do echo "$(sum "$f" | cut -c1-64) $f"; done | tee "$RUNNER_TEMP/files.sha256"
+          echo "${{ matrix.target }}: \`$(sum < "$RUNNER_TEMP/files.sha256" | cut -c1-64)\`" >> "$GITHUB_STEP_SUMMARY"
