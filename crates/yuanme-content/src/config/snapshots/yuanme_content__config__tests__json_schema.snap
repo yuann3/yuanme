@@ -1,6 +1,5 @@
 ---
 source: crates/yuanme-content/src/config/tests.rs
-assertion_line: 950
 expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
 ---
 {
@@ -1130,6 +1129,17 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
         "type": "object"
       },
       "description": "Named ways of grouping Entries by a shared value, such as tags or series.",
+      "type": "object"
+    },
+    "typescript": {
+      "additionalProperties": false,
+      "description": "Whether yuanme checks the types of the Site's TypeScript Scripts.",
+      "properties": {
+        "check": {
+          "description": "Check the types of every TypeScript Script with TypeScript 7's `tsc` in `yuanme check` and `yuanme build`, and fail on a type error. yuanme downloads `tsc` on first use. Defaults to false: yuanme strips the types and doesn't check them.",
+          "type": "boolean"
+        }
+      },
       "type": "object"
     },
     "yuanme": {

@@ -34,6 +34,7 @@ pub struct Config {
     /// `[router] mode`.
     pub router: RouterMode,
     pub tailwind: Tailwind,
+    pub typescript: TypeScript,
     pub host: Host,
     pub math: Math,
     pub images: Images,
@@ -291,6 +292,13 @@ pub struct Tailwind {
     /// The Tailwind CLI release, such as `4.3.3`, and where its value is.
     /// `None` runs the one the Engine pins.
     pub version: Option<(String, Range<usize>)>,
+}
+
+/// `[typescript]` (#20).
+#[derive(Debug, Default)]
+pub struct TypeScript {
+    /// Where `check = true` is, when it is: `tsc` checks the Scripts.
+    pub check: Option<Range<usize>>,
 }
 
 /// Tailwind v4's baseline (#20), so a Site with Tailwind gets the same
@@ -662,6 +670,12 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
             .and_then(|t| t.get("version"))
             .map(|v| (v.get_ref().as_str().expect("checked").to_string(), v.span())),
     };
+    let typescript = TypeScript {
+        check: table(root, "typescript")
+            .and_then(|t| t.get("check"))
+            .filter(|v| v.get_ref().as_bool() == Some(true))
+            .map(|v| v.span()),
+    };
 
     let host = host(table(root, "host"), checker);
     let images = images(table(root, "images"), checker);
@@ -694,6 +708,7 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         build: Build { targets },
         router,
         tailwind,
+        typescript,
         host,
         math: Math { macros, theorems },
         images,

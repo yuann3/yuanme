@@ -124,6 +124,9 @@ mode = "swap"
 [tailwind]
 version = "4.2.1"
 
+[typescript]
+check = true
+
 [host]
 adapter = "netlify"
 
@@ -304,6 +307,8 @@ requests = 1
         (version.as_str(), &text[at.clone()]),
         ("4.2.1", "\"4.2.1\"")
     );
+    let at = config.typescript.check.clone().unwrap();
+    assert_eq!(&text[at], "true");
 
     let host = &config.host;
     assert_eq!(host.adapter, Adapter::Netlify);
@@ -418,6 +423,10 @@ requests = 1
     assert_eq!(config.router, RouterMode::Off);
     // The Engine's own pinned Tailwind.
     assert_eq!(config.tailwind.version, None);
+    // Types are checked only when a Site asks (#20).
+    assert_eq!(config.typescript.check, None);
+    let (off, _) = check(&format!("{MINIMAL}[typescript]\ncheck = false\n"));
+    assert_eq!(off.unwrap().typescript.check, None);
     // Workers static assets is the default host (#25).
     assert_eq!(config.host.adapter, Adapter::Cloudflare);
     assert!(config.host.headers.is_empty() && config.host.redirects.is_empty());

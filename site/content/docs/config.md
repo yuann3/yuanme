@@ -199,6 +199,12 @@ Named ways of grouping Entries by a shared value, such as tags or series.
 - `sort` (list of strings): How Entries sort on a Term's page, as for a Collection.
 - `template` (string): The Template of each Term's Page. Defaults to "<name>/term.html".
 
+### `[typescript]`
+
+Whether yuanme checks the types of the Site's TypeScript Scripts.
+
+- `check` (boolean): Check the types of every TypeScript Script with TypeScript 7's `tsc` in `yuanme check` and `yuanme build`, and fail on a type error. yuanme downloads `tsc` on first use. Defaults to false: yuanme strips the types and doesn't check them.
+
 ### Field types
 
 #### `type = "string"`

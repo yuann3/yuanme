@@ -148,6 +148,11 @@ pub(crate) const ROOT: &[Key] = &[
         Shape::Table(TAILWIND),
         "How yuanme runs Tailwind for a stylesheet that does `@import \"tailwindcss\"`.",
     ),
+    Key::optional(
+        "typescript",
+        Shape::Table(TYPESCRIPT),
+        "Whether yuanme checks the types of the Site's TypeScript Scripts.",
+    ),
     Key::optional("math", Shape::Table(MATH), "How math renders."),
     Key::optional(
         "images",
@@ -369,6 +374,12 @@ const TAILWIND: &[Key] = &[Key::optional(
     "version",
     Shape::TailwindVersion,
     "The Tailwind CLI release to run, such as \"4.3.3\": an exact Tailwind 4 release. Defaults to the one this yuanme release pins. yuanme downloads it on first use and checks it against the release's `sha256sums.txt`.",
+)];
+
+const TYPESCRIPT: &[Key] = &[Key::optional(
+    "check",
+    Shape::Bool,
+    "Check the types of every TypeScript Script with TypeScript 7's `tsc` in `yuanme check` and `yuanme build`, and fail on a type error. yuanme downloads `tsc` on first use. Defaults to false: yuanme strips the types and doesn't check them.",
 )];
 
 /// The browsers `targets` names, which both the CSS and the JS pipeline know.
