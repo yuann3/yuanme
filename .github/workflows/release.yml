@@ -133,8 +133,12 @@ jobs:
           fi
       - name: "Install cargo-about"
         uses: "taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283"
+        if: "runner.os != 'macOS' || runner.arch != 'X64'"
         with:
           "tool": "cargo-about@0.9.2"
+      - name: "Build cargo-about"
+        if: "runner.os == 'macOS' && runner.arch == 'X64'"
+        run: "cargo install --locked cargo-about@0.9.2 --features cli"
       - name: "Write THIRD_PARTY_NOTICES.md"
         run: "cargo xtask notices"
       - name: "Install zig"
