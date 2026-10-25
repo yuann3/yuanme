@@ -10,6 +10,7 @@ yuanme is a Rust static site generator for programmers' and mathematicians' pers
 - `CONTEXT.md` is the glossary. Use its terms, and avoid the words it lists under _Avoid_.
 - `docs/adr/` records the decisions that shape the Engine. Don't contradict one silently; flag it.
 - `docs/research/` holds research notes that tickets link to.
+- Put every Git worktree, and any other checkout a ticket needs such as a fork, under `.worktrees/` in this repository, for example `git worktree add .worktrees/54 -b templates origin/main`. Never create them next to the repository.
 
 ## Agent skills
 
