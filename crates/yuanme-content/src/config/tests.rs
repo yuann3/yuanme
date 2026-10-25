@@ -347,6 +347,11 @@ const CASES: &[(&str, &str, &str)] = &[
     ),
     (
         "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{slug}/\"\nfields = { content = { type = \"string\" } }\n",
+        "content",
+    ),
+    (
+        "config/invalid-value",
         "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{slug}/\"\nfields = { title = { type = \"string\" } }\n",
         "title",
     ),

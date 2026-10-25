@@ -131,8 +131,16 @@ pub enum FieldType {
 
 /// Fields every Entry has. Only `date` can be declared, to make it required.
 const BUILT_IN: &[&str] = &["title", "date", "updated", "slug", "draft", "unlisted"];
-/// Fields yuanme derives from each Entry, so no Author field can take their names.
-const DERIVED: &[&str] = &["modified", "word_count", "reading_time", "headings"];
+/// Fields yuanme derives from each Entry, so no Author field can take their
+/// names. Templates see `url` and `content` on every Entry too (#19).
+const DERIVED: &[&str] = &[
+    "modified",
+    "word_count",
+    "reading_time",
+    "headings",
+    "url",
+    "content",
+];
 
 /// Reads Site config. It returns `None` if the config has an error; the
 /// Diagnostics may hold warnings either way. `engine` is the running
@@ -487,7 +495,7 @@ fn sortable(fields: &BTreeMap<String, Field>) -> (Vec<&str>, Vec<&str>) {
         .iter()
         .chain(DERIVED)
         .copied()
-        .filter(|f| *f != "headings")
+        .filter(|f| !["headings", "url", "content"].contains(f))
         .collect();
     let mut no = vec!["headings"];
     for (name, field) in fields {
