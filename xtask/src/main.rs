@@ -6,8 +6,9 @@ fn main() -> ExitCode {
     match std::env::args().nth(1).as_deref() {
         Some("package-check") => package_check(),
         Some("vendor-check") => vendor_check(),
+        Some("docs") => docs(),
         _ => {
-            eprintln!("usage: cargo xtask package-check | vendor-check");
+            eprintln!("usage: cargo xtask package-check | vendor-check | docs");
             ExitCode::FAILURE
         }
     }
@@ -17,6 +18,27 @@ fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .expect("xtask is inside the workspace")
+}
+
+/// Writes the docs site's copy of every page `yuanme docs` prints into
+/// `site/content/` (#38). The pages are the binary's, so the test that
+/// fails while the copies are stale also writes them.
+fn docs() -> ExitCode {
+    let status = Command::new(env!("CARGO"))
+        .args(["test", "--locked", "-p", "yuanme", "--bin", "yuanme", "--"])
+        .args([
+            "--exact",
+            "tests::the_docs_site_has_every_page_as_this_binary_makes_it",
+        ])
+        .env("YUANME_UPDATE_DOCS", "1")
+        .current_dir(root())
+        .status()
+        .expect("run cargo test");
+    if status.success() {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    }
 }
 
 /// Fails if a vendored fork differs from its fork's repository at the

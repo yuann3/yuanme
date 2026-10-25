@@ -396,3 +396,86 @@ fn docs_examples_check_as_they_say() {
     }
     assert!(tested > 0, "no examples found");
 }
+
+/// The docs site's copy of every page but the index (#38), by path from
+/// `site/content/`, with front matter for the site's Collections.
+fn site_pages() -> BTreeMap<String, String> {
+    docs::names()
+        .filter(|n| *n != "index")
+        .map(|name| {
+            let page = docs::get(name).unwrap();
+            let path = match name.contains('/') {
+                true => format!("codes/{name}.md"),
+                false => format!("docs/{name}.md"),
+            };
+            let quote = |s: &str| serde_json::to_string(s).unwrap();
+            let text = format!(
+                "---\ntitle: {}\ndescription: {}\n---\n\n{}",
+                quote(&page.title),
+                quote(&page.description),
+                page.body
+            );
+            (path, text)
+        })
+        .collect()
+}
+
+/// `cargo xtask docs` runs this with `YUANME_UPDATE_DOCS=1` to write them.
+#[test]
+fn the_docs_site_has_every_page_as_this_binary_makes_it() {
+    let content = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../site/content");
+    let want = site_pages();
+    if std::env::var_os("YUANME_UPDATE_DOCS").is_some() {
+        for dir in ["docs", "codes"] {
+            match fs::remove_dir_all(content.join(dir)) {
+                Err(e) if e.kind() != std::io::ErrorKind::NotFound => panic!("{e}"),
+                _ => {}
+            }
+        }
+        for (path, text) in &want {
+            write(&content.join(path), text);
+        }
+    }
+    let mut have = BTreeMap::new();
+    for dir in ["docs", "codes"] {
+        if content.join(dir).exists() {
+            for (path, (bytes, _)) in snapshot(&content.join(dir)) {
+                have.insert(format!("{dir}/{path}"), String::from_utf8(bytes).unwrap());
+            }
+        }
+    }
+    let paths: BTreeSet<&String> = want.keys().chain(have.keys()).collect();
+    let stale: Vec<&&String> = paths
+        .iter()
+        .filter(|p| want.get(**p) != have.get(**p))
+        .collect();
+    assert!(
+        stale.is_empty(),
+        "site/content/ is stale; run `cargo xtask docs`: {stale:?}"
+    );
+
+    // #21's budget for `.yuanme/docs/`.
+    let size: usize = docs::names().map(|n| docs::page(n).unwrap().len()).sum();
+    assert!(size <= 400_000, "the docs are {size} bytes");
+}
+
+/// The pages are yuanme Markdown, which the docs site builds: no math by
+/// accident in a `$`, and every link between pages leads somewhere.
+#[test]
+fn the_docs_site_pages_build_clean() {
+    let mut project = Project::default();
+    project.files.insert(
+        "yuanme.toml".into(),
+        "[site]\nurl = \"https://example.com\"\n\n\
+         [collections.docs]\nroute = \"/docs/{slug}/\"\n\
+         fields = { description = { type = \"string\" } }\n\n\
+         [collections.codes]\nroute = \"/codes/{slug}/\"\n\
+         fields = { description = { type = \"string\" } }\n"
+            .into(),
+    );
+    for (path, text) in site_pages() {
+        project.files.insert(format!("content/{path}"), text);
+    }
+    let build = project.build_with_stubs();
+    assert!(build.diagnostics.is_empty(), "{}", rendered(&build));
+}
