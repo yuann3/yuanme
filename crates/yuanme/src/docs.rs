@@ -20,8 +20,10 @@ use yuanme_diag::codes::{self, Code};
 /// with `title:` and `description:` lines between `---` lines.
 const TOPICS: &[(&str, &str)] = &[
     ("getting-started", include_str!("docs/getting-started.md")),
-    ("cli", include_str!("docs/cli.md")),
     ("config", include_str!("docs/config.md")),
+    ("collections", include_str!("docs/collections.md")),
+    ("markdown", include_str!("docs/markdown.md")),
+    ("cli", include_str!("docs/cli.md")),
 ];
 
 pub struct Page {
