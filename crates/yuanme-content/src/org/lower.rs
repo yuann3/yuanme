@@ -1178,6 +1178,7 @@ impl<'s> Lower<'s> {
                             number: String::new(),
                         };
                         self.doc.push(parent, kind, at);
+                        self.text(post_blank(o), parent);
                         return;
                     }
                 }

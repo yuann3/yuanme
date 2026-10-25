@@ -5,7 +5,7 @@ expression: "render(&format!(\"{name}.org\"), &text)"
 error[math/unknown-label]: no equation in this Entry has the Label `eq:a`
  --> markup.org:8:40
   |
-8 | Math $x$, \(y\), \[z\], $$w$$ and \ref{eq:a}; $n$-th is text.
+8 | Math $x$, \(y\), \[z\], $$w$$ and \ref{eq:a} here; $n$-th is text.
   |                                        ^^^^ referenced here
   |
   = note: run `yuanme docs math/unknown-label` for more
@@ -16,7 +16,7 @@ Dates <span class="timestamp-wrapper"><time class="timestamp" datetime="2025-12-
 and <span class="timestamp-wrapper"><time class="timestamp">&#x3C;%%(diary-float t 4 2)></time></span>.
 A break<br>
 after it. Raw <kbd>Ctrl</kbd> and  dropped.
-Math <math><mi>x</mi></math>, <math><mi>y</mi></math>, <math display="block"><mi>z</mi></math>, <math display="block"><mi>w</mi></math> and <a href="#eq:a"></a>; <math><mi>n</mi></math>-th is text.</p>
+Math <math><mi>x</mi></math>, <math><mi>y</mi></math>, <math display="block"><mi>z</mi></math>, <math display="block"><mi>w</mi></math> and <a href="#eq:a"></a> here; <math><mi>n</mi></math>-th is text.</p>
 <h2 id="first-heading">First heading</h2>
 <p><a id="here"></a> is a target. See <a href="#here">here</a>, <a href="#here">the target</a>, <a href="#custom">Second heading</a>,
 <a href="#custom">Second heading</a> and <a href="#custom">by title</a>.</p>
