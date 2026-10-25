@@ -22,6 +22,11 @@ moxcms = "=0.8.1"
 ravif = { workspace = true, features = ["threading"] }
 mozjpeg-rs = "=0.9.2"
 libwebp-sys = "=0.14.4"
+# MPL-2.0, used unmodified (ADR 0014).
+lightningcss = { version = "=1.0.0-alpha.72", default-features = false, features = ["bundler"] }
+# rolldown 1.2.15's, so #58 adds no second copy.
+oxc_resolver = "=11.24.3"
+elsa = "1.11.2"
 
 [features]
 default = ["asm"]

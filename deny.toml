@@ -7,11 +7,16 @@ ignore = [
     # A proc-macro run at compile time, by rav1e 0.8.1, the newest. Nothing
     # of it reaches the binary.
     { id = "RUSTSEC-2024-0436", reason = "paste is unmaintained, not vulnerable; rav1e has no release without it" },
+    # rkyv 0.7 comes with lightningcss's bundler, through parcel_sourcemap,
+    # which reads archives only in `SourceMap::from_buffer`. Neither
+    # lightningcss nor the Engine calls it, and no newer parcel_sourcemap
+    # drops rkyv 0.7.
+    { id = "RUSTSEC-2026-0235", reason = "rkyv archives are never read: parcel_sourcemap's from_buffer is unused" },
 ]
 
 [licenses]
 # ADR 0014. MPL-2.0 is allowed only for unmodified files, so it is added per
-# crate through `exceptions` when lightningcss arrives, never globally.
+# crate through `exceptions`, never globally.
 allow = [
     "MIT",
     "Apache-2.0",
@@ -35,6 +40,14 @@ exceptions = [
     # comrak's Unicode tables, under Unicode-3.0's predecessor, which has
     # the same permissive terms.
     { crate = "finl_unicode", allow = ["Unicode-DFS-2016"] },
+    # lightningcss and the Servo crates it parses with, used unmodified.
+    { crate = "lightningcss", allow = ["MPL-2.0"] },
+    { crate = "lightningcss-derive", allow = ["MPL-2.0"] },
+    { crate = "parcel_selectors", allow = ["MPL-2.0"] },
+    { crate = "cssparser", allow = ["MPL-2.0"] },
+    { crate = "cssparser-color", allow = ["MPL-2.0"] },
+    { crate = "cssparser-macros", allow = ["MPL-2.0"] },
+    { crate = "dtoa-short", allow = ["MPL-2.0"] },
 ]
 
 [bans]
