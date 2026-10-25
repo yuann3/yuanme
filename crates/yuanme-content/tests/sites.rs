@@ -260,8 +260,8 @@ fn summary(site: &Site) -> String {
         }
     }
     for (i, links) in site.links.iter().enumerate() {
-        for href in links.values() {
-            writeln!(out, "  {} links to {href}", site.entries[i].slug).unwrap();
+        for link in links.values() {
+            writeln!(out, "  {} links to {}", site.entries[i].slug, link.href).unwrap();
         }
     }
     out.push_str("lists:\n");
@@ -1071,6 +1071,56 @@ fn a_title_on_a_plain_directive_warns_and_the_entry_still_builds() {
         assert_eq!(
             &sources.text(d.primary().file)[d.primary().range.clone()],
             under
+        );
+    }
+}
+
+/// A link with no text to another Entry's Label shows its number there,
+/// from either Source format (ADR 0010).
+#[test]
+fn an_empty_link_to_another_entrys_label_shows_its_number() {
+    let files = r"=== content/posts/a.md
+---
+title: A
+---
+:::lemma{#lem:a}
+x
+:::
+
+:::theorem{#thm:a}
+x
+:::
+
+$$\begin{equation} E \label{eq:a} \end{equation}$$
+=== content/posts/b.md
+---
+title: B
+---
+By [](a.md#thm:a), [](a.md#eq:a), [it](a.md#thm:a) and [](c.org).
+=== content/posts/c.org
+#+TITLE: C
+
+By [[file:a.md::thm:a]], [[file:a.md::#eq:a]], [[file:a.md::thm:a][it]] and [[file:b.md]].
+";
+    let (_, site, diagnostics) = resolve(&fixture(files), false);
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    let site = site.expect("no errors");
+    for slug in ["b", "c"] {
+        let i = site.entries.iter().position(|e| e.slug == slug).unwrap();
+        let got: Vec<_> = site.links[i]
+            .values()
+            .map(|l| (l.href.as_str(), l.text.as_deref()))
+            .collect();
+        let other = if slug == "b" { "/blog/c/" } else { "/blog/b/" };
+        assert_eq!(
+            got,
+            [
+                ("/blog/a/#thm:a", Some("Theorem 2")),
+                ("/blog/a/#eq:a", Some("(1)")),
+                ("/blog/a/#thm:a", None),
+                (other, None),
+            ],
+            "{slug}"
         );
     }
 }

@@ -218,7 +218,8 @@ impl Writer<'_> {
                     .push_str(&format!("<a id=\"{}\"></a>", attribute(anchor)));
             }
             Kind::Link { url, title } => {
-                let href = normalize_uri(self.links.get(&id).unwrap_or(url));
+                let link = self.links.get(&id);
+                let href = normalize_uri(link.map_or(url, |l| &l.href));
                 self.out
                     .push_str(&format!("<a href=\"{}\"", attribute(&href)));
                 if let Some(title) = title {
@@ -227,7 +228,10 @@ impl Writer<'_> {
                 }
                 self.out.push_str(&self.attrs(id));
                 self.out.push('>');
-                self.inline(id);
+                match link.and_then(|l| l.text.as_deref()) {
+                    Some(number) => self.out.push_str(&text(number)),
+                    None => self.inline(id),
+                }
                 self.out.push_str("</a>");
             }
             Kind::Image { .. } if self.pictures.contains_key(&id) => {

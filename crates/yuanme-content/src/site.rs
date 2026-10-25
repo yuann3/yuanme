@@ -9,7 +9,7 @@ use jiff::tz::TimeZone;
 use yuanme_diag::{Diagnostic, FileId, Files, Level, Span, codes};
 
 use crate::config::{Collection, Config, SortKey, Taxonomy};
-use crate::document::{Document, Kind, Links};
+use crate::document::{Document, Kind, Link, Links};
 use crate::entry::{self, Entry, SourceFormat};
 use crate::fields::{Cx, Value, compare};
 use crate::slug;
@@ -663,7 +663,7 @@ fn links(
                         Some((j, anchor, _)) => {
                             let route = url_of[j];
                             let href = if anchor.is_empty() { route.to_string() } else { format!("{route}#{anchor}") };
-                            out.insert(id, href);
+                            out.insert(id, Link { href, text: None });
                         }
                         None => diagnostics.push(
                             Diagnostic::error(&codes::LINK_UNRESOLVED, format!("no Entry or heading has the ID `{key}`"), span)
@@ -750,11 +750,17 @@ fn links(
                 // `a.md#x` in `a.md` itself still needs its Route.
                 if !path.is_empty() {
                     let route = url_of[&target];
+                    let bare = node.children.is_empty() || doc.names.undescribed.contains(&id);
+                    let text = fragment
+                        .as_deref()
+                        .filter(|_| bare)
+                        .and_then(|f| entries[target].document.names.numbers.get(&percent_decode(f)))
+                        .cloned();
                     let href = match fragment {
                         Some(f) => format!("{route}#{f}"),
                         None => route.to_string(),
                     };
-                    out.insert(id, href);
+                    out.insert(id, Link { href, text });
                 }
             }
             out

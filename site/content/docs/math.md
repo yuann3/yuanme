@@ -182,7 +182,7 @@ $$
 By $\eqref{eq:enrgy}$, a little mass is a lot of energy.
 ```
 
-A numbered equation's Label is an id on the Page, so an ordinary link reaches it: `[the energy equation](#eq:energy)` in Markdown, `[[eq:energy][the energy equation]]` in Org, and `[the energy equation](energy.md#eq:energy)` from another Entry. A link with no text shows the equation's number: `[](#eq:energy)` in Markdown and `[[eq:energy]]` or `[[#eq:energy]]` in Org show `(1)`.
+A numbered equation's Label is an id on the Page, so an ordinary link reaches it: `[the energy equation](#eq:energy)` in Markdown, `[[eq:energy][the energy equation]]` in Org, and `[the energy equation](energy.md#eq:energy)` from another Entry. A link with no text shows the equation's number: `[](#eq:energy)` in Markdown and `[[eq:energy]]` or `[[#eq:energy]]` in Org show `(1)`, and so do `[](energy.md#eq:energy)` and an Org `[[file:energy.md::eq:energy]]` without a description, from another Entry.
 
 ## Macros
 

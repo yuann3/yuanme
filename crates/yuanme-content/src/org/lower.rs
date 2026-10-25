@@ -1470,6 +1470,7 @@ impl<'s> Lower<'s> {
             if !matches!(link_type, LinkType::CustomId | LinkType::Fuzzy) {
                 let shown = raw.strip_prefix("file:").unwrap_or(raw);
                 self.doc.push(id, Kind::Text(shown.to_string()), at);
+                self.doc.names.undescribed.insert(id);
             }
         } else {
             for o in description {

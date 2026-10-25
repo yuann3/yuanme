@@ -12,8 +12,16 @@ use std::ops::Range;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NodeId(pub u32);
 
-/// Where each resolved link goes, by the link's node.
-pub type Links = BTreeMap<NodeId, String>;
+/// Each resolved link, by the link's node.
+pub type Links = BTreeMap<NodeId, Link>;
+
+/// Where a link goes, and for one with no text to another Entry's
+/// numbered Label, what it shows there instead, such as `Theorem 3`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Link {
+    pub href: String,
+    pub text: Option<String>,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Document {
@@ -37,6 +45,9 @@ pub(crate) struct Names {
     /// What a link with no text to a Label shows (ADR 0010): `(2)` for a
     /// numbered equation, a Theorem block's name, such as `Theorem 3`.
     pub numbers: BTreeMap<String, String>,
+    /// Org links without a description, which show what they link to
+    /// until the Site knows that another Entry's Label has a number.
+    pub undescribed: BTreeSet<NodeId>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
