@@ -18,6 +18,294 @@ error[org/unsupported-construct]: macros aren't in the Org subset
     |
     = help: write the text the macro would expand to
     = note: run `yuanme docs org/unsupported-construct` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:139:17
+    |
+139 | #+latex_header: \usepackage{newunicodechar}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:143:17
+    |
+143 | #+latex_header: \newunicodechar{𝒳}{\ensuremath{\mathcal{X}}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:144:17
+    |
+144 | #+latex_header: \newunicodechar{ℒ}{\ensuremath{\mathcal{L}}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:145:17
+    |
+145 | #+LATEX_HEADER: \usepackage[hmargin=15mm,top=15mm,bottom=15mm]{geometry}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:147:17
+    |
+147 | #+latex_header: \usepackage{tcolorbox}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:149:17
+    |
+149 | #+latex_header: \newunicodechar{τ}{\ensuremath{\tau}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:150:17
+    |
+150 | #+latex_header: \newunicodechar{⟨}{\ensuremath{\langle}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:151:17
+    |
+151 | #+latex_header: \newunicodechar{⟩}{\ensuremath{\rangle}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:152:17
+    |
+152 | #+latex_header: \newunicodechar{→}{\ensuremath{\to}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:153:17
+    |
+153 | #+latex_header: \newunicodechar{⊕}{\ensuremath{\oplus}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:154:17
+    |
+154 | #+latex_header: \newunicodechar{₀}{\ensuremath{_0}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:155:17
+    |
+155 | #+latex_header: \newunicodechar{₁}{\ensuremath{_1}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:156:17
+    |
+156 | #+latex_header: \newunicodechar{₂}{\ensuremath{_2}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:157:17
+    |
+157 | #+latex_header: \newunicodechar{ₙ}{\ensuremath{_n}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:158:17
+    |
+158 | #+latex_header: \newunicodechar{ₖ}{\ensuremath{_k}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:159:17
+    |
+159 | #+latex_header: \newunicodechar{ᵢ}{\ensuremath{_i}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:160:17
+    |
+160 | #+latex_header: \newunicodechar{′}{'}
+    |                 ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:161:17
+    |
+161 | #+latex_header: \newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:162:17
+    |
+162 | #+latex_header: \newunicodechar{𝒞}{\ensuremath{\mathcal{C}}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:163:17
+    |
+163 | #+latex_header: \newunicodechar{∈}{\ensuremath{\in}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:168:17
+    |
+168 | #+latex_header: \newunicodechar{و}{\ensuremath{;}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:169:17
+    |
+169 | #+latex_header: \newunicodechar{•}{\ensuremath{\bullet}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:170:17
+    |
+170 | #+latex_header: \newunicodechar{ᴗ}{\ensuremath{\smile}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:171:17
+    |
+171 | #+latex_header: \newunicodechar{́}{\ensuremath{}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:172:17
+    |
+172 | #+latex_header: \newunicodechar{̀}{\ensuremath{}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:173:17
+    |
+173 | #+latex_header: \newunicodechar{‿}{\ensuremath{\smile}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:175:17
+    |
+175 | #+latex_header: \newunicodechar{⌣}{\ensuremath{\smile}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:176:17
+    |
+176 | #+latex_header: \newunicodechar{̈}{\ensuremath{{}^{..}}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:178:17
+    |
+178 | #+LATEX_HEADER: \usepackage{minted}
+    |                 ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:197:17
+    |
+197 | #+LATEX_HEADER: \makeatletter
+    |                 ^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:198:17
+    |
+198 | #+LATEX_HEADER: \AtBeginEnvironment{minted}{\dontdofcolorbox}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:200:17
+    |
+200 | #+LATEX_HEADER: \makeatother
+    |                 ^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:202:17
+    |
+202 | #+latex_header: \newunicodechar{𝓃}{\ensuremath{n}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:203:17
+    |
+203 | #+latex_header: \newunicodechar{⋯}{\ensuremath{\cdots}}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:207:17
+    |
+207 | #+LATEX_HEADER: \hypersetup{colorlinks,linkcolor=darkblue,citecolor=darkblue,urlcolor=darkblue}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> org-special-block-extras/org-special-block-extras.org:214:18
+    |
+214 | #+latex_header:  \usepackage{multicol}
+    |                  ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
 error[org/unsupported-construct]: `#+INCLUDE` keywords aren't in the Org subset
    --> org-special-block-extras/org-special-block-extras.org:749:1
     |
@@ -26,6 +314,62 @@ error[org/unsupported-construct]: `#+INCLUDE` keywords aren't in the Org subset
     |
     = help: copy the text in, or link to the other file
     = note: run `yuanme docs org/unsupported-construct` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:1728:17
+     |
+1728 | #+latex_header: \newunicodechar{≈}{\ensuremath{\approx}}
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:1729:17
+     |
+1729 | #+latex_header: \newunicodechar{⟦}{\ensuremath{[\![}}
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:1730:17
+     |
+1730 | #+latex_header: \newunicodechar{⟧}{\ensuremath{]\!]}}
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:1731:17
+     |
+1731 | #+latex_header: \newunicodechar{★}{\ensuremath{\star}}
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:1732:17
+     |
+1732 | #+latex_header: \newunicodechar{⇨}{\ensuremath{\Rightarrow}}
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:1733:17
+     |
+1733 | #+latex_header: \newunicodechar{⇦}{\ensuremath{\Leftarrow}}
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:1734:17
+     |
+1734 | #+latex_header: \newunicodechar{↦}{\ensuremath{\mapsto}}
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
 error[org/unsupported-construct]: macros aren't in the Org subset
     --> org-special-block-extras/org-special-block-extras.org:5730:1
      |
@@ -42,6 +386,133 @@ error[org/unsupported-construct]: macros aren't in the Org subset
      |
      = help: write the text the macro would expand to
      = note: run `yuanme docs org/unsupported-construct` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:8260:17
+     |
+8260 | #+LATEX_HEADER: \usepackage{multicol}
+     |                 ^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:8261:17
+     |
+8261 | #+LATEX_HEADER: \usepackage{tcolorbox}
+     |                 ^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4025:18
+     |
+4025 |  #+latex_header: \usepackage{\string~"/unicode-sty/unicode"}
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4026:18
+     |
+4026 |  #+latex_header: \usepackage[includemp,
+     |                  ^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4027:30
+     |
+4027 |  #+latex_header:             paperwidth=18.90cm,
+     |                              ^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4028:30
+     |
+4028 |  #+latex_header:             paperheight=24.58cm,
+     |                              ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4029:30
+     |
+4029 |  #+latex_header:             top=2.170cm,
+     |                              ^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4030:30
+     |
+4030 |  #+latex_header:             bottom=3.510cm,
+     |                              ^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4031:30
+     |
+4031 |  #+latex_header:             inner=2.1835cm,
+     |                              ^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4032:30
+     |
+4032 |  #+latex_header:             outer=2.1835cm,
+     |                              ^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4033:30
+     |
+4033 |  #+latex_header:             hmargin=15mm, vmargin=20mm,
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4034:30
+     |
+4034 |  #+latex_header:             marginparwidth=5cm,
+     |                              ^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:4035:30
+     |
+4035 |  #+latex_header:             marginparsep=0.4cm]{geometry}
+     |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> org-special-block-extras/org-special-block-extras.org:3508:18
+     |
+3508 |  #+latex_header: \newunicodechar{ᵒ}{\ensuremath{{}^o}}
+     |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+error[math/unsupported]: invalid parameter number. Must be 1-9
+   --> org-special-block-extras/org-special-block-extras.org:199:68
+    |
+199 | #+LATEX_HEADER: \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
+    |                                                                    ^ must be 1-9
+    |
+    = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\definecolor"
+   --> org-special-block-extras/org-special-block-extras.org:206:17
+    |
+206 | #+latex_header: \definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+    |                 ^^^^^^^^^^^^ unknown command
+    |
+    = help: define `\definecolor` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+    = note: run `yuanme docs math/unsupported` for more
 error[link/unresolved]: nothing here is called `kbd:C-u 80 -`: no `<<target>>`, `#+NAME` or headline title
     --> org-special-block-extras/org-special-block-extras.org:3667:37
      |

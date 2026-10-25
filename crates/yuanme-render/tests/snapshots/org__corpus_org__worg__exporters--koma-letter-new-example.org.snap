@@ -2,6 +2,22 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> worg/exporters--koma-letter-new-example.org:24:17
+   |
+24 | #+LATEX_HEADER: \setkomavar{firsthead}{}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> worg/exporters--koma-letter-new-example.org:36:17
+   |
+36 | #+LATEX_HEADER: \usepackage{tikz}
+   |                 ^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
 <h2 id="to-address-of-the-lovely-juliet">To-address of the lovely Juliet</h2>
 <p>Juliet
 House of Capulet

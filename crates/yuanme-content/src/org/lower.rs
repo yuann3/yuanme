@@ -64,6 +64,7 @@ pub(super) fn lower(
         definitions: BTreeSet::new(),
         references: Vec::new(),
         anonymous: 0,
+        headers: Vec::new(),
     };
     let keywords = l.keywords(parsed);
     for p in parsed.get_additional_properties() {
@@ -160,6 +161,8 @@ struct Lower<'s> {
     definitions: BTreeSet<String>,
     references: Vec<(String, Range<usize>)>,
     anonymous: usize,
+    /// Math macros from `#+LATEX_HEADER`.
+    headers: Vec<math::Header>,
 }
 
 impl<'s> Lower<'s> {
@@ -246,6 +249,7 @@ impl<'s> Lower<'s> {
                     }
                 }
                 "EXCLUDE_TAGS" => exclude.extend(k.value.split_whitespace().map(String::from)),
+                "LATEX_HEADER" => self.latex_header(k.value),
                 "SELECT_TAGS" => select.extend(k.value.split_whitespace().map(String::from)),
                 _ => {}
             }
@@ -565,6 +569,54 @@ impl<'s> Lower<'s> {
         };
         let id = self.doc.push(parent, kind, at);
         self.affiliated(a, id, false);
+    }
+
+    /// A `#+LATEX_HEADER` line (#17): one that defines macros defines them
+    /// for the Entry's math, a `\usepackage` of what yuanme's math has
+    /// anyway is accepted, and any other has no effect.
+    fn latex_header(&mut self, value: &'s str) {
+        let tex = value.trim();
+        if tex.is_empty() {
+            return;
+        }
+        let start = offset(self.text, value) + value.find(tex).unwrap_or(0);
+        let at = start..start + tex.len();
+        if let Some(rest) = tex.strip_prefix("\\usepackage") {
+            let packages = rest
+                .split_once('{')
+                .and_then(|(_, p)| p.split_once('}'))
+                .map_or("", |(p, _)| p);
+            if !packages.is_empty() && packages.split(',').all(|p| PACKAGES.contains(&p.trim())) {
+                return;
+            }
+        } else if let Some(defined) = declare_math_operator(tex) {
+            self.headers.push(math::Header {
+                tex: defined,
+                at,
+                verbatim: false,
+            });
+            return;
+        } else if [
+            "\\newcommand",
+            "\\renewcommand",
+            "\\providecommand",
+            "\\def",
+        ]
+        .iter()
+        .any(|c| tex.starts_with(c))
+        {
+            self.headers.push(math::Header {
+                tex: tex.to_string(),
+                at,
+                verbatim: true,
+            });
+            return;
+        }
+        self.no_effect(
+            "this `#+LATEX_HEADER` has no effect in yuanme".into(),
+            at,
+            "yuanme reads `\\newcommand`, `\\renewcommand`, `\\def` and `\\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm",
+        );
     }
 
     /// `#+NAME` as the element's id, `#+ATTR_HTML` as its attributes where
@@ -1375,6 +1427,7 @@ impl<'s> Lower<'s> {
             self.text,
             self.file,
             macros,
+            &self.headers,
             &mut self.diagnostics,
         );
         markdown::heading_ids(&mut self.doc, &labels);
@@ -1536,6 +1589,47 @@ const INNER: &[&str] = &[
     "aligned", "gathered", "cases", "dcases", "rcases", "drcases", "matrix", "pmatrix", "bmatrix",
     "Bmatrix", "vmatrix", "Vmatrix", "array", "darray", "subarray",
 ];
+
+/// Packages whose `\usepackage` a `#+LATEX_HEADER` may have: yuanme's math
+/// has what they give, or they give nothing math needs (#17).
+const PACKAGES: &[&str] = &[
+    "amsmath",
+    "amssymb",
+    "amsfonts",
+    "amsthm",
+    "mathtools",
+    "bm",
+];
+
+/// `\DeclareMathOperator{\X}{Y}` as the macro it defines,
+/// `\newcommand{\X}{\operatorname{Y}}`, or `\operatorname*` for the
+/// starred form.
+fn declare_math_operator(tex: &str) -> Option<String> {
+    let rest = tex.strip_prefix("\\DeclareMathOperator")?;
+    let (star, rest) = match rest.strip_prefix('*') {
+        Some(rest) => ("*", rest),
+        None => ("", rest),
+    };
+    let rest = rest.trim_start();
+    let (name, rest) = match rest.strip_prefix('{') {
+        Some(r) => r.split_once('}')?,
+        None => {
+            let end = 1 + rest
+                .get(1..)?
+                .find(|c: char| !c.is_ascii_alphabetic())
+                .unwrap_or(rest.len() - 1);
+            rest.split_at(end)
+        }
+    };
+    let name = name.trim();
+    if !name.starts_with('\\') {
+        return None;
+    }
+    let body = rest.trim().strip_prefix('{')?.strip_suffix('}')?;
+    Some(format!(
+        "\\newcommand{{{name}}}{{\\operatorname{star}{{{body}}}}}"
+    ))
+}
 
 /// `inner` between `open` and `close`.
 fn strip<'a>(s: &'a str, open: &str, close: &str) -> Option<&'a str> {

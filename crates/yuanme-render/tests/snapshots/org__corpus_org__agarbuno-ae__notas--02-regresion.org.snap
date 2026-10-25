@@ -2,6 +2,126 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:10:17
+   |
+10 | #+LATEX_HEADER: \usepackage[spanish]{babel}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:11:17
+   |
+11 | #+LATEX_HEADER: \usepackage[sort,numbers]{natbib}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:12:17
+   |
+12 | #+LATEX_HEADER: \usepackage[utf8]{inputenc} 
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:13:17
+   |
+13 | #+LATEX_HEADER: \usepackage[capitalize]{cleveref}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:14:17
+   |
+14 | #+LATEX_HEADER: \decimalpoint
+   |                 ^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:15:16
+   |
+15 | #+LATEX_HEADER:\usepackage{framed}
+   |                ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:16:17
+   |
+16 | #+LaTeX_HEADER: \usepackage{listings}
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:17:17
+   |
+17 | #+LATEX_HEADER: \usepackage{fancyvrb}
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:18:17
+   |
+18 | #+LATEX_HEADER: \usepackage{xcolor}
+   |                 ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:22:17
+   |
+22 | #+LaTeX_HEADER: {}
+   |                 ^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:23:17
+   |
+23 | ...R: {\lstset{language={R},basicstyle={\ttfamily\f...\color{codegreen}},stringstyle={\color{red}}}
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^...^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> agarbuno-ae/notas--02-regresion.org:24:17
+   |
+24 | #+LaTeX_HEADER: {}
+   |                 ^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+error[math/unsupported]: unknown command "\definecolor"
+  --> agarbuno-ae/notas--02-regresion.org:19:17
+   |
+19 | #+LaTeX_HEADER: \definecolor{backcolour}{rgb}{.95,0.95,0.92}
+   |                 ^^^^^^^^^^^^ unknown command
+   |
+   = help: define `\definecolor` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\definecolor"
+  --> agarbuno-ae/notas--02-regresion.org:20:17
+   |
+20 | #+LaTeX_HEADER: \definecolor{codegray}{rgb}{0.5,0.5,0.5}
+   |                 ^^^^^^^^^^^^ unknown command
+   |
+   = help: define `\definecolor` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
+error[math/unsupported]: unknown command "\definecolor"
+  --> agarbuno-ae/notas--02-regresion.org:21:17
+   |
+21 | #+LaTeX_HEADER: \definecolor{codegreen}{rgb}{0,0.6,0} 
+   |                 ^^^^^^^^^^^^ unknown command
+   |
+   = help: define `\definecolor` in `[math.macros]` in yuanme.toml, or with `\newcommand` in the Entry
+   = note: run `yuanme docs math/unsupported` for more
 <div class="NOTES">
 <p><strong>Profesor</strong>: Alfredo Garbuno Iñigo | Primavera, 2023 | Regresión lineal.<br>
 <strong>Objetivo</strong>. Repasaremos los conceptos de regresión lineal desde un punto de vista de inferencia. Haremos conexiones interesantes con conceptos clave en probabilidad y teoria de la información. Veremos métricas de desempeño para modelos de regresión. Nos llevará a cuestionar el modelo bajo el enfoque de predicción.<br>

@@ -94,7 +94,7 @@ pub(crate) fn parse(
     number_footnotes(&mut doc);
     smarten(&mut doc, Dashes::Default, &BTreeSet::new());
     let before = cx.diagnostics.len();
-    let labels = math::render(&mut doc, text, cx.file, macros, cx.diagnostics);
+    let labels = math::render(&mut doc, text, cx.file, macros, &[], cx.diagnostics);
     let ok = ok
         && !cx.diagnostics[before..]
             .iter()

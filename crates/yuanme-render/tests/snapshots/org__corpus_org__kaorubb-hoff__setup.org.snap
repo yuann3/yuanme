@@ -10,3 +10,59 @@ error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
    |
    = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
    = note: run `yuanme docs org/setupfile` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> kaorubb-hoff/setup.org:36:17
+   |
+36 | #+LATEX_HEADER: \usepackage{mathrsfs}
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> kaorubb-hoff/setup.org:37:17
+   |
+37 | #+LATEX_HEADER: \usepackage{fontspec}
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> kaorubb-hoff/setup.org:38:17
+   |
+38 | #+LATEX_HEADER: \usepackage{booktabs}
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> kaorubb-hoff/setup.org:39:17
+   |
+39 | #+LATEX_HEADER: \usepackage{arydshln}
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> kaorubb-hoff/setup.org:40:17
+   |
+40 | #+LATEX_HEADER: \usepackage{luatexja-fontspec}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> kaorubb-hoff/setup.org:42:17
+   |
+42 | #+LATEX_HEADER: \usepackage{xcolor}
+   |                 ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> kaorubb-hoff/setup.org:43:17
+   |
+43 | #+LATEX_HEADER: \usepackage{listings}
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more

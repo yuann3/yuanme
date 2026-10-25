@@ -2,6 +2,30 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+ --> org-ref/examples--basic.org:3:17
+  |
+3 | #+latex_header: \usepackage{makeidx}
+  |                 ^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+  = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+ --> org-ref/examples--basic.org:4:17
+  |
+4 | #+latex_header: \makeindex
+  |                 ^^^^^^^^^^
+  |
+  = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+  = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+ --> org-ref/examples--basic.org:5:17
+  |
+5 | #+latex_header: \usepackage{cleveref}
+  |                 ^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+  = note: run `yuanme docs org/no-effect` for more
 error[math/unsupported]: unknown command "\maketitle"
  --> org-ref/examples--basic.org:7:1
   |

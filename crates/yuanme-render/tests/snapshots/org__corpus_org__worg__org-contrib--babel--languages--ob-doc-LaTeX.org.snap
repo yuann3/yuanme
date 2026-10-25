@@ -2,6 +2,14 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> worg/org-contrib--babel--languages--ob-doc-LaTeX.org:364:17
+    |
+364 | #+LATEX_HEADER: \usepackage{tikz}
+    |                 ^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
 error[math/unsupported]: unknown command "\usepackage"
    --> worg/org-contrib--babel--languages--ob-doc-LaTeX.org:169:5
     |

@@ -76,10 +76,6 @@ const EXPORTER: &[(&str, &str)] = &[
         "yuanme renders math itself, without LaTeX",
     ),
     (
-        "LATEX_HEADER",
-        "math macros are set in `[math]` in yuanme.toml",
-    ),
-    (
         "LATEX_HEADER_EXTRA",
         "math macros are set in `[math]` in yuanme.toml",
     ),
@@ -475,7 +471,8 @@ fn other(k: &Keyword, upper: &str, types: &BTreeMap<&str, FieldType>, tags: bool
         cx.push(d);
         return;
     }
-    if EDITOR.contains(&upper) || upper == "TAGS" {
+    // The body's reader reads `#+LATEX_HEADER`'s macros (#17).
+    if EDITOR.contains(&upper) || upper == "TAGS" || upper == "LATEX_HEADER" {
         return;
     }
     if upper == "OPTIONS" {

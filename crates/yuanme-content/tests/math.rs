@@ -170,6 +170,48 @@ fn a_newcommand_holds_for_the_rest_of_the_entry() {
 }
 
 #[test]
+fn latex_header_macros_define_the_entrys_math() {
+    let text = r"#+TITLE: A
+#+LATEX_HEADER: \usepackage{amsmath,amssymb}
+#+LATEX_HEADER: \newcommand{\RR}{\mathbb{R}}
+#+LATEX_HEADER: \DeclareMathOperator*{\Prob}{Pr}
+#+LATEX_HEADER: \usepackage{tikz}
+
+\(\Prob_{x \in \RR} f\)
+";
+    let (doc, diagnostics) = org(text);
+    let got: Vec<_> = diagnostics
+        .iter()
+        .map(|d| (d.code.name, &text[d.primary().range.clone()]))
+        .collect();
+    assert_eq!(got, [("org/no-effect", r"\usepackage{tikz}")]);
+    let chars = doc.math_chars();
+    assert!(chars.contains(&'ℝ') && chars.contains(&'P'), "{chars:?}");
+    let mathml = doc
+        .descendants(Document::ROOT)
+        .into_iter()
+        .find_map(|id| match &doc.node(id).kind {
+            Kind::Math { mathml, .. } => Some(mathml.clone()),
+            _ => None,
+        })
+        .unwrap();
+    assert!(mathml.contains("<mi>Pr</mi>"), "{mathml}");
+}
+
+#[test]
+fn a_header_macro_with_an_error_is_reported_on_its_line() {
+    let text = "#+LATEX_HEADER: \\newcommand{\\RR}{\\mathbb{R}\n\n\\(x\\)\n";
+    let (_, diagnostics) = org(text);
+    let got: Vec<_> = diagnostics
+        .iter()
+        .map(|d| (d.code.name, d.primary().range.start))
+        .collect();
+    assert_eq!(got.len(), 1, "{diagnostics:#?}");
+    assert_eq!(got[0].0, "math/unsupported");
+    assert!(got[0].1 >= "#+LATEX_HEADER: ".len() && got[0].1 <= text.find("\n\n").unwrap());
+}
+
+#[test]
 fn a_generated_heading_id_never_takes_a_label() {
     let (doc, diagnostics) = markdown(
         "## Energy\n\n$$\\begin{equation} E \\label{energy} \\end{equation}$$\n\n## Energy\n",

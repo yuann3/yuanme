@@ -2,6 +2,22 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+   --> worg/org-contrib--babel--examples--drift.org:138:17
+    |
+138 | #+latex_header: \usepackage[left=2cm,top=2cm,right=3cm,head=2cm,foot=2cm]{geometry}
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+    = note: run `yuanme docs org/no-effect` for more
+error[math/unsupported]: this command is already defined
+   --> worg/org-contrib--babel--examples--drift.org:139:29
+    |
+139 | #+latex_header: \newcommand{\Pr}{\text{Pr}}
+    |                             ^^^ already defined
+    |
+    = help: yuanme's math already has `\Pr`; use `\renewcommand` to change what it means
+    = note: run `yuanme docs math/unsupported` for more
 error[math/invalid-label]: `simpledrift(N=1000, X1=600, ngens=100)` isn't a valid Label
   --> worg/org-contrib--babel--examples--drift.org:64:9
    |

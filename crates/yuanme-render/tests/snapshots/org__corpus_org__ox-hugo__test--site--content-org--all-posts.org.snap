@@ -234,6 +234,22 @@ error[org/unsupported-construct]: `#+INCLUDE` keywords aren't in the Org subset
      |
      = help: copy the text in, or link to the other file
      = note: run `yuanme docs org/unsupported-construct` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> ox-hugo/test--site--content-org--all-posts.org:4142:17
+     |
+4142 | #+latex_header: \usepackage{tikz}
+     |                 ^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+    --> ox-hugo/test--site--content-org--all-posts.org:4143:17
+     |
+4143 | #+latex_header: \usepackage{pgfplots}
+     |                 ^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+     = note: run `yuanme docs org/no-effect` for more
 error[org/unsupported-construct]: `#+INCLUDE` keywords aren't in the Org subset
     --> ox-hugo/test--site--content-org--all-posts.org:5662:1
      |

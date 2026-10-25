@@ -16,6 +16,17 @@ use crate::config::similar;
 use crate::document::{Document, Kind, NodeId};
 use crate::label;
 
+/// Macros an Org file's `#+LATEX_HEADER` defines, as LaTeX that defines
+/// them, converted before the Entry's math.
+pub(crate) struct Header {
+    pub tex: String,
+    /// The keyword's value in the file.
+    pub at: Range<usize>,
+    /// `tex` is the value as written, so an error in it can be pointed at
+    /// exactly; otherwise it was rewritten, as `\DeclareMathOperator` is.
+    pub verbatim: bool,
+}
+
 /// A converter for one Entry, with `macros` defined, each a name without
 /// its backslash and a definition. The error is the index of the macro
 /// that can't be read, and why.
@@ -64,6 +75,7 @@ pub(crate) fn render(
     text: &str,
     file: FileId,
     macros: &[(String, String)],
+    headers: &[Header],
     out: &mut Vec<Diagnostic>,
 ) -> BTreeSet<String> {
     let span = |range: Range<usize>| Span { file, range };
@@ -85,6 +97,10 @@ pub(crate) fn render(
     // written, and the span to fall back on if not.
     let mut snippets: Vec<(String, MathDisplay)> = Vec::new();
     let mut places: Vec<(Option<usize>, Range<usize>)> = Vec::new();
+    for h in headers {
+        snippets.push((h.tex.clone(), MathDisplay::Inline));
+        places.push((h.verbatim.then_some(h.at.start), h.at.clone()));
+    }
     for &id in &maths {
         let node = doc.node(id);
         let Kind::Math { display, tex, .. } = &node.kind else {
@@ -117,7 +133,7 @@ pub(crate) fn render(
     let mut references: Vec<(String, Range<usize>)> = Vec::new();
     let mut unconverted: BTreeSet<String> = BTreeSet::new();
     for (i, result) in results.into_iter().enumerate() {
-        let node = maths[i];
+        let node = i.checked_sub(headers.len()).map(|n| maths[n]);
         match result {
             Ok(r) => {
                 for l in r.labels {
@@ -126,7 +142,9 @@ pub(crate) fn render(
                 for e in r.references {
                     references.push((e.name, at(i, e.span)));
                 }
-                if let Kind::Math { mathml, .. } = doc.kind_mut(node) {
+                if let Some(id) = node
+                    && let Kind::Math { mathml, .. } = doc.kind_mut(id)
+                {
                     *mathml = r.mathml;
                 }
             }
@@ -267,8 +285,7 @@ fn help(e: &LatexError, snippet: &str) -> Option<String> {
     if label == "unknown command" {
         return Some(match at {
             "\\DeclareMathOperator" | "\\DeclareMathOperator*" => {
-                "declare it in `[math.macros]` in yuanme.toml, as `name = '\\operatorname{name}'`"
-                    .into()
+                "declare it in `[math.macros]` in yuanme.toml, as `name = '\\operatorname{name}'`, or in Org with `#+LATEX_HEADER: \\DeclareMathOperator…`".into()
             }
             "\\ref" => "inside math, use `\\eqref`, which gives `(n)`".into(),
             _ => format!(

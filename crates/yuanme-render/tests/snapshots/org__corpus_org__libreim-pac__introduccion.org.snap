@@ -2,6 +2,102 @@
 source: crates/yuanme-render/tests/org.rs
 expression: "render(name, &text)"
 ---
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+ --> libreim-pac/introduccion.org:7:17
+  |
+7 | #+LATEX_HEADER: \usepackage[spanish]{babel}
+  |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+  = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:10:17
+   |
+10 | #+LATEX_HEADER: \usepackage{dsfont}
+   |                 ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:11:17
+   |
+11 | #+LATEX_HEADER: \newtheorem{theorem}{Teorema}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:12:17
+   |
+12 | #+LATEX_HEADER: \newtheorem{fact}{Proposición}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:13:17
+   |
+13 | #+LATEX_HEADER: \newtheorem{lemma}{Lema}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:14:17
+   |
+14 | #+LATEX_HEADER: \newtheorem{corollary}{Corolario}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:15:17
+   |
+15 | #+LATEX_HEADER: \newtheorem{definition}{Definición}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:16:17
+   |
+16 | #+LATEX_HEADER: \setlength{\parindent}{0pt}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:17:17
+   |
+17 | #+LATEX_HEADER: \setlength{\parskip}{1em}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:18:17
+   |
+18 | #+LATEX_HEADER: \usepackage{color}
+   |                 ^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:19:17
+   |
+19 | #+LATEX_HEADER: \everymath{\displaystyle}
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
+  --> libreim-pac/introduccion.org:20:17
+   |
+20 | #+LATEX_HEADER: \usepackage{titlesec}
+   |                 ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
+   = note: run `yuanme docs org/no-effect` for more
 error[math/unsupported]: unknown command "\mathds"
    --> libreim-pac/introduccion.org:188:17
     |
