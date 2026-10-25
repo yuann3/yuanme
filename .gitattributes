@@ -1,0 +1,4 @@
+# Every file is checked out byte for byte as committed, on Windows too,
+# where Git turns LF into CRLF by default: the Windows release embeds
+# Templates, grammars and docs in the binary (#78).
+* -text
