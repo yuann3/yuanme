@@ -1,0 +1,7 @@
+[site]
+url = "https://example.com"
+title = "Example"
+
+[routes.home]
+path = "/"
+template = "home.html"

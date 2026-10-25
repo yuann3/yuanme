@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@import "./parts/theme.css";
+
+.card {
+  @apply rounded-lg shadow-md;
+}

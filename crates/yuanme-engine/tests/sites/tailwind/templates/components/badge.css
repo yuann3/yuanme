@@ -1,0 +1,4 @@
+.badge {
+  color: var(--color-rose-600);
+  padding: var(--spacing);
+}

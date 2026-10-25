@@ -610,6 +610,13 @@ const ERRORS: &[(&str, Over, &str, &str)] = &[
         "scripts/site.ts",
         "",
     ),
+    // Only a stylesheet a Page links is built by Tailwind.
+    (
+        "asset/tailwind-error",
+        &[("styles/parts/type.css", b"@import \"tailwindcss\";\nh1 { margin: 0 }\n")],
+        "styles/parts/type.css",
+        "tailwindcss",
+    ),
     // Warnings: the build goes on.
     (
         "asset/unmatched-selector",
@@ -632,6 +639,9 @@ fn each_mistake_is_one_diagnostic_on_the_url_it_is_about() {
         .iter()
         .map(|c| c.name)
         .filter(|n| n.starts_with("asset/"))
+        // It needs a Managed tool's download to fail: the CLI's tests have
+        // it, through the variable that names a binary instead.
+        .filter(|n| *n != "asset/tool-unavailable")
         .collect();
     assert_eq!(tested, all);
 

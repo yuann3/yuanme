@@ -104,11 +104,18 @@ struct Output {
 }
 
 fn yuanme(root: &Path, args: &[&str]) -> Output {
-    let out = Command::new(env!("CARGO_BIN_EXE_yuanme"))
-        .args(args)
-        .current_dir(root)
-        .output()
-        .unwrap();
+    yuanme_with(root, args, None)
+}
+
+/// With `YUANME_TAILWIND_BIN` set to `tailwind`, or unset with `None`.
+fn yuanme_with(root: &Path, args: &[&str], tailwind: Option<&Path>) -> Output {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_yuanme"));
+    command.args(args).current_dir(root);
+    match tailwind {
+        Some(path) => command.env("YUANME_TAILWIND_BIN", path),
+        None => command.env_remove("YUANME_TAILWIND_BIN"),
+    };
+    let out = command.output().unwrap();
     Output {
         code: out.status.code().unwrap(),
         stdout: String::from_utf8(out.stdout).unwrap(),
@@ -723,4 +730,81 @@ js = 1
     let (code, events) = json(root, &["build", "--strict-budgets"]);
     assert_eq!((code, events.len()), (0, 2), "{}", show(&events));
     assert_eq!(report()["budgets"], Value::Null);
+}
+
+const TAILWIND_SITE: &str = r#"=== yuanme.toml
+[site]
+url = "https://example.com"
+
+[routes.home]
+path = "/"
+template = "home.html"
+=== styles/site.css
+@import "tailwindcss";
+=== templates/home.html
+<link rel="stylesheet" href="/styles/site.css"><h1 class="text-3xl">Home</h1>
+"#;
+
+/// The diagnostic events of a `--json` run.
+fn codes(stdout: &str) -> Vec<(String, String)> {
+    stdout
+        .lines()
+        .map(|l| serde_json::from_str::<Value>(l).unwrap())
+        .filter(|e| e["type"] == "diagnostic")
+        .map(|e| {
+            let code = e["code"].as_str().unwrap().to_string();
+            (code, e["message"].as_str().unwrap().to_string())
+        })
+        .collect()
+}
+
+/// Offline, with no Tailwind CLI to run, the build says how to give it one.
+#[test]
+fn a_tailwind_cli_that_isnt_there_is_a_diagnostic() {
+    let dir = project(TAILWIND_SITE);
+    let root = dir.path();
+    let missing = root.join("no-such-tailwindcss");
+    let out = yuanme_with(root, &["build", "--json"], Some(&missing));
+    assert_eq!((out.code, out.stderr.as_str()), (1, ""));
+    let [(code, message)] = codes(&out.stdout).try_into().unwrap();
+    assert_eq!(code, "asset/tool-unavailable");
+    assert!(message.contains("`YUANME_TAILWIND_BIN` names"), "{message}");
+    assert!(!root.join("dist").exists());
+}
+
+/// The Tailwind CLI's output is cached in `.yuanme/cache` under the
+/// tokens it was built from, so a build that adds no class runs no
+/// Tailwind, even with none to run.
+#[test]
+#[ignore = "downloads the Tailwind CLI"]
+fn a_warm_build_runs_no_tailwind() {
+    let dir = project(TAILWIND_SITE);
+    let root = dir.path();
+    let stylesheet = |root: &Path| {
+        let name = files_under(&root.join("dist/assets"))
+            .into_iter()
+            .find(|f| f.ends_with(".css"))
+            .unwrap();
+        fs::read_to_string(root.join("dist/assets").join(name)).unwrap()
+    };
+    let cold = yuanme_with(root, &["build"], None);
+    assert_eq!(cold.code, 0, "{}", cold.stderr);
+    let css = stylesheet(root);
+    assert!(css.contains(".text-3xl{"), "{css}");
+
+    let missing = root.join("no-such-tailwindcss");
+    let warm = yuanme_with(root, &["build"], Some(&missing));
+    assert_eq!(warm.code, 0, "{}", warm.stderr);
+    assert_eq!(stylesheet(root), css);
+
+    // A new class is a new token set, which only Tailwind can build.
+    fs::write(
+        root.join("templates/home.html"),
+        "<link rel=\"stylesheet\" href=\"/styles/site.css\"><h1 class=\"text-4xl\">Home</h1>\n",
+    )
+    .unwrap();
+    let changed = yuanme_with(root, &["build", "--json"], Some(&missing));
+    assert_eq!(changed.code, 1);
+    let codes: Vec<String> = codes(&changed.stdout).into_iter().map(|(c, _)| c).collect();
+    assert_eq!(codes, ["asset/tool-unavailable"]);
 }

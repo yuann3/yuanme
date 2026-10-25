@@ -276,7 +276,15 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         .iter_mut()
         .filter_map(|p| Some((p.output.clone(), p.body.take()?)))
         .collect();
-    let stage = assets::assets(inputs, &config, &site.data, pages, &templates, &mut sources);
+    let stage = assets::assets(
+        inputs,
+        &config,
+        &site.data,
+        pages,
+        &templates,
+        &mut sources,
+        cache,
+    );
     diagnostics.extend(stage.diagnostics);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));

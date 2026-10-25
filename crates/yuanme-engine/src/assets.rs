@@ -4,6 +4,7 @@
 //! names by its hash.
 
 mod scripts;
+mod tailwind;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
@@ -13,14 +14,14 @@ use std::sync::Arc;
 use rayon::prelude::*;
 use yuanme_assets::css::{self, Import, Packages};
 use yuanme_assets::html::{self, Kind};
-use yuanme_assets::js;
+use yuanme_assets::{js, tailwind as tw};
 use yuanme_content::config::{self, Config, RouterMode};
 use yuanme_content::fields::Value;
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Level, Span, codes};
 use yuanme_render::template::{Page, scope};
 
 use crate::link::Asset;
-use crate::{Body, Bundle, Inputs};
+use crate::{Body, Bundle, Cache, Inputs};
 
 /// The stylesheet holding every used Template's Sidecar CSS.
 const SIDECARS: &str = "sidecars.css";
@@ -55,6 +56,7 @@ pub(crate) fn assets(
     pages: Vec<Page>,
     templates: &BTreeMap<String, FileId>,
     sources: &mut Files,
+    cache: &mut Cache,
 ) -> Stage {
     let mut site = BTreeSet::new();
     for page in &pages {
@@ -70,7 +72,7 @@ pub(crate) fn assets(
         .map(|t| (scope::sidecar(t), scope::attribute(t)))
         .filter(|(path, _)| inputs.files.contains_key(path))
         .collect();
-    let project = Project {
+    let mut project = Project {
         inputs,
         site: &site,
         packages: inputs.root.as_deref().map(Packages::new),
@@ -78,6 +80,7 @@ pub(crate) fn assets(
             .keys()
             .map(|p| format!("@import {};\n", css_string(&format!("/{p}"))))
             .collect(),
+        tailwind: BTreeMap::new(),
     };
     let mut diagnostics = Diagnostics::default();
     let mut files = SourceFiles::default();
@@ -212,6 +215,60 @@ pub(crate) fn assets(
         })
         .collect();
 
+    let entries_js: Vec<js::Entry> = script_entries
+        .iter()
+        .map(|path| js::Entry::Script(path.clone()))
+        .chain(page_scripts.into_iter().map(js::Entry::Page))
+        .collect();
+    let scripts = scripts::bundle(
+        &project,
+        config,
+        data,
+        &entries_js,
+        sources,
+        &mut files,
+        &mut diagnostics,
+    );
+
+    // Each stylesheet that imports Tailwind, built by it from the tokens of
+    // every Page, Script and Sidecar. With a Script that failed, the tokens
+    // aren't all known, and the build fails anyway.
+    let tailwind: Vec<String> = entries
+        .iter()
+        .filter(|e| project.text(e).is_some_and(|css| tw::imported(&css)))
+        .cloned()
+        .collect();
+    if let (Some(scripts), false) = (&scripts, tailwind.is_empty()) {
+        let classes = scans.iter().flatten().flat_map(|s| &s.classes);
+        let mut strings = Vec::new();
+        for asset in &scripts.assets {
+            if let Asset::Copy {
+                body: Body::Bytes(code),
+                ..
+            } = asset
+            {
+                strings.extend(js::strings(&String::from_utf8_lossy(code)));
+            }
+        }
+        let sidecar_texts: Vec<String> = scopes.keys().filter_map(|p| project.text(p)).collect();
+        let tokens = tw::tokens(
+            classes
+                .map(String::as_str)
+                .chain(strings.iter().map(String::as_str))
+                .chain(sidecar_texts.iter().map(String::as_str)),
+        );
+        project.tailwind = tailwind::outputs(
+            &project,
+            config,
+            cache,
+            &tailwind,
+            &tokens,
+            sources,
+            &mut files,
+            &mut diagnostics,
+        );
+    }
+
     // Every stylesheet, bundled.
     let mut bundles: Vec<(String, &str)> = entries
         .iter()
@@ -229,15 +286,27 @@ pub(crate) fn assets(
             } else {
                 &unscoped
             };
-            css::bundle(&project, entry, &config.build.targets, scopes, false)
+            let is_tailwind = tailwind.iter().any(|t| t == entry);
+            // Tailwind failed, and said so.
+            if is_tailwind && !project.tailwind.contains_key(*entry) {
+                return None;
+            }
+            Some(css::bundle(
+                &project,
+                entry,
+                &config.build.targets,
+                scopes,
+                is_tailwind,
+            ))
         })
         .collect();
     // Each bundle's code, and where its `url()`s go.
     let mut codes: Vec<(String, Vec<(String, Use)>)> = Vec::new();
     for ((_, entry), result) in bundles.iter().zip(bundled) {
         let bundle = match result {
-            Ok(bundle) => bundle,
-            Err(e) => {
+            None => continue,
+            Some(Ok(bundle)) => bundle,
+            Some(Err(e)) => {
                 diagnostics.push(files.error(*e, entry, &project, sources));
                 continue;
             }
@@ -269,20 +338,6 @@ pub(crate) fn assets(
         }
         codes.push((bundle.code, urls));
     }
-    let entries_js: Vec<js::Entry> = script_entries
-        .iter()
-        .map(|path| js::Entry::Script(path.clone()))
-        .chain(page_scripts.into_iter().map(js::Entry::Page))
-        .collect();
-    let scripts = scripts::bundle(
-        &project,
-        config,
-        data,
-        &entries_js,
-        sources,
-        &mut files,
-        &mut diagnostics,
-    );
     let Some(scripts) = scripts.filter(|_| !diagnostics.failed()) else {
         return Stage::failed(diagnostics);
     };
@@ -536,6 +591,9 @@ struct Project<'a> {
     packages: Option<Packages>,
     /// The text of [`SIDECARS_ENTRY`].
     sidecars: String,
+    /// The Tailwind CLI's output for each stylesheet that imports Tailwind,
+    /// which lightningcss reads in place of its text.
+    tailwind: BTreeMap<String, String>,
 }
 
 impl Project<'_> {
@@ -606,6 +664,12 @@ impl Project<'_> {
             .map_err(|e| Problem::new(&codes::ASSET_NOT_FOUND, format!("can't read `{path}`: {e}")))
     }
 
+    /// A project file's text, if it is UTF-8.
+    fn text(&self, path: &str) -> Option<String> {
+        let bytes = self.bytes(path).ok()?;
+        String::from_utf8(bytes.to_vec()).ok()
+    }
+
     /// Whether the project names packages it hasn't installed.
     fn dependencies_missing(&self) -> bool {
         self.inputs.files.contains_key("package.json")
@@ -645,6 +709,9 @@ impl css::Project for Project<'_> {
         if path == SIDECARS_ENTRY {
             return Ok(self.sidecars.clone());
         }
+        if let Some(output) = self.tailwind.get(path) {
+            return Ok(output.clone());
+        }
         let bytes = self.bytes(path)?;
         match std::str::from_utf8(&bytes) {
             Ok(text) => Ok(text.to_string()),
@@ -657,6 +724,15 @@ impl css::Project for Project<'_> {
     }
 
     fn import(&self, specifier: &str, from: &str) -> Result<Import, Problem> {
+        // A stylesheet that imports Tailwind is the Tailwind CLI's to build,
+        // and only one a Page links gets to it.
+        if tw::is_tailwind(specifier) {
+            let message =
+                format!("`@import \"{specifier}\"` is in a stylesheet that no Template links");
+            return Err(Problem::new(&codes::ASSET_TAILWIND_ERROR, message)
+                .help("import Tailwind from the stylesheet a `<link rel=\"stylesheet\">` names")
+                .url(specifier));
+        }
         match self.resolve(specifier, &format!("/{from}")) {
             Ok(Target::Source(path)) => Ok(Import::File(path)),
             Ok(Target::Site(url)) => Ok(Import::External(url)),
