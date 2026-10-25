@@ -24,6 +24,9 @@ use yuanme_engine::{Build, Cache, Mode};
 
 use events::Event;
 
+#[global_allocator]
+static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 /// Every cache key starts with it (ADR 0011): the release version, plus the
 /// git commit and a dirty flag when built from a checkout.
 const ENGINE_VERSION: &str = env!("YUANME_ENGINE_VERSION");
