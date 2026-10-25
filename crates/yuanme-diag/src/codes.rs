@@ -227,14 +227,64 @@ codes! {
         fix: "Guard the optional value with `{% if %}` or `| default(...)`, or correct the name if it is a typo.",
     }
     TEMPLATE_UNKNOWN_FILTER = "template/unknown-filter" {
-        meaning: "A Template calls a filter, test or function that neither Jinja nor yuanme has.",
+        meaning: "A Template calls a filter, test or function that neither Jinja nor yuanme has, a macro its import doesn't define, or a method: Templates have no methods, such as Python's `.lower()`.",
         example: "{{ entry.date | date_format(format=\"%Y\") }}",
-        fix: "Correct the name, here `dateformat`. yuanme adds `sort_by`, `dateformat`, `url`, `absolute_url`, `pluralize`, `attrs`, `markdown` and `org` to Jinja's own.",
+        fix: "Correct the name, here `dateformat`, or use the filter a method's help names, such as `| lower`. yuanme adds `sort_by`, `dateformat`, `url`, `absolute_url`, `pluralize`, `attrs`, `markdown` and `org` to Jinja's own.",
     }
     TEMPLATE_BAD_FILTER_ARGUMENT = "template/bad-filter-argument" {
-        meaning: "A filter or function got an argument it can't use: a missing or unknown one, a value of the wrong type, or a `dateformat` format it doesn't know.",
+        meaning: "A filter or function got an argument it can't use: a missing or unknown one, a value of the wrong type, a `dateformat` format it doesn't know, or a `-` key passed to Jinja's own `sort`, which reads it as a field name.",
         example: "{{ entry.date | dateformat(format=\"iso\") }}",
-        fix: "Pass what the message asks for. A `dateformat` format is strftime directives, such as \"%Y-%m-%d\", or \"rfc2822\" or \"rfc3339\".",
+        fix: "Pass what the message asks for. A `dateformat` format is strftime directives, such as \"%Y-%m-%d\", or \"rfc2822\" or \"rfc3339\". To sort descending, use `sort_by([\"-count\"])`.",
+    }
+    TEMPLATE_UNKNOWN_FIELD = "template/unknown-field" {
+        meaning: "A Template reads a field or a variable that isn't in the schema of what its Page sees: a typo, a field of another Collection, a value only another kind of Route has, such as `entries` on a Taxonomy's index, or a field of something that has none, such as a string. `check` finds it even on a path no Entry reaches, or one `| default` would hide.",
+        example: "<h1>{{ entry.titel }}</h1>",
+        fix: "Use the name the help suggests, here `entry.title`, or declare the field in the Collection's `[collections.<name>.fields]`.",
+    }
+    TEMPLATE_UNGUARDED_OPTIONAL = "template/unguarded-optional" {
+        meaning: "A Template prints, loops over, filters or reaches through an optional field without a guard, so a Page whose Entry leaves it out fails to render. The guards `check` understands are `{% if %}`, its `else`, `and`, an inline `if`, `is defined`, a loop's `if`, and `| default(…)`; an early `{% continue %}` is not one.",
+        example: "<img src=\"{{ entry.hero.src }}\">\n(with `hero` optional)",
+        fix: "Guard it, `{% if entry.hero %}<img src=\"{{ entry.hero.src }}\">{% endif %}`, or give it a value: `{{ entry.subtitle | default(\"\") }}`.",
+    }
+    TEMPLATE_COMPARE_OPTIONAL = "template/compare-optional" {
+        meaning: "A Template compares an optional field with `==`, `!=`, `<`, `in` or another comparison without a guard. Comparing an absent value is an error, even where testing it with `{% if %}` is not.",
+        example: "{% if entry.website != entry.github %}…{% endif %}\n(with `github` optional)",
+        fix: "Guard it first, `{% if entry.github and entry.website != entry.github %}`, or compare a default: `entry.website != entry.github | default(\"\")`.",
+    }
+    TEMPLATE_WRONG_TYPE = "template/wrong-type" {
+        meaning: "A Template uses a value as a type it isn't, such as looping over a string or passing a list to `attrs`.",
+        example: "{% for tag in entry.title %}…{% endfor %}",
+        fix: "Use the value the message expects, here a list such as `entry.tags`.",
+    }
+    TEMPLATE_NON_CONSTANT_NAME = "template/non-constant-name" {
+        meaning: "`extends`, `include` or `import` names a Template with an expression. Template names are plain strings, so yuanme knows every Template a Page uses without rendering it, which is how a Page gets their Sidecars.",
+        example: "{% include \"partials/\" ~ page.kind ~ \".html\" %}",
+        fix: "Name the Template by its path from `templates/`, such as `{% include \"partials/entry.html\" %}`, and choose between several with `{% if %}`.",
+    }
+    TEMPLATE_UNDECLARED_INPUT = "template/undeclared-input" {
+        meaning: "A Component reads a variable it wasn't given: not one of its props, nor `site`, `data`, `collections`, `taxonomies` or `page`, which every Page sees. Rendering lets a macro see the variables of the Template that imports it, so this works on one Page and breaks on another.",
+        example: "{# props: title: string #}\n{% macro row(title) %}{{ entries | length }}{% endmacro %}",
+        fix: "Add the value to the props comment and the macro's parameters, and pass it in at every call.",
+    }
+    TEMPLATE_BAD_PROP = "template/bad-prop" {
+        meaning: "A call to a Component passes a prop it doesn't declare, leaves out one it requires, passes one of the wrong type or an optional value to a required prop, or gives a `{% call %}` body to a Component that takes none, or none to one that needs it.",
+        example: "{{ list_row(titel=\"Writing\", href=\"/blog/\") }}\n(with `{# props: href: url, title: string #}`)",
+        fix: "Pass the props the Component's props comment declares, with the types it gives them. Guard an optional value, or give it `| default(…)`.",
+    }
+    TEMPLATE_BAD_HEADER = "template/bad-header" {
+        meaning: "A props comment on a Component, or a vars comment on a Layout, can't be read or doesn't match its macro: an entry that isn't `name: type` or `name?: type`, an unknown type, a props comment that isn't directly above a `{% macro %}`, a prop the macro doesn't have or a parameter the comment doesn't declare, or a macro in `templates/components/` with no props comment.",
+        example: "{# props: href: uri #}\n{% macro row(href) %}…{% endmacro %}",
+        fix: "Write the comment directly above its macro, one `name: type` for each parameter, `?` after the name of an optional one. The types are `string`, `int`, `float`, `bool`, `date`, `datetime`, `url`, `image`, `enum(a|b)`, `list<…>`, `object`, `slot`, `attrs`, `entry<collection>`, `term` and `paginator`.",
+    }
+    TEMPLATE_BAD_VAR = "template/bad-var" {
+        meaning: "A Template extends a Layout without setting a variable its vars comment requires, or sets one to a value of the wrong type.",
+        example: "{% extends \"layouts/base.html\" %}\n{% block content %}…{% endblock %}\n(with `{# vars: title: string #}` in the Layout)",
+        fix: "Set the variable before the first block, `{% set title = \"Tags\" %}`, with a value of the type the vars comment gives it.",
+    }
+    TEMPLATE_UNKNOWN_BLOCK = "template/unknown-block" {
+        meaning: "A Template overrides a block that no Layout it extends has, so its content would never be shown.",
+        example: "{% extends \"layouts/base.html\" %}\n{% block contnet %}…{% endblock %}",
+        fix: "Use the name of a block the Layout defines, such as the one the help suggests.",
     }
     TEMPLATE_UNKNOWN_URL = "template/unknown-url" {
         meaning: "`url()` names a path that is no Route, feed or Static file of the Site, so the link would lead nowhere.",
