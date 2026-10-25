@@ -62,7 +62,9 @@ impl Context {
             .par_iter()
             .zip(&site.links)
             .zip(code)
-            .map(|((e, links), code)| crate::html::body(&e.document, links, code))
+            .map(|((e, links), code)| {
+                crate::html::body(&e.document, links, code, &Default::default())
+            })
             .collect();
         let entries: Vec<Value> = site
             .entries

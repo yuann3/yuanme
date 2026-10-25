@@ -11,14 +11,19 @@ use yuanme_content::document::{
 
 use crate::highlight::{self, Code};
 
+/// The markup of each image the Engine processed, by its node.
+pub type Pictures = BTreeMap<NodeId, String>;
+
 /// `links` says where resolved links go; any other link keeps the URL it
 /// was written with. A code block missing from `code` is written as Astro
-/// writes it with Shiki off.
-pub fn body(doc: &Document, links: &Links, code: &Code) -> String {
+/// writes it with Shiki off, and an image missing from `pictures` as
+/// written.
+pub fn body(doc: &Document, links: &Links, code: &Code, pictures: &Pictures) -> String {
     let mut w = Writer {
         doc,
         links,
         code,
+        pictures,
         out: String::new(),
         references: BTreeMap::new(),
     };
@@ -37,6 +42,7 @@ struct Writer<'d> {
     doc: &'d Document,
     links: &'d Links,
     code: &'d Code,
+    pictures: &'d Pictures,
     out: String,
     /// How often each footnote has been referenced so far.
     references: BTreeMap<String, usize>,
@@ -222,6 +228,9 @@ impl Writer<'_> {
                 self.out.push('>');
                 self.inline(id);
                 self.out.push_str("</a>");
+            }
+            Kind::Image { .. } if self.pictures.contains_key(&id) => {
+                self.out.push_str(&self.pictures[&id]);
             }
             Kind::Image { url, title } => {
                 let alt = alt(doc, id);
@@ -567,7 +576,8 @@ fn lifted(doc: &Document, id: NodeId) -> Option<NodeId> {
 }
 
 /// An image's alt text: its children as plain text, raw HTML included.
-fn alt(doc: &Document, id: NodeId) -> String {
+/// It reads any node's text, such as a caption's.
+pub fn alt(doc: &Document, id: NodeId) -> String {
     let mut out = String::new();
     for c in doc.descendants(id) {
         match &doc.node(c).kind {

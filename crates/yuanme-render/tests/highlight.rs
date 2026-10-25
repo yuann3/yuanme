@@ -313,7 +313,12 @@ fn languages_resolve_as_shiki_then_org_name_them() {
 #[test]
 fn code_markup_on_extending_c_stdlib_is_at_most_40_kb() {
     let doc = document(&Path::new(CORPUS).join("md/eyuan-me/blog--extending_c_stdlib.md")).unwrap();
-    let html = yuanme_render::html::body(&doc, &Default::default(), &highlight::document(&doc));
+    let html = yuanme_render::html::body(
+        &doc,
+        &Default::default(),
+        &highlight::document(&doc),
+        &Default::default(),
+    );
     let blocks: Vec<&str> = html
         .split("<pre")
         .skip(1)

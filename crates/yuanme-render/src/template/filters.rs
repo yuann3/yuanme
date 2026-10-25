@@ -298,7 +298,12 @@ fn fragment(
             ));
         }
     };
-    let html = crate::html::body(&doc, &Links::new(), &highlight::document(&doc));
+    let html = crate::html::body(
+        &doc,
+        &Links::new(),
+        &highlight::document(&doc),
+        &Default::default(),
+    );
     let root = &doc.node(Document::ROOT).children;
     let single = root.len() == 1 && doc.node(root[0]).kind == Kind::Paragraph;
     let html = match html

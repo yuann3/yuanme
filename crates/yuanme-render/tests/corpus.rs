@@ -43,7 +43,7 @@ fn render_with(path: &Path, highlighted: bool) -> String {
                 true => highlight::document(&doc),
                 false => Default::default(),
             };
-            yuanme_render::html::body(&doc, &Default::default(), &code)
+            yuanme_render::html::body(&doc, &Default::default(), &code, &Default::default())
         }
         (None, diagnostics) => diagnostics
             .iter()
