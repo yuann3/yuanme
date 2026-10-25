@@ -1,6 +1,7 @@
 //! Templates (#19): every Route rendered through its Template with
 //! minijinja, under SemiStrict undefined rules, and the sitemap.
 
+mod check;
 mod context;
 mod filters;
 
@@ -124,6 +125,9 @@ pub fn render(
             ));
             diagnostics.push(d);
         }
+    }
+    for d in check::check(&env, config, site, files, templates, &chosen) {
+        diagnostics.push(d);
     }
     if !diagnostics.0.is_empty() {
         return (Vec::new(), diagnostics.0);

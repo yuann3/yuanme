@@ -1,0 +1,17 @@
+---
+source: crates/yuanme-render/tests/templates.rs
+expression: "diagnostics[0].render(&sources, false)"
+---
+error[template/unknown-field]: `entry` has no field `titel`
+ --> templates/posts/entry.html:1:14
+  |
+1 | <h1>{{ entry.titel }}</h1>
+  |              ^^^^^ not a field of `entry<posts>`
+  |
+  = note: checked as the Template of an Entry of `posts`
+  = note: run `yuanme docs template/unknown-field` for more
+help: did you mean `title`?
+  |
+1 - <h1>{{ entry.titel }}</h1>
+1 + <h1>{{ entry.title }}</h1>
+  |

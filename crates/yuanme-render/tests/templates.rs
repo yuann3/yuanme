@@ -262,7 +262,7 @@ fn the_engine_filters_and_escaping() {
         ),
         // A datetime in `site.timezone`; a date stays its calendar day.
         (
-            r#"{% set a = collections.posts|selectattr("slug", "eq", "a")|first %}{{ a.at }} {{ a.at|dateformat(format="%Y-%m-%d %H:%M") }} {{ a.date|dateformat(format="%Y-%m-%d %H:%M %:z") }}"#,
+            r#"{% set a = collections.posts|selectattr("slug", "eq", "a")|first %}{% if a.at and a.date %}{{ a.at }} {{ a.at|dateformat(format="%Y-%m-%d %H:%M") }} {{ a.date|dateformat(format="%Y-%m-%d %H:%M %:z") }}{% endif %}"#,
             "2025-01-01T20:00:00+00:00 2025-01-02 04:00 2025-01-02 00:00 +00:00",
         ),
         (
@@ -278,7 +278,7 @@ fn the_engine_filters_and_escaping() {
             " s y ies",
         ),
         (
-            r#"<a{{ {"href": "/a?b=1&c=\"2\"", "hidden": true, "open": false, "x": none, "y": undefined_name}|attrs }}>"#,
+            r#"<a{{ {"href": "/a?b=1&c=\"2\"", "hidden": true, "open": false, "x": none, "y": collections.posts[0].hero}|attrs }}>"#,
             r#"<a hidden href="/a?b=1&amp;c=&quot;2&quot;">"#,
         ),
         // The standard five, and not `/`; a null prints as nothing.
@@ -374,7 +374,7 @@ const ERRORS: &[(&str, &str, &str, &str)] = &[
         "template/not-found",
         "=== templates/home.html\n<p>{% include \"partials/nav.html\" %}</p>",
         "templates/home.html",
-        "include \"partials/nav.html\"",
+        "\"partials/nav.html\"",
     ),
     (
         "template/syntax",
@@ -382,26 +382,82 @@ const ERRORS: &[(&str, &str, &str, &str)] = &[
         "templates/home.html",
         "",
     ),
-    // Printing an absent field, in the entry Template every Post uses: one
-    // Diagnostic, not one for each Page.
+    // What `check` can't see: an index past the end, in the entry Template
+    // every Post uses. One Diagnostic, not one for each Page.
     (
         "template/render",
-        "=== templates/posts/entry.html\n<img src=\"{{ entry.hero }}\">",
+        "=== templates/posts/entry.html\n<h2>{{ entry.headings[0].text }}</h2>",
+        "templates/posts/entry.html",
+        "text",
+    ),
+    // Undefined, as minijinja's own filters would find it: `map` loses the
+    // field's type.
+    (
+        "template/render",
+        "=== templates/home.html\n{% for at in collections.posts|map(attribute=\"at\") %}{{ at|dateformat(format=\"%Y\") }}{% endfor %}",
+        "templates/home.html",
+        "dateformat",
+    ),
+    // `check`, before any Page renders.
+    (
+        "template/unknown-field",
+        "=== templates/posts/entry.html\n{% if entry.order %}{{ entry.titel }}{% endif %}",
+        "templates/posts/entry.html",
+        "titel",
+    ),
+    (
+        "template/unguarded-optional",
+        "=== templates/posts/entry.html\n<img src=\"{{ entry.hero.src }}\">",
         "templates/posts/entry.html",
         "entry.hero",
     ),
     (
-        "template/render",
-        "=== templates/home.html\n{{ collections.posts[0].hero.src }}",
-        "templates/home.html",
-        "hero.src",
+        "template/compare-optional",
+        "=== templates/posts/entry.html\n{% if entry.order == 1 %}first{% endif %}",
+        "templates/posts/entry.html",
+        "entry.order",
     ),
-    // Undefined, as minijinja's own filters would find it.
     (
-        "template/render",
-        "=== templates/home.html\n{{ collections.posts[1].at|dateformat(format=\"%Y\") }}",
+        "template/wrong-type",
+        "=== templates/home.html\n{% for c in site.url %}{{ c }}{% endfor %}",
         "templates/home.html",
-        "dateformat",
+        "site.url",
+    ),
+    (
+        "template/non-constant-name",
+        "=== templates/home.html\n{% include \"partials/\" ~ page.kind ~ \".html\" %}",
+        "templates/home.html",
+        "\"partials/\" ~ page.kind ~ \".html\"",
+    ),
+    (
+        "template/undeclared-input",
+        "=== templates/components/count.html\n{# props: label: string #}\n{% macro count(label) %}{{ label }}: {{ collections.posts|length }} of {{ entries|length }}{% endmacro %}",
+        "templates/components/count.html",
+        "entries",
+    ),
+    (
+        "template/bad-prop",
+        "=== templates/components/count.html\n{# props: label: string #}\n{% macro count(label) %}{{ label }}{% endmacro %}\n=== templates/home.html\n{% from \"components/count.html\" import count %}{{ count(label=site.url, lable=\"x\") }}",
+        "templates/home.html",
+        "lable",
+    ),
+    (
+        "template/bad-header",
+        "=== templates/components/count.html\n{# props: label: strng #}\n{% macro count(label) %}{{ label }}{% endmacro %}",
+        "templates/components/count.html",
+        "strng",
+    ),
+    (
+        "template/bad-var",
+        "=== templates/base.html\n{# vars: title: string #}<title>{{ title }}</title>{% block main %}{% endblock %}\n=== templates/home.html\n{% extends \"base.html\" %}{% block main %}Home{% endblock %}",
+        "templates/home.html",
+        "\"base.html\"",
+    ),
+    (
+        "template/unknown-block",
+        "=== templates/base.html\n{% block main %}{% endblock %}\n=== templates/home.html\n{% extends \"base.html\" %}{% block mian %}Home{% endblock %}",
+        "templates/home.html",
+        "mian",
     ),
     (
         "template/unknown-filter",
@@ -413,13 +469,13 @@ const ERRORS: &[(&str, &str, &str, &str)] = &[
         "template/bad-filter-argument",
         "=== templates/home.html\n{{ \"2025-01-01\"|dateformat(format=\"iso\") }}",
         "templates/home.html",
-        "dateformat(format=\"iso\")",
+        "\"iso\"",
     ),
     (
         "template/bad-filter-argument",
         "=== templates/home.html\n{{ \"2025-01-01\"|dateformat(fromat=\"%Y\") }}",
         "templates/home.html",
-        "dateformat(fromat=\"%Y\")",
+        "fromat",
     ),
     (
         "template/unknown-url",
@@ -472,7 +528,14 @@ fn every_template_code_has_a_case_here() {
 
 #[test]
 fn rendered_render_error() {
-    let files = "=== templates/posts/entry.html\n<h1>{{ entry.title }}</h1>\n<img src=\"{{ entry.hero }}\">\n";
+    let files = "=== templates/posts/entry.html\n<h1>{{ entry.title }}</h1>\n<h2>{{ entry.headings[0].text }}</h2>\n";
+    let (sources, _, diagnostics) = render(&fixture(BASE, files));
+    insta::assert_snapshot!(diagnostics[0].render(&sources, false));
+}
+
+#[test]
+fn rendered_check_error() {
+    let files = "=== templates/posts/entry.html\n<h1>{{ entry.titel }}</h1>\n";
     let (sources, _, diagnostics) = render(&fixture(BASE, files));
     insta::assert_snapshot!(diagnostics[0].render(&sources, false));
 }

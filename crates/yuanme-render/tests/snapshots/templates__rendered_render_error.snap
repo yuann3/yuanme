@@ -2,11 +2,11 @@
 source: crates/yuanme-render/tests/templates.rs
 expression: "diagnostics[0].render(&sources, false)"
 ---
-error[template/render]: undefined value: `entry.hero` is undefined
- --> templates/posts/entry.html:2:14
+error[template/render]: undefined value: `entry.headings[0]` is undefined
+ --> templates/posts/entry.html:2:22
   |
-2 | <img src="{{ entry.hero }}">
-  |              ^^^^^^^^^^
+2 | <h2>{{ entry.headings[0].text }}</h2>
+  |                      ^^^^^^^^
   |
   = note: while rendering `/blog/a/`
   = note: run `yuanme docs template/render` for more
