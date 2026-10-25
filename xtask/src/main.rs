@@ -8,8 +8,17 @@ fn main() -> ExitCode {
         Some("vendor-check") => vendor_check(),
         Some("docs") => docs(),
         Some("notices") => notices(),
+        Some("release-version") => match std::env::args().nth(2) {
+            Some(version) => release_version(&version),
+            None => {
+                eprintln!("usage: cargo xtask release-version X.Y.Z");
+                ExitCode::FAILURE
+            }
+        },
         _ => {
-            eprintln!("usage: cargo xtask package-check | vendor-check | docs | notices");
+            eprintln!(
+                "usage: cargo xtask package-check | vendor-check | docs | notices | release-version X.Y.Z"
+            );
             ExitCode::FAILURE
         }
     }
@@ -265,6 +274,55 @@ fn notices() -> ExitCode {
         return ExitCode::FAILURE;
     }
     std::fs::write(root.join("THIRD_PARTY_NOTICES.md"), out).expect("write THIRD_PARTY_NOTICES.md");
+    ExitCode::SUCCESS
+}
+
+/// Sets the versions a release publishes (ADR 0015): `yuanme` at the
+/// release's own, and every library crate at the next 0.0.N, since
+/// crates.io takes each version once. Then updates the lockfiles that list
+/// them, the fuzz workspaces' too.
+fn release_version(version: &str) -> ExitCode {
+    let numbers: Vec<&str> = version.split('.').collect();
+    if numbers.len() != 3 || numbers.iter().any(|n| n.parse::<u64>().is_err()) {
+        eprintln!("{version} isn't X.Y.Z; a release's tag is vX.Y.Z");
+        return ExitCode::FAILURE;
+    }
+    let root = root();
+    let path = root.join("Cargo.toml");
+    let workspace = std::fs::read_to_string(&path).expect("read Cargo.toml");
+    let old = manifest_value(&workspace, "version");
+    let n: u64 = old
+        .strip_prefix("0.0.")
+        .and_then(|n| n.parse().ok())
+        .expect("the library crates are at 0.0.N");
+    // [workspace.package] and every requirement in [workspace.dependencies].
+    let workspace = workspace.replace(&format!("\"{old}\""), &format!("\"0.0.{}\"", n + 1));
+    std::fs::write(&path, workspace).expect("write Cargo.toml");
+
+    let path = root.join("crates/yuanme/Cargo.toml");
+    let manifest = std::fs::read_to_string(&path).expect("read yuanme's manifest");
+    let line = manifest
+        .lines()
+        .find(|l| l.starts_with("version"))
+        .expect("yuanme has a version");
+    let manifest = manifest.replacen(line, &format!("version = \"{version}\""), 1);
+    std::fs::write(&path, manifest).expect("write yuanme's manifest");
+
+    for manifest in [
+        "Cargo.toml",
+        "fuzz/Cargo.toml",
+        "vendor/organic/fuzz/Cargo.toml",
+    ] {
+        let status = Command::new(env!("CARGO"))
+            .args(["update", "--workspace", "--manifest-path", manifest])
+            .current_dir(root)
+            .status()
+            .expect("run cargo update");
+        if !status.success() {
+            return ExitCode::FAILURE;
+        }
+    }
+    println!("yuanme {version}, library crates 0.0.{}", n + 1);
     ExitCode::SUCCESS
 }
 
