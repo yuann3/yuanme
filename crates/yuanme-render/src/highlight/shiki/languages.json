@@ -1,0 +1,3167 @@
+{
+ "languages": [
+  {
+   "id": "abap",
+   "grammar_file": "abap.json",
+   "scope_name": "source.abap",
+   "display_name": "ABAP",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "actionscript-3",
+   "grammar_file": "actionscript-3.json",
+   "scope_name": "source.actionscript.3",
+   "display_name": "ActionScript",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "angular-expression",
+   "grammar_file": "angular-expression.json",
+   "scope_name": "expression.ng",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "angular-html",
+   "grammar_file": "angular-html.json",
+   "scope_name": "text.html.derivative.ng",
+   "display_name": "Angular HTML",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "angular-expression",
+    "angular-let-declaration",
+    "angular-template",
+    "angular-template-blocks"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "angular-inline-style",
+   "grammar_file": "angular-inline-style.json",
+   "scope_name": "inline-styles.ng",
+   "aliases": [],
+   "embedded_langs": [
+    "scss"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.ts.ng"
+   ]
+  },
+  {
+   "id": "angular-inline-template",
+   "grammar_file": "angular-inline-template.json",
+   "scope_name": "inline-template.ng",
+   "aliases": [],
+   "embedded_langs": [
+    "angular-html",
+    "angular-template"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.ts.ng"
+   ]
+  },
+  {
+   "id": "angular-let-declaration",
+   "grammar_file": "angular-let-declaration.json",
+   "scope_name": "template.let.ng",
+   "aliases": [],
+   "embedded_langs": [
+    "angular-expression"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "text.html.derivative",
+    "text.html.derivative.ng",
+    "source.ts.ng"
+   ]
+  },
+  {
+   "id": "angular-template",
+   "grammar_file": "angular-template.json",
+   "scope_name": "template.ng",
+   "aliases": [],
+   "embedded_langs": [
+    "angular-expression"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "text.html.derivative",
+    "text.html.derivative.ng",
+    "source.ts.ng"
+   ]
+  },
+  {
+   "id": "angular-template-blocks",
+   "grammar_file": "angular-template-blocks.json",
+   "scope_name": "template.blocks.ng",
+   "aliases": [],
+   "embedded_langs": [
+    "angular-expression",
+    "angular-template"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "text.html.derivative",
+    "text.html.derivative.ng",
+    "source.ts.ng"
+   ]
+  },
+  {
+   "id": "angular-ts",
+   "grammar_file": "angular-ts.json",
+   "scope_name": "source.ts.ng",
+   "display_name": "Angular TypeScript",
+   "aliases": [],
+   "embedded_langs": [
+    "angular-expression",
+    "angular-inline-style",
+    "angular-inline-template",
+    "angular-let-declaration",
+    "angular-template",
+    "angular-template-blocks"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "apache",
+   "grammar_file": "apache.json",
+   "scope_name": "source.apacheconf",
+   "display_name": "Apache Conf",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "apex",
+   "grammar_file": "apex.json",
+   "scope_name": "source.apex",
+   "display_name": "Apex",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "apl",
+   "grammar_file": "apl.json",
+   "scope_name": "source.apl",
+   "display_name": "APL",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "xml",
+    "css",
+    "javascript",
+    "json"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "applescript",
+   "grammar_file": "applescript.json",
+   "scope_name": "source.applescript",
+   "display_name": "AppleScript",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "ara",
+   "grammar_file": "ara.json",
+   "scope_name": "source.ara",
+   "display_name": "Ara",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "asciidoc",
+   "grammar_file": "asciidoc.json",
+   "scope_name": "text.asciidoc",
+   "display_name": "AsciiDoc",
+   "aliases": [
+    "adoc"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [
+    "html",
+    "yaml",
+    "csv",
+    "css",
+    "ini",
+    "java",
+    "lua",
+    "make",
+    "perl",
+    "r",
+    "ruby",
+    "php",
+    "sql",
+    "vb",
+    "xml",
+    "xsl",
+    "bat",
+    "clojure",
+    "coffee",
+    "c",
+    "cpp",
+    "diff",
+    "docker",
+    "git-commit",
+    "git-rebase",
+    "go",
+    "groovy",
+    "pug",
+    "javascript",
+    "json",
+    "jsonc",
+    "less",
+    "objective-c",
+    "swift",
+    "scss",
+    "raku",
+    "powershell",
+    "python",
+    "julia",
+    "regexp",
+    "rust",
+    "scala",
+    "shellscript",
+    "typescript",
+    "tsx",
+    "csharp",
+    "fsharp",
+    "dart",
+    "handlebars",
+    "markdown",
+    "log",
+    "erlang",
+    "elixir",
+    "latex",
+    "bibtex",
+    "abap",
+    "rst",
+    "haskell",
+    "kotlin"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "asm",
+   "grammar_file": "asm.json",
+   "scope_name": "source.asm.x86_64",
+   "display_name": "Assembly",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "astro",
+   "grammar_file": "astro.json",
+   "scope_name": "source.astro",
+   "display_name": "Astro",
+   "aliases": [],
+   "embedded_langs": [
+    "json",
+    "javascript",
+    "typescript",
+    "css",
+    "postcss",
+    "tsx"
+   ],
+   "embedded_langs_lazy": [
+    "sass",
+    "scss",
+    "stylus",
+    "less"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "awk",
+   "grammar_file": "awk.json",
+   "scope_name": "source.awk",
+   "display_name": "AWK",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "ballerina",
+   "grammar_file": "ballerina.json",
+   "scope_name": "source.ballerina",
+   "display_name": "Ballerina",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "bat",
+   "grammar_file": "bat.json",
+   "scope_name": "source.batchfile",
+   "display_name": "Batch File",
+   "aliases": [
+    "batch"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "beancount",
+   "grammar_file": "beancount.json",
+   "scope_name": "text.beancount",
+   "display_name": "Beancount",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "berry",
+   "grammar_file": "berry.json",
+   "scope_name": "source.berry",
+   "display_name": "Berry",
+   "aliases": [
+    "be"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "bibtex",
+   "grammar_file": "bibtex.json",
+   "scope_name": "text.bibtex",
+   "display_name": "BibTeX",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "bicep",
+   "grammar_file": "bicep.json",
+   "scope_name": "source.bicep",
+   "display_name": "Bicep",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "blade",
+   "grammar_file": "blade.json",
+   "scope_name": "text.html.php.blade",
+   "display_name": "Blade",
+   "aliases": [],
+   "embedded_langs": [
+    "html-derivative",
+    "html",
+    "xml",
+    "sql",
+    "javascript",
+    "json",
+    "css"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "bsl",
+   "grammar_file": "bsl.json",
+   "scope_name": "source.bsl",
+   "display_name": "1C (Enterprise)",
+   "aliases": [
+    "1c"
+   ],
+   "embedded_langs": [
+    "sdbl"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "c",
+   "grammar_file": "c.json",
+   "scope_name": "source.c",
+   "display_name": "C",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "cadence",
+   "grammar_file": "cadence.json",
+   "scope_name": "source.cadence",
+   "display_name": "Cadence",
+   "aliases": [
+    "cdc"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "cairo",
+   "grammar_file": "cairo.json",
+   "scope_name": "source.cairo0",
+   "display_name": "Cairo",
+   "aliases": [],
+   "embedded_langs": [
+    "python"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "clarity",
+   "grammar_file": "clarity.json",
+   "scope_name": "source.clar",
+   "display_name": "Clarity",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "clojure",
+   "grammar_file": "clojure.json",
+   "scope_name": "source.clojure",
+   "display_name": "Clojure",
+   "aliases": [
+    "clj"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "cmake",
+   "grammar_file": "cmake.json",
+   "scope_name": "source.cmake",
+   "display_name": "CMake",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "cobol",
+   "grammar_file": "cobol.json",
+   "scope_name": "source.cobol",
+   "display_name": "COBOL",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "java"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "codeowners",
+   "grammar_file": "codeowners.json",
+   "scope_name": "text.codeowners",
+   "display_name": "CODEOWNERS",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "codeql",
+   "grammar_file": "codeql.json",
+   "scope_name": "source.ql",
+   "display_name": "CodeQL",
+   "aliases": [
+    "ql"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "coffee",
+   "grammar_file": "coffee.json",
+   "scope_name": "source.coffee",
+   "display_name": "CoffeeScript",
+   "aliases": [
+    "coffeescript"
+   ],
+   "embedded_langs": [
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "common-lisp",
+   "grammar_file": "common-lisp.json",
+   "scope_name": "source.commonlisp",
+   "display_name": "Common Lisp",
+   "aliases": [
+    "lisp"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "coq",
+   "grammar_file": "coq.json",
+   "scope_name": "source.coq",
+   "display_name": "Coq",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "cpp",
+   "grammar_file": "cpp.json",
+   "scope_name": "source.cpp",
+   "display_name": "C++",
+   "aliases": [
+    "c++"
+   ],
+   "embedded_langs": [
+    "cpp-macro",
+    "regexp",
+    "glsl",
+    "sql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "cpp-macro",
+   "grammar_file": "cpp-macro.json",
+   "scope_name": "source.cpp.embedded.macro",
+   "display_name": "C++",
+   "aliases": [],
+   "embedded_langs": [
+    "regexp",
+    "glsl",
+    "sql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "crystal",
+   "grammar_file": "crystal.json",
+   "scope_name": "source.crystal",
+   "display_name": "Crystal",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "sql",
+    "css",
+    "c",
+    "javascript",
+    "shellscript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "csharp",
+   "grammar_file": "csharp.json",
+   "scope_name": "source.cs",
+   "display_name": "C#",
+   "aliases": [
+    "c#",
+    "cs"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "css",
+   "grammar_file": "css.json",
+   "scope_name": "source.css",
+   "display_name": "CSS",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "csv",
+   "grammar_file": "csv.json",
+   "scope_name": "text.csv",
+   "display_name": "CSV",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "cue",
+   "grammar_file": "cue.json",
+   "scope_name": "source.cue",
+   "display_name": "CUE",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "cypher",
+   "grammar_file": "cypher.json",
+   "scope_name": "source.cypher",
+   "display_name": "Cypher",
+   "aliases": [
+    "cql"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "d",
+   "grammar_file": "d.json",
+   "scope_name": "source.d",
+   "display_name": "D",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "dart",
+   "grammar_file": "dart.json",
+   "scope_name": "source.dart",
+   "display_name": "Dart",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "dax",
+   "grammar_file": "dax.json",
+   "scope_name": "source.dax",
+   "display_name": "DAX",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "desktop",
+   "grammar_file": "desktop.json",
+   "scope_name": "source.desktop",
+   "display_name": "Desktop",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "diff",
+   "grammar_file": "diff.json",
+   "scope_name": "source.diff",
+   "display_name": "Diff",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "docker",
+   "grammar_file": "docker.json",
+   "scope_name": "source.dockerfile",
+   "display_name": "Dockerfile",
+   "aliases": [
+    "dockerfile"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "dotenv",
+   "grammar_file": "dotenv.json",
+   "scope_name": "source.dotenv",
+   "display_name": "dotEnv",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "dream-maker",
+   "grammar_file": "dream-maker.json",
+   "scope_name": "source.dm",
+   "display_name": "Dream Maker",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "edge",
+   "grammar_file": "edge.json",
+   "scope_name": "text.html.edge",
+   "display_name": "Edge",
+   "aliases": [],
+   "embedded_langs": [
+    "typescript",
+    "html",
+    "html-derivative"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "elixir",
+   "grammar_file": "elixir.json",
+   "scope_name": "source.elixir",
+   "display_name": "Elixir",
+   "aliases": [],
+   "embedded_langs": [
+    "html"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "elm",
+   "grammar_file": "elm.json",
+   "scope_name": "source.elm",
+   "display_name": "Elm",
+   "aliases": [],
+   "embedded_langs": [
+    "glsl"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "emacs-lisp",
+   "grammar_file": "emacs-lisp.json",
+   "scope_name": "source.emacs.lisp",
+   "display_name": "Emacs Lisp",
+   "aliases": [
+    "elisp"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "erb",
+   "grammar_file": "erb.json",
+   "scope_name": "text.html.erb",
+   "display_name": "ERB",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "ruby"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "erlang",
+   "grammar_file": "erlang.json",
+   "scope_name": "source.erlang",
+   "display_name": "Erlang",
+   "aliases": [
+    "erl"
+   ],
+   "embedded_langs": [
+    "markdown"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "es-tag-css",
+   "grammar_file": "es-tag-css.json",
+   "scope_name": "inline.es6-css",
+   "aliases": [],
+   "embedded_langs": [
+    "typescript",
+    "css",
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.ts",
+    "source.js"
+   ]
+  },
+  {
+   "id": "es-tag-glsl",
+   "grammar_file": "es-tag-glsl.json",
+   "scope_name": "inline.es6-glsl",
+   "aliases": [],
+   "embedded_langs": [
+    "typescript",
+    "glsl",
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.ts",
+    "source.js"
+   ]
+  },
+  {
+   "id": "es-tag-html",
+   "grammar_file": "es-tag-html.json",
+   "scope_name": "inline.es6-html",
+   "aliases": [],
+   "embedded_langs": [
+    "typescript",
+    "html",
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.ts",
+    "source.js"
+   ]
+  },
+  {
+   "id": "es-tag-sql",
+   "grammar_file": "es-tag-sql.json",
+   "scope_name": "inline.es6-sql",
+   "aliases": [],
+   "embedded_langs": [
+    "typescript",
+    "sql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.ts",
+    "source.js"
+   ]
+  },
+  {
+   "id": "es-tag-xml",
+   "grammar_file": "es-tag-xml.json",
+   "scope_name": "inline.es6-xml",
+   "aliases": [],
+   "embedded_langs": [
+    "xml"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.ts",
+    "source.js"
+   ]
+  },
+  {
+   "id": "fennel",
+   "grammar_file": "fennel.json",
+   "scope_name": "source.fnl",
+   "display_name": "Fennel",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "fish",
+   "grammar_file": "fish.json",
+   "scope_name": "source.fish",
+   "display_name": "Fish",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "fluent",
+   "grammar_file": "fluent.json",
+   "scope_name": "source.ftl",
+   "display_name": "Fluent",
+   "aliases": [
+    "ftl"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "fortran-fixed-form",
+   "grammar_file": "fortran-fixed-form.json",
+   "scope_name": "source.fortran.fixed",
+   "display_name": "Fortran (Fixed Form)",
+   "aliases": [
+    "f",
+    "for",
+    "f77"
+   ],
+   "embedded_langs": [
+    "fortran-free-form"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "fortran-free-form",
+   "grammar_file": "fortran-free-form.json",
+   "scope_name": "source.fortran.free",
+   "display_name": "Fortran (Free Form)",
+   "aliases": [
+    "f90",
+    "f95",
+    "f03",
+    "f08",
+    "f18"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "fsharp",
+   "grammar_file": "fsharp.json",
+   "scope_name": "source.fsharp",
+   "display_name": "F#",
+   "aliases": [
+    "f#",
+    "fs"
+   ],
+   "embedded_langs": [
+    "markdown"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "gdresource",
+   "grammar_file": "gdresource.json",
+   "scope_name": "source.gdresource",
+   "display_name": "GDResource",
+   "aliases": [],
+   "embedded_langs": [
+    "gdshader",
+    "gdscript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "gdscript",
+   "grammar_file": "gdscript.json",
+   "scope_name": "source.gdscript",
+   "display_name": "GDScript",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "gdshader",
+   "grammar_file": "gdshader.json",
+   "scope_name": "source.gdshader",
+   "display_name": "GDShader",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "genie",
+   "grammar_file": "genie.json",
+   "scope_name": "source.genie",
+   "display_name": "Genie",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "gherkin",
+   "grammar_file": "gherkin.json",
+   "scope_name": "text.gherkin.feature",
+   "display_name": "Gherkin",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "git-commit",
+   "grammar_file": "git-commit.json",
+   "scope_name": "text.git-commit",
+   "display_name": "Git Commit Message",
+   "aliases": [],
+   "embedded_langs": [
+    "diff"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "git-rebase",
+   "grammar_file": "git-rebase.json",
+   "scope_name": "text.git-rebase",
+   "display_name": "Git Rebase Message",
+   "aliases": [],
+   "embedded_langs": [
+    "shellscript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "gleam",
+   "grammar_file": "gleam.json",
+   "scope_name": "source.gleam",
+   "display_name": "Gleam",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "glimmer-js",
+   "grammar_file": "glimmer-js.json",
+   "scope_name": "source.gjs",
+   "display_name": "Glimmer JS",
+   "aliases": [
+    "gjs"
+   ],
+   "embedded_langs": [
+    "javascript",
+    "typescript",
+    "css",
+    "html"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "glimmer-ts",
+   "grammar_file": "glimmer-ts.json",
+   "scope_name": "source.gts",
+   "display_name": "Glimmer TS",
+   "aliases": [
+    "gts"
+   ],
+   "embedded_langs": [
+    "typescript",
+    "css",
+    "javascript",
+    "html"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "glsl",
+   "grammar_file": "glsl.json",
+   "scope_name": "source.glsl",
+   "display_name": "GLSL",
+   "aliases": [],
+   "embedded_langs": [
+    "c"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "go",
+   "grammar_file": "go.json",
+   "scope_name": "source.go",
+   "display_name": "Go",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "graphql",
+   "grammar_file": "graphql.json",
+   "scope_name": "source.graphql",
+   "display_name": "GraphQL",
+   "aliases": [
+    "gql"
+   ],
+   "embedded_langs": [
+    "javascript",
+    "typescript",
+    "jsx",
+    "tsx"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "groovy",
+   "grammar_file": "groovy.json",
+   "scope_name": "source.groovy",
+   "display_name": "Groovy",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "hack",
+   "grammar_file": "hack.json",
+   "scope_name": "source.hack",
+   "display_name": "Hack",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "sql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "haml",
+   "grammar_file": "haml.json",
+   "scope_name": "text.haml",
+   "display_name": "Ruby Haml",
+   "aliases": [],
+   "embedded_langs": [
+    "javascript",
+    "css"
+   ],
+   "embedded_langs_lazy": [
+    "ruby",
+    "sass",
+    "coffee",
+    "markdown"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "handlebars",
+   "grammar_file": "handlebars.json",
+   "scope_name": "text.html.handlebars",
+   "display_name": "Handlebars",
+   "aliases": [
+    "hbs"
+   ],
+   "embedded_langs": [
+    "html",
+    "css",
+    "javascript",
+    "yaml"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "haskell",
+   "grammar_file": "haskell.json",
+   "scope_name": "source.haskell",
+   "display_name": "Haskell",
+   "aliases": [
+    "hs"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "haxe",
+   "grammar_file": "haxe.json",
+   "scope_name": "source.hx",
+   "display_name": "Haxe",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "hcl",
+   "grammar_file": "hcl.json",
+   "scope_name": "source.hcl",
+   "display_name": "HashiCorp HCL",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "hjson",
+   "grammar_file": "hjson.json",
+   "scope_name": "source.hjson",
+   "display_name": "Hjson",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "hlsl",
+   "grammar_file": "hlsl.json",
+   "scope_name": "source.hlsl",
+   "display_name": "HLSL",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "html",
+   "grammar_file": "html.json",
+   "scope_name": "text.html.basic",
+   "display_name": "HTML",
+   "aliases": [],
+   "embedded_langs": [
+    "javascript",
+    "css"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "html-derivative",
+   "grammar_file": "html-derivative.json",
+   "scope_name": "text.html.derivative",
+   "display_name": "HTML (Derivative)",
+   "aliases": [],
+   "embedded_langs": [
+    "html"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "http",
+   "grammar_file": "http.json",
+   "scope_name": "source.http",
+   "display_name": "HTTP",
+   "aliases": [],
+   "embedded_langs": [
+    "shellscript",
+    "json",
+    "xml",
+    "graphql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "hurl",
+   "grammar_file": "hurl.json",
+   "scope_name": "source.hurl",
+   "display_name": "Hurl",
+   "aliases": [],
+   "embedded_langs": [
+    "graphql",
+    "xml",
+    "csv"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "hxml",
+   "grammar_file": "hxml.json",
+   "scope_name": "source.hxml",
+   "display_name": "HXML",
+   "aliases": [],
+   "embedded_langs": [
+    "haxe"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "hy",
+   "grammar_file": "hy.json",
+   "scope_name": "source.hy",
+   "display_name": "Hy",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "imba",
+   "grammar_file": "imba.json",
+   "scope_name": "source.imba",
+   "display_name": "Imba",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "ini",
+   "grammar_file": "ini.json",
+   "scope_name": "source.ini",
+   "display_name": "INI",
+   "aliases": [
+    "properties"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "java",
+   "grammar_file": "java.json",
+   "scope_name": "source.java",
+   "display_name": "Java",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "javascript",
+   "grammar_file": "javascript.json",
+   "scope_name": "source.js",
+   "display_name": "JavaScript",
+   "aliases": [
+    "js",
+    "cjs",
+    "mjs"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "jinja",
+   "grammar_file": "jinja.json",
+   "scope_name": "source.jinja",
+   "display_name": "Jinja",
+   "aliases": [],
+   "embedded_langs": [
+    "jinja-html"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "jinja-html",
+   "grammar_file": "jinja-html.json",
+   "scope_name": "text.html.jinja",
+   "display_name": "jinja-html",
+   "aliases": [],
+   "embedded_langs": [
+    "html"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "jison",
+   "grammar_file": "jison.json",
+   "scope_name": "source.jison",
+   "display_name": "Jison",
+   "aliases": [],
+   "embedded_langs": [
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "json",
+   "grammar_file": "json.json",
+   "scope_name": "source.json",
+   "display_name": "JSON",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "json5",
+   "grammar_file": "json5.json",
+   "scope_name": "source.json5",
+   "display_name": "JSON5",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "jsonc",
+   "grammar_file": "jsonc.json",
+   "scope_name": "source.json.comments",
+   "display_name": "JSON with Comments",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "jsonl",
+   "grammar_file": "jsonl.json",
+   "scope_name": "source.json.lines",
+   "display_name": "JSON Lines",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "jsonnet",
+   "grammar_file": "jsonnet.json",
+   "scope_name": "source.jsonnet",
+   "display_name": "Jsonnet",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "jssm",
+   "grammar_file": "jssm.json",
+   "scope_name": "source.jssm",
+   "display_name": "JSSM",
+   "aliases": [
+    "fsl"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "jsx",
+   "grammar_file": "jsx.json",
+   "scope_name": "source.js.jsx",
+   "display_name": "JSX",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "julia",
+   "grammar_file": "julia.json",
+   "scope_name": "source.julia",
+   "display_name": "Julia",
+   "aliases": [
+    "jl"
+   ],
+   "embedded_langs": [
+    "cpp",
+    "python",
+    "javascript",
+    "r",
+    "sql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "kdl",
+   "grammar_file": "kdl.json",
+   "scope_name": "source.kdl",
+   "display_name": "KDL",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "kotlin",
+   "grammar_file": "kotlin.json",
+   "scope_name": "source.kotlin",
+   "display_name": "Kotlin",
+   "aliases": [
+    "kt",
+    "kts"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "kusto",
+   "grammar_file": "kusto.json",
+   "scope_name": "source.kusto",
+   "display_name": "Kusto",
+   "aliases": [
+    "kql"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "latex",
+   "grammar_file": "latex.json",
+   "scope_name": "text.tex.latex",
+   "display_name": "LaTeX",
+   "aliases": [],
+   "embedded_langs": [
+    "tex"
+   ],
+   "embedded_langs_lazy": [
+    "shellscript",
+    "css",
+    "gnuplot",
+    "haskell",
+    "html",
+    "java",
+    "julia",
+    "javascript",
+    "lua",
+    "python",
+    "ruby",
+    "rust",
+    "typescript",
+    "xml",
+    "yaml",
+    "scala"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "lean",
+   "grammar_file": "lean.json",
+   "scope_name": "source.lean4",
+   "display_name": "Lean 4",
+   "aliases": [
+    "lean4"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "less",
+   "grammar_file": "less.json",
+   "scope_name": "source.css.less",
+   "display_name": "Less",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "liquid",
+   "grammar_file": "liquid.json",
+   "scope_name": "text.html.liquid",
+   "display_name": "Liquid",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "css",
+    "json",
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "llvm",
+   "grammar_file": "llvm.json",
+   "scope_name": "source.llvm",
+   "display_name": "LLVM IR",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "log",
+   "grammar_file": "log.json",
+   "scope_name": "text.log",
+   "display_name": "Log file",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "logo",
+   "grammar_file": "logo.json",
+   "scope_name": "source.logo",
+   "display_name": "Logo",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "lua",
+   "grammar_file": "lua.json",
+   "scope_name": "source.lua",
+   "display_name": "Lua",
+   "aliases": [],
+   "embedded_langs": [
+    "c"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "luau",
+   "grammar_file": "luau.json",
+   "scope_name": "source.luau",
+   "display_name": "Luau",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "make",
+   "grammar_file": "make.json",
+   "scope_name": "source.makefile",
+   "display_name": "Makefile",
+   "aliases": [
+    "makefile"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "markdown",
+   "grammar_file": "markdown.json",
+   "scope_name": "text.html.markdown",
+   "display_name": "Markdown",
+   "aliases": [
+    "md"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [
+    "css",
+    "html",
+    "ini",
+    "java",
+    "lua",
+    "make",
+    "perl",
+    "r",
+    "ruby",
+    "php",
+    "sql",
+    "vb",
+    "xml",
+    "xsl",
+    "yaml",
+    "bat",
+    "clojure",
+    "coffee",
+    "c",
+    "cpp",
+    "diff",
+    "docker",
+    "git-commit",
+    "git-rebase",
+    "go",
+    "groovy",
+    "pug",
+    "javascript",
+    "json",
+    "jsonc",
+    "jsonl",
+    "less",
+    "objective-c",
+    "swift",
+    "scss",
+    "raku",
+    "powershell",
+    "python",
+    "julia",
+    "regexp",
+    "rust",
+    "scala",
+    "shellscript",
+    "typescript",
+    "tsx",
+    "csharp",
+    "fsharp",
+    "dart",
+    "handlebars",
+    "log",
+    "erlang",
+    "elixir",
+    "latex",
+    "bibtex",
+    "abap",
+    "rst",
+    "html-derivative"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "markdown-nix",
+   "grammar_file": "markdown-nix.json",
+   "scope_name": "markdown.nix.codeblock",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "text.html.markdown"
+   ]
+  },
+  {
+   "id": "markdown-vue",
+   "grammar_file": "markdown-vue.json",
+   "scope_name": "markdown.vue.codeblock",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "text.html.markdown"
+   ]
+  },
+  {
+   "id": "marko",
+   "grammar_file": "marko.json",
+   "scope_name": "text.marko",
+   "display_name": "Marko",
+   "aliases": [],
+   "embedded_langs": [
+    "css",
+    "less",
+    "scss",
+    "typescript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "matlab",
+   "grammar_file": "matlab.json",
+   "scope_name": "source.matlab",
+   "display_name": "MATLAB",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "mdc",
+   "grammar_file": "mdc.json",
+   "scope_name": "text.markdown.mdc.standalone",
+   "display_name": "MDC",
+   "aliases": [],
+   "embedded_langs": [
+    "markdown",
+    "yaml",
+    "html-derivative"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "mdx",
+   "grammar_file": "mdx.json",
+   "scope_name": "source.mdx",
+   "display_name": "MDX",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [
+    "tsx",
+    "toml",
+    "yaml",
+    "c",
+    "clojure",
+    "coffee",
+    "cpp",
+    "csharp",
+    "css",
+    "diff",
+    "docker",
+    "elixir",
+    "elm",
+    "erlang",
+    "go",
+    "graphql",
+    "haskell",
+    "html",
+    "ini",
+    "java",
+    "javascript",
+    "json",
+    "julia",
+    "kotlin",
+    "less",
+    "lua",
+    "make",
+    "markdown",
+    "objective-c",
+    "perl",
+    "python",
+    "r",
+    "ruby",
+    "rust",
+    "scala",
+    "scss",
+    "shellscript",
+    "shellsession",
+    "sql",
+    "xml",
+    "swift",
+    "typescript"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "mermaid",
+   "grammar_file": "mermaid.json",
+   "scope_name": "markdown.mermaid.codeblock",
+   "display_name": "Mermaid",
+   "aliases": [
+    "mmd"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "mipsasm",
+   "grammar_file": "mipsasm.json",
+   "scope_name": "source.mips",
+   "display_name": "MIPS Assembly",
+   "aliases": [
+    "mips"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "mojo",
+   "grammar_file": "mojo.json",
+   "scope_name": "source.mojo",
+   "display_name": "Mojo",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "move",
+   "grammar_file": "move.json",
+   "scope_name": "source.move",
+   "display_name": "Move",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "narrat",
+   "grammar_file": "narrat.json",
+   "scope_name": "source.narrat",
+   "display_name": "Narrat Language",
+   "aliases": [
+    "nar"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "nextflow",
+   "grammar_file": "nextflow.json",
+   "scope_name": "source.nextflow",
+   "display_name": "Nextflow",
+   "aliases": [
+    "nf"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "nim",
+   "grammar_file": "nim.json",
+   "scope_name": "source.nim",
+   "display_name": "Nim",
+   "aliases": [],
+   "embedded_langs": [
+    "c",
+    "html",
+    "xml",
+    "javascript",
+    "css",
+    "glsl",
+    "markdown"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "nix",
+   "grammar_file": "nix.json",
+   "scope_name": "source.nix",
+   "display_name": "Nix",
+   "aliases": [],
+   "embedded_langs": [
+    "markdown-nix"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "nushell",
+   "grammar_file": "nushell.json",
+   "scope_name": "source.nushell",
+   "display_name": "nushell",
+   "aliases": [
+    "nu"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "objective-c",
+   "grammar_file": "objective-c.json",
+   "scope_name": "source.objc",
+   "display_name": "Objective-C",
+   "aliases": [
+    "objc"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "objective-cpp",
+   "grammar_file": "objective-cpp.json",
+   "scope_name": "source.objcpp",
+   "display_name": "Objective-C++",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "ocaml",
+   "grammar_file": "ocaml.json",
+   "scope_name": "source.ocaml",
+   "display_name": "OCaml",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "openscad",
+   "grammar_file": "openscad.json",
+   "scope_name": "source.scad",
+   "display_name": "OpenSCAD",
+   "aliases": [
+    "scad"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "pascal",
+   "grammar_file": "pascal.json",
+   "scope_name": "source.pascal",
+   "display_name": "Pascal",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "perl",
+   "grammar_file": "perl.json",
+   "scope_name": "source.perl",
+   "display_name": "Perl",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "xml",
+    "css",
+    "javascript",
+    "sql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "php",
+   "grammar_file": "php.json",
+   "scope_name": "source.php",
+   "display_name": "PHP",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "xml",
+    "sql",
+    "javascript",
+    "json",
+    "css"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "pkl",
+   "grammar_file": "pkl.json",
+   "scope_name": "source.pkl",
+   "display_name": "Pkl",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "plsql",
+   "grammar_file": "plsql.json",
+   "scope_name": "source.plsql.oracle",
+   "display_name": "PL/SQL",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "po",
+   "grammar_file": "po.json",
+   "scope_name": "source.po",
+   "display_name": "Gettext PO",
+   "aliases": [
+    "pot",
+    "potx"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "polar",
+   "grammar_file": "polar.json",
+   "scope_name": "source.polar",
+   "display_name": "Polar",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "postcss",
+   "grammar_file": "postcss.json",
+   "scope_name": "source.css.postcss",
+   "display_name": "PostCSS",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "powerquery",
+   "grammar_file": "powerquery.json",
+   "scope_name": "source.powerquery",
+   "display_name": "PowerQuery",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "powershell",
+   "grammar_file": "powershell.json",
+   "scope_name": "source.powershell",
+   "display_name": "PowerShell",
+   "aliases": [
+    "ps",
+    "ps1"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "prisma",
+   "grammar_file": "prisma.json",
+   "scope_name": "source.prisma",
+   "display_name": "Prisma",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "prolog",
+   "grammar_file": "prolog.json",
+   "scope_name": "source.prolog",
+   "display_name": "Prolog",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "proto",
+   "grammar_file": "proto.json",
+   "scope_name": "source.proto",
+   "display_name": "Protocol Buffer 3",
+   "aliases": [
+    "protobuf"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "pug",
+   "grammar_file": "pug.json",
+   "scope_name": "text.pug",
+   "display_name": "Pug",
+   "aliases": [
+    "jade"
+   ],
+   "embedded_langs": [
+    "javascript",
+    "css",
+    "html"
+   ],
+   "embedded_langs_lazy": [
+    "sass",
+    "scss",
+    "stylus",
+    "coffee"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "puppet",
+   "grammar_file": "puppet.json",
+   "scope_name": "source.puppet",
+   "display_name": "Puppet",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "purescript",
+   "grammar_file": "purescript.json",
+   "scope_name": "source.purescript",
+   "display_name": "PureScript",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "python",
+   "grammar_file": "python.json",
+   "scope_name": "source.python",
+   "display_name": "Python",
+   "aliases": [
+    "py"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "qml",
+   "grammar_file": "qml.json",
+   "scope_name": "source.qml",
+   "display_name": "QML",
+   "aliases": [],
+   "embedded_langs": [
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "qmldir",
+   "grammar_file": "qmldir.json",
+   "scope_name": "source.qmldir",
+   "display_name": "QML Directory",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "qss",
+   "grammar_file": "qss.json",
+   "scope_name": "source.qss",
+   "display_name": "Qt Style Sheets",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "r",
+   "grammar_file": "r.json",
+   "scope_name": "source.r",
+   "display_name": "R",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "raku",
+   "grammar_file": "raku.json",
+   "scope_name": "source.perl.6",
+   "display_name": "Raku",
+   "aliases": [
+    "perl6"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "razor",
+   "grammar_file": "razor.json",
+   "scope_name": "text.aspnetcorerazor",
+   "display_name": "ASP.NET Razor",
+   "aliases": [],
+   "embedded_langs": [
+    "html",
+    "csharp"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "reg",
+   "grammar_file": "reg.json",
+   "scope_name": "source.reg",
+   "display_name": "Windows Registry Script",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "regexp",
+   "grammar_file": "regexp.json",
+   "scope_name": "source.regexp.python",
+   "display_name": "RegExp",
+   "aliases": [
+    "regex"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "rel",
+   "grammar_file": "rel.json",
+   "scope_name": "source.rel",
+   "display_name": "Rel",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "riscv",
+   "grammar_file": "riscv.json",
+   "scope_name": "source.riscv",
+   "display_name": "RISC-V",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "rosmsg",
+   "grammar_file": "rosmsg.json",
+   "scope_name": "source.rosmsg",
+   "display_name": "ROS Interface",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "rst",
+   "grammar_file": "rst.json",
+   "scope_name": "source.rst",
+   "display_name": "reStructuredText",
+   "aliases": [],
+   "embedded_langs": [
+    "html-derivative",
+    "cpp",
+    "python",
+    "javascript",
+    "shellscript",
+    "yaml",
+    "cmake",
+    "ruby"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "ruby",
+   "grammar_file": "ruby.json",
+   "scope_name": "source.ruby",
+   "display_name": "Ruby",
+   "aliases": [
+    "rb"
+   ],
+   "embedded_langs": [
+    "html",
+    "haml",
+    "xml",
+    "sql",
+    "graphql",
+    "css",
+    "cpp",
+    "c",
+    "javascript",
+    "shellscript",
+    "lua",
+    "yaml"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "rust",
+   "grammar_file": "rust.json",
+   "scope_name": "source.rust",
+   "display_name": "Rust",
+   "aliases": [
+    "rs"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "sas",
+   "grammar_file": "sas.json",
+   "scope_name": "source.sas",
+   "display_name": "SAS",
+   "aliases": [],
+   "embedded_langs": [
+    "sql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "sass",
+   "grammar_file": "sass.json",
+   "scope_name": "source.sass",
+   "display_name": "Sass",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "scala",
+   "grammar_file": "scala.json",
+   "scope_name": "source.scala",
+   "display_name": "Scala",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "scheme",
+   "grammar_file": "scheme.json",
+   "scope_name": "source.scheme",
+   "display_name": "Scheme",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "scss",
+   "grammar_file": "scss.json",
+   "scope_name": "source.css.scss",
+   "display_name": "SCSS",
+   "aliases": [],
+   "embedded_langs": [
+    "css"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "sdbl",
+   "grammar_file": "sdbl.json",
+   "scope_name": "source.sdbl",
+   "display_name": "1C (Query)",
+   "aliases": [
+    "1c-query"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "shaderlab",
+   "grammar_file": "shaderlab.json",
+   "scope_name": "source.shaderlab",
+   "display_name": "ShaderLab",
+   "aliases": [
+    "shader"
+   ],
+   "embedded_langs": [
+    "hlsl"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "shellscript",
+   "grammar_file": "shellscript.json",
+   "scope_name": "source.shell",
+   "display_name": "Shell",
+   "aliases": [
+    "bash",
+    "sh",
+    "shell",
+    "zsh"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "shellsession",
+   "grammar_file": "shellsession.json",
+   "scope_name": "text.shell-session",
+   "display_name": "Shell Session",
+   "aliases": [
+    "console"
+   ],
+   "embedded_langs": [
+    "shellscript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "smalltalk",
+   "grammar_file": "smalltalk.json",
+   "scope_name": "source.smalltalk",
+   "display_name": "Smalltalk",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "solidity",
+   "grammar_file": "solidity.json",
+   "scope_name": "source.solidity",
+   "display_name": "Solidity",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "soy",
+   "grammar_file": "soy.json",
+   "scope_name": "text.html.soy",
+   "display_name": "Closure Templates",
+   "aliases": [
+    "closure-templates"
+   ],
+   "embedded_langs": [
+    "html"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "sparql",
+   "grammar_file": "sparql.json",
+   "scope_name": "source.sparql",
+   "display_name": "SPARQL",
+   "aliases": [],
+   "embedded_langs": [
+    "turtle"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "splunk",
+   "grammar_file": "splunk.json",
+   "scope_name": "source.splunk_search",
+   "display_name": "Splunk Query Language",
+   "aliases": [
+    "spl"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "sql",
+   "grammar_file": "sql.json",
+   "scope_name": "source.sql",
+   "display_name": "SQL",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "ssh-config",
+   "grammar_file": "ssh-config.json",
+   "scope_name": "source.ssh-config",
+   "display_name": "SSH Config",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "stata",
+   "grammar_file": "stata.json",
+   "scope_name": "source.stata",
+   "display_name": "Stata",
+   "aliases": [],
+   "embedded_langs": [
+    "sql"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "stylus",
+   "grammar_file": "stylus.json",
+   "scope_name": "source.stylus",
+   "display_name": "Stylus",
+   "aliases": [
+    "styl"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "svelte",
+   "grammar_file": "svelte.json",
+   "scope_name": "source.svelte",
+   "display_name": "Svelte",
+   "aliases": [],
+   "embedded_langs": [
+    "javascript",
+    "typescript",
+    "css",
+    "postcss"
+   ],
+   "embedded_langs_lazy": [
+    "coffee",
+    "stylus",
+    "sass",
+    "scss",
+    "less",
+    "pug",
+    "markdown"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "swift",
+   "grammar_file": "swift.json",
+   "scope_name": "source.swift",
+   "display_name": "Swift",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "system-verilog",
+   "grammar_file": "system-verilog.json",
+   "scope_name": "source.systemverilog",
+   "display_name": "SystemVerilog",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "systemd",
+   "grammar_file": "systemd.json",
+   "scope_name": "source.systemd",
+   "display_name": "Systemd Units",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "talonscript",
+   "grammar_file": "talonscript.json",
+   "scope_name": "source.talon",
+   "display_name": "TalonScript",
+   "aliases": [
+    "talon"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "tasl",
+   "grammar_file": "tasl.json",
+   "scope_name": "source.tasl",
+   "display_name": "Tasl",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "tcl",
+   "grammar_file": "tcl.json",
+   "scope_name": "source.tcl",
+   "display_name": "Tcl",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "templ",
+   "grammar_file": "templ.json",
+   "scope_name": "source.templ",
+   "display_name": "Templ",
+   "aliases": [],
+   "embedded_langs": [
+    "go",
+    "javascript",
+    "css"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "terraform",
+   "grammar_file": "terraform.json",
+   "scope_name": "source.hcl.terraform",
+   "display_name": "Terraform",
+   "aliases": [
+    "tf",
+    "tfvars"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "tex",
+   "grammar_file": "tex.json",
+   "scope_name": "text.tex",
+   "display_name": "TeX",
+   "aliases": [],
+   "embedded_langs": [
+    "r"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "toml",
+   "grammar_file": "toml.json",
+   "scope_name": "source.toml",
+   "display_name": "TOML",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "ts-tags",
+   "grammar_file": "ts-tags.json",
+   "scope_name": "source.ts.tags",
+   "display_name": "TypeScript with Tags",
+   "aliases": [
+    "lit"
+   ],
+   "embedded_langs": [
+    "typescript",
+    "es-tag-css",
+    "es-tag-glsl",
+    "es-tag-html",
+    "es-tag-sql",
+    "es-tag-xml"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "tsv",
+   "grammar_file": "tsv.json",
+   "scope_name": "text.tsv",
+   "display_name": "TSV",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "tsx",
+   "grammar_file": "tsx.json",
+   "scope_name": "source.tsx",
+   "display_name": "TSX",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "turtle",
+   "grammar_file": "turtle.json",
+   "scope_name": "source.turtle",
+   "display_name": "Turtle",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "twig",
+   "grammar_file": "twig.json",
+   "scope_name": "text.html.twig",
+   "display_name": "Twig",
+   "aliases": [],
+   "embedded_langs": [
+    "css",
+    "javascript",
+    "scss",
+    "php",
+    "python",
+    "ruby"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "typescript",
+   "grammar_file": "typescript.json",
+   "scope_name": "source.ts",
+   "display_name": "TypeScript",
+   "aliases": [
+    "ts",
+    "cts",
+    "mts"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "typespec",
+   "grammar_file": "typespec.json",
+   "scope_name": "source.tsp",
+   "display_name": "TypeSpec",
+   "aliases": [
+    "tsp"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "typst",
+   "grammar_file": "typst.json",
+   "scope_name": "source.typst",
+   "display_name": "Typst",
+   "aliases": [
+    "typ"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "v",
+   "grammar_file": "v.json",
+   "scope_name": "source.v",
+   "display_name": "V",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "vala",
+   "grammar_file": "vala.json",
+   "scope_name": "source.vala",
+   "display_name": "Vala",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "vb",
+   "grammar_file": "vb.json",
+   "scope_name": "source.asp.vb.net",
+   "display_name": "Visual Basic",
+   "aliases": [
+    "cmd"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "verilog",
+   "grammar_file": "verilog.json",
+   "scope_name": "source.verilog",
+   "display_name": "Verilog",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "vhdl",
+   "grammar_file": "vhdl.json",
+   "scope_name": "source.vhdl",
+   "display_name": "VHDL",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "viml",
+   "grammar_file": "viml.json",
+   "scope_name": "source.viml",
+   "display_name": "Vim Script",
+   "aliases": [
+    "vim",
+    "vimscript"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "vue",
+   "grammar_file": "vue.json",
+   "scope_name": "source.vue",
+   "display_name": "Vue",
+   "aliases": [],
+   "embedded_langs": [
+    "css",
+    "javascript",
+    "typescript",
+    "json",
+    "html-derivative",
+    "html",
+    "markdown-vue",
+    "vue-directives",
+    "vue-interpolations",
+    "vue-sfc-style-variable-injection"
+   ],
+   "embedded_langs_lazy": [
+    "markdown",
+    "pug",
+    "stylus",
+    "sass",
+    "scss",
+    "less",
+    "jsx",
+    "tsx",
+    "coffee",
+    "jsonc",
+    "json5",
+    "yaml",
+    "toml",
+    "graphql"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "vue-directives",
+   "grammar_file": "vue-directives.json",
+   "scope_name": "vue.directives",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.vue",
+    "text.html.markdown",
+    "text.html.derivative",
+    "text.pug"
+   ]
+  },
+  {
+   "id": "vue-html",
+   "grammar_file": "vue-html.json",
+   "scope_name": "text.html.vue-html",
+   "display_name": "Vue HTML",
+   "aliases": [],
+   "embedded_langs": [
+    "vue",
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "vue-interpolations",
+   "grammar_file": "vue-interpolations.json",
+   "scope_name": "vue.interpolations",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.vue",
+    "text.html.markdown",
+    "text.html.derivative",
+    "text.pug"
+   ]
+  },
+  {
+   "id": "vue-sfc-style-variable-injection",
+   "grammar_file": "vue-sfc-style-variable-injection.json",
+   "scope_name": "vue.sfc.style.variable.injection",
+   "aliases": [],
+   "embedded_langs": [
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": [
+    "source.vue"
+   ]
+  },
+  {
+   "id": "vue-vine",
+   "grammar_file": "vue-vine.json",
+   "scope_name": "source.vue-vine",
+   "display_name": "Vue Vine",
+   "aliases": [],
+   "embedded_langs": [
+    "css",
+    "scss",
+    "less",
+    "stylus",
+    "postcss",
+    "vue",
+    "javascript"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "vyper",
+   "grammar_file": "vyper.json",
+   "scope_name": "source.vyper",
+   "display_name": "Vyper",
+   "aliases": [
+    "vy"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "wasm",
+   "grammar_file": "wasm.json",
+   "scope_name": "source.wat",
+   "display_name": "WebAssembly",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "wenyan",
+   "grammar_file": "wenyan.json",
+   "scope_name": "source.wenyan",
+   "display_name": "Wenyan",
+   "aliases": [
+    "文言"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "wgsl",
+   "grammar_file": "wgsl.json",
+   "scope_name": "source.wgsl",
+   "display_name": "WGSL",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "wikitext",
+   "grammar_file": "wikitext.json",
+   "scope_name": "source.wikitext",
+   "display_name": "Wikitext",
+   "aliases": [
+    "mediawiki",
+    "wiki"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [
+    "html",
+    "css",
+    "ini",
+    "java",
+    "lua",
+    "make",
+    "perl",
+    "r",
+    "ruby",
+    "php",
+    "sql",
+    "vb",
+    "xml",
+    "xsl",
+    "yaml",
+    "bat",
+    "clojure",
+    "coffee",
+    "c",
+    "cpp",
+    "diff",
+    "docker",
+    "go",
+    "groovy",
+    "pug",
+    "javascript",
+    "jsonc",
+    "less",
+    "objective-c",
+    "swift",
+    "scss",
+    "raku",
+    "powershell",
+    "python",
+    "julia",
+    "rust",
+    "scala",
+    "shellscript",
+    "typescript",
+    "csharp",
+    "fsharp",
+    "dart",
+    "handlebars",
+    "markdown",
+    "erlang",
+    "elixir",
+    "latex",
+    "bibtex",
+    "json"
+   ],
+   "inject_to": []
+  },
+  {
+   "id": "wit",
+   "grammar_file": "wit.json",
+   "scope_name": "source.wit",
+   "display_name": "WebAssembly Interface Types",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "wolfram",
+   "grammar_file": "wolfram.json",
+   "scope_name": "source.wolfram",
+   "display_name": "Wolfram",
+   "aliases": [
+    "wl"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "xml",
+   "grammar_file": "xml.json",
+   "scope_name": "text.xml",
+   "display_name": "XML",
+   "aliases": [],
+   "embedded_langs": [
+    "java"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "xsl",
+   "grammar_file": "xsl.json",
+   "scope_name": "text.xml.xsl",
+   "display_name": "XSL",
+   "aliases": [],
+   "embedded_langs": [
+    "xml"
+   ],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "yaml",
+   "grammar_file": "yaml.json",
+   "scope_name": "source.yaml",
+   "display_name": "YAML",
+   "aliases": [
+    "yml"
+   ],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "zenscript",
+   "grammar_file": "zenscript.json",
+   "scope_name": "source.zenscript",
+   "display_name": "ZenScript",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  },
+  {
+   "id": "zig",
+   "grammar_file": "zig.json",
+   "scope_name": "source.zig",
+   "display_name": "Zig",
+   "aliases": [],
+   "embedded_langs": [],
+   "embedded_langs_lazy": [],
+   "inject_to": []
+  }
+ ]
+}

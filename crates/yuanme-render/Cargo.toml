@@ -6,11 +6,17 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-include = ["/src"]
+include = ["/src", "/build.rs"]
 
 [dependencies]
 yuanme-content.workspace = true
 yuanme-diag.workspace = true
+# Exact, with the tokenizer and regex engine under it, whose caret
+# requirements would let newer ones in (#27): the output is checked against
+# Shiki's tokens. ferroni 2.2.2 is the one ADR 0014 measured.
+ferriki = "=1.1.1"
+ferriki-textmate = "=1.1.1"
+ferroni = "=2.2.2"
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
 # Exact: `unstable_machinery` has no stability promise (#19).
 minijinja = { version = "=3.0.1", features = ["loop_controls", "unstable_machinery"] }
@@ -18,9 +24,14 @@ rayon = "1.12.0"
 serde_json = "1.0.154"
 toml = { version = "1", default-features = false, features = ["std", "parse", "serde"] }
 
+[build-dependencies]
+ferriki-asset-gen = "=1.1.1"
+serde_json = "1"
+
 [dev-dependencies]
 insta = "1.49.0"
 jsonschema = { version = "0.60.1", default-features = false }
 # `tojson`, so a test Template can print its whole context. Authors don't
 # get it: only test builds turn it on.
 minijinja = { version = "=3.0.1", features = ["json"] }
+sha2 = "0.10"

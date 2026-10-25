@@ -1,0 +1,16 @@
+{
+ "themes": [
+  {
+   "id": "catppuccin-latte",
+   "theme_file": "catppuccin-latte.json",
+   "display_name": "Catppuccin Latte",
+   "theme_type": "light"
+  },
+  {
+   "id": "catppuccin-mocha",
+   "theme_file": "catppuccin-mocha.json",
+   "display_name": "Catppuccin Mocha",
+   "theme_type": "dark"
+  }
+ ]
+}
