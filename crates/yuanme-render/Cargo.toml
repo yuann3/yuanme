@@ -11,6 +11,11 @@ include = ["/src"]
 [dependencies]
 yuanme-content.workspace = true
 yuanme-diag.workspace = true
+jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
+# Exact: `unstable_machinery` has no stability promise (#19).
+minijinja = { version = "=3.0.1", features = ["loop_controls", "unstable_machinery"] }
+rayon = "1.12.0"
+toml = { version = "1", default-features = false, features = ["std", "parse", "serde"] }
 
 [dev-dependencies]
 insta = "1.49.0"

@@ -1,0 +1,5 @@
+{% extends "layouts/base.html" %}
+{% set title = "Series" %}
+{% block content %}
+{% for t in taxonomies.series.terms %}<a href="{{ t.url }}">{{ t.name }}</a>{% endfor %}
+{% endblock %}

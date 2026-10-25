@@ -1,0 +1,30 @@
+---
+source: crates/yuanme-render/tests/templates.rs
+expression: "page(&pages, \"rss.xml\").text"
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>E&#39;s</title>
+<link>https://e.com/</link>
+<description></description>
+<item>
+<title>A</title>
+<link>https://e.com/blog/a/</link>
+<guid isPermaLink="true">https://e.com/blog/a/</guid>
+<pubDate>Thu, 02 Jan 2025 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>B</title>
+<link>https://e.com/blog/b/</link>
+<guid isPermaLink="true">https://e.com/blog/b/</guid>
+<pubDate>Thu, 02 Jan 2025 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>C</title>
+<link>https://e.com/blog/c/</link>
+<guid isPermaLink="true">https://e.com/blog/c/</guid>
+<pubDate>Mon, 06 May 2024 00:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>

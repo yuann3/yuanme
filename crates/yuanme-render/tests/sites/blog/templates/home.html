@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+{% from "components/row.html" import row %}
+{% set title = "Home" %}
+{% block content %}
+<p>{{ site.extra.greeting }} {{ data.intro.text|markdown(inline=true) }}</p>
+{{ data.intro.text|markdown }}
+<ul>{% for entry in collections.posts[:2] %}{{ row(entry) }}{% endfor %}</ul>
+<p>{{ collections.notes|length }} {{ collections.notes|length|pluralize("note") }}, {{ collections.pages|length }} {{ collections.pages|length|pluralize }}; drafts: {{ collections.posts|selectattr("draft")|list|length }}; a null: [{{ none }}]; a bool: {{ true }}</p>
+<p>{{ "a/b <c> & 'd'" }} {{ "<b>kept</b>"|safe }} {{ "x/y"|e }}</p>
+{% endblock %}

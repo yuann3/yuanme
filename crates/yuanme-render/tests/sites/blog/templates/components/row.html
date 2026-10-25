@@ -1,0 +1,3 @@
+{% macro row(entry) %}
+<li><a href="{{ entry.url }}">{{ entry.title }}</a>{% if entry.date %} <time datetime="{{ entry.date }}">{{ entry.date|dateformat(format="%d %b %Y") }}</time>{% endif %}</li>
+{% endmacro %}

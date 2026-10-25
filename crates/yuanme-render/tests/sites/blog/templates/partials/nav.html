@@ -1,0 +1,5 @@
+<nav>
+{% for l in data.nav.links %}
+<a href="{{ url(l.path) }}"{{ {"aria-current": "page" if l.path == page.url else none}|attrs }}>{{ l.title }}</a>
+{% endfor %}
+</nav>

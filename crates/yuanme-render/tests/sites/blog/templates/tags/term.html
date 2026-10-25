@@ -1,0 +1,7 @@
+{% extends "layouts/base.html" %}
+{% from "components/row.html" import row %}
+{% set title = "#" ~ term.name %}
+{% block content %}
+<h1>#{{ term.name }} ({{ term.count }} {{ term.count|pluralize("post", "posts") }}) in <a href="{{ taxonomy.url }}">{{ taxonomy.name }}</a></h1>
+<ul>{% for entry in entries %}{{ row(entry) }}{% endfor %}</ul>
+{% endblock %}

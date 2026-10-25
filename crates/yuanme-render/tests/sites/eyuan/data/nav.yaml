@@ -1,0 +1,9 @@
+- id: about
+  title: About
+  path: /about/
+- id: projects
+  title: Projects
+  path: /projects/
+- id: writing
+  title: Writing
+  path: /blog/

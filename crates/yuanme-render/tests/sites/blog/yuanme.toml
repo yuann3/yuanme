@@ -1,0 +1,54 @@
+[site]
+url = "https://example.com/"
+title = "Example & Co"
+description = "Notes on <things>"
+language = "en"
+author = "Ada"
+timezone = "Asia/Singapore"
+
+[site.extra]
+greeting = "Hi, it's 'me'"
+
+[collections.posts]
+route = "/blog/{slug}/"
+list_route = "/blog/"
+paginate = 2
+sort = ["order", "-modified"]
+
+[collections.posts.fields]
+description = { type = "string" }
+order = { type = "int", optional = true }
+published = { type = "datetime", optional = true }
+hero = { type = "object", optional = true, fields = { src = { type = "string" }, alt = { type = "string", optional = true } } }
+
+# No Template of its own: its Entries share the posts one.
+[collections.notes]
+route = "/notes/{slug}/"
+template = "posts/entry.html"
+
+[taxonomies.tags]
+collections = ["posts"]
+route = "/tags/{term}/"
+lowercase = true
+
+[taxonomies.series]
+collections = ["posts"]
+route = "/series/{term}/"
+single = true
+template = "term.html"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.not_found]
+path = "/404.html"
+template = "404.html"
+
+[routes.llms]
+path = "/llms.txt"
+template = "llms.txt"
+
+[feeds.rss]
+collections = ["posts"]
+path = "/rss.xml"

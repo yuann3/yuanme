@@ -1,0 +1,12 @@
+---
+source: crates/yuanme-render/tests/templates.rs
+expression: "diagnostics[0].render(&sources, false)"
+---
+error[template/render]: undefined value: `entry.hero` is undefined
+ --> templates/posts/entry.html:2:14
+  |
+2 | <img src="{{ entry.hero }}">
+  |              ^^^^^^^^^^
+  |
+  = note: while rendering `/blog/a/`
+  = note: run `yuanme docs template/render` for more

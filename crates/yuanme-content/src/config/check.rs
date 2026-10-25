@@ -418,10 +418,7 @@ pub(crate) fn parse_version(s: &str) -> Option<(u64, u64)> {
 
 /// The candidate a typo most likely meant, as rustc picks one: the nearest
 /// by edit distance, within a third of the name's length.
-pub(crate) fn similar<'a>(
-    name: &str,
-    candidates: impl IntoIterator<Item = &'a str>,
-) -> Option<&'a str> {
+pub fn similar<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) -> Option<&'a str> {
     let limit = (name.chars().count() / 3).max(1);
     candidates
         .into_iter()

@@ -1,0 +1,372 @@
+---
+source: crates/yuanme-render/tests/templates.rs
+expression: "format!(\"{outputs:#?}\\n{}\", show(&shown))"
+---
+[
+    "blog/extending_c_stdlib/index.html",
+    "blog/first/index.html",
+    "projects/lrle/index.html",
+    "projects/pew/index.html",
+    "blog/index.html",
+    "series/index.html",
+    "series/c-notes/index.html",
+    "tags/index.html",
+    "tags/c/index.html",
+    "tags/draft/index.html",
+    "tags/life/index.html",
+    "tags/programming/index.html",
+    "sitemap-0.xml",
+    "sitemap-index.xml",
+]
+=== blog/first/index.html
+<!doctype html>
+<html lang="en" data-state="expanded" data-section="writing">
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/styles/global.css" />
+<link rel="canonical" href="https://eyuan.me/blog/first/" />
+<title>So, Here we go again | Eyuan</title>
+<meta name="title" content="So, Here we go again" />
+<meta name="description" content="Feels new yet familiar" />
+<meta name="author" content="Yiyuan Li" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://eyuan.me/blog/first/" />
+<meta property="og:title" content="So, Here we go again" />
+<meta property="og:description" content="Feels new yet familiar" />
+<meta property="og:image" content="https://eyuan.me/og-image/first.png" />
+<meta property="article:author" content="Yiyuan Li" />
+<meta property="article:published_time" content="2026-02-02" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="So, Here we go again" />
+<meta property="twitter:image" content="https://eyuan.me/og-image/first.png" />
+
+<style>
+html:not([data-section]) .film-fallback{background-image:linear-gradient(#fff,#eee)}
+html[data-section="writing"] .film-fallback{background-image:linear-gradient(#eef,#fee)}
+</style>  </head>
+  <body>
+    <script>
+      // Cold load: hide the panel and rail items until shell.ts runs the first reveal.
+      document.body.setAttribute('data-boot', '');
+      setTimeout(function () { document.body.removeAttribute('data-boot'); }, 3000);
+    </script>
+    <div class="shell" data-shell>
+      <div class="rail">
+        <div class="rail-top">
+          <a href="/" class="wordmark" aria-label="eyuan, home" data-reveal>eyuan<span class="droplet" aria-hidden="true"></span></a>
+
+        </div>
+        <div class="rail-space"></div>
+        <div class="intro">
+          <h1 class="headline">
+            <span class="headline-line headline-serif" data-reveal><em>Yoo wasupp</em></span>
+            <span class="headline-line" data-reveal><em>Yiyuan&#39;s here, welcome!</em></span>
+          </h1>
+          <p class="sub" data-reveal>i&#39;m a software engineer based in singapore</p>
+        </div>
+        <div class="rail-space"></div>
+        <nav class="nav" aria-label="Main">
+          <a href="/about/" class="nav-link" data-nav-link data-section="about" data-reveal>
+            <span class="nav-label">About</span>
+          </a>
+          <a href="/projects/" class="nav-link" data-nav-link data-section="projects" data-reveal>
+            <span class="nav-label">Projects</span>
+          </a>
+          <a href="/blog/" class="nav-link" data-nav-link data-section="writing" aria-current="true" data-reveal>
+            <span class="nav-label">Writing</span>
+          </a>
+          <span class="droplet nav-droplet" aria-hidden="true"></span>
+          <div class="esc-hint" data-esc-hint aria-hidden="true"><kbd>esc</kbd><span>to close</span></div>
+        </nav>
+        <ul class="links">
+          <li data-reveal><a href="mailto:yy@eyuan.me" class="label-mono">EMAIL</a></li>
+          <li data-reveal><a href="/rss.xml" class="label-mono">RSS</a></li>
+        </ul>
+      </div>
+      <div class="well">
+        <div class="panel" data-panel>
+          <div class="film" data-film-layer aria-hidden="true">
+            <div class="film-fallback"><i></i><i></i><i></i><i></i></div>
+            <canvas class="film-canvas" data-film-canvas></canvas>
+            <div class="film-grain"></div>
+          </div>
+          <main class="panel-content" data-panel-content>
+  <header class="panel-header" data-reveal>
+  <div class="panel-topbar">
+    <a href="/" class="wordmark wordmark-sm" aria-label="eyuan, home">eyuan<span class="droplet" aria-hidden="true"></span></a>
+
+    <a href="/" class="label-mono close" aria-keyshortcuts="Escape">CLOSE <span class="close-x" aria-hidden="true">×</span></a>
+  </div>
+  <div class="panel-heading">
+    <h1 class="panel-title">So, Here we go again</h1>
+    <div class="panel-actions">
+      
+      <a href="/" class="label-mono close close-desktop" aria-keyshortcuts="Escape">CLOSE <span class="close-x" aria-hidden="true">×</span></a>
+    </div>
+  </div>
+</header>
+
+  <div data-reveal-group>
+<p class="label-mono flex flex-wrap gap-x-6 gap-y-2 text-muted" data-reveal>
+  <time datetime="2024-07-01">2024-07-01</time>
+
+<span>Updated <time datetime="2026-02-02">2026-02-02</time>
+</span>  <span>1 min read</span>
+<a href="/series/c-notes/" class="meta-link text-ink-2">c-notes</a><a href="/tags/life/" class="meta-link text-ink-2">#life</a><a href="/tags/draft/" class="meta-link text-ink-2">#draft</a></p>    <article class="prose-panel mt-10" data-copy-code data-reveal>
+<img src="/img/plane.png" alt="A plane over the sea" /><p>It’s been a while — here’s to “writing” more.</p>    </article>
+  </div>
+  <!-- end of post -->
+<script type="module" src="/components/copy_btn.ts"></script>          </main>
+          <div class="panel-edge" data-panel-edge aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/scripts/shell.ts"></script>
+  </body>
+</html>
+=== projects/lrle/index.html
+<!doctype html>
+<html lang="en" data-state="expanded" data-section="projects">
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/styles/global.css" />
+<link rel="canonical" href="https://eyuan.me/projects/lrle/" />
+<title>LRLE | Eyuan</title>
+<meta name="title" content="LRLE" />
+<meta name="description" content="Run-length encoded images on the GPU" />
+<meta name="author" content="Yiyuan Li" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://eyuan.me/projects/lrle/" />
+<meta property="og:title" content="LRLE" />
+<meta property="og:description" content="Run-length encoded images on the GPU" />
+<meta property="og:image" content="https://eyuan.me/blog-placeholder-1.jpg" />
+<meta property="article:author" content="Yiyuan Li" />
+<meta property="article:published_time" content="2025-12-22" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="LRLE" />
+<meta property="twitter:image" content="https://eyuan.me/blog-placeholder-1.jpg" />
+
+<style>
+html:not([data-section]) .film-fallback{background-image:linear-gradient(#fff,#eee)}
+html[data-section="writing"] .film-fallback{background-image:linear-gradient(#eef,#fee)}
+</style>  </head>
+  <body>
+    <script>
+      // Cold load: hide the panel and rail items until shell.ts runs the first reveal.
+      document.body.setAttribute('data-boot', '');
+      setTimeout(function () { document.body.removeAttribute('data-boot'); }, 3000);
+    </script>
+    <div class="shell" data-shell>
+      <div class="rail">
+        <div class="rail-top">
+          <a href="/" class="wordmark" aria-label="eyuan, home" data-reveal>eyuan<span class="droplet" aria-hidden="true"></span></a>
+
+        </div>
+        <div class="rail-space"></div>
+        <div class="intro">
+          <h1 class="headline">
+            <span class="headline-line headline-serif" data-reveal><em>Yoo wasupp</em></span>
+            <span class="headline-line" data-reveal><em>Yiyuan&#39;s here, welcome!</em></span>
+          </h1>
+          <p class="sub" data-reveal>i&#39;m a software engineer based in singapore</p>
+        </div>
+        <div class="rail-space"></div>
+        <nav class="nav" aria-label="Main">
+          <a href="/about/" class="nav-link" data-nav-link data-section="about" data-reveal>
+            <span class="nav-label">About</span>
+          </a>
+          <a href="/projects/" class="nav-link" data-nav-link data-section="projects" aria-current="true" data-reveal>
+            <span class="nav-label">Projects</span>
+          </a>
+          <a href="/blog/" class="nav-link" data-nav-link data-section="writing" data-reveal>
+            <span class="nav-label">Writing</span>
+          </a>
+          <span class="droplet nav-droplet" aria-hidden="true"></span>
+          <div class="esc-hint" data-esc-hint aria-hidden="true"><kbd>esc</kbd><span>to close</span></div>
+        </nav>
+        <ul class="links">
+          <li data-reveal><a href="mailto:yy@eyuan.me" class="label-mono">EMAIL</a></li>
+          <li data-reveal><a href="/rss.xml" class="label-mono">RSS</a></li>
+        </ul>
+      </div>
+      <div class="well">
+        <div class="panel" data-panel>
+          <div class="film" data-film-layer aria-hidden="true">
+            <div class="film-fallback"><i></i><i></i><i></i><i></i></div>
+            <canvas class="film-canvas" data-film-canvas></canvas>
+            <div class="film-grain"></div>
+          </div>
+          <main class="panel-content" data-panel-content>
+  <header class="panel-header" data-reveal>
+  <div class="panel-topbar">
+    <a href="/" class="wordmark wordmark-sm" aria-label="eyuan, home">eyuan<span class="droplet" aria-hidden="true"></span></a>
+
+    <a href="/" class="label-mono close" aria-keyshortcuts="Escape">CLOSE <span class="close-x" aria-hidden="true">×</span></a>
+  </div>
+  <div class="panel-heading">
+    <h1 class="panel-title">lrle</h1>
+    <div class="panel-actions">
+      <a href="https://github.com/yuann3/lrle" class="label-mono">SOURCE</a>
+      <a href="/" class="label-mono close close-desktop" aria-keyshortcuts="Escape">CLOSE <span class="close-x" aria-hidden="true">×</span></a>
+    </div>
+  </div>
+</header>
+
+  <div data-reveal-group>
+    <p class="label-mono flex flex-wrap gap-x-6 gap-y-2 text-muted" data-reveal>
+      <span>rust · wgsl · wgpu · 2025</span>
+<a href="https://github.com/yuann3/lrle" target="_blank" rel="noopener" class="meta-link text-ink-2">GITHUB <span class="meta-arrow">↗</span></a><a href="https://lrle.example" target="_blank" rel="noopener" class="meta-link text-ink-2">WEBSITE <span class="meta-arrow">↗</span></a>    </p>
+<article class="prose-panel project-body mt-10" data-reveal>
+  <img src="/img/lrle.png" alt="" />      <p>Decodes on the GPU.</p>
+
+</article>
+  </div>
+          </main>
+          <div class="panel-edge" data-panel-edge aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/scripts/shell.ts"></script>
+  </body>
+</html>
+=== tags/index.html
+<!doctype html>
+<html lang="en" data-state="expanded" data-section="writing">
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="stylesheet" href="/styles/global.css" />
+<link rel="canonical" href="https://eyuan.me/tags/" />
+<title>Tags | Eyuan</title>
+<meta name="title" content="Tags" />
+<meta name="description" content="All tags" />
+<meta name="author" content="Yiyuan Li" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://eyuan.me/tags/" />
+<meta property="og:title" content="Tags" />
+<meta property="og:description" content="All tags" />
+<meta property="og:image" content="https://eyuan.me/blog-placeholder-1.jpg" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="Tags" />
+<meta property="twitter:image" content="https://eyuan.me/blog-placeholder-1.jpg" />
+
+<style>
+html:not([data-section]) .film-fallback{background-image:linear-gradient(#fff,#eee)}
+html[data-section="writing"] .film-fallback{background-image:linear-gradient(#eef,#fee)}
+</style>  </head>
+  <body>
+    <script>
+      // Cold load: hide the panel and rail items until shell.ts runs the first reveal.
+      document.body.setAttribute('data-boot', '');
+      setTimeout(function () { document.body.removeAttribute('data-boot'); }, 3000);
+    </script>
+    <div class="shell" data-shell>
+      <div class="rail">
+        <div class="rail-top">
+          <a href="/" class="wordmark" aria-label="eyuan, home" data-reveal>eyuan<span class="droplet" aria-hidden="true"></span></a>
+
+        </div>
+        <div class="rail-space"></div>
+        <div class="intro">
+          <h1 class="headline">
+            <span class="headline-line headline-serif" data-reveal><em>Yoo wasupp</em></span>
+            <span class="headline-line" data-reveal><em>Yiyuan&#39;s here, welcome!</em></span>
+          </h1>
+          <p class="sub" data-reveal>i&#39;m a software engineer based in singapore</p>
+        </div>
+        <div class="rail-space"></div>
+        <nav class="nav" aria-label="Main">
+          <a href="/about/" class="nav-link" data-nav-link data-section="about" data-reveal>
+            <span class="nav-label">About</span>
+          </a>
+          <a href="/projects/" class="nav-link" data-nav-link data-section="projects" data-reveal>
+            <span class="nav-label">Projects</span>
+          </a>
+          <a href="/blog/" class="nav-link" data-nav-link data-section="writing" aria-current="true" data-reveal>
+            <span class="nav-label">Writing</span>
+          </a>
+          <span class="droplet nav-droplet" aria-hidden="true"></span>
+          <div class="esc-hint" data-esc-hint aria-hidden="true"><kbd>esc</kbd><span>to close</span></div>
+        </nav>
+        <ul class="links">
+          <li data-reveal><a href="mailto:yy@eyuan.me" class="label-mono">EMAIL</a></li>
+          <li data-reveal><a href="/rss.xml" class="label-mono">RSS</a></li>
+        </ul>
+      </div>
+      <div class="well">
+        <div class="panel" data-panel>
+          <div class="film" data-film-layer aria-hidden="true">
+            <div class="film-fallback"><i></i><i></i><i></i><i></i></div>
+            <canvas class="film-canvas" data-film-canvas></canvas>
+            <div class="film-grain"></div>
+          </div>
+          <main class="panel-content" data-panel-content>
+  <header class="panel-header" data-reveal>
+  <div class="panel-topbar">
+    <a href="/" class="wordmark wordmark-sm" aria-label="eyuan, home">eyuan<span class="droplet" aria-hidden="true"></span></a>
+
+    <a href="/" class="label-mono close" aria-keyshortcuts="Escape">CLOSE <span class="close-x" aria-hidden="true">×</span></a>
+  </div>
+  <div class="panel-heading">
+    <h1 class="panel-title">Tags</h1>
+    <div class="panel-actions">
+      
+      <a href="/" class="label-mono close close-desktop" aria-keyshortcuts="Escape">CLOSE <span class="close-x" aria-hidden="true">×</span></a>
+    </div>
+  </div>
+</header>
+
+  <ul class="border-b border-hairline" data-reveal-group>
+    <li class="border-t border-hairline" data-reveal>
+  <a href="/tags/c/" class="row-link list-row flex flex-col gap-1.5 py-5 md:flex-row md:items-baseline md:gap-0 md:py-8">
+<span class="shrink-0 font-mono text-[12px] leading-[18px] text-muted md:w-[140px] md:text-[13px]">1 post</span>    <span class="flex min-w-0 flex-1 flex-col gap-1 md:gap-2 md:pr-10">
+      <span class="self-start text-[20px] font-medium text-ink md:text-[28px]" data-row-name>#c</span>
+    </span>
+    <span class="row-arrow list-row-arrow" data-row-arrow aria-hidden="true">→</span>
+  </a>
+</li>
+
+    <li class="border-t border-hairline" data-reveal>
+  <a href="/tags/draft/" class="row-link list-row flex flex-col gap-1.5 py-5 md:flex-row md:items-baseline md:gap-0 md:py-8">
+<span class="shrink-0 font-mono text-[12px] leading-[18px] text-muted md:w-[140px] md:text-[13px]">1 post</span>    <span class="flex min-w-0 flex-1 flex-col gap-1 md:gap-2 md:pr-10">
+      <span class="self-start text-[20px] font-medium text-ink md:text-[28px]" data-row-name>#draft</span>
+    </span>
+    <span class="row-arrow list-row-arrow" data-row-arrow aria-hidden="true">→</span>
+  </a>
+</li>
+
+    <li class="border-t border-hairline" data-reveal>
+  <a href="/tags/life/" class="row-link list-row flex flex-col gap-1.5 py-5 md:flex-row md:items-baseline md:gap-0 md:py-8">
+<span class="shrink-0 font-mono text-[12px] leading-[18px] text-muted md:w-[140px] md:text-[13px]">1 post</span>    <span class="flex min-w-0 flex-1 flex-col gap-1 md:gap-2 md:pr-10">
+      <span class="self-start text-[20px] font-medium text-ink md:text-[28px]" data-row-name>#life</span>
+    </span>
+    <span class="row-arrow list-row-arrow" data-row-arrow aria-hidden="true">→</span>
+  </a>
+</li>
+
+    <li class="border-t border-hairline" data-reveal>
+  <a href="/tags/programming/" class="row-link list-row flex flex-col gap-1.5 py-5 md:flex-row md:items-baseline md:gap-0 md:py-8">
+<span class="shrink-0 font-mono text-[12px] leading-[18px] text-muted md:w-[140px] md:text-[13px]">1 post</span>    <span class="flex min-w-0 flex-1 flex-col gap-1 md:gap-2 md:pr-10">
+      <span class="self-start text-[20px] font-medium text-ink md:text-[28px]" data-row-name>#programming</span>
+    </span>
+    <span class="row-arrow list-row-arrow" data-row-arrow aria-hidden="true">→</span>
+  </a>
+</li>
+
+  </ul>
+          </main>
+          <div class="panel-edge" data-panel-edge aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/scripts/shell.ts"></script>
+  </body>
+</html>

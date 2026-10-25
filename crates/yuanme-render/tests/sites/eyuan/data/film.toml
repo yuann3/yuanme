@@ -1,0 +1,7 @@
+[[rules]]
+selector = "html:not([data-section]) .film-fallback"
+gradient = "linear-gradient(#fff,#eee)"
+
+[[rules]]
+selector = 'html[data-section="writing"] .film-fallback'
+gradient = "linear-gradient(#eef,#fee)"

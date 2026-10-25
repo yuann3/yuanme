@@ -1,0 +1,17 @@
+{% extends "layouts/base.html" %}
+{% set title = entry.title %}
+{% block content %}
+<article>
+<h1>{{ entry.title }}</h1>
+<p>{{ entry.reading_time }} {{ entry.reading_time|pluralize("minute", "minutes") }}, {{ entry.word_count }} words{% if entry.description %}: {{ entry.description }}{% endif %}</p>
+{% if entry.published %}<p>Published {{ entry.published|dateformat(format="%Y-%m-%d %H:%M %:z") }}</p>{% endif %}
+{% if entry.modified %}<p>Modified {{ entry.modified }}</p>{% endif %}
+{% if entry.hero %}<img src="{{ entry.hero.src }}" alt="{{ entry.hero.alt|default('') }}">{% endif %}
+{% for tag in entry.tags|default([]) %}<a href="{{ url('/tags/' ~ tag ~ '/') }}">#{{ tag }}</a> {% endfor %}
+{% if entry.series %}<p>Part of {{ entry.series }}</p>{% endif %}
+{% if entry.headings %}
+<ol>{% for h in entry.headings %}<li class="h{{ h.level }}"><a href="#{{ h.id }}">{{ h.text }}</a></li>{% endfor %}</ol>
+{% endif %}
+{{ entry.content }}
+</article>
+{% endblock %}

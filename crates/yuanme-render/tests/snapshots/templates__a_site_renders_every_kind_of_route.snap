@@ -1,0 +1,437 @@
+---
+source: crates/yuanme-render/tests/templates.rs
+expression: show(&pages)
+---
+=== notes/quick/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Quick note | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/notes/quick/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="entry">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<article>
+<h1>Quick note</h1>
+<p>1 minute, 1 words</p>
+<p>Short.</p>
+</article>
+</main>
+</body>
+</html>
+=== about/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>About | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/about/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="entry">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/" aria-current="page">About</a>
+</nav><main>
+<p>I write things.</p></main>
+</body>
+</html>
+=== blog/first/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>First &lt;post&gt; | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/blog/first/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="entry">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<article>
+<h1>First &lt;post&gt;</h1>
+<p>1 minute, 7 words: It&#39;s &quot;here&quot; &amp; new</p>
+<p>Modified 2024-07-01</p><a href="/tags/life/">#life</a> <a href="/tags/c/">#c</a> <ol><li class="h1"><a href="#intro">Intro</a></li><li class="h2"><a href="#details">Details</a></li></ol>
+<h1 id="intro">Intro</h1>
+<p>Hello <em>world</em> — it’s here.</p>
+<h2 id="details">Details</h2>
+<p>More <a href="/about/">about me</a>.</p>
+</article>
+</main>
+</body>
+</html>
+=== blog/hidden/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Hidden | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/blog/hidden/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="entry">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<article>
+<h1>Hidden</h1>
+<p>1 minute, 1 words: Reachable, never listed</p>
+<p>Modified 2026-01-01</p><a href="/tags/c/">#c</a> <p>Shh.</p>
+</article>
+</main>
+</body>
+</html>
+=== blog/stdlib/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Stealing ideas | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/blog/stdlib/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="entry">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<article>
+<h1>Stealing ideas</h1>
+<p>1 minute, 3 words: Borrowing from Rust</p>
+<p>Published 2025-12-12 17:30 +08:00</p><p>Modified 2026-01-05</p><img src="/img/hero.png" alt=""><a href="/tags/c/">#c</a> <a href="/tags/programming/">#programming</a> <p>Part of C notes</p><p>Slices, at last.</p>
+</article>
+</main>
+</body>
+</html>
+=== blog/tie-a/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Tie A | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/blog/tie-a/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="entry">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<article>
+<h1>Tie A</h1>
+<p>1 minute, 1 words: Same day as B</p>
+<p>Modified 2025-03-03</p><a href="/tags/rust/">#rust</a> <p>Part of C notes</p><p>A.</p>
+</article>
+</main>
+</body>
+</html>
+=== blog/tie-b/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Tie B | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/blog/tie-b/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="entry">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<article>
+<h1>Tie B</h1>
+<p>1 minute, 1 words: Same day as A</p>
+<p>Modified 2025-03-03</p><a href="/tags/rust/">#rust</a> <p>B.</p>
+</article>
+</main>
+</body>
+</html>
+=== blog/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Writing | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/blog/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="list">
+<nav>
+<a href="/blog/" aria-current="page">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<h1><a href="/blog/">posts</a></h1>
+<ul>
+<li><a href="/blog/stdlib/">Stealing ideas</a> <time datetime="2025-12-12">12 Dec 2025</time></li>
+<li><a href="/blog/tie-a/">Tie A</a> <time datetime="2025-03-03">03 Mar 2025</time></li>
+</ul>
+<nav class="pages">
+<span>1 of 2</span>
+<a href="/blog/2/">Older</a></nav>
+
+</main>
+</body>
+</html>
+=== blog/2/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Writing | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/blog/2/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="list">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<h1><a href="/blog/">posts</a></h1>
+<ul>
+<li><a href="/blog/tie-b/">Tie B</a> <time datetime="2025-03-03">03 Mar 2025</time></li>
+<li><a href="/blog/first/">First &lt;post&gt;</a> <time datetime="2024-07-01">01 Jul 2024</time></li>
+</ul>
+<nav class="pages">
+<a href="/blog/">Newer</a><span>2 of 2</span>
+</nav>
+
+</main>
+</body>
+</html>
+=== series/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Series | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/series/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="index">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<a href="/series/c-notes/">C notes</a></main>
+</body>
+</html>
+=== series/c-notes/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>C notes | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/series/c-notes/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="term">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<h1>C notes, oldest first</h1>
+<ol><li><a href="/blog/tie-a/">Tie A</a> <time datetime="2025-03-03">03 Mar 2025</time></li>
+<li><a href="/blog/stdlib/">Stealing ideas</a> <time datetime="2025-12-12">12 Dec 2025</time></li>
+</ol>
+</main>
+</body>
+</html>
+=== tags/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Tags | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/tags/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="index">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<ul>
+<li><a href="/tags/c/">c</a> 2</li>
+<li><a href="/tags/rust/">rust</a> 2</li>
+<li><a href="/tags/life/">life</a> 1</li>
+<li><a href="/tags/programming/">programming</a> 1</li>
+</ul>
+</main>
+</body>
+</html>
+=== tags/c/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>#c | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/tags/c/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="term">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<h1>#c (2 posts) in <a href="/tags/">tags</a></h1>
+<ul><li><a href="/blog/stdlib/">Stealing ideas</a> <time datetime="2025-12-12">12 Dec 2025</time></li>
+<li><a href="/blog/first/">First &lt;post&gt;</a> <time datetime="2024-07-01">01 Jul 2024</time></li>
+</ul>
+</main>
+</body>
+</html>
+=== tags/life/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>#life | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/tags/life/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="term">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<h1>#life (1 post) in <a href="/tags/">tags</a></h1>
+<ul><li><a href="/blog/first/">First &lt;post&gt;</a> <time datetime="2024-07-01">01 Jul 2024</time></li>
+</ul>
+</main>
+</body>
+</html>
+=== tags/programming/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>#programming | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/tags/programming/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="term">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<h1>#programming (1 post) in <a href="/tags/">tags</a></h1>
+<ul><li><a href="/blog/stdlib/">Stealing ideas</a> <time datetime="2025-12-12">12 Dec 2025</time></li>
+</ul>
+</main>
+</body>
+</html>
+=== tags/rust/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>#rust | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/tags/rust/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-kind="term">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<h1>#rust (2 posts) in <a href="/tags/">tags</a></h1>
+<ul><li><a href="/blog/tie-a/">Tie A</a> <time datetime="2025-03-03">03 Mar 2025</time></li>
+<li><a href="/blog/tie-b/">Tie B</a> <time datetime="2025-03-03">03 Mar 2025</time></li>
+</ul>
+</main>
+</body>
+</html>
+=== index.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>Home | Example &amp; Co</title>
+<link rel="canonical" href="https://example.com/">
+<link rel="alternate" type="application/rss+xml" href="/rss.xml">
+</head>
+<body data-home data-kind="template">
+<nav>
+<a href="/blog/">Writing</a>
+<a href="/about/">About</a>
+</nav><main>
+<p>Hi, it&#39;s &#39;me&#39; Some <em>Markdown</em> — with <a href="/about/">a link</a>.</p>
+<p>Some <em>Markdown</em> — with <a href="/about/">a link</a>.</p>
+<ul><li><a href="/blog/stdlib/">Stealing ideas</a> <time datetime="2025-12-12">12 Dec 2025</time></li>
+<li><a href="/blog/tie-a/">Tie A</a> <time datetime="2025-03-03">03 Mar 2025</time></li>
+</ul>
+<p>1 note, 1 ; drafts: 0; a null: []; a bool: true</p>
+<p>a/b &lt;c&gt; &amp; &#39;d&#39; <b>kept</b> x/y</p>
+</main>
+</body>
+</html>
+=== llms.txt
+# Example & Co
+
+> Notes on <things>
+
+- [Stealing ideas](https://example.com/blog/stdlib/) (2025)
+- [Tie A](https://example.com/blog/tie-a/) (2025)
+- [Tie B](https://example.com/blog/tie-b/) (2025)
+- [First <post>](https://example.com/blog/first/) (2024)
+
+=== 404.html
+<!doctype html>
+<title>Not found | Example &amp; Co</title>
+<p>Nothing at /404.html. Go <a href="/">home</a>.</p>
+=== rss.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>Example &amp; Co</title>
+<link>https://example.com/</link>
+<description>Notes on &lt;things&gt;</description>
+<language>en</language>
+<item>
+<title>Stealing ideas</title>
+<link>https://example.com/blog/stdlib/</link>
+<guid isPermaLink="true">https://example.com/blog/stdlib/</guid>
+<description>Borrowing from Rust</description>
+<pubDate>Fri, 12 Dec 2025 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>Tie A</title>
+<link>https://example.com/blog/tie-a/</link>
+<guid isPermaLink="true">https://example.com/blog/tie-a/</guid>
+<description>Same day as B</description>
+<pubDate>Mon, 03 Mar 2025 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>Tie B</title>
+<link>https://example.com/blog/tie-b/</link>
+<guid isPermaLink="true">https://example.com/blog/tie-b/</guid>
+<description>Same day as A</description>
+<pubDate>Mon, 03 Mar 2025 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>First &lt;post&gt;</title>
+<link>https://example.com/blog/first/</link>
+<guid isPermaLink="true">https://example.com/blog/first/</guid>
+<description>It&#39;s &quot;here&quot; &amp; new</description>
+<pubDate>Mon, 01 Jul 2024 00:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>
+=== sitemap-0.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://example.com/</loc></url>
+<url><loc>https://example.com/about/</loc></url>
+<url><loc>https://example.com/blog/</loc></url>
+<url><loc>https://example.com/blog/2/</loc></url>
+<url><loc>https://example.com/blog/first/</loc></url>
+<url><loc>https://example.com/blog/stdlib/</loc></url>
+<url><loc>https://example.com/blog/tie-a/</loc></url>
+<url><loc>https://example.com/blog/tie-b/</loc></url>
+<url><loc>https://example.com/notes/quick/</loc></url>
+<url><loc>https://example.com/series/</loc></url>
+<url><loc>https://example.com/series/c-notes/</loc></url>
+<url><loc>https://example.com/tags/</loc></url>
+<url><loc>https://example.com/tags/c/</loc></url>
+<url><loc>https://example.com/tags/life/</loc></url>
+<url><loc>https://example.com/tags/programming/</loc></url>
+<url><loc>https://example.com/tags/rust/</loc></url>
+</urlset>
+
+=== sitemap-index.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemap><loc>https://example.com/sitemap-0.xml</loc></sitemap>
+</sitemapindex>

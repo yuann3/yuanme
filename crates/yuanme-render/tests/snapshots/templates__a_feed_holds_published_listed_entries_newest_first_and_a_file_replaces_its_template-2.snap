@@ -1,0 +1,17 @@
+---
+source: crates/yuanme-render/tests/templates.rs
+expression: "show(&pages.into_iter().filter(|p|\np.output.starts_with(\"sitemap\")).collect::<Vec<_>>())"
+---
+=== sitemap-0.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://e.com/blog/a/</loc></url>
+<url><loc>https://e.com/blog/b/</loc></url>
+<url><loc>https://e.com/blog/c/</loc></url>
+</urlset>
+
+=== sitemap-index.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemap><loc>https://e.com/sitemap-0.xml</loc></sitemap>
+</sitemapindex>

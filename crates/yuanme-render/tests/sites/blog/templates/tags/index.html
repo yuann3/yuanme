@@ -1,0 +1,9 @@
+{% extends "layouts/base.html" %}
+{% set title = "Tags" %}
+{% block content %}
+<ul>
+{% for t in terms|sort_by(["-count"]) %}
+<li><a href="{{ t.url }}">{{ t.name }}</a> {{ t.count }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

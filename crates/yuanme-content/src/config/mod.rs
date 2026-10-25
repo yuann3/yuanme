@@ -13,7 +13,7 @@ use toml::Spanned;
 use toml::de::{DeTable, DeValue};
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
 
-pub(crate) use check::similar;
+pub use check::similar;
 use check::{Checker, kind, parse_version};
 pub use schema::json_schema;
 #[cfg(test)]

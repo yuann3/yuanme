@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>{{ site.title | default(site.url) }}</title>
+<link>{{ absolute_url("/") }}</link>
+<description>{{ site.description | default("") }}</description>
+{% if site.language %}
+<language>{{ site.language }}</language>
+{% endif %}
+{% for entry in entries %}
+<item>
+<title>{{ entry.title }}</title>
+<link>{{ absolute_url(entry.url) }}</link>
+<guid isPermaLink="true">{{ absolute_url(entry.url) }}</guid>
+{% if entry.description %}
+<description>{{ entry.description }}</description>
+{% endif %}
+{% if entry.date %}
+<pubDate>{{ entry.date | dateformat(format="rfc2822") }}</pubDate>
+{% endif %}
+</item>
+{% endfor %}
+</channel>
+</rss>

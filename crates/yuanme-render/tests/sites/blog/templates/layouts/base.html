@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="{{ site.language }}">
+<head>
+<title>{{ title }} | {{ site.title }}</title>
+<link rel="canonical" href="{{ page.canonical }}">
+<link rel="alternate" type="application/rss+xml" href="{{ url('/rss.xml') }}">
+</head>
+<body{{ {"data-kind": page.kind, "data-home": page.url == "/", "data-none": none}|attrs }}>
+{% include "partials/nav.html" %}
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

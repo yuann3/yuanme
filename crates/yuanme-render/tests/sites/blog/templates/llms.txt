@@ -1,0 +1,8 @@
+# {{ site.title }}
+
+> {{ site.description }}
+
+{% for entry in collections.posts %}
+- [{{ entry.title }}]({{ absolute_url(entry.url) }}){% if entry.date %} ({{ entry.date|dateformat(format="%Y") }}){% endif %}
+
+{% endfor %}

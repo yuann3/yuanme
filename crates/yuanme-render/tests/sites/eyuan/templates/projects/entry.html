@@ -1,0 +1,24 @@
+{% extends "layouts/shell.html" %}
+{% from "components/panel_header.html" import panel_header %}
+{% import "components/prose.html" as ui %}
+{% set title = entry.title %}
+{% set description = entry.description %}
+{% set section = "projects" %}
+{% set article_date = entry.date %}
+{% block content %}
+  {% set actions %}{% if entry.github %}<a href="{{ entry.github }}" class="label-mono">SOURCE</a>{% endif %}{% endset %}
+  {{ panel_header(title=entry.title|lower, actions=actions) }}
+  <div data-reveal-group>
+    <p class="label-mono flex flex-wrap gap-x-6 gap-y-2 text-muted" data-reveal>
+      <span>{{ (entry.stack + [entry.date|dateformat(format="%Y")])|join(" · ") }}</span>
+      {% if entry.github %}<a href="{{ entry.github }}" target="_blank" rel="noopener" class="meta-link text-ink-2">GITHUB <span class="meta-arrow">↗</span></a>{% endif %}
+      {% if entry.website and entry.website != entry.github|default("") %}<a href="{{ entry.website }}" target="_blank" rel="noopener" class="meta-link text-ink-2">WEBSITE <span class="meta-arrow">↗</span></a>{% endif %}
+    </p>
+    {% call ui.prose(class="project-body mt-10", attrs={"data-reveal": true}) %}
+      {% with hero = entry.hero %}
+      {% if hero %}<img src="{{ hero.url }}" alt="{{ hero.alt|default('') }}" />{% endif %}
+      {% endwith %}
+      {{ entry.content }}
+    {% endcall %}
+  </div>
+{% endblock %}

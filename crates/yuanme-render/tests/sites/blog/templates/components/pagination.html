@@ -1,0 +1,9 @@
+{% macro pagination(paginator) %}
+{% if paginator.prev or paginator.next %}
+<nav class="pages">
+{% if paginator.prev %}<a href="{{ paginator.prev }}">Newer</a>{% endif %}
+<span>{{ paginator.number }} of {{ paginator.total }}</span>
+{% if paginator.next %}<a href="{{ paginator.next }}">Older</a>{% endif %}
+</nav>
+{% endif %}
+{% endmacro %}

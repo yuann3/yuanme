@@ -1,0 +1,4 @@
+---
+title: Quick note
+---
+Short.

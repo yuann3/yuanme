@@ -1,0 +1,7 @@
+{% extends "layouts/base.html" %}
+{% from "components/row.html" import row %}
+{% set title = term.name %}
+{% block content %}
+<h1>{{ term.name }}, oldest first</h1>
+<ol>{% for entry in entries|sort_by("date") %}{{ row(entry) }}{% endfor %}</ol>
+{% endblock %}

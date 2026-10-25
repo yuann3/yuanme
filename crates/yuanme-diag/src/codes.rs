@@ -161,6 +161,36 @@ codes! {
         example: "[the setup](setup.md#install), where setup.md has no `## Install` heading",
         fix: "Link to an Entry's file by its path from this file, and to a heading by its id. Links to URLs and to `/` paths are left as they are.",
     }
+    TEMPLATE_NOT_FOUND = "template/not-found" {
+        meaning: "A Template that a Route renders, or that another Template extends, includes or imports, is not in `templates/`. Each Route has one default Template, such as `posts/entry.html` for an Entry of `posts`, unless Site config names another with `template`.",
+        example: "[collections.posts]\nroute = \"/blog/{slug}/\"\n(with no templates/posts/entry.html)",
+        fix: "Create the file the message names, or set `template` to a Template that exists. Templates name each other by their path from `templates/`.",
+    }
+    TEMPLATE_SYNTAX = "template/syntax" {
+        meaning: "A Template is not valid Jinja, so no Page that uses it can render.",
+        example: "{% if entry.draft %}Draft",
+        fix: "Fix the syntax at the reported place. Here the `if` needs its `{% endif %}`.",
+    }
+    TEMPLATE_RENDER = "template/render" {
+        meaning: "A Template failed while rendering a Page: it printed a value that is absent, reached through one, or did something its values don't allow. `{% if entry.hero %}` on an absent field is false, but printing it or reading `entry.hero.src` is an error.",
+        example: "<img src=\"{{ entry.hero }}\">\n(on an Entry without `hero`)",
+        fix: "Guard the optional value with `{% if %}` or `| default(...)`, or correct the name if it is a typo.",
+    }
+    TEMPLATE_UNKNOWN_FILTER = "template/unknown-filter" {
+        meaning: "A Template calls a filter, test or function that neither Jinja nor yuanme has.",
+        example: "{{ entry.date | date_format(format=\"%Y\") }}",
+        fix: "Correct the name, here `dateformat`. yuanme adds `sort_by`, `dateformat`, `url`, `absolute_url`, `pluralize`, `attrs`, `markdown` and `org` to Jinja's own.",
+    }
+    TEMPLATE_BAD_FILTER_ARGUMENT = "template/bad-filter-argument" {
+        meaning: "A filter or function got an argument it can't use: a missing or unknown one, a value of the wrong type, or a `dateformat` format it doesn't know.",
+        example: "{{ entry.date | dateformat(format=\"iso\") }}",
+        fix: "Pass what the message asks for. A `dateformat` format is strftime directives, such as \"%Y-%m-%d\", or \"rfc2822\" or \"rfc3339\".",
+    }
+    TEMPLATE_UNKNOWN_URL = "template/unknown-url" {
+        meaning: "`url()` names a path that is no Route, feed or Static file of the Site, so the link would lead nowhere.",
+        example: "<a href=\"{{ url('/abuot/') }}\">About</a>",
+        fix: "Use a path the Site has, such as the one the help suggests. Every URL of a Site is declared in Site config.",
+    }
     INTERNAL_PANIC = "internal/panic" {
         meaning: "yuanme crashed while processing a file. This is a bug in yuanme, not in the project.",
         example: "Any file can trigger it, if it reaches a bug in a parser or a renderer.",
