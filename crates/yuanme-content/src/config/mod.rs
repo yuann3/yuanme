@@ -14,7 +14,7 @@ use toml::de::{DeTable, DeValue};
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
 
 pub use check::similar;
-use check::{Checker, kind, parse_version};
+use check::{Checker, kind, parse_browser_version, parse_version};
 pub use schema::json_schema;
 #[cfg(test)]
 use schema::{Key, Shape};
@@ -30,7 +30,24 @@ pub struct Config {
     pub data: BTreeMap<String, DataSchema>,
     pub routes: BTreeMap<String, TemplateRoute>,
     pub feeds: BTreeMap<String, Feed>,
+    pub build: Build,
 }
+
+#[derive(Debug)]
+pub struct Build {
+    /// The oldest version of each browser the Site supports, as
+    /// `[major, minor, patch]`, by its key in `[build.targets]`. A browser
+    /// left out is not supported.
+    pub targets: BTreeMap<String, [u32; 3]>,
+}
+
+/// Tailwind v4's baseline (#20), so a Site with Tailwind gets the same
+/// output whichever runs lightningcss.
+const DEFAULT_TARGETS: &[(&str, [u32; 3])] = &[
+    ("chrome", [111, 0, 0]),
+    ("firefox", [128, 0, 0]),
+    ("safari", [16, 4, 0]),
+];
 
 /// A Page made by a Template alone (#19).
 #[derive(Debug)]
@@ -324,6 +341,23 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         }
     }
 
+    let targets = match table(root, "build").and_then(|b| table(b, "targets")) {
+        Some(targets) => entries(Some(targets))
+            .iter()
+            .map(|(browser, version)| {
+                let version = version.get_ref().as_str().expect("checked");
+                (
+                    browser.get_ref().to_string(),
+                    parse_browser_version(version).expect("checked"),
+                )
+            })
+            .collect(),
+        None => DEFAULT_TARGETS
+            .iter()
+            .map(|(browser, version)| (browser.to_string(), *version))
+            .collect(),
+    };
+
     let extra = match site.get("extra").map(|e| to_value(e.get_ref())) {
         Some(toml::Value::Table(extra)) => extra,
         Some(_) => unreachable!("checked as a table"),
@@ -345,6 +379,7 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         data,
         routes,
         feeds,
+        build: Build { targets },
     }
 }
 

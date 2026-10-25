@@ -592,6 +592,50 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
   "additionalProperties": false,
   "description": "Site config for yuanme.",
   "properties": {
+    "build": {
+      "additionalProperties": false,
+      "description": "How yuanme builds the Site's stylesheets and Scripts.",
+      "properties": {
+        "targets": {
+          "additionalProperties": false,
+          "description": "The oldest browsers the Site supports, as explicit versions such as { chrome = \"111\", safari = \"16.4\" }. yuanme adds the prefixes and fallbacks they need and drops the rest; a browser left out gets none. Defaults to Tailwind v4's baseline: Chrome 111, Firefox 128 and Safari 16.4.",
+          "properties": {
+            "chrome": {
+              "description": "Chrome.",
+              "pattern": "^[0-9]+(\\.[0-9]+){0,2}$",
+              "type": "string"
+            },
+            "edge": {
+              "description": "Edge.",
+              "pattern": "^[0-9]+(\\.[0-9]+){0,2}$",
+              "type": "string"
+            },
+            "firefox": {
+              "description": "Firefox.",
+              "pattern": "^[0-9]+(\\.[0-9]+){0,2}$",
+              "type": "string"
+            },
+            "opera": {
+              "description": "Opera.",
+              "pattern": "^[0-9]+(\\.[0-9]+){0,2}$",
+              "type": "string"
+            },
+            "safari": {
+              "description": "Safari, on macOS and on iOS.",
+              "pattern": "^[0-9]+(\\.[0-9]+){0,2}$",
+              "type": "string"
+            },
+            "samsung": {
+              "description": "Samsung Internet.",
+              "pattern": "^[0-9]+(\\.[0-9]+){0,2}$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
     "collections": {
       "additionalProperties": {
         "additionalProperties": false,

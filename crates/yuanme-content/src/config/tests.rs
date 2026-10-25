@@ -97,6 +97,9 @@ template = "feeds/atom.xml"
 [data.nav]
 type = "list"
 items = { type = "object", fields = { label = { type = "string" }, href = { type = "string" } } }
+
+[build]
+targets = { chrome = "120", safari = "16.4.1" }
 "##;
     let (config, diagnostics) = check(text);
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
@@ -203,6 +206,26 @@ items = { type = "object", fields = { label = { type = "string" }, href = { type
         panic!("nav is a list");
     };
     assert!(matches!(**items, FieldType::Object(_)));
+
+    // Only the browsers listed: one left out is not supported.
+    let targets: Vec<_> = config.build.targets.iter().collect();
+    assert_eq!(
+        targets,
+        [
+            (&"chrome".to_string(), &[120, 0, 0]),
+            (&"safari".to_string(), &[16, 4, 1])
+        ]
+    );
+    let (config, _) = check(MINIMAL);
+    let targets: Vec<_> = config.unwrap().build.targets.into_iter().collect();
+    assert_eq!(
+        targets,
+        [
+            ("chrome".to_string(), [111, 0, 0]),
+            ("firefox".to_string(), [128, 0, 0]),
+            ("safari".to_string(), [16, 4, 0])
+        ]
+    );
 }
 
 #[test]
@@ -269,6 +292,17 @@ const CASES: &[(&str, &str, &str)] = &[
         "a",
     ),
     ("config/wrong-type", "[site]\nurl = 3\n", "3"),
+    // A number would read 16.10 as 16.1.
+    (
+        "config/wrong-type",
+        "[site]\nurl = \"https://e.com\"\n[build]\ntargets = { safari = 16.4 }\n",
+        "16.4",
+    ),
+    (
+        "config/unknown-key",
+        "[site]\nurl = \"https://e.com\"\n[build]\ntargets = { chorme = \"111\" }\n",
+        "chorme",
+    ),
     ("config/wrong-type", "site = \"x\"\n", "\"x\""),
     (
         "config/wrong-type",
@@ -399,6 +433,17 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "yuanme = \"1\"\n[site]\nurl = \"https://e.com\"\n",
         "\"1\"",
+    ),
+    // No browserslist queries (#20): their results change with caniuse data.
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[build]\ntargets = { chrome = \">= 111\" }\n",
+        "\">= 111\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[build]\ntargets = { safari = \"16.256\" }\n",
+        "\"16.256\"",
     ),
     (
         "config/invalid-value",

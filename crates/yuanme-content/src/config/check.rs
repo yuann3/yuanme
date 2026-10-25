@@ -220,6 +220,14 @@ impl Checker {
                     );
                 }
             }
+            (Shape::BrowserVersion, DeValue::String(s)) => {
+                if parse_browser_version(s).is_none() {
+                    self.invalid(
+                        format!("`{path}` must be a browser version, such as \"111\" or \"16.4\""),
+                        at,
+                    );
+                }
+            }
             (Shape::Int { min }, DeValue::Integer(i)) => {
                 match i64::from_str_radix(i.as_str(), i.radix()) {
                     Ok(n) if n < *min => {
@@ -234,9 +242,14 @@ impl Checker {
             | (Shape::Table(_) | Shape::Map(_) | Shape::Field { .. }, DeValue::Table(_)) => {
                 self.nested(shape, value.get_mut(), key_span, path);
             }
-            (Shape::String | Shape::Url | Shape::Route(_) | Shape::Version, _) => {
-                wrong(self, "a string")
-            }
+            (
+                Shape::String
+                | Shape::Url
+                | Shape::Route(_)
+                | Shape::Version
+                | Shape::BrowserVersion,
+                _,
+            ) => wrong(self, "a string"),
             (Shape::Int { .. }, _) => wrong(self, "an integer"),
             (Shape::Number, _) => wrong(self, "a number"),
             (Shape::Bool, _) => wrong(self, "a boolean"),
@@ -414,6 +427,24 @@ pub(crate) fn parse_version(s: &str) -> Option<(u64, u64)> {
         return None;
     }
     Some((major.parse().ok()?, minor.parse().ok()?))
+}
+
+/// `"111"`, `"16.4"` or `"16.4.1"`. A string, not a TOML number, because
+/// `16.10` would read as `16.1`. The parts' limits are lightningcss's, which
+/// packs a version into one `u32`.
+pub(crate) fn parse_browser_version(s: &str) -> Option<[u32; 3]> {
+    let mut version = [0; 3];
+    for (i, part) in s.split('.').enumerate() {
+        if i == 3 || part.is_empty() || !part.bytes().all(|b| b.is_ascii_digit()) {
+            return None;
+        }
+        let n: u32 = part.parse().ok()?;
+        if n > if i == 0 { 0xffff } else { 0xff } {
+            return None;
+        }
+        version[i] = n;
+    }
+    Some(version)
 }
 
 /// The candidate a typo most likely meant, as rustc picks one: the nearest

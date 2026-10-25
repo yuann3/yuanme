@@ -56,6 +56,8 @@ pub(crate) enum Shape {
     Route(Option<&'static str>),
     /// The oldest Engine version a project accepts: `"X.Y"`.
     Version,
+    /// A browser's version: `"111"`, `"16.4"` or `"16.4.1"`.
+    BrowserVersion,
     Int {
         min: i64,
     },
@@ -109,6 +111,31 @@ pub(crate) const ROOT: &[Key] = &[
         Shape::Map(&Shape::Table(FEED)),
         "Feeds of published, listed Entries, newest first.",
     ),
+    Key::optional(
+        "build",
+        Shape::Table(BUILD),
+        "How yuanme builds the Site's stylesheets and Scripts.",
+    ),
+];
+
+const BUILD: &[Key] = &[Key::optional(
+    "targets",
+    Shape::Table(TARGETS),
+    "The oldest browsers the Site supports, as explicit versions such as { chrome = \"111\", safari = \"16.4\" }. yuanme adds the prefixes and fallbacks they need and drops the rest; a browser left out gets none. Defaults to Tailwind v4's baseline: Chrome 111, Firefox 128 and Safari 16.4.",
+)];
+
+/// The browsers `targets` names, which both the CSS and the JS pipeline know.
+const TARGETS: &[Key] = &[
+    Key::optional("chrome", Shape::BrowserVersion, "Chrome."),
+    Key::optional("edge", Shape::BrowserVersion, "Edge."),
+    Key::optional("firefox", Shape::BrowserVersion, "Firefox."),
+    Key::optional(
+        "safari",
+        Shape::BrowserVersion,
+        "Safari, on macOS and on iOS.",
+    ),
+    Key::optional("opera", Shape::BrowserVersion, "Opera."),
+    Key::optional("samsung", Shape::BrowserVersion, "Samsung Internet."),
 ];
 
 const ROUTE: &[Key] = &[
@@ -416,6 +443,9 @@ fn shape(shape: &Shape) -> Value {
         }
         Shape::Route(None) => json!({ "type": "string", "pattern": "^/[^{}]*$" }),
         Shape::Version => json!({ "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" }),
+        Shape::BrowserVersion => {
+            json!({ "type": "string", "pattern": "^[0-9]+(\\.[0-9]+){0,2}$" })
+        }
         Shape::Int { min } if *min == i64::MIN => json!({ "type": "integer" }),
         Shape::Int { min } => json!({ "type": "integer", "minimum": min }),
         Shape::Number => json!({ "type": "number" }),
