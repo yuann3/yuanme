@@ -12,6 +12,8 @@ pub struct Reference {
     pub url: String,
     /// Where the attribute's value is in the HTML, quotes excluded.
     pub at: Range<usize>,
+    /// A `<link>` with `preload` or `modulepreload` among its `rel`s.
+    pub preload: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -33,11 +35,22 @@ pub struct Scan {
     /// just after the last `<link rel=stylesheet>`, or else just before
     /// `</head>`. `None` when the Page has neither.
     pub stylesheet_at: Option<usize>,
+    /// Each `<style>`, and each `<script>` without `src` that runs.
+    pub inline: Vec<Inline>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Inline {
+    /// A script, else a stylesheet.
+    pub script: bool,
+    /// Where its text is.
+    pub at: Range<usize>,
 }
 
 pub fn scan(html: &str) -> Scan {
     let bytes = html.as_bytes();
     let mut references = Vec::new();
+    let mut inline = Vec::new();
     let mut last_stylesheet = None;
     let mut head_end = None;
     let mut i = 0;
@@ -65,10 +78,14 @@ pub fn scan(html: &str) -> Scan {
         let (attributes, end) = attributes(html, name_end);
         i = end;
         let get = |name: &str| attributes.iter().find(|a| a.name == name);
+        // Whether the element's text is a script, else a stylesheet.
+        let mut text_is = None;
         match name.as_str() {
             "link" => {
                 let rels = get("rel").map_or(String::new(), |a| a.value(html).to_ascii_lowercase());
-                let stylesheet = rels.split_ascii_whitespace().any(|r| r == "stylesheet");
+                let has = |rel: &str| rels.split_ascii_whitespace().any(|r| r == rel);
+                let stylesheet = has("stylesheet");
+                let preload = has("preload") || has("modulepreload");
                 if stylesheet {
                     last_stylesheet = Some(end);
                 }
@@ -78,7 +95,10 @@ pub fn scan(html: &str) -> Scan {
                     } else {
                         Kind::Link
                     };
-                    references.push(href.reference(html, kind));
+                    references.push(Reference {
+                        preload,
+                        ..href.reference(html, kind)
+                    });
                 }
             }
             "script" => {
@@ -94,19 +114,32 @@ pub fn scan(html: &str) -> Scan {
                     // never fetches.
                     _ => None,
                 };
-                if let (Some(kind), Some(src)) = (kind, get("src")) {
-                    references.push(src.reference(html, kind));
+                match (kind, get("src")) {
+                    (Some(kind), Some(src)) => references.push(src.reference(html, kind)),
+                    (Some(_), None) => text_is = Some(true),
+                    (None, _) => {}
                 }
             }
+            "style" => text_is = Some(false),
             _ => {}
         }
         if ["script", "style", "textarea", "title"].contains(&name.as_str()) {
+            let start = i;
             i = closing(html, i, &name);
+            if let Some(script) = text_is {
+                // Just before `</`, unless the element is never closed.
+                let end = if i < bytes.len() { i - 1 } else { i };
+                inline.push(Inline {
+                    script,
+                    at: start..end,
+                });
+            }
         }
     }
     Scan {
         references,
         stylesheet_at: last_stylesheet.or(head_end),
+        inline,
     }
 }
 
@@ -125,6 +158,7 @@ impl Attribute {
             kind,
             url: decode(self.value(html)),
             at: self.value.clone(),
+            preload: false,
         }
     }
 }
@@ -381,6 +415,34 @@ mod tests {
                 (Kind::Classic, "/c.js".into(), "/c.js"),
                 (Kind::Stylesheet, "/e.css".into(), "/e.css"),
                 (Kind::Link, "/f.woff2".into(), "/f.woff2"),
+            ]
+        );
+    }
+
+    #[test]
+    fn preloads_and_the_text_of_inline_styles_and_scripts_are_found() {
+        let html = r#"<head><link rel="Preload" href=/f.woff2 as=font><link rel=modulepreload href=/c.js><link rel=icon href=/i.svg>
+<style media=print>a{}</style><script>let a = "</scrip";</script><SCRIPT TYPE=module>import "/x.js"</SCRIPT>
+<script type="application/ld+json">{}</script><script type=importmap>{}</script><script src=/s.js>ignored</script></head>"#;
+        let scan = scan(html);
+        let preloads: Vec<&str> = scan
+            .references
+            .iter()
+            .filter(|r| r.preload)
+            .map(|r| r.url.as_str())
+            .collect();
+        assert_eq!(preloads, ["/f.woff2", "/c.js"]);
+        let inline: Vec<(bool, &str)> = scan
+            .inline
+            .iter()
+            .map(|i| (i.script, &html[i.at.clone()]))
+            .collect();
+        assert_eq!(
+            inline,
+            [
+                (false, "a{}"),
+                (true, "let a = \"</scrip\";"),
+                (true, "import \"/x.js\"")
             ]
         );
     }
