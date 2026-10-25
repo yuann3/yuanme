@@ -240,17 +240,20 @@ impl Checker {
                     );
                 }
             }
-            (Shape::Int { min }, DeValue::Integer(i)) => {
+            (Shape::Int { min, max }, DeValue::Integer(i)) => {
                 match i64::from_str_radix(i.as_str(), i.radix()) {
-                    Ok(n) if n < *min => {
-                        let message = format!("`{path}` must be at least {min}, not {n}");
+                    Ok(n) if n < *min || n > *max => {
+                        let message = match *max {
+                            i64::MAX => format!("`{path}` must be at least {min}, not {n}"),
+                            max => format!("`{path}` must be from {min} to {max}, not {n}"),
+                        };
                         self.error(&codes::CONFIG_OUT_OF_RANGE, message, at);
                     }
                     Ok(_) => {}
                     Err(_) => self.too_large(path, at),
                 }
             }
-            (Shape::Strings | Shape::Tables(_), DeValue::Array(_))
+            (Shape::Strings | Shape::Array(_) | Shape::Tables(_), DeValue::Array(_))
             | (Shape::Table(_) | Shape::Map(_) | Shape::Field { .. }, DeValue::Table(_)) => {
                 self.nested(shape, value.get_mut(), key_span, path);
             }
@@ -267,6 +270,7 @@ impl Checker {
             (Shape::Number, _) => wrong(self, "a number"),
             (Shape::Bool, _) => wrong(self, "a boolean"),
             (Shape::Strings, _) => wrong(self, "an array of strings"),
+            (Shape::Array(_), _) => wrong(self, "an array"),
             (Shape::Tables(_), _) => wrong(self, "an array of tables"),
             (Shape::Table(_) | Shape::Map(_) | Shape::Free | Shape::Field { .. }, _) => {
                 wrong(self, "a table")
@@ -285,6 +289,11 @@ impl Checker {
             (Shape::Strings, DeValue::Array(items)) => {
                 for item in items.iter_mut() {
                     self.value(&Shape::String, item, key_span.clone(), &format!("{path}[]"));
+                }
+            }
+            (Shape::Array(shape), DeValue::Array(items)) => {
+                for item in items.iter_mut() {
+                    self.value(shape, item, key_span.clone(), &format!("{path}[]"));
                 }
             }
             (Shape::Table(keys), DeValue::Table(table)) => {

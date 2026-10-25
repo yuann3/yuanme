@@ -66,11 +66,14 @@ pub(crate) enum Shape {
     BrowserVersion,
     Int {
         min: i64,
+        max: i64,
     },
     /// An integer or a float.
     Number,
     Bool,
     Strings,
+    /// An array of one shape, such as `[images] widths`.
+    Array(&'static Shape),
     Table(&'static [Key]),
     /// An array of tables, as `[[host.headers]]` writes one.
     Tables(&'static [Key]),
@@ -130,6 +133,46 @@ pub(crate) const ROOT: &[Key] = &[
         "The static host the Site is deployed to, and the headers and redirects it sends.",
     ),
     Key::optional("math", Shape::Table(MATH), "How math renders."),
+    Key::optional(
+        "images",
+        Shape::Table(IMAGES),
+        "How yuanme resizes and encodes the images that bodies, `image` fields and `image()` name.",
+    ),
+];
+
+const IMAGES: &[Key] = &[
+    // WebP's limit, and far wider than any screen.
+    Key::optional(
+        "widths",
+        Shape::Array(&Shape::Int { min: 1, max: 16383 }),
+        "The widths each image is resized to, in pixels. A source narrower than one uses its own width instead: nothing is upscaled. Defaults to [480, 800, 1200, 1600, 2400].",
+    ),
+    Key::optional(
+        "sizes",
+        Shape::String,
+        "The `sizes` attribute: how wide an image is shown, which picks the width a browser fetches. Defaults to \"100vw\"; set it to the prose width, such as \"(min-width: 768px) 720px, 100vw\".",
+    ),
+    Key::optional(
+        "formats",
+        Shape::Array(&Shape::Choice(&["avif", "webp"])),
+        "The formats offered before the JPEG fallback, or PNG for a source with transparency, in order. Defaults to [\"avif\"], which every default target browser decodes; add \"webp\" for older ones.",
+    ),
+    Key::optional(
+        "avif_speed",
+        Shape::Int { min: 1, max: 10 },
+        "How hard the AVIF encoder works, from 1, the smallest files and slowest, to 10. Defaults to 6.",
+    ),
+    Key::optional(
+        "quality",
+        Shape::Table(QUALITY),
+        "Each encoder's quality, on its own scale from 1 to 100.",
+    ),
+];
+
+const QUALITY: &[Key] = &[
+    Key::optional("avif", Shape::Int { min: 1, max: 100 }, "Defaults to 72."),
+    Key::optional("jpeg", Shape::Int { min: 1, max: 100 }, "Defaults to 80."),
+    Key::optional("webp", Shape::Int { min: 1, max: 100 }, "Defaults to 80."),
 ];
 
 const MATH: &[Key] = &[Key::optional(
@@ -194,7 +237,10 @@ const REDIRECT: &[Key] = &[
     ),
     Key::optional(
         "status",
-        Shape::Int { min: 301 },
+        Shape::Int {
+            min: 301,
+            max: i64::MAX,
+        },
         "301, 302, 307 or 308. Defaults to 308, a permanent redirect that keeps the method.",
     ),
 ];
@@ -298,7 +344,10 @@ const COLLECTION: &[Key] = &[
     ),
     Key::optional(
         "paginate",
-        Shape::Int { min: 1 },
+        Shape::Int {
+            min: 1,
+            max: i64::MAX,
+        },
         "Entries per list page. Needs `list_route`.",
     ),
     Key::optional(
@@ -329,7 +378,14 @@ const TAXONOMY: &[Key] = &[
         Shape::Route(Some("{term}")),
         "The URL of each Term's page, with `{term}` where its Slug goes, such as \"/tags/{term}/\".",
     ),
-    Key::optional("paginate", Shape::Int { min: 1 }, "Entries per Term page."),
+    Key::optional(
+        "paginate",
+        Shape::Int {
+            min: 1,
+            max: i64::MAX,
+        },
+        "Entries per Term page.",
+    ),
     Key::optional(
         "single",
         Shape::Bool,
@@ -369,16 +425,44 @@ pub(crate) const FIELD_TYPES: &[FieldTypeDoc] = &[
         name: "string",
         doc: "Text.",
         keys: &[
-            Key::optional("min", Shape::Int { min: 0 }, "The fewest characters."),
-            Key::optional("max", Shape::Int { min: 0 }, "The most characters."),
+            Key::optional(
+                "min",
+                Shape::Int {
+                    min: 0,
+                    max: i64::MAX,
+                },
+                "The fewest characters.",
+            ),
+            Key::optional(
+                "max",
+                Shape::Int {
+                    min: 0,
+                    max: i64::MAX,
+                },
+                "The most characters.",
+            ),
         ],
     },
     FieldTypeDoc {
         name: "int",
         doc: "A whole number.",
         keys: &[
-            Key::optional("min", Shape::Int { min: i64::MIN }, "The smallest value."),
-            Key::optional("max", Shape::Int { min: i64::MIN }, "The largest value."),
+            Key::optional(
+                "min",
+                Shape::Int {
+                    min: i64::MIN,
+                    max: i64::MAX,
+                },
+                "The smallest value.",
+            ),
+            Key::optional(
+                "max",
+                Shape::Int {
+                    min: i64::MIN,
+                    max: i64::MAX,
+                },
+                "The largest value.",
+            ),
         ],
     },
     FieldTypeDoc {
@@ -532,8 +616,17 @@ fn shape(shape: &Shape) -> Value {
         Shape::BrowserVersion => {
             json!({ "type": "string", "pattern": "^[0-9]+(\\.[0-9]+){0,2}$" })
         }
-        Shape::Int { min } if *min == i64::MIN => json!({ "type": "integer" }),
-        Shape::Int { min } => json!({ "type": "integer", "minimum": min }),
+        Shape::Int { min, max } => {
+            let mut schema = json!({ "type": "integer" });
+            if *min != i64::MIN {
+                schema["minimum"] = json!(min);
+            }
+            if *max != i64::MAX {
+                schema["maximum"] = json!(max);
+            }
+            schema
+        }
+        Shape::Array(item) => json!({ "type": "array", "items": self::shape(item) }),
         Shape::Number => json!({ "type": "number" }),
         Shape::Bool => json!({ "type": "boolean" }),
         Shape::Strings => json!({ "type": "array", "items": { "type": "string" } }),

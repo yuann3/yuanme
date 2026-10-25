@@ -799,6 +799,67 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
       },
       "type": "object"
     },
+    "images": {
+      "additionalProperties": false,
+      "description": "How yuanme resizes and encodes the images that bodies, `image` fields and `image()` name.",
+      "properties": {
+        "avif_speed": {
+          "description": "How hard the AVIF encoder works, from 1, the smallest files and slowest, to 10. Defaults to 6.",
+          "maximum": 10,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "formats": {
+          "description": "The formats offered before the JPEG fallback, or PNG for a source with transparency, in order. Defaults to [\"avif\"], which every default target browser decodes; add \"webp\" for older ones.",
+          "items": {
+            "enum": [
+              "avif",
+              "webp"
+            ]
+          },
+          "type": "array"
+        },
+        "quality": {
+          "additionalProperties": false,
+          "description": "Each encoder's quality, on its own scale from 1 to 100.",
+          "properties": {
+            "avif": {
+              "description": "Defaults to 72.",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "jpeg": {
+              "description": "Defaults to 80.",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "webp": {
+              "description": "Defaults to 80.",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "sizes": {
+          "description": "The `sizes` attribute: how wide an image is shown, which picks the width a browser fetches. Defaults to \"100vw\"; set it to the prose width, such as \"(min-width: 768px) 720px, 100vw\".",
+          "type": "string"
+        },
+        "widths": {
+          "description": "The widths each image is resized to, in pixels. A source narrower than one uses its own width instead: nothing is upscaled. Defaults to [480, 800, 1200, 1600, 2400].",
+          "items": {
+            "maximum": 16383,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "math": {
       "additionalProperties": false,
       "description": "How math renders.",

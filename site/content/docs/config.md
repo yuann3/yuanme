@@ -101,6 +101,23 @@ URLs the host redirects, such as a Page's old address.
 - `status` (integer): 301, 302, 307 or 308. Defaults to 308, a permanent redirect that keeps the method.
 - `to` (string, required): Where it goes: a URL path such as "/blog/new-post/", or an absolute URL.
 
+### `[images]`
+
+How yuanme resizes and encodes the images that bodies, `image` fields and `image()` name.
+
+- `avif_speed` (integer): How hard the AVIF encoder works, from 1, the smallest files and slowest, to 10. Defaults to 6.
+- `formats` (list of one of `"avif"`, `"webp"`): The formats offered before the JPEG fallback, or PNG for a source with transparency, in order. Defaults to ["avif"], which every default target browser decodes; add "webp" for older ones.
+- `sizes` (string): The `sizes` attribute: how wide an image is shown, which picks the width a browser fetches. Defaults to "100vw"; set it to the prose width, such as "(min-width: 768px) 720px, 100vw".
+- `widths` (list of integers): The widths each image is resized to, in pixels. A source narrower than one uses its own width instead: nothing is upscaled. Defaults to [480, 800, 1200, 1600, 2400].
+
+### `[images.quality]`
+
+Each encoder's quality, on its own scale from 1 to 100.
+
+- `avif` (integer): Defaults to 72.
+- `jpeg` (integer): Defaults to 80.
+- `webp` (integer): Defaults to 80.
+
 ### `[math]`
 
 How math renders.

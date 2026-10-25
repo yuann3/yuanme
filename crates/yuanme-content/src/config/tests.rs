@@ -120,6 +120,13 @@ to = "/blog/new-post/"
 from = "/talk"
 to = "https://example.com/talk?id=1"
 status = 302
+
+[images]
+widths = [1200, 640, 1200]
+sizes = "(min-width: 768px) 720px, 100vw"
+formats = ["webp", "avif"]
+avif_speed = 4
+quality = { jpeg = 90 }
 "##;
     let (config, diagnostics) = check(text);
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
@@ -279,8 +286,36 @@ status = 302
         ]
     );
 
+    // Widths ascending and each once; formats in the order written.
+    assert_eq!(
+        config.images,
+        Images {
+            widths: vec![640, 1200],
+            sizes: "(min-width: 768px) 720px, 100vw".into(),
+            formats: vec!["webp".into(), "avif".into()],
+            avif_speed: 4,
+            avif_quality: 72,
+            jpeg_quality: 90,
+            webp_quality: 80,
+        }
+    );
+
     let (config, _) = check(MINIMAL);
     let config = config.unwrap();
+    // #28's defaults: AVIF before a JPEG fallback, at each encoder's own
+    // quality.
+    assert_eq!(
+        config.images,
+        Images {
+            widths: vec![480, 800, 1200, 1600, 2400],
+            sizes: "100vw".into(),
+            formats: vec!["avif".into()],
+            avif_speed: 6,
+            avif_quality: 72,
+            jpeg_quality: 80,
+            webp_quality: 80,
+        }
+    );
     // Workers static assets is the default host (#25).
     assert_eq!(config.host.adapter, Adapter::Cloudflare);
     assert!(config.host.headers.is_empty() && config.host.redirects.is_empty());
@@ -616,6 +651,42 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "[site]\nurl = \"https://e.com\"\n[[host.redirects]]\nfrom = \"/a/\"\nto = \"/b/\"\nstatus = 303\n",
         "303",
+    ),
+    // ravif panics outside these ranges.
+    (
+        "config/out-of-range",
+        "[site]\nurl = \"https://e.com\"\n[images]\navif_speed = 11\n",
+        "11",
+    ),
+    (
+        "config/out-of-range",
+        "[site]\nurl = \"https://e.com\"\n[images]\nquality = { avif = 0 }\n",
+        "0",
+    ),
+    (
+        "config/out-of-range",
+        "[site]\nurl = \"https://e.com\"\n[images]\nwidths = [480, 0]\n",
+        "0",
+    ),
+    (
+        "config/wrong-type",
+        "[site]\nurl = \"https://e.com\"\n[images]\nwidths = 480\n",
+        "480",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[images]\nwidths = []\n",
+        "[]",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[images]\nformats = [\"jpeg\"]\n",
+        "\"jpeg\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[images]\nformats = [\"avif\", \"avif\"]\n",
+        "\"avif\"",
     ),
 ];
 
