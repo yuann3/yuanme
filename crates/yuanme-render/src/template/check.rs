@@ -177,10 +177,9 @@ fn merge(a: &Ty, b: &Ty) -> Ty {
                 };
                 fields.insert(name.clone(), field);
             }
-            let name = match x.name == y.name {
-                true => x.name.clone(),
-                false => format!("{} or {}", x.name, y.name),
-            };
+            // Each type named once, however many merges it went through.
+            let names: BTreeSet<&str> = x.name.split(" or ").chain(y.name.split(" or ")).collect();
+            let name = names.into_iter().collect::<Vec<_>>().join(" or ");
             Ty::Obj(Rc::new(Obj {
                 name,
                 fields,
