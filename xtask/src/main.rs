@@ -220,17 +220,21 @@ fn notices() -> ExitCode {
     if !fetch.success() {
         return ExitCode::FAILURE;
     }
+    let path = root.join("THIRD_PARTY_NOTICES.md");
+    // To a file: on Windows, cargo-about refuses to print to a pipe.
     let about = Command::new(env!("CARGO"))
         .args(["about", "generate", "--frozen", "--config", "about.toml"])
         .args(["--manifest-path", "crates/yuanme/Cargo.toml", "about.hbs"])
+        .arg("--output-file")
+        .arg(&path)
         .current_dir(root)
-        .output()
+        .status()
         .expect("run cargo about, from `cargo install --locked cargo-about`");
-    if !about.status.success() {
-        eprintln!("{}", String::from_utf8_lossy(&about.stderr));
+    if !about.success() {
         return ExitCode::FAILURE;
     }
-    let mut out = String::from_utf8(about.stdout).expect("cargo about prints UTF-8");
+    let mut out = std::fs::read_to_string(&path).expect("read cargo about's output");
+    std::fs::remove_file(&path).expect("remove it until it is complete");
 
     let mut ok = true;
     for dir in std::fs::read_dir(root.join("vendor")).expect("read vendor/") {
@@ -261,11 +265,17 @@ fn notices() -> ExitCode {
         ok = false;
     }
     for notice in embedded {
-        let relative = notice.strip_prefix(root).expect("under the root");
+        let folder = notice.parent().expect("in a folder");
+        let folder: Vec<_> = folder
+            .strip_prefix(root)
+            .expect("under the root")
+            .iter()
+            .map(|c| c.to_string_lossy())
+            .collect();
         let text = std::fs::read_to_string(&notice).expect("read a NOTICE");
         out.push_str(&format!(
             "\n## {}\n\n```text\n{}\n```\n",
-            relative.parent().expect("in a folder").display(),
+            folder.join("/"),
             text.trim_end()
         ));
     }
@@ -273,7 +283,7 @@ fn notices() -> ExitCode {
     if !ok {
         return ExitCode::FAILURE;
     }
-    std::fs::write(root.join("THIRD_PARTY_NOTICES.md"), out).expect("write THIRD_PARTY_NOTICES.md");
+    std::fs::write(&path, out).expect("write THIRD_PARTY_NOTICES.md");
     ExitCode::SUCCESS
 }
 
