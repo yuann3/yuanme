@@ -9,6 +9,7 @@ Decided in [What are the Reference site's Parity exceptions?](https://github.com
 ### Parity baseline
 - Astro's `dist/`, built from a pinned eyuan.me commit. Never the live site: Cloudflare rewrites its HTML ([#13](https://github.com/yuann3/yuanme/issues/13)).
 - The baseline is frozen when the port starts. A content edit made during the port lands in both repositories, or waits until after cutover.
+- It is eyuan.me at `6567e01`, published as the release `parity-baseline-6567e01` and pinned by `parity/baseline.lock` ([#74](https://github.com/yuann3/yuanme/issues/74)). Beside `dist/` it holds what the Pages load from other origins: the Google Fonts stylesheets and woff2 files, and the images Project pages embed from GitHub. The harness answers every other origin from that snapshot and refuses anything else, so no check reaches the network.
 
 ### What is compared
 1. **URLs.** The set of output paths and every internal href, mapped through the URL exceptions below, must be equal.
@@ -28,11 +29,11 @@ Both sides are parsed with html5ever, then:
 Escaping style, kept comments, attribute order and whitespace all decode to the same DOM, so they need no exception.
 
 ### Pixels
-- **Matrix:** every Page × widths 390, 900 and 1280 px (the ≤ 767, 768–1099 and ≥ 1100 bands) × light and dark.
+- **Matrix:** every Page × widths 390, 900 and 1280 px (the ≤ 767, 768–1099 and ≥ 1100 bands, at heights 844, 1024 and 800) × light and dark. Each is the full page, plus one screenshot per screen of the panel, which scrolls inside the window.
 - **Engines:** Chromium on every PR; Firefox and WebKit at releases. Both sides run in the same pinned Playwright browser.
 - **Motion:** screenshots are taken with `prefers-reduced-motion: reduce`, once `document.getAnimations()` has settled. With that setting the Film doesn't start, so its deterministic fallback CSS is what's compared. The Film itself is covered by the behaviour checks.
-- **Fonts:** the harness serves the baseline's Google Fonts requests from the same woff2 files the Reference site self-hosts.
-- **Threshold:** pixelmatch with a per-pixel threshold of 0.1. A screenshot fails if more than 0.05 % of its pixels differ. Re-encoded photos use a per-pixel threshold of 0.25: the four About photos (`about-image-bytes`) and the hero images (`hero-images`).
+- **Fonts:** the harness serves the baseline's Google Fonts requests from the baseline's snapshot of them, and the Reference site self-hosts those same woff2 files.
+- **Threshold:** pixelmatch 8 with a per-pixel threshold of 0.1, an OKLab distance. A screenshot fails if more than 0.05 % of its pixels differ. Re-encoded photos use a per-pixel threshold of 0.25: the four About photos (`about-image-bytes`) and the hero images (`hero-images`).
 
 ## Exceptions
 

@@ -1,0 +1,84 @@
+# The parity test (#23, #74) against the Parity baseline that
+# parity/baseline.lock pins: URL equality and the normalized DOM, then
+# pixels and behaviour. Chromium on every push and pull request; a release
+# calls this workflow with all three engines.
+name: Parity
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      engines:
+        description: Comma-separated Playwright engines
+        default: chromium,firefox,webkit
+  workflow_call:
+    inputs:
+      engines:
+        type: string
+        default: chromium,firefox,webkit
+
+permissions:
+  contents: read
+
+concurrency:
+  group: parity-${{ github.ref }}-${{ inputs.engines || 'chromium' }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    env:
+      ENGINES: ${{ inputs.engines || 'chromium' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Until the owner publishes the release, there is nothing to compare
+      # against: the job says so and stops, instead of failing every push.
+      - id: baseline
+        run: |
+          status=0
+          parity/fetch.sh "$RUNNER_TEMP/baseline" || status=$?
+          if [ "$status" = 3 ]; then
+            echo "::warning::The Parity baseline release isn't published yet, so the parity test didn't run (#74)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          elif [ "$status" = 0 ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            exit "$status"
+          fi
+      - if: steps.baseline.outputs.ready == 'true'
+        run: rustup toolchain install
+      - if: steps.baseline.outputs.ready == 'true'
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - if: steps.baseline.outputs.ready == 'true'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: parity/browser/package-lock.json
+      - if: steps.baseline.outputs.ready == 'true'
+        name: URLs and the normalized DOM
+        run: cargo run --locked -p parity -- self-test "$RUNNER_TEMP/baseline"
+      - if: steps.baseline.outputs.ready == 'true'
+        working-directory: parity/browser
+        run: |
+          npm ci --no-audit --no-fund
+          IFS=, read -ra engines <<< "$ENGINES"
+          npx playwright install --with-deps "${engines[@]}"
+      - if: steps.baseline.outputs.ready == 'true'
+        name: Pixels and behaviour
+        working-directory: parity/browser
+        run: node parity.ts self-test "$RUNNER_TEMP/baseline" --engines "$ENGINES" --out "$RUNNER_TEMP/parity-out"
+      # Each failing screenshot, the baseline's and the diff.
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: parity-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/parity-out
+          if-no-files-found: ignore
