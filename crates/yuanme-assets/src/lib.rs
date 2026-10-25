@@ -5,3 +5,4 @@ pub mod image;
 pub mod js;
 pub mod tailwind;
 pub mod tool;
+pub mod typescript;
