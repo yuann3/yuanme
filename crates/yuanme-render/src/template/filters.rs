@@ -164,14 +164,24 @@ fn dateformat(site: &Site, v: &Value, kw: &Kwargs) -> Result<String, Error> {
             .timestamp_to_rfc9110_string(&zoned.timestamp())
             .map_err(|e| bad_argument(e.to_string())),
         "rfc3339" => Ok(zoned.strftime("%Y-%m-%dT%H:%M:%S%:z").to_string()),
-        // Text with no directive prints as itself, which hides a mistake
-        // such as "iso".
-        f if !f.contains('%') => Err(bad_argument(unknown_format(f))),
+        f if !known_format(f) => Err(bad_argument(unknown_format(f))),
         f => jiff::fmt::strtime::format(f, &zoned).map_err(|_| bad_argument(unknown_format(f))),
     }
 }
 
-fn unknown_format(f: &str) -> String {
+/// Whether `dateformat` knows a format, which `check` asks of one written
+/// in a Template.
+pub(super) fn known_format(format: &str) -> bool {
+    match format {
+        "rfc2822" | "rfc3339" => true,
+        // Text with no directive prints as itself, which hides a mistake
+        // such as "iso".
+        f if !f.contains('%') => false,
+        f => jiff::fmt::strtime::format(f, &Timestamp::UNIX_EPOCH.to_zoned(TimeZone::UTC)).is_ok(),
+    }
+}
+
+pub(super) fn unknown_format(f: &str) -> String {
     format!(
         "`dateformat` doesn't know the format \"{f}\": use strftime directives such as \"%Y-%m-%d\", or \"rfc2822\" or \"rfc3339\""
     )
