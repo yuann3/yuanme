@@ -11,11 +11,15 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
+use clap::CommandFactory;
 use yuanme_diag::codes::{self, Code};
 
 /// The hand-written pages by name, in the index's order (#21). Each starts
 /// with `title:` and `description:` lines between `---` lines.
-const TOPICS: &[(&str, &str)] = &[("getting-started", include_str!("docs/getting-started.md"))];
+const TOPICS: &[(&str, &str)] = &[
+    ("getting-started", include_str!("docs/getting-started.md")),
+    ("cli", include_str!("docs/cli.md")),
+];
 
 pub struct Page {
     pub title: String,
@@ -45,7 +49,10 @@ fn topic(name: &str, source: &str) -> Page {
             .unwrap_or_else(|| panic!("docs/{name}.md has `{key}:`"))
             .to_string()
     };
-    let body = body.trim_start().to_string();
+    let mut body = body.trim_start().to_string();
+    if name == "cli" {
+        body.push_str(&cli_reference());
+    }
     Page {
         title: field("title"),
         description: field("description"),
@@ -136,4 +143,85 @@ pub fn write(dir: &Path, version: &str) -> io::Result<()> {
         fs::write(&path, page(name).expect("a page of every name"))?;
     }
     fs::write(stamp, format!("{version}\n"))
+}
+
+/// Every command and option, from clap's definitions, so the page can't
+/// drift from `--help`.
+fn cli_reference() -> String {
+    let mut root = crate::Cli::command();
+    root.build();
+    let mut out = String::from("\n## Reference\n\n### Global options\n\n");
+    for arg in root.get_arguments() {
+        out.push_str(&option(arg));
+    }
+    for command in root.get_subcommands() {
+        subcommand(command, &mut out);
+    }
+    out
+}
+
+fn subcommand(command: &clap::Command, out: &mut String) {
+    if command.get_name() == "help" {
+        return;
+    }
+    let usage = command.clone().render_usage().to_string();
+    let usage = usage.strip_prefix("Usage: ").unwrap_or(&usage);
+    let path = usage.split(" [").next().unwrap_or(usage);
+    let path = path.split(" <").next().unwrap_or(path);
+    out.push_str(&format!("\n### `{path}`\n\n"));
+    if let Some(about) = command.get_about() {
+        out.push_str(&format!("{about}.\n\n"));
+    }
+    out.push_str(&format!("```text\n{usage}\n```\n"));
+    let args: Vec<String> = command
+        .get_arguments()
+        .filter(|a| !a.is_global_set() && a.get_id() != "help")
+        .filter(|a| !a.is_positional() || a.get_help().is_some())
+        .map(option)
+        .collect();
+    if !args.is_empty() {
+        out.push_str(&format!("\n{}", args.concat()));
+    }
+    for sub in command.get_subcommands() {
+        subcommand(sub, out);
+    }
+}
+
+fn option(arg: &clap::Arg) -> String {
+    let value = arg
+        .get_value_names()
+        .map(|v| v.iter().map(|v| v.as_str()).collect::<Vec<_>>().join(" "))
+        .unwrap_or_else(|| arg.get_id().as_str().to_uppercase());
+    let takes_value = arg.get_num_args().is_some_and(|n| n.takes_values());
+    let name = match (arg.get_long(), arg.get_short()) {
+        _ if arg.is_positional() => value.clone(),
+        (Some(long), Some(short)) if takes_value => format!("-{short}, --{long} {value}"),
+        (Some(long), Some(short)) => format!("-{short}, --{long}"),
+        (Some(long), None) if takes_value => format!("--{long} {value}"),
+        (Some(long), None) => format!("--{long}"),
+        (None, Some(short)) if takes_value => format!("-{short} {value}"),
+        (None, Some(short)) => format!("-{short}"),
+        (None, None) => value.clone(),
+    };
+    // clap drops a doc comment's final period.
+    let help = arg.get_help().map_or(String::new(), |h| format!(" {h}."));
+    let mut line = format!("- `{name}`:{help}");
+    let possible: Vec<String> = arg
+        .get_possible_values()
+        .iter()
+        .map(|p| format!("`{}`", p.get_name()))
+        .collect();
+    if !possible.is_empty() && takes_value {
+        line.push_str(&format!(" One of {}.", possible.join(", ")));
+    }
+    let defaults: Vec<String> = arg
+        .get_default_values()
+        .iter()
+        .map(|d| d.to_string_lossy().into_owned())
+        .collect();
+    if !defaults.is_empty() && takes_value {
+        line.push_str(&format!(" Defaults to `{}`.", defaults.join(" ")));
+    }
+    line.push('\n');
+    line
 }

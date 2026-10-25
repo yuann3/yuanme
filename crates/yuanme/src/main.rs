@@ -86,8 +86,11 @@ enum Command {
     Check(CheckArgs),
     /// Create an Entry whose required fields are filled in, and print its path and Route.
     New {
+        /// The Collection, by its name in yuanme.toml.
         collection: String,
+        /// The Entry's title, from which its Slug and file name come.
         title: String,
+        /// The Source format.
         #[arg(long, value_enum, default_value_t = new::Format::Md)]
         format: new::Format,
     },
@@ -103,7 +106,10 @@ enum Command {
         which: Which,
     },
     /// Print a docs page by topic or Diagnostic code; with none, the index.
-    Docs { topic: Option<String> },
+    Docs {
+        /// A topic, such as `templates`, or a code, such as `entry/unknown-key`.
+        topic: Option<String>,
+    },
 }
 
 #[derive(Args)]
