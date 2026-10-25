@@ -33,7 +33,6 @@ pub(crate) fn detect_bullshitium<'b, 'g, 'r, 's>(
     context: RefContext<'b, 'g, 'r, 's>,
     input: OrgSource<'s>,
 ) -> Res<OrgSource<'s>, ()> {
-    element!(detect_broken_end, context, input);
     element!(detect_broken_dynamic_block, context, input);
     Err(nom::Err::Error(CustomError::Static("No bullshitium.")))
 }
@@ -94,17 +93,6 @@ fn take_lead_in<'s>(
         }
         None => unreachable!("Paragraph must have children."),
     }
-}
-
-pub(crate) fn detect_broken_end<'b, 'g, 'r, 's>(
-    _context: RefContext<'b, 'g, 'r, 's>,
-    input: OrgSource<'s>,
-) -> Res<OrgSource<'s>, ()> {
-    start_of_line(input)?;
-    let (remaining, _) = space0(input)?;
-    let (remaining, _) = tag_no_case(":end:")(remaining)?;
-    let (_remaining, _) = tuple((space0, org_line_ending))(remaining)?;
-    Ok((input, ()))
 }
 
 pub(crate) fn broken_dynamic_block<'b, 'g, 'r, 's>(

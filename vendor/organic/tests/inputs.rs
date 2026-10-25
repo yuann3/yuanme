@@ -57,6 +57,24 @@ fn a_stray_end_line_before_an_object_is_a_paragraph() {
     );
 }
 
+/// A stray `:END:` line doesn't end the paragraph above it, but a broken
+/// `#+BEGIN:` line does, and an `:END:` closed by a later one is a drawer.
+#[test]
+fn a_stray_end_line_after_a_paragraph_continues_it() {
+    assert_eq!(
+        shape_of("para\n:END:\n*bold*\n"),
+        ["Paragraph PlainText Bold PlainText"]
+    );
+    assert_eq!(
+        shape_of("para\n#+BEGIN: x\n*bold*\n"),
+        ["Paragraph PlainText", "Paragraph PlainText Bold PlainText"]
+    );
+    assert_eq!(
+        shape_of("para\n:END:\nx\n:END:\ny\n"),
+        ["Paragraph PlainText", "Drawer", "Paragraph PlainText"]
+    );
+}
+
 #[test]
 fn a_lone_bar_is_a_table() {
     assert_eq!(

@@ -47,7 +47,7 @@ expression: trees
 ../../corpus/org/org-mode-testing/setupfile3.org 0b7bc8ac7890ca30
 ../../corpus/org/org-ref/examples--basic.org af1608dd0b8f2a15
 ../../corpus/org/org-ref/examples--refproc.org cf2939d6b5aac4c1
-../../corpus/org/org-special-block-extras/org-special-block-extras.org 4adb2afcbde9495a
+../../corpus/org/org-special-block-extras/org-special-block-extras.org 325dd0b0a18b119b
 ../../corpus/org/ox-hugo/doc--ox-hugo-manual.org aecb302200a84753
 ../../corpus/org/ox-hugo/test--site--content-org--all-posts.org 0a6d8c5790060659
 ../../corpus/org/sqrtminusone/org--2021-05-01-org-python.org 013a3c5b174021d4
@@ -125,8 +125,8 @@ org_mode_samples/affiliated_keyword/empty_caption.org 31fbef6d383f125d
 org_mode_samples/affiliated_keyword/multiple_name.org b482fe261684e692
 org_mode_samples/affiliated_keyword/optional_value.org b74effac3fe1598e
 org_mode_samples/affiliated_keyword/tblname_on_non_table.org 7ac9b87a07464fad
-org_mode_samples/bullshitium/fake_paragraph/broken_end.org 9054df329346dcc0
-org_mode_samples/bullshitium/fake_paragraph/broken_end_isolated.org 05f789688dec2628
+org_mode_samples/bullshitium/fake_paragraph/broken_end.org 0c9bce700797c3eb
+org_mode_samples/bullshitium/fake_paragraph/broken_end_isolated.org 32b7b1cafaf44959
 org_mode_samples/document/category.org 5583829c5c002018
 org_mode_samples/document/category_multiple.org 7f474d8ae4a16ac3
 org_mode_samples/document/empty.org bedca4182ec0b748
@@ -168,7 +168,7 @@ org_mode_samples/element_container_priority/section_greater_block.org 540690e42d
 org_mode_samples/element_container_priority/section_plain_list.org c6f179c56d90a742
 org_mode_samples/element_container_priority/test_case_1.org 0c2702f92dac6bf1
 org_mode_samples/greater_element/drawer/affiliated_keyword.org a65e530b4cfaba20
-org_mode_samples/greater_element/drawer/drawer_with_headline_inside.org ddb80563847425e1
+org_mode_samples/greater_element/drawer/drawer_with_headline_inside.org 3f633e2d451f98cc
 org_mode_samples/greater_element/drawer/simple.org 7e8c047e77314f4e
 org_mode_samples/greater_element/dynamic_block/affiliated_keyword.org cba9e0fe9492583a
 org_mode_samples/greater_element/dynamic_block/no_closing_colon.org 48c2684b8576bbb3
