@@ -161,7 +161,58 @@ A Sidecar stylesheet is a `.css` file with the same name as a Template, beside i
 
 You don't link a Sidecar. yuanme puts the Sidecars of every Template that some Page rendered into one stylesheet, `sidecars.css`, and links it on every Page: just after the Page's last `<link rel="stylesheet">`, or else just before `</head>`. A Page with neither gets no Sidecar stylesheet. A Sidecar whose Template no Page renders is left out.
 
-Sidecar styles aren't scoped yet: a Sidecar's rules apply to every element on every Page that matches them, so write selectors that only its own Template's markup matches, such as a class named after it.
+### Scoped to its Template
+
+A Sidecar's rules apply only to the tags written in its own Template's file. yuanme adds one attribute, made from the Sidecar's path, to every start tag of the Template before it renders anything, and the same attribute to each compound selector of the Sidecar. The Page above gets `<p data-y-q454u2 class="byline">`, and `sidecars.css` has `.byline[data-y-q454u2]`, so a `.byline` anywhere else on the Site keeps its own styles. Only Templates with a Sidecar get the attribute.
+
+Out of a Sidecar's reach are:
+
+- tags another Template writes: a Layout it extends, a Partial it includes, a Component it calls. Give that Template its own Sidecar.
+- the body of a `{% call %}`, and a `{% block %}` filled in for a Layout: they belong to the Template they are written in, so that Template's Sidecar styles them, not the Component's or the Layout's.
+- what Templates print rather than write: an Entry's `entry.content`, the output of `| markdown` or `| org`, and strings printed with `| safe`.
+- `<head>` and what is in it: `meta`, `title`, `link`, `style` and `script` never get the attribute, and nor do `base`, `noscript` and `template`. `<html>` and `<body>` do.
+
+`:global()` reaches outside on purpose. What is inside it is left as written, and the rest is scoped:
+
+```css check templates/partials/byline.css
+.byline {
+  color: gray;
+  font-size: 0.9em;
+}
+
+.byline :global(a) {
+  color: inherit;
+}
+
+:global(.dark) .byline {
+  color: silver;
+}
+```
+
+Here `.byline :global(a)` becomes `.byline[data-y-q454u2] a`, which reaches a link printed into the byline, and `:global(.dark) .byline` becomes `.dark .byline[data-y-q454u2]`.
+
+These stay as written: `:root`; `@keyframes` names, which Scripts read, and container and layer names; and every rule inside `@scope`. Native `@scope` is how a Sidecar opts out of the attribute, for a Site whose targets all support it; yuanme can't convert it for older browsers, where its rules do nothing. A `.css` file a Sidecar `@import`s is not scoped.
+
+### What `check` warns about
+
+A selector that no tag of the Template can match is `asset/unmatched-selector`: here `byline.html` writes no `<a>`, so `.byline a` reaches nothing.
+
+```css fail asset/unmatched-selector templates/partials/byline.css
+.byline a {
+  color: inherit;
+}
+```
+
+`check` compares a selector's type, classes and id with each tag; attributes and pseudo-classes are left out, since Scripts set them, and a class printed with `{{ }}` could be any class.
+
+A tag whose name is built with `{{ }}` gets the attribute after the expression, but `check` can't match type selectors against it, so it is `template/unscoped-tag`:
+
+```jinja fail template/unscoped-tag templates/partials/byline.html
+{% set level = 3 %}
+<h{{ level }} class="byline">Written by the Author.</h{{ level }}>
+```
+
+So is a tag whose name `{% if %}` chooses, which gets no attribute, and a tag whose quotes are unbalanced in each branch of an `{% if %}`, after which no tag gets one. Write the whole tag once in each branch instead.
 
 ## Static files
 
@@ -211,7 +262,9 @@ The codes for stylesheets and the files they name:
 
 - `asset/not-found`: a `<link href>`, `@import` or `url()` names no file of the project, no Static file and no URL of the Site.
 - `asset/ambiguous-url`: a URL names both a project file and a Static file.
-- `asset/invalid-css`: a stylesheet isn't valid CSS or UTF-8, or imports one file twice in ways that can't be merged.
+- `asset/invalid-css`: a stylesheet isn't valid CSS or UTF-8, imports one file twice in ways that can't be merged, or is a Sidecar with `:local()`, or with a `:global` that has no parentheses, is empty or holds a list.
 - `asset/dependencies-not-installed`: an `@import` of a package, with a `package.json` and no `node_modules`.
+- `asset/unmatched-selector`: a Sidecar's selector matches no tag its Template writes. A warning.
+- `asset/scope-collision`: two Sidecars' paths make the same attribute. Rename one of them.
 
 `yuanme docs CODE` explains each one.

@@ -184,9 +184,9 @@ li time {
 }
 ```
 
-- **A Sidecar stylesheet**: yuanme bundles the Sidecar stylesheets of every Template that any Page uses into one stylesheet, and links it from every HTML Page, after its last `<link rel="stylesheet">` or else just before `</head>`. yuanme doesn't scope Sidecar styles to their Template yet, so a Sidecar's rules apply to every Page.
+- **A Sidecar stylesheet**: yuanme bundles the Sidecar stylesheets of every Template that any Page uses into one stylesheet, and links it from every HTML Page, after its last `<link rel="stylesheet">` or else just before `</head>`. Its rules apply only to the tags its own Template's file writes: here the `<li>` and `<time>` of `row.html`, not a `<time>` another Template writes, nor one in an Entry's body.
 - **A Sidecar script**: yuanme bundles it as a module and loads it, from the same place, on each Page that uses its Template, and calls its exported `mount` on each of those Page loads (`yuanme docs scripts`).
 
 A Page with neither a `<link rel="stylesheet">` nor a `</head>` gets no Sidecars.
 
-A Page uses its Route's Template and every Template that one extends, includes or imports, at any depth, which is why Template names are plain strings. `yuanme docs styles` and `yuanme docs scripts` cover stylesheets and Scripts.
+A Page uses its Route's Template and every Template that one extends, includes or imports, at any depth, which is why Template names are plain strings. `yuanme docs styles` covers stylesheets, how a Sidecar's styles are scoped and how to reach past it with `:global()`, and `yuanme docs scripts` covers Scripts.
