@@ -9,7 +9,7 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use rayon::prelude::*;
-use yuanme_content::config::{Adapter, Config, HeaderRule};
+use yuanme_content::config::{Adapter, Config, HeaderRule, Host};
 use yuanme_diag::{Diagnostic, Span, codes};
 
 use crate::{Body, Build, Cache, Output};
@@ -351,6 +351,34 @@ pub(crate) fn host(
         files.insert("config.json".into(), output);
     }
     (files, diagnostics)
+}
+
+/// The output file the host serves the path `output` from, such as
+/// Vercel's `static/blog/pew/index.html` for a Route's
+/// `blog/pew/index.html`. The inverse of [`served`].
+pub fn file_of(host: &Host, output: &str) -> String {
+    match host.adapter {
+        Adapter::Vercel => format!("static/{output}"),
+        _ => output.to_string(),
+    }
+}
+
+/// The path from the Site's root that the host serves an output file at,
+/// such as `blog/pew/index.html` for Vercel's `static/blog/pew/index.html`,
+/// or none for a file only the host reads, such as `_headers`.
+pub fn served<'p>(host: &Host, path: &'p str) -> Option<&'p str> {
+    let own: &[&str] = match host.adapter {
+        Adapter::Vercel => return path.strip_prefix("static/"),
+        Adapter::Cloudflare | Adapter::CloudflarePages | Adapter::Netlify => {
+            &["_headers", "_redirects"]
+        }
+        Adapter::GithubPages => &[".nojekyll", "CNAME"],
+        Adapter::Static if host.precompress && (path.ends_with(".br") || path.ends_with(".gz")) => {
+            return None;
+        }
+        Adapter::Static => &[],
+    };
+    (!own.contains(&path)).then_some(path)
 }
 
 /// Compares `text`, the project's `wrangler.jsonc`, with what the

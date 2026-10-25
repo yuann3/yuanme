@@ -36,9 +36,12 @@ pub fn write(
         })
     };
     let mut pages = Vec::new();
-    if let Some(site) = build.site.as_ref().filter(|_| !build.failed()) {
+    if let (Some(site), Some(config)) = (&build.site, &build.config)
+        && !build.failed()
+    {
         for route in &site.routes {
-            pages.push((route.url.as_str(), size(&route.output)?));
+            let file = yuanme_engine::file_of(&config.host, &route.output);
+            pages.push((route.url.as_str(), size(&file)?));
         }
     }
     // Largest first: what a reader of the report looks for.

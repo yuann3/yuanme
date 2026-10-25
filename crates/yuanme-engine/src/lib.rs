@@ -20,7 +20,7 @@ use yuanme_content::site::{self, Project, RouteKind, Site};
 use yuanme_diag::{Code, Diagnostic, FileId, Files, Level, Span, codes};
 
 pub use cache::Cache;
-pub use host::wrangler;
+pub use host::{file_of, served, wrangler};
 use link::link;
 
 /// A snapshot of the project's files, by path relative to the project root

@@ -77,9 +77,10 @@ enum Command {
         /// Empty the output directory first, files yuanme didn't write included.
         #[arg(long)]
         clean: bool,
-        /// The output directory, from the project root.
-        #[arg(long, value_name = "DIR", default_value = "dist")]
-        out: PathBuf,
+        /// The output directory, from the project root. By default `dist`, or
+        /// `.vercel/output` with the vercel adapter.
+        #[arg(long, value_name = "DIR")]
+        out: Option<PathBuf>,
     },
     /// Report every Diagnostic `build` would, rendering every Page in memory and writing none.
     Check(CheckArgs),
@@ -237,7 +238,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
             check,
             clean,
             out: out_dir,
-        } => build(&root, &root.join(out_dir), clean, &check, out),
+        } => build(&root, out_dir.map(|d| root.join(d)), clean, &check, out),
         Command::Check(check) => self::check(&root, &check, out),
         Command::New {
             collection,
@@ -252,20 +253,28 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
 
 struct Run {
     build: Build,
+    /// The output directory: `--out`, or else the adapter's.
+    out: PathBuf,
     load: Duration,
     took: Duration,
 }
 
-/// One build in memory. `out` is the output directory, which the walk
-/// leaves out.
-fn engine_build(root: &Path, out: &Path, drafts: bool, strict: bool) -> io::Result<Run> {
+/// One build in memory. `out` is `--out`, which the walk leaves out; the
+/// adapter's output directory is `dist` or hidden.
+fn engine_build(root: &Path, out: Option<&Path>, drafts: bool, strict: bool) -> io::Result<Run> {
     let started = Instant::now();
-    let inputs = load::load(root, out)?;
+    let dist = root.join("dist");
+    let inputs = load::load(root, out.unwrap_or(&dist))?;
     let load = started.elapsed();
     let mut cache = Cache::open(root.join(".yuanme/cache"), ENGINE_VERSION)?;
     let mode = if drafts { Mode::Drafts } else { Mode::Build };
     let mut build = yuanme_engine::build(&inputs, &mut cache, mode);
     cache.save()?;
+    let out = match (out, &build.config) {
+        (Some(out), _) => out.to_path_buf(),
+        (None, Some(config)) => root.join(config.host.adapter.out_dir()),
+        (None, None) => dist,
+    };
     if strict {
         for d in &mut build.diagnostics {
             if d.level == Level::Warning {
@@ -276,6 +285,7 @@ fn engine_build(root: &Path, out: &Path, drafts: bool, strict: bool) -> io::Resu
     }
     Ok(Run {
         build,
+        out,
         load,
         took: started.elapsed() - load,
     })
@@ -319,20 +329,26 @@ fn finish(out: &Out, build: &Build, started: Instant, changed_urls: Vec<String>)
 
 fn build(
     root: &Path,
-    out_dir: &Path,
+    out_dir: Option<PathBuf>,
     clean: bool,
     args: &CheckArgs,
     out: &Out,
 ) -> Result<u8, Error> {
-    if root.starts_with(out_dir) {
+    if let Some(dir) = out_dir.as_ref().filter(|d| root.starts_with(d)) {
         return Err(Error::BadCommand(format!(
             "--out {} would hold the project itself",
-            out_dir.display()
+            dir.display()
         )));
     }
     let started = Instant::now();
     out.event(Event::BuildStarted { command: "build" });
-    let Run { build, load, took } = engine_build(root, out_dir, args.drafts, args.strict)?;
+    let Run {
+        build,
+        out: out_dir,
+        load,
+        took,
+    } = engine_build(root, out_dir.as_deref(), args.drafts, args.strict)?;
+    let out_dir = out_dir.as_path();
     schemas::write(
         &root.join(".yuanme/schemas"),
         build.config.as_ref(),
@@ -404,8 +420,16 @@ fn build(
             }
         }
     }
+    // The Site's URLs, not the files only the host reads.
+    let host = build.config.as_ref().map(|c| &c.host);
     let mut changed: Vec<String> = written
-        .map(|w| w.written.iter().map(|p| url_of(p)).collect())
+        .map(|w| {
+            w.written
+                .iter()
+                .filter_map(|p| host.map_or(Some(p.as_str()), |h| yuanme_engine::served(h, p)))
+                .map(url_of)
+                .collect()
+        })
         .unwrap_or_default();
     changed.sort();
     Ok(finish(out, &build, started, changed))
@@ -423,7 +447,7 @@ fn url_of(output: &str) -> String {
 fn check(root: &Path, args: &CheckArgs, out: &Out) -> Result<u8, Error> {
     let started = Instant::now();
     out.event(Event::BuildStarted { command: "check" });
-    let Run { build, .. } = engine_build(root, &root.join("dist"), args.drafts, args.strict)?;
+    let Run { build, .. } = engine_build(root, None, args.drafts, args.strict)?;
     schemas::write(
         &root.join(".yuanme/schemas"),
         build.config.as_ref(),
@@ -474,7 +498,7 @@ fn new(
     format: new::Format,
     out: &Out,
 ) -> Result<u8, Error> {
-    let run = engine_build(root, &root.join("dist"), false, false)?;
+    let run = engine_build(root, None, false, false)?;
     let Some(config) = config_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };
@@ -512,7 +536,7 @@ fn new(
 }
 
 fn routes(root: &Path, drafts: bool, out: &Out) -> Result<u8, Error> {
-    let run = engine_build(root, &root.join("dist"), drafts, false)?;
+    let run = engine_build(root, None, drafts, false)?;
     let Some((config, site)) = site_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };
@@ -649,7 +673,7 @@ fn unknown(what: &str, name: &str, choices: &[&str], otherwise: String) -> Error
 }
 
 fn schema(root: &Path, which: Which, out: &Out) -> Result<u8, Error> {
-    let run = engine_build(root, &root.join("dist"), false, false)?;
+    let run = engine_build(root, None, false, false)?;
     let (name, mut schemas) = match which {
         Which::Entry { collection } => {
             let Some(config) = config_or_report(&run, out) else {

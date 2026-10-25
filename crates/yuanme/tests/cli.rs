@@ -202,9 +202,10 @@ fn build_writes_the_site_and_its_yuanme_files() {
     let (code, events) = json(root, &["build"]);
     assert_eq!(code, 0);
     insta::assert_snapshot!(show(&events));
+    // Every file is a URL but `_headers`, which only the host reads.
     assert_eq!(
         files_under(&root.join("dist")).len(),
-        events[1]["changed_urls"].as_array().unwrap().len()
+        events[1]["changed_urls"].as_array().unwrap().len() + 1
     );
     assert!(
         !root.join("dist/blog/wip").exists(),
@@ -280,6 +281,28 @@ fn build_writes_the_site_and_its_yuanme_files() {
     let (code, _) = json(root, &["build", "--out", "public"]);
     assert_eq!(code, 0);
     assert!(root.join("public/blog/first/index.html").is_file());
+
+    // Without it, the adapter's: the Build Output API's for vercel, whose
+    // URLs aren't under `static/`.
+    let config = fs::read_to_string(root.join("yuanme.toml")).unwrap();
+    fs::write(
+        root.join("yuanme.toml"),
+        config + "\n[host]\nadapter = \"vercel\"\n",
+    )
+    .unwrap();
+    let (code, events) = json(root, &["build"]);
+    assert_eq!(code, 0);
+    assert!(root.join(".vercel/output/config.json").is_file());
+    assert!(
+        root.join(".vercel/output/static/blog/first/index.html")
+            .is_file()
+    );
+    let changed = events[1]["changed_urls"].as_array().unwrap();
+    assert!(changed.contains(&"/blog/first/".into()), "{changed:?}");
+    assert_eq!(
+        changed.len() + 1,
+        files_under(&root.join(".vercel/output")).len()
+    );
 }
 
 #[test]
