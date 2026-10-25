@@ -68,22 +68,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600"
 
 [[package]]
-name = "comrak"
-version = "0.57.0"
-source = "git+https://github.com/yuann3/comrak?rev=5c14241418654c10b6a5129ee535b5831c231d9b#5c14241418654c10b6a5129ee535b5831c231d9b"
-dependencies = [
- "caseless",
- "entities",
- "finl_unicode",
- "memchr-n",
- "phf",
- "phf_codegen",
- "rustc-hash",
- "smallvec",
- "typed-arena",
-]
-
-[[package]]
 name = "defmt"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -587,15 +571,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23b97319f7b8343df12cc98938e5c3eb436064524c8d2b4e30a1d3a36eecdf81"
 
 [[package]]
+name = "yuanme-comrak"
+version = "0.0.0"
+dependencies = [
+ "caseless",
+ "entities",
+ "finl_unicode",
+ "memchr-n",
+ "phf",
+ "phf_codegen",
+ "rustc-hash",
+ "smallvec",
+ "typed-arena",
+]
+
+[[package]]
 name = "yuanme-content"
 version = "0.0.0"
 dependencies = [
- "comrak",
  "jiff",
  "saphyr-parser",
  "serde_json",
  "strsim",
  "toml",
+ "yuanme-comrak",
  "yuanme-diag",
 ]
 
@@ -612,8 +611,8 @@ name = "yuanme-markdown-fuzz"
 version = "0.0.0"
 dependencies = [
  "arbitrary",
- "comrak",
  "libfuzzer-sys",
+ "yuanme-comrak",
  "yuanme-content",
  "yuanme-diag",
  "yuanme-render",

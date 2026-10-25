@@ -19,6 +19,7 @@ yuanme-diag = { path = "crates/yuanme-diag", version = "0.0.0" }
 yuanme-org = { path = "vendor/organic", version = "0.0.0" }
 # Forks the published crates need, vendored because `[patch]` doesn't reach
 # `cargo install` (#27). Each one's manifest says where its fork is.
+comrak = { package = "yuanme-comrak", path = "vendor/comrak", version = "0.0.0" }
 ravif = { package = "yuanme-ravif", path = "vendor/ravif", version = "0.0.0" }
 
 # The image pipeline's tests encode real photos, which takes minutes
@@ -35,9 +36,3 @@ rav1e.opt-level = 3
 yuanme-ravif.opt-level = 3
 zune-jpeg.opt-level = 3
 yuanme-assets.opt-level = 3
-
-# parse_document_bounded and the slow-path fixes that hold #15's parse-time
-# bound (#47), at a pinned commit on comrak 0.57.0. Rebase the branch onto
-# each comrak release before bumping the pin in yuanme-content.
-[patch.crates-io]
-comrak = { git = "https://github.com/yuann3/comrak", rev = "5c14241418654c10b6a5129ee535b5831c231d9b" }

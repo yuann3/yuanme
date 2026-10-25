@@ -1,0 +1,50 @@
+[package]
+name = "yuanme-comrak"
+description = "The Markdown parser for yuanme, forked from comrak 0.57.0. Internal; no stability promise."
+version.workspace = true
+edition = "2024"
+rust-version.workspace = true
+license = "BSD-2-Clause"
+repository.workspace = true
+include = ["/build.rs", "/src", "/COPYING"]
+readme = false
+
+# Everything here but this file is yuann3/comrak at `rev`, which is where
+# the fork is changed, tested and rebased onto each comrak release.
+# `cargo xtask vendor-check` fails if the two differ (#47).
+[package.metadata.fork]
+repository = "https://github.com/yuann3/comrak"
+rev = "5c14241418654c10b6a5129ee535b5831c231d9b"
+
+[lib]
+name = "comrak"
+# comrak's tests run in the fork, which has their dev-dependencies, its
+# command line and its other extensions.
+test = false
+doctest = false
+bench = false
+
+[dependencies]
+caseless = "0.2"
+finl_unicode = { version = "1.4.0", features = ["categories"] }
+memchr-n = "0.1.7"
+phf = "0.14"
+rustc-hash = "2"
+smallvec = "1.13"
+typed-arena = "2.0.2"
+
+[build-dependencies]
+entities = "1"
+phf_codegen = "0.14"
+
+[features]
+attributes = []
+phoenix_heex = []
+
+[lints.rust]
+# The extensions that need dependencies yuanme doesn't vendor.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("arbitrary", "bon", "shortcodes", "syntect"))', "cfg(docsrs)"] }
+
+[lints.clippy]
+# comrak's own style, which yuanme doesn't change.
+all = { level = "allow", priority = -1 }

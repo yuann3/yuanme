@@ -269,22 +269,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 
 [[package]]
-name = "comrak"
-version = "0.57.0"
-source = "git+https://github.com/yuann3/comrak?rev=5c14241418654c10b6a5129ee535b5831c231d9b#5c14241418654c10b6a5129ee535b5831c231d9b"
-dependencies = [
- "caseless",
- "entities",
- "finl_unicode",
- "memchr-n",
- "phf",
- "phf_codegen",
- "rustc-hash",
- "smallvec",
- "typed-arena",
-]
-
-[[package]]
 name = "console"
 version = "0.16.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1717,16 +1701,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "yuanme-comrak"
+version = "0.0.0"
+dependencies = [
+ "caseless",
+ "entities",
+ "finl_unicode",
+ "memchr-n",
+ "phf",
+ "phf_codegen",
+ "rustc-hash",
+ "smallvec",
+ "typed-arena",
+]
+
+[[package]]
 name = "yuanme-content"
 version = "0.0.0"
 dependencies = [
- "comrak",
  "insta",
  "jiff",
  "saphyr-parser",
  "serde_json",
  "strsim",
  "toml",
+ "yuanme-comrak",
  "yuanme-diag",
 ]
 

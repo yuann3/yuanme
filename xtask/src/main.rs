@@ -56,7 +56,8 @@ fn package_check() -> ExitCode {
             if !(CARGO_FILES.contains(&file)
                 || file.starts_with("src/")
                 || file == "build.rs"
-                || file == "LICENSE")
+                || file == "LICENSE"
+                || file == "COPYING")
             {
                 eprintln!("{}: would publish {file}", dir.display());
                 ok = false;

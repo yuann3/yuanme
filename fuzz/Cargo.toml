@@ -10,7 +10,7 @@ cargo-fuzz = true
 
 [dependencies]
 arbitrary = { version = "1.4", features = ["derive"] }
-comrak = { version = "=0.57.0", default-features = false, features = ["attributes"] }
+comrak = { package = "yuanme-comrak", path = "../vendor/comrak", features = ["attributes"] }
 libfuzzer-sys = "0.4"
 yuanme-content = { path = "../crates/yuanme-content" }
 yuanme-diag = { path = "../crates/yuanme-diag" }
@@ -19,11 +19,6 @@ yuanme-render = { path = "../crates/yuanme-render" }
 # Its own workspace, so the main one, its lockfile and its checks never see
 # libFuzzer.
 [workspace]
-
-# The root Cargo.toml's comrak patch, which a separate workspace doesn't
-# inherit. Keep the two pins the same.
-[patch.crates-io]
-comrak = { git = "https://github.com/yuann3/comrak", rev = "5c14241418654c10b6a5129ee535b5831c231d9b" }
 
 [[bin]]
 name = "adversarial"
