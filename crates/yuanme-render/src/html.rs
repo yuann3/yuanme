@@ -5,7 +5,9 @@
 
 use std::collections::BTreeMap;
 
-use yuanme_content::document::{Align, Document, Kind, Links, NodeId, footnote_identifier};
+use yuanme_content::document::{
+    Align, Checkbox, Document, Kind, Links, NodeId, footnote_identifier,
+};
 
 /// `links` says where resolved links go; any other link keeps the URL it
 /// was written with.
@@ -62,7 +64,7 @@ impl Writer<'_> {
     }
 
     fn element(&mut self, tag: &str, id: NodeId) {
-        self.out.push_str(&format!("<{tag}>"));
+        self.out.push_str(&format!("<{tag}{}>", self.attrs(id)));
         self.inline(id);
         self.out.push_str(&format!("</{tag}>"));
     }
@@ -72,6 +74,16 @@ impl Writer<'_> {
         let children = self.doc.node(id).children.clone();
         self.wrap(&children);
         self.out.push_str(&format!("</{tag}>"));
+    }
+
+    /// The node's own attributes, each with a space before it.
+    fn attrs(&self, id: NodeId) -> String {
+        self.doc
+            .node(id)
+            .attrs
+            .iter()
+            .map(|(name, value)| format!(" {name}=\"{}\"", attribute(value)))
+            .collect()
     }
 
     fn node(&mut self, id: NodeId) {
@@ -95,16 +107,22 @@ impl Writer<'_> {
                 self.inline(id);
                 self.out.push_str(&format!("</h{level}>"));
             }
-            Kind::ThematicBreak => self.out.push_str("<hr>"),
-            Kind::BlockQuote => self.block("<blockquote>", "blockquote", id),
+            Kind::ThematicBreak => self.out.push_str(&format!("<hr{}>", self.attrs(id))),
+            Kind::BlockQuote => {
+                let open = format!("<blockquote{}>", self.attrs(id));
+                self.block(&open, "blockquote", id);
+            }
             Kind::List {
                 ordered,
                 start,
                 tight,
             } => self.list(id, *ordered, *start, !tight),
-            Kind::Item { .. } => unreachable!("written by its list"),
+            Kind::Item { .. } | Kind::DescriptionTerm | Kind::DescriptionDetails => {
+                unreachable!("written by its list")
+            }
+            Kind::DescriptionList { tight } => self.description_list(id, !tight),
             Kind::CodeBlock { lang, text: code } => {
-                self.out.push_str("<pre><code");
+                self.out.push_str(&format!("<pre{}><code", self.attrs(id)));
                 if let Some(lang) = lang {
                     self.out
                         .push_str(&format!(" class=\"language-{}\"", attribute(lang)));
@@ -122,15 +140,53 @@ impl Writer<'_> {
             Kind::Table { align } => self.table(id, align),
             Kind::TableRow { .. } | Kind::TableCell => unreachable!("written by its table"),
             Kind::FootnoteDefinition { .. } => unreachable!("written in the footer"),
+            // A `class` from `#+ATTR_HTML` joins the block's own, as in ox-html.
             Kind::Directive { name } => {
-                let open = format!("<div class=\"{}\">", attribute(name));
+                let mut class = name.clone();
+                let mut rest = String::new();
+                for (attr, value) in &node.attrs {
+                    match attr.as_str() {
+                        "class" => class = format!("{class} {value}"),
+                        _ => rest.push_str(&format!(" {attr}=\"{}\"", attribute(value))),
+                    }
+                }
+                let open = format!("<div class=\"{}\"{rest}>", attribute(&class));
                 self.block(&open, "div", id);
             }
+            Kind::Figure => {
+                let open = format!("<figure{}>", self.attrs(id));
+                self.block(&open, "figure", id);
+            }
+            // A table writes its own caption.
+            Kind::Caption => self.element("figcaption", id),
             Kind::Text(s) => self.out.push_str(&text(s)),
             Kind::Code(s) => self.out.push_str(&format!("<code>{}</code>", text(s))),
             Kind::Emphasis => self.element("em", id),
             Kind::Strong => self.element("strong", id),
             Kind::Strikethrough => self.element("del", id),
+            Kind::Underline => {
+                self.out.push_str("<span class=\"underline\">");
+                self.inline(id);
+                self.out.push_str("</span>");
+            }
+            Kind::Subscript => self.element("sub", id),
+            Kind::Superscript => self.element("sup", id),
+            Kind::Timestamp {
+                datetime,
+                text: raw,
+            } => {
+                self.out
+                    .push_str("<span class=\"timestamp-wrapper\"><time class=\"timestamp\"");
+                if let Some(datetime) = datetime {
+                    self.out
+                        .push_str(&format!(" datetime=\"{}\"", attribute(datetime)));
+                }
+                self.out.push_str(&format!(">{}</time></span>", text(raw)));
+            }
+            Kind::Target { id: anchor } => {
+                self.out
+                    .push_str(&format!("<a id=\"{}\"></a>", attribute(anchor)));
+            }
             Kind::Link { url, title } => {
                 let href = normalize_uri(self.links.get(&id).unwrap_or(url));
                 self.out
@@ -139,6 +195,7 @@ impl Writer<'_> {
                     self.out
                         .push_str(&format!(" title=\"{}\"", attribute(title)));
                 }
+                self.out.push_str(&self.attrs(id));
                 self.out.push('>');
                 self.inline(id);
                 self.out.push_str("</a>");
@@ -154,6 +211,7 @@ impl Writer<'_> {
                     self.out
                         .push_str(&format!(" title=\"{}\"", attribute(title)));
                 }
+                self.out.push_str(&self.attrs(id));
                 self.out.push('>');
             }
             Kind::LineBreak => self.out.push_str("<br>\n"),
@@ -182,9 +240,15 @@ impl Writer<'_> {
     fn list(&mut self, id: NodeId, ordered: bool, start: u64, loose: bool) {
         let doc = self.doc;
         let items = &doc.node(id).children;
-        let tasks = items
-            .iter()
-            .any(|&i| matches!(doc.node(i).kind, Kind::Item { checked: Some(_) }));
+        let tasks = items.iter().any(|&i| {
+            matches!(
+                doc.node(i).kind,
+                Kind::Item {
+                    checked: Some(_),
+                    ..
+                }
+            )
+        });
         let tag = if ordered { "ol" } else { "ul" };
         self.out.push('<');
         self.out.push_str(tag);
@@ -194,6 +258,7 @@ impl Writer<'_> {
         if tasks {
             self.out.push_str(" class=\"contains-task-list\"");
         }
+        self.out.push_str(&self.attrs(id));
         self.out.push_str(">\n");
         for (n, &item) in items.iter().enumerate() {
             if n > 0 {
@@ -208,26 +273,37 @@ impl Writer<'_> {
     }
 
     fn item(&mut self, id: NodeId, loose: bool) {
-        let doc = self.doc;
-        let node = doc.node(id);
-        let Kind::Item { checked } = node.kind else {
+        let node = self.doc.node(id);
+        let Kind::Item { checked, value } = node.kind else {
             unreachable!("a list holds items")
         };
-        let is_p = |c: NodeId| matches!(doc.node(c).kind, Kind::Paragraph);
-        let children = &node.children;
-        match checked {
-            Some(_) => self.out.push_str("<li class=\"task-list-item\">"),
-            None => self.out.push_str("<li>"),
+        self.out.push_str("<li");
+        if checked.is_some() {
+            self.out.push_str(" class=\"task-list-item\"");
         }
-        // The checkbox goes at the start of the first paragraph, which is
-        // made if the item doesn't start with one.
-        let checkbox = checked.map(|on| {
-            if on {
-                "<input type=\"checkbox\" checked disabled>"
-            } else {
-                "<input type=\"checkbox\" disabled>"
-            }
+        if let Some(value) = value {
+            self.out.push_str(&format!(" value=\"{value}\""));
+        }
+        self.out.push('>');
+        let checkbox = checked.map(|c| match c {
+            Checkbox::Checked => "<input type=\"checkbox\" checked disabled>",
+            Checkbox::Unchecked => "<input type=\"checkbox\" disabled>",
+            Checkbox::Partial => "<input type=\"checkbox\" disabled data-partial>",
         });
+        self.item_body(id, checkbox, loose);
+        self.out.push_str("</li>");
+    }
+
+    /// What is inside an item's tag. The checkbox goes at the start of the
+    /// first paragraph, which is made if the item doesn't start with one.
+    /// A paragraph with attributes of its own keeps its `<p>`.
+    fn item_body(&mut self, id: NodeId, checkbox: Option<&str>, loose: bool) {
+        let doc = self.doc;
+        let is_p = |c: NodeId| {
+            let node = doc.node(c);
+            matches!(node.kind, Kind::Paragraph) && node.attrs.is_empty()
+        };
+        let children = &doc.node(id).children;
         let head_is_p = children.first().is_some_and(|&c| is_p(c));
         let mut parts: Vec<Option<NodeId>> = children.iter().copied().map(Some).collect();
         if checkbox.is_some() && !head_is_p {
@@ -262,24 +338,61 @@ impl Writer<'_> {
                 self.out.push('\n');
             }
         }
-        self.out.push_str("</li>");
     }
 
-    /// mdast-util-to-hast's table: the first row is the head, every row has
-    /// a cell per column, and the body is left out when it has no rows.
+    /// Org's descriptive list, as a list's items are written: each term on
+    /// a line, and its details after it.
+    fn description_list(&mut self, id: NodeId, loose: bool) {
+        let children = self.doc.node(id).children.clone();
+        self.out.push_str(&format!("<dl{}>\n", self.attrs(id)));
+        for (n, &c) in children.iter().enumerate() {
+            if n > 0 {
+                self.out.push('\n');
+            }
+            match self.doc.node(c).kind {
+                Kind::DescriptionTerm => self.element("dt", c),
+                _ => {
+                    self.out.push_str("<dd>");
+                    self.item_body(c, None, loose);
+                    self.out.push_str("</dd>");
+                }
+            }
+        }
+        if !children.is_empty() {
+            self.out.push('\n');
+        }
+        self.out.push_str("</dl>");
+    }
+
+    /// mdast-util-to-hast's table: the head rows, then the body, which is
+    /// left out when it has no rows, and every row has a cell per column.
     /// rehype-raw then reparses it, which moves every newline between the
-    /// table's own tags to before the table.
+    /// table's own tags to before the table. A Markdown table has one head
+    /// row; an Org table has those before its first rule, and may have a
+    /// caption first.
     fn table(&mut self, id: NodeId, align: &[Align]) {
-        let rows = self.doc.node(id).children.clone();
+        let doc = self.doc;
+        let mut rows = doc.node(id).children.as_slice();
         let start = self.out.len();
         let mut newlines = 2;
-        self.out.push_str("<table>");
-        let (head, body) = rows
-            .split_first()
-            .map_or((None, &[][..]), |(h, b)| (Some(*h), b));
-        if let Some(head) = head {
+        self.out.push_str(&format!("<table{}>", self.attrs(id)));
+        if let Some((&caption, rest)) = rows.split_first()
+            && matches!(doc.node(caption).kind, Kind::Caption)
+        {
+            self.element("caption", caption);
+            rows = rest;
+        }
+        let heads = rows
+            .iter()
+            .take_while(|&&r| matches!(doc.node(r).kind, Kind::TableRow { head: true }))
+            .count();
+        let (head, body) = rows.split_at(heads);
+        if !head.is_empty() {
             self.out.push_str("<thead>");
-            newlines += 2 + self.row(head, "th", align);
+            newlines += 2 + head.len() - 1;
+            for &row in head {
+                newlines += self.row(row, "th", align);
+            }
             self.out.push_str("</thead>");
         }
         if !body.is_empty() {

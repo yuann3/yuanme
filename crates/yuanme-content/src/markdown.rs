@@ -9,7 +9,7 @@ use comrak::{Arena, Options};
 use jiff::tz::TimeZone;
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
 
-use crate::document::{Align, Document, Kind, NodeId, footnote_identifier};
+use crate::document::{Align, Checkbox, Document, Kind, NodeId, footnote_identifier};
 use crate::fields::Cx;
 use crate::slug::Slugger;
 use crate::smartypants::{self, Dashes, Piece};
@@ -85,7 +85,7 @@ pub(crate) fn parse(text: &str, body: Range<usize>, cx: &mut Cx<'_>) -> Option<D
     }
     let Lower { mut doc, ok, .. } = lower;
     number_footnotes(&mut doc);
-    smarten(&mut doc);
+    smarten(&mut doc, Dashes::Default, &BTreeSet::new());
     heading_ids(&mut doc);
     ok.then_some(doc)
 }
@@ -93,7 +93,7 @@ pub(crate) fn parse(text: &str, body: Range<usize>, cx: &mut Cx<'_>) -> Option<D
 /// Numbers each footnote reference in the order the writer meets them:
 /// the body first, then each referenced definition in turn, whose own
 /// references can number more.
-fn number_footnotes(doc: &mut Document) {
+pub(crate) fn number_footnotes(doc: &mut Document) {
     let root = doc.node(Document::ROOT).children.clone();
     let mut definitions = BTreeMap::new();
     let mut blocks = Vec::new();
@@ -129,8 +129,9 @@ fn number_footnotes(doc: &mut Document) {
 
 /// remark-smartypants over the Document, which needs its text in mdast's
 /// order: comrak moves footnote definitions to the end, mdast keeps them
-/// where they are written.
-fn smarten(doc: &mut Document) {
+/// where they are written. `verbatim` text, such as an Org entity's, is
+/// read for context, as inline code is, and never changed.
+pub(crate) fn smarten(doc: &mut Document, dashes: Dashes, verbatim: &BTreeSet<NodeId>) {
     let mut blocks = doc.node(Document::ROOT).children.clone();
     blocks.sort_by_key(|&b| doc.node(b).span.start);
     let mut order = Vec::new();
@@ -140,15 +141,15 @@ fn smarten(doc: &mut Document) {
     let pieces: Vec<Piece<'_>> = order
         .iter()
         .map(|&id| match &doc.node(id).kind {
-            Kind::Text(s) => Piece::Text(s),
-            Kind::Code(s) => Piece::Code(s),
+            Kind::Text(s) if !verbatim.contains(&id) => Piece::Text(s),
+            Kind::Text(s) | Kind::Code(s) | Kind::Timestamp { text: s, .. } => Piece::Code(s),
             _ => Piece::ParagraphStart,
         })
         .collect();
-    let smart = smartypants::smarten(&pieces, Dashes::Default);
+    let smart = smartypants::smarten(&pieces, dashes);
     let texts: Vec<NodeId> = order
         .into_iter()
-        .filter(|&id| matches!(doc.node(id).kind, Kind::Text(_)))
+        .filter(|&id| matches!(doc.node(id).kind, Kind::Text(_)) && !verbatim.contains(&id))
         .collect();
     for (id, new) in texts.into_iter().zip(smart) {
         *doc.kind_mut(id) = Kind::Text(new);
@@ -156,11 +157,11 @@ fn smarten(doc: &mut Document) {
 }
 
 /// The nodes remark-smartypants visits under `id`, in order: text, inline
-/// code and paragraphs. Code blocks, raw HTML, math and image alt text are
-/// not prose.
+/// code and paragraphs, and Org's timestamps, which are read as code is.
+/// Code blocks, raw HTML, math and image alt text are not prose.
 fn prose(doc: &Document, id: NodeId, out: &mut Vec<NodeId>) {
     match doc.node(id).kind {
-        Kind::Text(_) | Kind::Code(_) | Kind::Paragraph => out.push(id),
+        Kind::Text(_) | Kind::Code(_) | Kind::Timestamp { .. } | Kind::Paragraph => out.push(id),
         Kind::Image { .. } => return,
         _ => {}
     }
@@ -171,7 +172,7 @@ fn prose(doc: &Document, id: NodeId, out: &mut Vec<NodeId>) {
 
 /// Each heading without an `{#id}` gets one from its smartened text, as
 /// Astro gives it, but never one an `{#id}` already took.
-fn heading_ids(doc: &mut Document) {
+pub(crate) fn heading_ids(doc: &mut Document) {
     let headings: Vec<NodeId> = doc
         .descendants(Document::ROOT)
         .into_iter()
@@ -273,20 +274,29 @@ impl Lower<'_, '_> {
                 start: l.start as u64,
                 tight: l.tight,
             },
-            NodeValue::Item(_) => Kind::Item { checked: None },
+            NodeValue::Item(_) => Kind::Item {
+                checked: None,
+                value: None,
+            },
             // mdast reads a task item with nothing after its box as an
             // item whose text is the box.
             NodeValue::TaskItem(t) if node.first_child().is_none() => {
-                let item = self
-                    .doc
-                    .push(parent, Kind::Item { checked: None }, span.clone());
+                let item = Kind::Item {
+                    checked: None,
+                    value: None,
+                };
+                let item = self.doc.push(parent, item, span.clone());
                 let p = self.doc.push(item, Kind::Paragraph, span.clone());
                 let text = format!("[{}]", t.symbol.unwrap_or(' '));
                 self.doc.push(p, Kind::Text(text), span);
                 return;
             }
             NodeValue::TaskItem(t) => Kind::Item {
-                checked: Some(t.symbol.is_some()),
+                checked: Some(match t.symbol {
+                    Some(_) => Checkbox::Checked,
+                    None => Checkbox::Unchecked,
+                }),
+                value: None,
             },
             NodeValue::CodeBlock(c) if c.info.split_whitespace().next() == Some("math") => {
                 Kind::Math {

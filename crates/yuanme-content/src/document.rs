@@ -18,6 +18,21 @@ pub type Links = BTreeMap<NodeId, String>;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Document {
     nodes: Vec<Node>,
+    pub(crate) names: Names,
+}
+
+/// What an Org link can name in a Document besides a heading's id (#16),
+/// each with the id it leads to, which is empty for the top of the page. A
+/// Markdown Document names nothing here.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub(crate) struct Names {
+    /// `:ID:` properties, and where each is written.
+    pub ids: Vec<(String, String, Range<usize>)>,
+    /// `<<target>>`s and `#+NAME`s, which a fuzzy link finds before a
+    /// headline.
+    pub targets: BTreeMap<String, String>,
+    /// Headline titles as written, which `*Title` and fuzzy links find.
+    pub titles: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -26,6 +41,9 @@ pub struct Node {
     /// Bytes in the Entry's file.
     pub span: Range<usize>,
     pub children: Vec<NodeId>,
+    /// Attributes for the element's tag, which Org's `#+NAME` and
+    /// `#+ATTR_HTML` give it.
+    pub attrs: Vec<(String, String)>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -48,10 +66,18 @@ pub enum Kind {
         start: u64,
         tight: bool,
     },
-    /// `checked` is set on a task-list item.
+    /// `checked` is set on a task-list item, and `value` on an Org item
+    /// whose `[@n]` renumbers it.
     Item {
-        checked: Option<bool>,
+        checked: Option<Checkbox>,
+        value: Option<u64>,
     },
+    /// Org's descriptive list: each term is followed by its details.
+    DescriptionList {
+        tight: bool,
+    },
+    DescriptionTerm,
+    DescriptionDetails,
     CodeBlock {
         lang: Option<String>,
         text: String,
@@ -68,15 +94,33 @@ pub enum Kind {
     FootnoteDefinition {
         label: String,
     },
-    /// A block directive whose name is not a Theorem kind.
+    /// A block directive whose name is not a Theorem kind, or an Org
+    /// special or center block.
     Directive {
         name: String,
     },
+    /// An image or source block with its caption, from Org's `#+CAPTION`.
+    Figure,
+    /// The caption of a figure or a table, which is a table's first child.
+    Caption,
     Text(String),
     Code(String),
     Emphasis,
     Strong,
     Strikethrough,
+    Underline,
+    Subscript,
+    Superscript,
+    /// An Org timestamp as written, and when it is, for `datetime`; a
+    /// diary timestamp has no `datetime`.
+    Timestamp {
+        datetime: Option<String>,
+        text: String,
+    },
+    /// An Org `<<target>>`: a place a link can lead to.
+    Target {
+        id: String,
+    },
     Link {
         url: String,
         title: Option<String>,
@@ -99,6 +143,14 @@ pub enum Kind {
         display: bool,
         tex: String,
     },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Checkbox {
+    Unchecked,
+    Checked,
+    /// Org's `[-]`.
+    Partial,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -125,8 +177,12 @@ impl Document {
             kind: Kind::Root,
             span,
             children: Vec::new(),
+            attrs: Vec::new(),
         };
-        Document { nodes: vec![root] }
+        Document {
+            nodes: vec![root],
+            names: Names::default(),
+        }
     }
 
     pub(crate) fn push(&mut self, parent: NodeId, kind: Kind, span: Range<usize>) -> NodeId {
@@ -135,6 +191,7 @@ impl Document {
             kind,
             span,
             children: Vec::new(),
+            attrs: Vec::new(),
         });
         self.nodes[parent.0 as usize].children.push(id);
         id
@@ -175,7 +232,7 @@ impl Document {
     fn collect_text(&self, id: NodeId, out: &mut String) {
         let node = self.node(id);
         match &node.kind {
-            Kind::Text(s) | Kind::Code(s) => out.push_str(s),
+            Kind::Text(s) | Kind::Code(s) | Kind::Timestamp { text: s, .. } => out.push_str(s),
             Kind::Math { tex, .. } => out.push_str(tex),
             Kind::FootnoteReference { number, .. } => out.push_str(&number.to_string()),
             _ => {}
@@ -194,9 +251,11 @@ impl Document {
         let mut out = String::new();
         for id in self.descendants(Self::ROOT) {
             match &self.node(id).kind {
-                Kind::Text(s) | Kind::Code(s) | Kind::HtmlBlock(s) | Kind::HtmlInline(s) => {
-                    out.push_str(s)
-                }
+                Kind::Text(s)
+                | Kind::Code(s)
+                | Kind::HtmlBlock(s)
+                | Kind::HtmlInline(s)
+                | Kind::Timestamp { text: s, .. } => out.push_str(s),
                 Kind::CodeBlock { text, .. } => out.push_str(text),
                 Kind::Math { tex, .. } => out.push_str(tex),
                 _ => {}
