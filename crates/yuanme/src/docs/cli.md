@@ -43,7 +43,7 @@ Each line is one event with a `type`:
 `yuanme dev` builds the Site with its Drafts, serves it on `http://127.0.0.1:4590/`, or the next free port, and builds it again on every save. Read the URL from `server-ready` rather than assuming the port.
 
 - **Everything is in memory.** Nothing is written to the output directory, which never holds Drafts.
-- **Every save rebuilds the whole Site**, in milliseconds, and the Pages whose files changed are reloaded. What it serves is what `yuanme build --drafts` makes, but that math uses the whole math font rather than a subset, which would slow a save.
+- **Every save rebuilds the whole Site**, in milliseconds, and the Pages whose files changed are reloaded. What it serves is what `yuanme build --drafts` makes, but for two things that would slow a save: an image is encoded when a browser first asks for it, and math uses the whole math font rather than a subset.
 - **An error keeps the last good build served.** Its Diagnostics are printed, as `build` prints them, until a save fixes it.
 - **`--poll`** looks at every file every 100 ms, for file systems that never say a file changed, such as some network and container mounts.
 

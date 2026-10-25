@@ -45,7 +45,7 @@ A JPEG, PNG, WebP or GIF is resized to each of `[images] widths` and encoded as 
 - The first image in a body is `loading="eager"`, since it may be the largest thing on the screen; the others are `lazy`.
 - The files are named by a hash of everything they depend on, so a changed image or setting gets new names, and a browser never keeps an old one.
 
-Each output is kept in `.yuanme/cache`, so only a new or changed image is encoded again. `yuanme check` encodes nothing.
+Each output is kept in `.yuanme/cache`, so only a new or changed image is encoded again. `yuanme check` encodes nothing, and `yuanme dev` encodes an output only when a browser first asks for it.
 
 An SVG, an AVIF and an animated GIF, WebP or PNG are copied into `/assets/` as they are, with a hash in the name. The Page above gets `<img src="/assets/cat-….svg" width="16" height="16" alt="A black circle" loading="eager" decoding="async">`; an SVG's size comes from its `width` and `height`, or else its `viewBox`.
 

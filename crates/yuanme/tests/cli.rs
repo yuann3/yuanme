@@ -1090,3 +1090,58 @@ fn dev_stops_on_sigterm_and_keeps_its_cache() {
     assert_eq!(stderr, "", "human text with --json");
     assert!(root.join(".yuanme/cache/generation").exists());
 }
+
+/// `yuanme dev` encodes an image only when a browser asks for it, into the
+/// bytes `yuanme build` writes, and keeps it in the cache.
+#[test]
+fn dev_encodes_an_image_when_a_browser_asks() {
+    let dir = project(
+        "=== yuanme.toml
+[site]
+url = \"https://example.com\"
+
+[collections.posts]
+route = \"/blog/{slug}/\"
+
+[images]
+widths = [32]
+=== templates/posts/entry.html
+{{ entry.content }}
+=== content/posts/sea/index.md
+---
+title: Sea
+---
+![A beach](beach.jpg)
+",
+    );
+    let root = dir.path();
+    let photo = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../yuanme-assets/fixtures/images/beach.jpg"
+    );
+    fs::copy(photo, root.join("content/posts/sea/beach.jpg")).unwrap();
+    let encoded = || match fs::read_dir(root.join(".yuanme/cache/large")) {
+        Ok(entries) => entries.count(),
+        Err(_) => 0,
+    };
+
+    let dev = Dev::start(root);
+    assert_eq!(encoded(), 0);
+    let page = dev.get("/blog/sea/").2;
+    let avif = page
+        .split('"')
+        .find(|s| s.ends_with(".avif") || s.ends_with(".avif 32w"))
+        .map(|s| s.trim_end_matches(" 32w"))
+        .unwrap_or_else(|| panic!("no AVIF in {page}"));
+    let (status, head, served) = dev.get_bytes(avif);
+    assert_eq!(status, 200);
+    assert!(head.contains("content-type: image/avif"), "{head}");
+    assert_eq!(encoded(), 1, "only the variant asked for");
+    // Again, from the cache.
+    assert_eq!(dev.get_bytes(avif).2, served);
+    drop(dev);
+
+    assert_eq!(yuanme(root, &["build", "-q"]).code, 0);
+    let built = fs::read(root.join("dist").join(avif.trim_start_matches('/'))).unwrap();
+    assert!(built == served, "dev encoded other bytes than build");
+}

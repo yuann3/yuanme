@@ -11,11 +11,11 @@ use axum::http::{StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use tokio::sync::broadcast;
-use yuanme_engine::{Body, Cache};
+use yuanme_engine::{Body, Cache, image};
 
 use super::Snapshot;
-use crate::Out;
 use crate::events::{Console, Event};
+use crate::{ENGINE_VERSION, Out};
 
 /// Where the dev client connects. Messages to it are `{"type": "reload",
 /// "urls": [...]}`, the `reload` event's; it sends `browser-console`
@@ -55,6 +55,17 @@ async fn file(State(shared): State<Arc<Shared>>, request: Request) -> Response {
     };
     if let Some((path, output)) = found {
         return send(&snapshot, path, &output.body, StatusCode::OK);
+    }
+    if let Some((variant, settings)) = snapshot.build.images.get(path) {
+        let (variant, settings) = (variant.clone(), settings.clone());
+        let path = path.to_string();
+        let encoded = tokio::task::spawn_blocking(move || {
+            match encode(&shared.cache, &snapshot, &variant, &settings) {
+                Ok(body) => send(&snapshot, &path, &body, StatusCode::OK),
+                Err(message) => (StatusCode::INTERNAL_SERVER_ERROR, message).into_response(),
+            }
+        });
+        return encoded.await.expect("encoding doesn't panic");
     }
     // A Route's folder without its slash, as static hosts redirect it.
     if files.contains_key(&format!("{path}/index.html")) {
@@ -97,6 +108,40 @@ fn send(snapshot: &Snapshot, path: &str, body: &Body, status: StatusCode) -> Res
             (StatusCode::INTERNAL_SERVER_ERROR, message).into_response()
         }
     }
+}
+
+/// An image variant the snapshot's Pages name, from the cache or encoded
+/// now (#24). The encoder runs without the cache's lock, so a save never
+/// waits for a photo.
+fn encode(
+    cache: &Mutex<Cache>,
+    snapshot: &Snapshot,
+    variant: &image::Variant,
+    settings: &image::Settings,
+) -> Result<Body, String> {
+    if let Some(body) = cache
+        .lock()
+        .expect("a build doesn't panic")
+        .get_large(&variant.key)
+    {
+        return Ok(body);
+    }
+    let mut scratch = Cache::memory(ENGINE_VERSION);
+    let variants = std::slice::from_ref(variant);
+    let encoded = image::encode(&mut scratch, &snapshot.inputs, variants, settings);
+    let output = encoded
+        .into_iter()
+        .next()
+        .expect("one per variant")
+        .map_err(|e| format!("{}: {e}", variant.source))?;
+    let Body::Bytes(bytes) = &output.body else {
+        unreachable!("a memory cache holds its bytes")
+    };
+    let mut cache = cache.lock().expect("a build doesn't panic");
+    cache
+        .insert_large(variant.key, bytes)
+        .map_err(|e| format!("can't write the cache: {e}"))?;
+    Ok(output.body)
 }
 
 async fn socket(State(shared): State<Arc<Shared>>, upgrade: WebSocketUpgrade) -> Response {
