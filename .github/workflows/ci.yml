@@ -55,6 +55,31 @@ jobs:
       # x86_64 and arm64 encode the same bytes (#28).
       - run: cargo nextest run --locked --workspace
 
+  # The tests that run the real Tailwind CLI (#59): it matches the
+  # official --optimize, daisyui works from a Bun isolated install, and a
+  # warm build runs no Tailwind. The Engine downloads the CLI and Bun
+  # installs daisyui, so they are ignored in the test job, which stays off
+  # the network.
+  tailwind:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: cargo-nextest@0.9.148
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.3
+      - if: runner.os == 'Linux'
+        run: sudo apt-get install -y nasm
+      - run: cargo nextest run --locked -p yuanme-engine -p yuanme --run-ignored only -E 'binary(=tailwind) or test(=a_warm_build_runs_no_tailwind)'
+
   # #15's Gate: image encoding takes at most 75 ms of wall time per output
   # on ubuntu-latest.
   image-budget:
