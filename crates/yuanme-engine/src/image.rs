@@ -55,8 +55,8 @@ impl fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-/// The size of `source`, a file in `inputs`, as displayed: from the cache,
-/// or else from its header.
+/// The size of `source`, a file in `inputs`, as displayed, and whether it
+/// is animated: from the cache, or else from its header.
 pub fn probe(cache: &mut Cache, inputs: &Inputs, source: &str) -> Result<Probe, Error> {
     let mut key = cache.key("image-probe");
     key.update(inputs.files[source].hash.as_bytes());
@@ -67,13 +67,14 @@ pub fn probe(cache: &mut Cache, inputs: &Inputs, source: &str) -> Result<Probe, 
             width: u32_at(0),
             height: u32_at(4),
             alpha: bytes[8] == 1,
+            animated: bytes[9] == 1,
         });
     }
     let probe = pipeline::probe(&read(inputs, source)?).map_err(Error::Image)?;
     let bytes = [
         &probe.width.to_le_bytes()[..],
         &probe.height.to_le_bytes(),
-        &[u8::from(probe.alpha)],
+        &[u8::from(probe.alpha), u8::from(probe.animated)],
     ]
     .concat();
     cache.insert("image-probe", key, bytes);

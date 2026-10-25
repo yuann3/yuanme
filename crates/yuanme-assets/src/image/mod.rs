@@ -72,6 +72,9 @@ pub struct Probe {
     /// The pixel format can hold transparency, whether or not any pixel uses
     /// it: that is all a header tells.
     pub alpha: bool,
+    /// An animated GIF, WebP or PNG, which the pipeline would encode as its
+    /// first frame, so it is copied instead (#28).
+    pub animated: bool,
 }
 
 impl Probe {
@@ -116,6 +119,7 @@ fn decode_error(e: impl fmt::Display) -> Error {
 /// image before any is encoded.
 pub fn probe(source: &[u8]) -> Result<Probe, Error> {
     let mut decoder = decoder(source)?;
+    let animated = animated(source)?;
     let (width, height) = decoder.dimensions();
     let alpha = decoder.color_type().has_alpha();
     let turned = matches!(
@@ -134,6 +138,31 @@ pub fn probe(source: &[u8]) -> Result<Probe, Error> {
         width,
         height,
         alpha,
+        animated,
+    })
+}
+
+fn animated(source: &[u8]) -> Result<bool, Error> {
+    use image::codecs::{gif::GifDecoder, png::PngDecoder, webp::WebPDecoder};
+    use image::{AnimationDecoder, ImageFormat};
+    let format = ImageReader::new(Cursor::new(source))
+        .with_guessed_format()
+        .map_err(decode_error)?
+        .format();
+    Ok(match format {
+        // A GIF says nothing of its frames up front: the second one has to
+        // be found.
+        Some(ImageFormat::Gif) => {
+            let gif = GifDecoder::new(Cursor::new(source)).map_err(decode_error)?;
+            gif.into_frames().take(2).count() > 1
+        }
+        Some(ImageFormat::WebP) => WebPDecoder::new(Cursor::new(source))
+            .map_err(decode_error)?
+            .has_animation(),
+        Some(ImageFormat::Png) => PngDecoder::new(Cursor::new(source))
+            .and_then(|png| png.is_apng())
+            .map_err(decode_error)?,
+        _ => false,
     })
 }
 
@@ -233,6 +262,7 @@ impl Pixels {
             width: self.width,
             height: self.height,
             alpha: self.alpha,
+            animated: false,
         }
     }
 

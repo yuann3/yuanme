@@ -136,6 +136,27 @@ fn a_display_p3_source_is_converted_to_srgb() {
     );
 }
 
+#[test]
+fn probe_finds_an_animated_gif() {
+    use image::codecs::gif::GifEncoder;
+    use image::{Delay, Frame, RgbaImage};
+    let gif = |frames: usize| {
+        let mut out = Vec::new();
+        let mut encoder = GifEncoder::new(&mut out);
+        for i in 0..frames {
+            let pixels = RgbaImage::from_pixel(4, 3, image::Rgba([40 * i as u8, 0, 0, 255]));
+            let frame = Frame::from_parts(pixels, 0, 0, Delay::from_numer_denom_ms(100, 1));
+            encoder.encode_frame(frame).unwrap();
+        }
+        drop(encoder);
+        out
+    };
+    let still = probe(&gif(1)).unwrap();
+    assert_eq!((still.width, still.height, still.animated), (4, 3, false));
+    assert!(probe(&gif(2)).unwrap().animated);
+    assert!(!probe(&fixture("shaokao.webp")).unwrap().animated);
+}
+
 /// A PNG that is only a header: enough to probe, too little to decode.
 fn png_header(width: u32, height: u32) -> Vec<u8> {
     fn chunk(out: &mut Vec<u8>, kind: &[u8; 4], data: &[u8]) {
