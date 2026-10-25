@@ -75,6 +75,42 @@ impl Inputs {
         self.dirs.insert(path.into());
     }
 
+    /// The project's folder, unless the Inputs were built in memory.
+    pub fn root(&self) -> Option<&std::path::Path> {
+        self.root.as_deref()
+    }
+
+    /// Whether the walk found the folder `dir`; the project's own is `""`.
+    pub fn contains_dir(&self, dir: &str) -> bool {
+        self.dirs.contains(dir)
+    }
+
+    pub fn remove(&mut self, path: &str) -> Option<Input> {
+        self.files.remove(path)
+    }
+
+    /// Removes the folder `dir` and everything in it, returning the files.
+    pub fn remove_dir(&mut self, dir: &str) -> Vec<(String, Input)> {
+        let under = format!("{dir}/");
+        let inside = |p: &String| p.starts_with(&under);
+        self.dirs.remove(dir);
+        self.dirs.retain(|d| !inside(d));
+        let files: Vec<String> = self
+            .files
+            .range(under.clone()..)
+            .map(|(p, _)| p)
+            .take_while(|p| inside(p))
+            .cloned()
+            .collect();
+        files
+            .into_iter()
+            .map(|p| {
+                let input = self.files.remove(&p).expect("listed above");
+                (p, input)
+            })
+            .collect()
+    }
+
     fn is_dir(&self, dir: &str) -> bool {
         let under = format!("{dir}/");
         self.dirs.contains(dir)

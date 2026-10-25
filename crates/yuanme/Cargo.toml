@@ -36,6 +36,10 @@ jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bun
 rayon = "1.12.0"
 ignore = "0.4.33"
 serde_json = "1.0.154"
+# `yuanme dev` (#11, #24): the only part of yuanme that runs tokio.
+axum = { version = "0.8.9", default-features = false, features = ["http1", "tokio", "ws"] }
+tokio = { version = "1.54.1", features = ["rt-multi-thread", "net", "sync", "signal"] }
+notify = "8.2.0"
 # musl's allocator is slow under rayon's threads, and the Linux release is
 # musl (#37).
 mimalloc = "0.1.52"
@@ -50,3 +54,4 @@ asm = ["yuanme-engine/asm"]
 tempfile = "3.27.0"
 insta = "1.49.0"
 jsonschema = { version = "0.60.1", default-features = false }
+tungstenite = { version = "0.29.0", default-features = false, features = ["handshake"] }

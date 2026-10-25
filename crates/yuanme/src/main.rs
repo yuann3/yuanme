@@ -1,3 +1,4 @@
+mod dev;
 mod docs;
 mod events;
 mod load;
@@ -7,6 +8,7 @@ mod schemas;
 mod sync;
 #[cfg(test)]
 mod tests;
+mod watch;
 
 use std::fs;
 use std::io::{self, IsTerminal, Write};
@@ -90,6 +92,16 @@ enum Command {
     },
     /// Report every Diagnostic `build` would, rendering every Page in memory and writing none.
     Check(CheckArgs),
+    /// Serve the Site with its Drafts from memory, and rebuild it on every change.
+    Dev {
+        /// The port on 127.0.0.1. By default 4590, or the next free one.
+        #[arg(long)]
+        port: Option<u16>,
+        /// Look for changes every 100 ms instead of being told of them, for
+        /// file systems that tell nothing, such as some network and container mounts.
+        #[arg(long)]
+        poll: bool,
+    },
     /// Create an Entry whose required fields are filled in, and print its path and Route.
     New {
         /// The Collection, by its name in yuanme.toml.
@@ -181,6 +193,7 @@ fn main() -> ExitCode {
 
 /// Where output goes (#21). It depends only on whether stdout is a
 /// terminal, and on `--json`; nothing guesses whether an agent is calling.
+#[derive(Clone, Copy)]
 struct Out {
     json: bool,
     terminal: bool,
@@ -258,6 +271,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
             build(&root, out_dir, clean, &check, strict_budgets, out)
         }
         Command::Check(check) => self::check(&root, &check, out),
+        Command::Dev { port, poll } => dev::run(&root, port, poll, *out),
         Command::New {
             collection,
             title,

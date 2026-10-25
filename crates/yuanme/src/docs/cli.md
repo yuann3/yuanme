@@ -27,13 +27,25 @@ Human text always goes to stderr, so stdout holds only what a command prints as 
 Each line is one event with a `type`:
 
 - `diagnostic`: one Diagnostic, shaped like rustc's: `level`, `code`, `message`, `spans` with byte offsets and 1-based lines and columns, `children` with help and suggested edits, `docs` and `rendered`. Apply a suggestion whose `applicability` is `machine-applicable` as it is.
-- `build-started` and `build-finished`: around `build` and `check`; `build-finished` has `ok`, `duration_ms`, `pages`, `changed_urls` and the counts of errors and warnings.
+- `build-started` and `build-finished`: around `build`, `check` and each build of `dev`; `build-finished` has `ok`, `duration_ms`, `pages`, `changed_urls` and the counts of errors and warnings.
+- `server-ready`: `yuanme dev` is serving, at `url`, from the process `pid`.
+- `reload`: `yuanme dev` told browsers to reload the Pages at `urls`.
+- `browser-console`: a browser on `yuanme dev` logged something or threw an uncaught error.
 - `route`: one line of `yuanme routes`.
 - `entry-created`: what `yuanme new` wrote.
 - `schema`: what `yuanme schema` prints.
 - `docs`: a page of these docs.
 
 `yuanme schema events` prints the JSON Schema of every event. A later release may add fields, but renames and removes none before 2.0.
+
+## The dev server
+
+`yuanme dev` builds the Site with its Drafts, serves it on `http://127.0.0.1:4590/`, or the next free port, and builds it again on every save. Read the URL from `server-ready` rather than assuming the port.
+
+- **Everything is in memory.** Nothing is written to the output directory, which never holds Drafts.
+- **Every save rebuilds the whole Site**, in milliseconds, and the Pages whose files changed are reloaded. What it serves is what `yuanme build --drafts` makes, but that math uses the whole math font rather than a subset, which would slow a save.
+- **An error keeps the last good build served.** Its Diagnostics are printed, as `build` prints them, until a save fixes it.
+- **`--poll`** looks at every file every 100 ms, for file systems that never say a file changed, such as some network and container mounts.
 
 ## Working with an agent
 

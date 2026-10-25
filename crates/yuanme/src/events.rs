@@ -39,6 +39,47 @@ pub enum Event<'a> {
         page: String,
         markdown: String,
     },
+    ServerReady {
+        url: String,
+        pid: u32,
+    },
+    Reload {
+        urls: Vec<String>,
+    },
+    BrowserConsole(Console),
+}
+
+/// What the dev client forwards from a browser's console (#21).
+#[derive(Debug, PartialEq, Eq)]
+pub struct Console {
+    /// log, info, warn, error or debug.
+    pub level: String,
+    pub message: String,
+    /// The Page's.
+    pub url: String,
+    pub stack: Option<String>,
+}
+
+impl Console {
+    /// The dev client's message, the event's own shape, or `None` for
+    /// anything else.
+    pub fn parse(text: &str) -> Option<Console> {
+        let json: Value = serde_json::from_str(text).ok()?;
+        let field = |key: &str| json.get(key)?.as_str().map(str::to_string);
+        if json.get("type")?.as_str()? != "browser-console" {
+            return None;
+        }
+        let level = field("level")?;
+        if !["log", "info", "warn", "error", "debug"].contains(&level.as_str()) {
+            return None;
+        }
+        Some(Console {
+            level,
+            message: field("message")?,
+            url: field("url")?,
+            stack: field("stack"),
+        })
+    }
 }
 
 /// One Route and what produces it, for `yuanme routes`.
@@ -132,6 +173,17 @@ impl Event<'_> {
             Event::Docs { page, markdown } => {
                 json!({ "type": "docs", "page": page, "markdown": markdown })
             }
+            Event::ServerReady { url, pid } => {
+                json!({ "type": "server-ready", "url": url, "pid": pid })
+            }
+            Event::Reload { urls } => json!({ "type": "reload", "urls": urls }),
+            Event::BrowserConsole(c) => json!({
+                "type": "browser-console",
+                "level": c.level,
+                "message": c.message,
+                "url": c.url,
+                "stack": c.stack,
+            }),
         };
         json.sort_all_objects();
         json
@@ -139,8 +191,6 @@ impl Event<'_> {
 }
 
 /// The draft 2020-12 JSON Schema of every event, `yuanme schema events`.
-/// `server-ready`, `reload` and `browser-console` are #21's, for the dev
-/// server (#67) to emit.
 pub fn schema() -> Value {
     let string = json!({ "type": "string" });
     let strings = json!({ "type": "array", "items": { "type": "string" } });

@@ -898,3 +898,195 @@ fn an_unchanged_check_runs_no_tsc() {
     let codes: Vec<String> = codes(&changed.stdout).into_iter().map(|(c, _)| c).collect();
     assert_eq!(codes, ["asset/tool-unavailable"]);
 }
+
+/// A running `yuanme dev --json` on a port of its own, with each event,
+/// validated against `yuanme schema events`, read as it comes.
+struct Dev {
+    child: std::process::Child,
+    events: std::sync::mpsc::Receiver<Value>,
+    address: String,
+}
+
+impl Dev {
+    fn start(root: &Path) -> Dev {
+        let mut schema = serde_json::from_str(&yuanme(root, &["schema", "events"]).stdout).unwrap();
+        strict(&mut schema);
+        let mut child = Command::new(env!("CARGO_BIN_EXE_yuanme"))
+            .args(["dev", "--json", "--port", "0"])
+            .current_dir(root)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
+        let stdout = child.stdout.take().unwrap();
+        let (send, events) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let validator = jsonschema::validator_for(&schema).unwrap();
+            for line in std::io::BufRead::lines(std::io::BufReader::new(stdout)) {
+                let line = line.unwrap();
+                let event: Value = serde_json::from_str(&line).unwrap();
+                let errors: Vec<String> = validator
+                    .iter_errors(&event)
+                    .map(|e| e.to_string())
+                    .collect();
+                assert!(errors.is_empty(), "{line}\n{errors:#?}");
+                if send.send(event).is_err() {
+                    return;
+                }
+            }
+        });
+        let mut dev = Dev {
+            child,
+            events,
+            address: String::new(),
+        };
+        let ready = dev.until("server-ready");
+        assert_eq!(ready["pid"], dev.child.id());
+        let url = ready["url"].as_str().unwrap();
+        dev.address = url
+            .strip_prefix("http://")
+            .and_then(|u| u.strip_suffix('/'))
+            .unwrap()
+            .to_string();
+        dev
+    }
+
+    /// The events up to and including the next of type `kind`.
+    fn events_until(&self, kind: &str) -> Vec<Value> {
+        let mut seen = Vec::new();
+        loop {
+            let event = self
+                .events
+                .recv_timeout(std::time::Duration::from_secs(30))
+                .unwrap_or_else(|_| panic!("no {kind} event after {}", show(&seen)));
+            let done = event["type"] == kind;
+            seen.push(event);
+            if done {
+                return seen;
+            }
+        }
+    }
+
+    fn until(&self, kind: &str) -> Value {
+        self.events_until(kind).pop().unwrap()
+    }
+
+    /// The status, headers and body of a GET of `path`.
+    fn get(&self, path: &str) -> (u16, String, String) {
+        let (status, head, body) = self.get_bytes(path);
+        (status, head, String::from_utf8(body).unwrap())
+    }
+
+    fn get_bytes(&self, path: &str) -> (u16, String, Vec<u8>) {
+        use std::io::{Read, Write};
+        let mut stream = std::net::TcpStream::connect(&self.address).unwrap();
+        write!(
+            stream,
+            "GET {path} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n",
+            self.address
+        )
+        .unwrap();
+        let mut response = Vec::new();
+        stream.read_to_end(&mut response).unwrap();
+        let at = response.windows(4).position(|w| w == b"\r\n\r\n").unwrap();
+        let head = String::from_utf8(response[..at].to_vec()).unwrap();
+        let status = head.split(' ').nth(1).unwrap().parse().unwrap();
+        (
+            status,
+            head.to_ascii_lowercase(),
+            response[at + 4..].to_vec(),
+        )
+    }
+}
+
+impl Drop for Dev {
+    fn drop(&mut self) {
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+    }
+}
+
+/// `yuanme dev` serves the Site with its Drafts from memory, rebuilds it
+/// on a save, tells browsers which Pages to reload and keeps serving the
+/// last good build while the project has an error.
+#[test]
+fn dev_serves_the_site_and_reloads_what_a_save_changed() {
+    use tungstenite::Message;
+
+    let dir = project(SITE);
+    let root = dir.path();
+    let dev = Dev::start(root);
+
+    let (status, head, body) = dev.get("/blog/first/");
+    assert_eq!(status, 200);
+    assert!(head.contains("content-type: text/html"), "{head}");
+    assert!(head.contains("cache-control: no-store"), "{head}");
+    assert!(body.contains("Hello."), "{body}");
+    assert_eq!(dev.get("/blog/wip/").0, 200, "a Draft is served");
+    let (status, head, _) = dev.get("/blog/first?x=1");
+    assert_eq!(status, 308);
+    assert!(head.contains("location: /blog/first/?x=1"), "{head}");
+    assert_eq!(dev.get("/no/such/page/").0, 404);
+    assert_eq!(
+        dev.get("/data/nav.yaml").0,
+        404,
+        "a project file isn't served"
+    );
+
+    let (mut socket, _) =
+        tungstenite::connect(format!("ws://{}/__yuanme/ws", dev.address)).unwrap();
+    let console = serde_json::json!({
+        "type": "browser-console",
+        "level": "error",
+        "message": "boom",
+        "url": "/blog/first/",
+        "stack": "at main.js:1",
+    });
+    socket.send(Message::text(console.to_string())).unwrap();
+    assert_eq!(dev.until("browser-console"), console);
+
+    let post = root.join("content/posts/first.md");
+    let text = fs::read_to_string(&post).unwrap();
+    fs::write(&post, text.replace("Hello.", "Hello, again.")).unwrap();
+    let events = dev.events_until("reload");
+    let kinds: Vec<&str> = events.iter().map(|e| e["type"].as_str().unwrap()).collect();
+    assert_eq!(kinds, ["build-started", "build-finished", "reload"]);
+    // Only the Page: the list and the feed show none of its body.
+    let urls = serde_json::json!(["/blog/first/"]);
+    assert_eq!(events[1]["changed_urls"], urls);
+    assert_eq!(events[2]["urls"], urls);
+    let Message::Text(message) = socket.read().unwrap() else {
+        panic!("a reload is text")
+    };
+    assert_eq!(
+        serde_json::from_str::<Value>(&message).unwrap(),
+        serde_json::json!({ "type": "reload", "urls": urls })
+    );
+    assert!(dev.get("/blog/first/").2.contains("Hello, again."));
+
+    // An error is reported, and the last good build stays served.
+    fs::write(&post, text.replace("kind: essay", "kind: poem")).unwrap();
+    let events = dev.events_until("build-finished");
+    assert_eq!(events.last().unwrap()["ok"], false);
+    assert!(events.iter().any(|e| e["type"] == "diagnostic"));
+    assert!(dev.get("/blog/first/").2.contains("Hello, again."));
+}
+
+/// Interrupted, `yuanme dev` saves its cache and exits 0.
+#[cfg(unix)]
+#[test]
+fn dev_stops_on_sigterm_and_keeps_its_cache() {
+    let dir = project(SITE);
+    let root = dir.path();
+    let mut dev = Dev::start(root);
+    let status = Command::new("kill")
+        .arg(dev.child.id().to_string())
+        .status()
+        .unwrap();
+    assert!(status.success());
+    assert_eq!(dev.child.wait().unwrap().code(), Some(0));
+    let mut stderr = String::new();
+    std::io::Read::read_to_string(&mut dev.child.stderr.take().unwrap(), &mut stderr).unwrap();
+    assert_eq!(stderr, "", "human text with --json");
+    assert!(root.join(".yuanme/cache/generation").exists());
+}
