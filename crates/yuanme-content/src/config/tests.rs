@@ -121,6 +121,9 @@ targets = { chrome = "120", safari = "16.4.1" }
 [router]
 mode = "swap"
 
+[tailwind]
+version = "4.2.1"
+
 [host]
 adapter = "netlify"
 
@@ -296,6 +299,11 @@ requests = 1
     );
 
     assert_eq!(config.router, RouterMode::Swap);
+    let (version, at) = config.tailwind.version.as_ref().unwrap();
+    assert_eq!(
+        (version.as_str(), &text[at.clone()]),
+        ("4.2.1", "\"4.2.1\"")
+    );
 
     let host = &config.host;
     assert_eq!(host.adapter, Adapter::Netlify);
@@ -408,6 +416,8 @@ requests = 1
     );
     // A Site is plain Pages until it turns the Router on (#20).
     assert_eq!(config.router, RouterMode::Off);
+    // The Engine's own pinned Tailwind.
+    assert_eq!(config.tailwind.version, None);
     // Workers static assets is the default host (#25).
     assert_eq!(config.host.adapter, Adapter::Cloudflare);
     assert!(config.host.headers.is_empty() && config.host.redirects.is_empty());
@@ -656,6 +666,18 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "[site]\nurl = \"https://e.com\"\n[build]\ntargets = { safari = \"16.256\" }\n",
         "\"16.256\"",
+    ),
+    // An exact Tailwind 4 release: only v4 is supported (#20), and a range
+    // would build differently as releases come out.
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[tailwind]\nversion = \"4.1\"\n",
+        "\"4.1\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[tailwind]\nversion = \"3.4.17\"\n",
+        "\"3.4.17\"",
     ),
     (
         "config/invalid-value",

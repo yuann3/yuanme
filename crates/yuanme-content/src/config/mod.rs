@@ -33,6 +33,7 @@ pub struct Config {
     pub build: Build,
     /// `[router] mode`.
     pub router: RouterMode,
+    pub tailwind: Tailwind,
     pub host: Host,
     pub math: Math,
     pub images: Images,
@@ -282,6 +283,14 @@ pub struct Build {
     /// `[major, minor, patch]`, by its key in `[build.targets]`. A browser
     /// left out is not supported.
     pub targets: BTreeMap<String, [u32; 3]>,
+}
+
+/// `[tailwind]` (#20).
+#[derive(Debug, Default)]
+pub struct Tailwind {
+    /// The Tailwind CLI release, such as `4.3.3`, and where its value is.
+    /// `None` runs the one the Engine pins.
+    pub version: Option<(String, Range<usize>)>,
 }
 
 /// Tailwind v4's baseline (#20), so a Site with Tailwind gets the same
@@ -648,6 +657,12 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         Some("swap") => RouterMode::Swap,
         Some(_) => unreachable!("checked as a choice"),
     };
+    let tailwind = Tailwind {
+        version: table(root, "tailwind")
+            .and_then(|t| t.get("version"))
+            .map(|v| (v.get_ref().as_str().expect("checked").to_string(), v.span())),
+    };
+
     let host = host(table(root, "host"), checker);
     let images = images(table(root, "images"), checker);
     let budgets = match root.get("budgets") {
@@ -678,6 +693,7 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         feeds,
         build: Build { targets },
         router,
+        tailwind,
         host,
         math: Math { macros, theorems },
         images,

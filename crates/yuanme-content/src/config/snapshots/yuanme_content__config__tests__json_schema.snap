@@ -1063,6 +1063,18 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
       ],
       "type": "object"
     },
+    "tailwind": {
+      "additionalProperties": false,
+      "description": "How yuanme runs Tailwind for a stylesheet that does `@import \"tailwindcss\"`.",
+      "properties": {
+        "version": {
+          "description": "The Tailwind CLI release to run, such as \"4.3.3\": an exact Tailwind 4 release. Defaults to the one this yuanme release pins. yuanme downloads it on first use and checks it against the release's `sha256sums.txt`.",
+          "pattern": "^4\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "taxonomies": {
       "additionalProperties": {
         "additionalProperties": false,

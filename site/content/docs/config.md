@@ -180,6 +180,12 @@ The Site's metadata.
 - `title` (string): The Site's name.
 - `url` (string, required): The address the Site is served from, such as "https://example.com". Feeds, sitemaps and canonical links are built from it.
 
+### `[tailwind]`
+
+How yuanme runs Tailwind for a stylesheet that does `@import "tailwindcss"`.
+
+- `version` (string): The Tailwind CLI release to run, such as "4.3.3": an exact Tailwind 4 release. Defaults to the one this yuanme release pins. yuanme downloads it on first use and checks it against the release's `sha256sums.txt`.
+
 ### `[taxonomies.NAME]`
 
 Named ways of grouping Entries by a shared value, such as tags or series.

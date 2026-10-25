@@ -242,6 +242,14 @@ impl Checker {
                     );
                 }
             }
+            (Shape::TailwindVersion, DeValue::String(s)) => {
+                if !is_tailwind_version(s) {
+                    self.invalid(
+                        format!("`{path}` must be an exact Tailwind 4 release, such as \"4.3.3\""),
+                        at,
+                    );
+                }
+            }
             (Shape::Int { min, max }, DeValue::Integer(i)) => {
                 match i64::from_str_radix(i.as_str(), i.radix()) {
                     Ok(n) if n < *min || n > *max => {
@@ -268,7 +276,8 @@ impl Checker {
                 | Shape::Url
                 | Shape::Route(_)
                 | Shape::Version
-                | Shape::BrowserVersion,
+                | Shape::BrowserVersion
+                | Shape::TailwindVersion,
                 _,
             ) => wrong(self, "a string"),
             (Shape::Int { .. }, _) => wrong(self, "an integer"),
@@ -485,6 +494,18 @@ pub(crate) fn parse_browser_version(s: &str) -> Option<[u32; 3]> {
         version[i] = n;
     }
     Some(version)
+}
+
+/// `4.Y.Z`, numbers without leading zeros.
+fn is_tailwind_version(s: &str) -> bool {
+    let parts: Vec<&str> = s.split('.').collect();
+    parts.len() == 3
+        && parts[0] == "4"
+        && parts[1..].iter().all(|p| {
+            !p.is_empty()
+                && p.bytes().all(|b| b.is_ascii_digit())
+                && (p.len() == 1 || !p.starts_with('0'))
+        })
 }
 
 /// The candidate a typo most likely meant, as rustc picks one: the nearest

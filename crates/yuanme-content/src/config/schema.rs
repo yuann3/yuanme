@@ -64,6 +64,8 @@ pub(crate) enum Shape {
     Version,
     /// A browser's version: `"111"`, `"16.4"` or `"16.4.1"`.
     BrowserVersion,
+    /// An exact Tailwind 4 release: `"4.3.3"`.
+    TailwindVersion,
     Int {
         min: i64,
         max: i64,
@@ -140,6 +142,11 @@ pub(crate) const ROOT: &[Key] = &[
         "host",
         Shape::Table(HOST),
         "The static host the Site is deployed to, and the headers and redirects it sends.",
+    ),
+    Key::optional(
+        "tailwind",
+        Shape::Table(TAILWIND),
+        "How yuanme runs Tailwind for a stylesheet that does `@import \"tailwindcss\"`.",
     ),
     Key::optional("math", Shape::Table(MATH), "How math renders."),
     Key::optional(
@@ -356,6 +363,12 @@ const BUILD: &[Key] = &[Key::optional(
     "targets",
     Shape::Table(TARGETS),
     "The oldest browsers the Site supports, as explicit versions such as { chrome = \"111\", safari = \"16.4\" }. yuanme adds the prefixes and fallbacks they need and drops the rest; a browser left out gets none. Defaults to Tailwind v4's baseline: Chrome 111, Firefox 128 and Safari 16.4.",
+)];
+
+const TAILWIND: &[Key] = &[Key::optional(
+    "version",
+    Shape::TailwindVersion,
+    "The Tailwind CLI release to run, such as \"4.3.3\": an exact Tailwind 4 release. Defaults to the one this yuanme release pins. yuanme downloads it on first use and checks it against the release's `sha256sums.txt`.",
 )];
 
 /// The browsers `targets` names, which both the CSS and the JS pipeline know.
@@ -722,6 +735,9 @@ fn shape(shape: &Shape) -> Value {
         Shape::Version => json!({ "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" }),
         Shape::BrowserVersion => {
             json!({ "type": "string", "pattern": "^[0-9]+(\\.[0-9]+){0,2}$" })
+        }
+        Shape::TailwindVersion => {
+            json!({ "type": "string", "pattern": "^4\\.[0-9]+\\.[0-9]+$" })
         }
         Shape::Int { min, max } => {
             let mut schema = json!({ "type": "integer" });
