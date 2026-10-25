@@ -129,6 +129,37 @@ jobs:
       - run: sudo apt-get install -y nasm
       - run: cargo nextest run --release --locked -p yuanme --run-ignored only -E 'test(=dev::tests::a_prose_edit_rebuilds_in_at_most_50_ms_p95)' --no-capture
 
+  # #15's build Gates on the Scale Site (#73): cold, warm and incremental
+  # builds, check, dev cold start, image encoding and peak RSS. A timing
+  # more than 10% slower than the main it is pushed onto, or a PR's base,
+  # built and timed in the same run, fails. Each number against its budget
+  # is in the job summary, and fails nothing until the Engine meets them.
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: hyperfine@1.20.0
+      - run: sudo apt-get install -y nasm
+      - name: Build main's yuanme
+        env:
+          MAIN: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$MAIN" ] || ! git cat-file -e "$MAIN^{commit}" 2> /dev/null; then
+            echo "::warning::no main commit to compare with, so only the budgets are checked"
+            exit 0
+          fi
+          git worktree add .worktrees/main "$MAIN"
+          (cd .worktrees/main && cargo build --release --locked -p yuanme --target-dir ../../target)
+          cp target/release/yuanme target/yuanme-main
+      - run: cargo build --release --locked -p yuanme
+      - run: cargo xtask gates target/release/yuanme $(test -x target/yuanme-main && echo --main target/yuanme-main)
+
   # The Router's feel checks (#61) on a fixture Site, in the three engines.
   # Its size, at most 2 KB br, is a test in the test job.
   router:
