@@ -35,17 +35,20 @@ pub enum Entry {
     /// A Script, by its path from the project root.
     Script(String),
     /// A Page's Script (ADR 0013): it registers these Sidecar scripts, by
-    /// path from the project root, so their `mount` runs for the Page.
+    /// path from the project root, so their `mount` runs for the Page,
+    /// and with the Router on, starts the Router.
     Page(Vec<String>),
 }
 
 /// The Engine's own modules, by the specifier that imports them. Only
 /// `yuanme:router` is the Authors'; the others are imported by the
 /// Engine's modules alone.
-const MODULES: &[(&str, &str)] = &[("yuanme:mount", include_str!("js/mount.ts"))];
+const MODULES: &[(&str, &str)] = &[
+    ("yuanme:mount", include_str!("js/mount.ts")),
+    ("yuanme:swap", include_str!("js/swap.ts")),
+];
 const ROUTER: &str = "yuanme:router";
-/// `yuanme:router` with no Router on the Page: `navigate` is a full load;
-/// #61 swaps in the Router's own.
+/// `yuanme:router` with the Router off: `navigate` is a full load.
 const NAVIGATE: &str = "export function navigate(url, { history = \"auto\" } = {}) {\n  if (history === \"replace\") location.replace(url);\n  else location.assign(url);\n}\n";
 /// What a Page Script's module id starts with, before its index.
 const PAGE: &str = "\0yuanme:page:";
@@ -115,10 +118,12 @@ pub enum At {
 }
 
 /// Bundles `entries` for `targets`: the oldest version of each browser, as
-/// `[major, minor, patch]` by Site config's key for it.
+/// `[major, minor, patch]` by Site config's key for it. With `router`,
+/// `yuanme:router` is the Router, which each Page Script starts.
 pub fn bundle(
     project: Project,
     entries: &[Entry],
+    router: bool,
     targets: &BTreeMap<String, [u32; 3]>,
 ) -> Result<Bundles, Vec<Problem>> {
     // Resolved paths are real paths, so a symlinked project root must be
@@ -136,13 +141,14 @@ pub fn bundle(
     let pages = entries
         .iter()
         .filter_map(|e| match e {
-            Entry::Page(sidecars) => Some(page_code(sidecars)),
+            Entry::Page(sidecars) => Some(page_code(sidecars, router)),
             Entry::Script(_) => None,
         })
         .collect();
     let plugin = Files {
         has_packages: root.is_some(),
         files: project.files,
+        router,
         pages,
         prefix: prefix.clone(),
         problems: problems.clone(),
@@ -302,15 +308,27 @@ fn target_list(targets: &BTreeMap<String, [u32; 3]>) -> Vec<String> {
     out
 }
 
-/// A Page Script's code: it registers the Sidecar scripts and mounts them
-/// at once.
-fn page_code(sidecars: &[String]) -> String {
-    let mut code = String::from("import { page, mount } from \"yuanme:mount\";\n");
+/// A Page Script's code. It imports the Router first, so the Router is
+/// listening before any Sidecar script's top level runs; the Router mounts
+/// the Page once every deferred Script has run, and without it, the Page
+/// Script mounts it at once.
+fn page_code(sidecars: &[String], router: bool) -> String {
+    let mut code = String::new();
+    if router {
+        code += "import \"yuanme:router\";\n";
+    }
+    if sidecars.is_empty() {
+        return code;
+    }
+    code += "import { page, mount } from \"yuanme:mount\";\n";
     for (i, path) in sidecars.iter().enumerate() {
         code += &format!("import * as s{i} from {:?};\n", format!("/{path}"));
     }
     let names: Vec<String> = (0..sidecars.len()).map(|i| format!("s{i}")).collect();
-    code += &format!("page(import.meta.url, [{}]);\nmount();\n", names.join(", "));
+    code += &format!("page(import.meta.url, [{}]);\n", names.join(", "));
+    if !router {
+        code += "mount();\n";
+    }
     code
 }
 
@@ -334,6 +352,7 @@ fn relative(id: &str, prefix: &str) -> String {
 struct Files {
     files: BTreeMap<String, Arc<[u8]>>,
     has_packages: bool,
+    router: bool,
     /// Each Page Script's code, by its index.
     pages: Vec<String>,
     /// What a project file's module id starts with: the project root.
@@ -518,7 +537,10 @@ impl Plugin for Files {
                     self.pages[i.parse::<usize>().expect("an index")].clone(),
                     ModuleType::Js,
                 ),
-                None if name == ROUTER => (NAVIGATE.to_string(), ModuleType::Js),
+                None if name == ROUTER && !self.router => (NAVIGATE.to_string(), ModuleType::Js),
+                None if name == ROUTER => {
+                    (include_str!("js/router.ts").to_string(), ModuleType::Ts)
+                }
                 None => {
                     let (_, code) = MODULES.iter().find(|(m, _)| *m == name).expect("resolved");
                     (code.to_string(), ModuleType::Ts)

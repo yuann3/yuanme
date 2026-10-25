@@ -193,19 +193,90 @@ You don't load a Sidecar script. Each Page that rendered the Template loads it t
 
 ### mount
 
-A Sidecar script's top level runs once per document. Do a Page's work in an exported `mount` instead, which yuanme calls on every Page load that rendered the Template: once after a full page load, and and, once yuanme has the Router, again each time it swaps in another Page that rendered it. `mount` gets one argument, `ctx`:
+A Sidecar script's top level runs once per document. Do a Page's work in an exported `mount` instead, which yuanme calls on every Page load that rendered the Template: once after a full page load, and again each time the Router swaps in another Page that rendered it. `mount` gets one argument, `ctx`:
 
 - `ctx.url`: the Page's URL, as a `URL`.
 - `ctx.signal`: an `AbortSignal` that aborts before the Router swaps the Page out. A listener added with `{ signal: ctx.signal }` goes away with the Page.
 - `ctx.data`: an object of the Sidecar script's own, which lasts from Page to Page until the next full load.
 
-`mount` may return a function, which runs when the signal aborts: the clock above stops its timer there. Without the Router, each move between Pages is a full page load, so `mount` runs once per load and its cleanup never runs. A `mount` that throws is reported in the browser's console, and the other Sidecar scripts still mount.
+`mount` may return a function, which runs when the signal aborts: the clock above stops its timer there. With the Router off, each move between Pages is a full page load, so `mount` runs once per load and its cleanup never runs. A `mount` that throws is reported in the browser's console, and the other Sidecar scripts still mount.
 
 ## The Router
 
-yuanme doesn't have the Router yet: every move between Pages is a full page load.
+`[router] mode` in Site config picks how a visitor moves between Pages:
 
-A Script can already import `navigate` from `yuanme:router`, a module yuanme provides. For now it loads the URL in full; `history: "replace"` replaces the current history entry instead of adding one:
+- `"off"`, the default: every move is a full page load.
+- `"native"`: full page loads, which the browser animates with a cross-document View Transition. yuanme adds `<style>@view-transition{navigation:auto}</style>` to every Page, and no JS. Style the animation with `::view-transition-old()` and `::view-transition-new()` in a stylesheet.
+- `"swap"`: the Router on every Page.
+
+```toml check
+[site]
+url = "https://example.com"
+title = "Example"
+
+[collections.posts]
+route = "/blog/{slug}/"
+list_route = "/blog/"
+
+[router]
+mode = "swap"
+```
+
+With `"swap"`, the Router catches each move to another Page of the Site, fetches the Page, and swaps it into the current document, so what the Site keeps between Pages survives. It:
+
+- replaces `<body>`, `<html>`'s attributes and `<head>`, keeping the stylesheets both Pages link, and loading new ones before the swap;
+- runs the new Page's Scripts that haven't run in this document, including inline ones, and mounts its Sidecar scripts;
+- scrolls to the top, or to the element the URL's `#fragment` names, and Back and Forward restore where the Page was scrolled;
+- announces the new Page's title to screen readers.
+
+Browsers without the Navigation API, older than Chrome 105, Firefox 147 and Safari 26.2, get full page loads. So does a move to another origin, to a file such as `/feed.xml`, a download, a form, a reload, a page that doesn't run the Router, such as an HTML Static file, and a fetch that fails. The Router itself is at most 2 KB brotli-compressed.
+
+### Keep an element
+
+An element with `data-yuanme-persist` moves into the next Page in place of the element with the same value there, instead of being replaced, so it keeps its state: a `<canvas>` keeps its drawing and WebGL context, and a focused link stays focused. A Page without that value gets its own element:
+
+```jinja check templates/posts/entry.html
+<!doctype html>
+<html lang="en">
+<head>
+<title>{{ entry.title }}</title>
+<link rel="stylesheet" href="/styles/site.css">
+<script type="module" src="/scripts/site.ts"></script>
+</head>
+<canvas data-yuanme-persist="background"></canvas>
+<h1>{{ entry.title }}</h1>
+{% include "partials/clock.html" %}
+{{ entry.content }}
+</html>
+```
+
+### Full page loads and prefetching
+
+`data-yuanme-reload` on a link, or on an element around links, makes them full page loads.
+
+After 80 ms of hover or focus on a link, or at once on touch, the Router fetches its Page and keeps it for 30 seconds, so the click shows it sooner. It doesn't when the browser asks to save data or on a 2G connection. `data-yuanme-prefetch="false"` on a link, or around it, turns prefetching off for it.
+
+### Events
+
+With the Router on, it fires three events on `document`, which a Site-level Script listens for:
+
+- `yuanme:before-swap`, before the swap. The event has `from` and `to`, the two URLs, `navigationType`, which is `"push"`, `"replace"` or `"traverse"`, `newDocument`, the parsed Page, and `swap`, the function that swaps it in. Replace `swap` to change how the Page goes in.
+- `yuanme:after-swap`, after the swap and before the new Page's Scripts run.
+- `yuanme:page-load`, once the Page's Scripts have run and its Sidecar scripts are mounted: after the first load, and after each swap.
+
+```ts check scripts/site.ts
+document.addEventListener("yuanme:before-swap", (event: any) => {
+  const swap = event.swap;
+  event.swap = () => {
+    document.documentElement.dataset.leaving = event.from.pathname;
+    swap();
+  };
+});
+```
+
+### navigate
+
+A Script moves to another Page with `navigate` from `yuanme:router`: through the Router when it is on, or as a full page load. `history: "replace"` replaces the current history entry instead of adding one:
 
 ```ts check scripts/site.ts
 import { navigate } from "yuanme:router";

@@ -314,7 +314,7 @@ fn script_tags(page: &str) -> Vec<&str> {
 
 #[test]
 fn each_page_mounts_its_sidecar_scripts_through_one_page_script() {
-    for mode in ["off", "native"] {
+    for mode in ["off", "native", "swap"] {
         let build = router_site(mode);
         assert!(!build.failed(), "{}", diagnostics(&build));
         // Pages that render the same Templates' Sidecar scripts share a
@@ -328,6 +328,11 @@ fn each_page_mounts_its_sidecar_scripts_through_one_page_script() {
             let [tag] = tags.as_slice() else {
                 panic!("{mode} {page}: {tags:?}")
             };
+            assert_eq!(
+                tag.contains(" data-yuanme-router"),
+                mode == "swap",
+                "{mode} {tag}"
+            );
             assert_eq!(
                 html.contains("<style>@view-transition{navigation:auto}</style>"),
                 mode == "native",
@@ -354,7 +359,56 @@ fn each_page_mounts_its_sidecar_scripts_through_one_page_script() {
         ] {
             assert!(modules.contains(&sidecar), "{mode}: {modules:?}");
         }
+        let router = build
+            .scripts
+            .iter()
+            .find(|b| b.modules.iter().any(|(m, _)| m == "yuanme:swap"));
+        assert_eq!(router.is_some(), mode == "swap", "{mode}");
     }
+}
+
+/// #26's sub-budget: the Router, with the swap core and the Script
+/// lifecycle, is at most 2 KB br, as a Site serves it.
+#[test]
+fn the_router_is_one_chunk_of_at_most_2_kb_br() {
+    let build = router_site("swap");
+    assert!(!build.failed(), "{}", diagnostics(&build));
+    let router = build
+        .scripts
+        .iter()
+        .find(|b| b.modules.iter().any(|(m, _)| m == "yuanme:router"))
+        .unwrap();
+    let mut modules: Vec<&str> = router.modules.iter().map(|(m, _)| m.as_str()).collect();
+    modules.sort();
+    assert_eq!(modules, ["yuanme:mount", "yuanme:router", "yuanme:swap"]);
+    let code = text(&build, &router.file);
+    let mut br = Vec::new();
+    let params = brotli::enc::BrotliEncoderParams {
+        quality: 11,
+        ..Default::default()
+    };
+    brotli::BrotliCompress(&mut code.as_bytes(), &mut br, &params).unwrap();
+    assert!(br.len() <= 2048, "the Router is {} B br", br.len());
+}
+
+#[test]
+fn with_the_router_on_a_page_without_sidecar_scripts_starts_it() {
+    let root = fixture("scripts");
+    let mut inputs = load(&root);
+    let config = std::fs::read_to_string(root.join("yuanme.toml")).unwrap();
+    inputs.insert(
+        "yuanme.toml",
+        format!("{config}\n[router]\nmode = \"swap\"\n").into_bytes(),
+    );
+    let build = run(&inputs);
+    assert!(!build.failed(), "{}", diagnostics(&build));
+    let about = text(&build, "about/index.html");
+    let tags = script_tags(&about);
+    assert!(
+        tags.iter()
+            .any(|t| t.contains("/assets/page-") && t.contains(" data-yuanme-router")),
+        "{tags:?}"
+    );
 }
 
 #[test]

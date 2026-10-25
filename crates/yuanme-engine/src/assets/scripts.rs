@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use yuanme_assets::js::{self, At, Problem, ProblemKind};
-use yuanme_content::config::Config;
+use yuanme_content::config::{Config, RouterMode};
 use yuanme_content::fields::{Image, Value};
 use yuanme_content::site;
 use yuanme_diag::{Applicability, Diagnostic, Edit, Files, Span, codes};
@@ -77,6 +77,7 @@ pub(super) fn bundle(
             files: modules,
         },
         entries,
+        config.router == RouterMode::Swap,
         &config.build.targets,
     );
     let bundles = match result {

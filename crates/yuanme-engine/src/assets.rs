@@ -170,7 +170,9 @@ pub(crate) fn assets(
         }
     }
     // Each Page's Script (ADR 0013): the Sidecar scripts of its Templates,
-    // in their order. Pages with the same Sidecar scripts share one.
+    // in their order, and with the Router on, the Router. Pages with the
+    // same Sidecar scripts share one.
+    let router = config.router == RouterMode::Swap;
     let mut page_scripts: Vec<Vec<String>> = Vec::new();
     let page_script: Vec<Option<usize>> = pages
         .iter()
@@ -188,7 +190,7 @@ pub(crate) fn assets(
                 })
                 .filter(|path| inputs.files.contains_key(path))
                 .collect();
-            if sidecars.is_empty() {
+            if sidecars.is_empty() && !router {
                 return None;
             }
             Some(match page_scripts.iter().position(|s| *s == sidecars) {
@@ -352,7 +354,9 @@ pub(crate) fn assets(
             }
             if let Some(i) = page_script {
                 let src = placeholder_of(chunks_at + page_chunk(i));
-                tags += &format!("<script type=\"module\" src=\"{src}\"></script>");
+                // The Router swaps in only a Page that carries it.
+                let marker = if router { " data-yuanme-router" } else { "" };
+                tags += &format!("<script type=\"module\" src=\"{src}\"{marker}></script>");
             }
             for chunk in preloads {
                 let href = placeholder_of(chunks_at + chunk);
