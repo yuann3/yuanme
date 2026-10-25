@@ -172,6 +172,10 @@ pub struct Build {
     pub site: Option<Site>,
     /// What went into each Script bundle, for the build report (#20).
     pub scripts: Vec<Bundle>,
+    /// The dev client (#68), by its path in `files`: only a `Mode::Dev`
+    /// build has it, and no Page names it, since `yuanme dev` adds it to
+    /// each HTML file as it serves it.
+    pub client: Option<String>,
     /// Every image variant the Pages name, by its path in the output
     /// directory, with the settings that encode it. A build that encodes
     /// no image has none of them in `files`, and `yuanme dev` encodes one
@@ -240,6 +244,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         config,
         site,
         scripts: Vec::new(),
+        client: None,
         images: BTreeMap::new(),
         budgets: Vec::new(),
     };
@@ -386,6 +391,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         config: Some(config),
         site: Some(site),
         scripts: stage.scripts,
+        client: stage.client,
         images: used.variants,
         budgets,
     };

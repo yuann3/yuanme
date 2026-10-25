@@ -29,6 +29,7 @@ lightningcss = { version = "=1.0.0-alpha.72", default-features = false, features
 rolldown = "=1.2.15"
 rolldown_common = "=1.2.15"
 rolldown_error = "=1.2.15"
+rolldown_utils = "=1.2.15"
 # rolldown 1.2.15's.
 oxc_resolver = "=11.24.3"
 oxc_allocator = "=0.155.0"

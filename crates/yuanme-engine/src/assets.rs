@@ -35,6 +35,8 @@ pub(crate) struct Stage {
     pub assets: Vec<Asset>,
     /// What went into each Script bundle.
     pub scripts: Vec<Bundle>,
+    /// The dev client's chunk, by its path in the output directory.
+    pub client: Option<String>,
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -44,13 +46,14 @@ impl Stage {
             pages: Vec::new(),
             assets: Vec::new(),
             scripts: Vec::new(),
+            client: None,
             diagnostics: diagnostics.0,
         }
     }
 }
 
-/// `watch` keeps a Tailwind CLI running for each stylesheet, as `yuanme
-/// dev` does.
+/// `dev` is `yuanme dev`'s: it keeps a Tailwind CLI running for each
+/// stylesheet, and bundles the dev client.
 #[allow(clippy::too_many_arguments)] // Each is one thing the stage reads.
 pub(crate) fn assets(
     inputs: &Inputs,
@@ -60,7 +63,7 @@ pub(crate) fn assets(
     templates: &BTreeMap<String, FileId>,
     sources: &mut Files,
     cache: &mut Cache,
-    watch: bool,
+    dev: bool,
 ) -> Stage {
     let mut site = BTreeSet::new();
     for page in &pages {
@@ -223,6 +226,7 @@ pub(crate) fn assets(
         .iter()
         .map(|path| js::Entry::Script(path.clone()))
         .chain(page_scripts.into_iter().map(js::Entry::Page))
+        .chain(dev.then_some(js::Entry::Client))
         .collect();
     let scripts = scripts::bundle(
         &project,
@@ -267,7 +271,7 @@ pub(crate) fn assets(
             cache,
             &tailwind,
             &tokens,
-            watch,
+            dev,
             sources,
             &mut files,
             &mut diagnostics,
@@ -457,9 +461,17 @@ pub(crate) fn assets(
             (page.output, splice(&page.text, &edits))
         })
         .collect();
+    let client = dev.then(|| {
+        let chunk = *scripts
+            .entries
+            .last()
+            .expect("the client is the last entry");
+        scripts.report[chunk].file.clone()
+    });
     Stage {
         pages,
         assets,
+        client,
         scripts: scripts.report,
         diagnostics: diagnostics.0,
     }

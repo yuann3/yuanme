@@ -5840,6 +5840,7 @@ dependencies = [
  "rolldown",
  "rolldown_common",
  "rolldown_error",
+ "rolldown_utils",
  "sha2",
  "skera",
  "skrifa",

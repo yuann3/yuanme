@@ -405,6 +405,77 @@ fn the_router_is_one_chunk_of_at_most_2_kb_br() {
     assert!(br.len() <= 2048, "the Router is {} B br", br.len());
 }
 
+/// The dev client (#68) is bundled only for `yuanme dev`, so a built Site
+/// holds none of its bytes. In dev the Engine's own modules are one chunk
+/// that no edit of a Script changes: a Page Script swapped in after an
+/// edit shares the Router and the registry of Sidecar scripts with the
+/// client and the Pages before it.
+#[test]
+fn only_dev_bundles_the_client_and_its_engine_chunk_outlasts_an_edit() {
+    let built = router_site("swap");
+    assert!(built.client.is_none());
+    for (path, output) in &built.files {
+        if let Body::Bytes(bytes) = &output.body {
+            assert!(
+                !bytes.windows(9).any(|w| w == b"__yuanme/"),
+                "{path} has the client"
+            );
+        }
+    }
+
+    let mut inputs = load(&fixture("router"));
+    let mut cache = Cache::memory("1.0.0");
+    let dev = build(&inputs, &mut cache, Mode::Dev);
+    assert!(!dev.failed(), "{}", diagnostics(&dev));
+    let client = dev.client.clone().expect("a dev build has the client");
+    assert!(text(&dev, &client).contains("/__yuanme/ws"));
+    // Pages name it only as the dev server serves them.
+    assert!(!text(&dev, "index.html").contains(&client));
+    let engine = |b: &Build| {
+        let chunk = b
+            .scripts
+            .iter()
+            .find(|s| s.modules.iter().any(|(m, _)| m == "yuanme:mount"))
+            .unwrap();
+        let mut modules: Vec<String> = chunk.modules.iter().map(|(m, _)| m.clone()).collect();
+        modules.sort();
+        (chunk.file.clone(), modules)
+    };
+    let (file, modules) = engine(&dev);
+    assert_eq!(modules, ["yuanme:mount", "yuanme:router", "yuanme:swap"]);
+    let page_script = |b: &Build| {
+        let html = text(b, "index.html");
+        let tag = script_tags(&html)
+            .into_iter()
+            .find(|t| t.contains(" data-yuanme-router"))
+            .unwrap()
+            .to_string();
+        tag.split("src=\"/")
+            .nth(1)
+            .unwrap()
+            .split('"')
+            .next()
+            .unwrap()
+            .to_string()
+    };
+    let before = page_script(&dev);
+    let name = file.strip_prefix("assets/").unwrap();
+    assert!(
+        text(&dev, &before).contains(name),
+        "{before} imports {file}"
+    );
+
+    // Every Page renders the Layout, as the Router does.
+    let layout = "templates/layouts/base.ts";
+    let code = std::fs::read_to_string(fixture("router").join(layout)).unwrap();
+    inputs.insert(layout, format!("{code}\nw.__edited = 1;\n").into_bytes());
+    let edited = build(&inputs, &mut cache, Mode::Dev);
+    assert!(!edited.failed(), "{}", diagnostics(&edited));
+    assert_ne!(page_script(&edited), before);
+    assert_eq!(engine(&edited), engine(&dev));
+    assert_eq!(edited.client, dev.client);
+}
+
 #[test]
 fn with_the_router_on_a_page_without_sidecar_scripts_starts_it() {
     let root = fixture("scripts");

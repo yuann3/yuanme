@@ -21,11 +21,13 @@ use rolldown::plugin::{
     SharedLoadPluginContext,
 };
 use rolldown::{
-    Bundler, BundlerOptions, BundlerTransformOptions, CommentsOptions, Either, InputItem,
-    ModuleType, OutputFormat, Platform, PreserveEntrySignatures, RawMinifyOptions, TsConfig,
+    Bundler, BundlerOptions, BundlerTransformOptions, CodeSplittingMode, CommentsOptions, Either,
+    InputItem, ManualCodeSplittingOptions, MatchGroup, MatchGroupName, MatchGroupTest, ModuleType,
+    OutputFormat, Platform, PreserveEntrySignatures, RawMinifyOptions, TsConfig,
 };
 use rolldown_common::{Output, ResolvedExternal};
 use rolldown_error::{BuildDiagnostic, DiagnosticOptions, EventKind};
+use rolldown_utils::js_regex::HybridRegex;
 
 /// The project, as a build of its Scripts reads it.
 pub struct Project {
@@ -46,20 +48,28 @@ pub enum Entry {
     /// path from the project root, so their `mount` runs for the Page,
     /// and with the Router on, starts the Router.
     Page(Vec<String>),
+    /// The dev client (#68), which only `yuanme dev` bundles and serves.
+    /// With it, the Engine's own modules are a chunk of their own, which
+    /// no edit of a Script changes, so a Page Script the client swaps in
+    /// after an edit shares one Router and one registry of Sidecar
+    /// scripts with the client and the Page before it.
+    Client,
 }
 
 /// The Engine's own modules, by the specifier that imports them. Only
 /// `yuanme:router` is the Authors'; the others are imported by the
-/// Engine's modules alone.
+/// Engine's modules alone, but `yuanme:client`, which is an entry.
 const MODULES: &[(&str, &str)] = &[
     ("yuanme:mount", include_str!("js/mount.ts")),
     ("yuanme:swap", include_str!("js/swap.ts")),
+    ("yuanme:client", include_str!("js/client.ts")),
 ];
 const ROUTER: &str = "yuanme:router";
 /// `yuanme:router` with the Router off: `navigate` is a full load.
 const NAVIGATE: &str = "export function navigate(url, { history = \"auto\" } = {}) {\n  if (history === \"replace\") location.replace(url);\n  else location.assign(url);\n}\n";
 /// What a Page Script's module id starts with, before its index.
 const PAGE: &str = "\0yuanme:page:";
+const CLIENT: &str = "\0yuanme:client";
 
 pub struct Chunk {
     /// rolldown's file name for it, such as `shared-Dig5JG4F.js`, which the
@@ -150,7 +160,7 @@ pub fn bundle(
         .iter()
         .filter_map(|e| match e {
             Entry::Page(sidecars) => Some(page_code(sidecars, router)),
-            Entry::Script(_) => None,
+            Entry::Script(_) | Entry::Client => None,
         })
         .collect();
     let plugin = Files {
@@ -167,13 +177,29 @@ pub fn bundle(
         .map(|e| match e {
             Entry::Script(path) => format!("{prefix}{path}"),
             Entry::Page(_) => format!("{PAGE}{}", page.next().expect("endless")),
+            Entry::Client => CLIENT.to_string(),
         })
         .collect();
+    let engine_chunk = entries.iter().any(|e| matches!(e, Entry::Client)).then(|| {
+        CodeSplittingMode::Advanced(ManualCodeSplittingOptions {
+            groups: Some(vec![MatchGroup {
+                name: MatchGroupName::Static("yuanme".to_string()),
+                test: Some(MatchGroupTest::Regex(
+                    HybridRegex::new(r"^\x00yuanme:(mount|swap|router)$").expect("a regex"),
+                )),
+                ..MatchGroup::default()
+            }]),
+            ..ManualCodeSplittingOptions::default()
+        })
+    });
     let options = BundlerOptions {
         input: Some(
             ids.iter()
                 .map(|id| InputItem {
-                    name: id.starts_with(PAGE).then(|| "page".to_string()),
+                    name: match id.as_str() {
+                        CLIENT => Some("client".to_string()),
+                        _ => id.starts_with(PAGE).then(|| "page".to_string()),
+                    },
                     import: id.clone(),
                 })
                 .collect(),
@@ -189,6 +215,7 @@ pub fn bundle(
             annotation: false,
             jsdoc: false,
         }),
+        code_splitting: engine_chunk,
         entry_filenames: Some("[name]-[hash].js".to_string().into()),
         chunk_filenames: Some("[name]-[hash].js".to_string().into()),
         // ADR 0013: `false` would drop a Sidecar's `mount`.
