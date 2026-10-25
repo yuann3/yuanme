@@ -4,7 +4,7 @@
 //! names by its hash.
 
 mod scripts;
-mod tailwind;
+pub(crate) mod tailwind;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
@@ -49,6 +49,9 @@ impl Stage {
     }
 }
 
+/// `watch` keeps a Tailwind CLI running for each stylesheet, as `yuanme
+/// dev` does.
+#[allow(clippy::too_many_arguments)] // Each is one thing the stage reads.
 pub(crate) fn assets(
     inputs: &Inputs,
     config: &Config,
@@ -57,6 +60,7 @@ pub(crate) fn assets(
     templates: &BTreeMap<String, FileId>,
     sources: &mut Files,
     cache: &mut Cache,
+    watch: bool,
 ) -> Stage {
     let mut site = BTreeSet::new();
     for page in &pages {
@@ -263,6 +267,7 @@ pub(crate) fn assets(
             cache,
             &tailwind,
             &tokens,
+            watch,
             sources,
             &mut files,
             &mut diagnostics,

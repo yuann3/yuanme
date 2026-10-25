@@ -10,6 +10,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::Body;
+use crate::assets::tailwind::Watching;
 
 /// Entries no build has read for this many successful builds are deleted.
 const KEEP: u64 = 10;
@@ -28,6 +29,9 @@ pub struct Cache {
     /// Large entries, such as image variants. On disk each is its own file
     /// and the pack holds only its key and last use.
     large: Pack,
+    /// The Tailwind CLIs `yuanme dev` keeps running between builds, by
+    /// stylesheet (#59). Dropping the cache stops them.
+    pub(crate) tailwind: BTreeMap<String, Watching>,
 }
 
 #[derive(Default)]
@@ -53,6 +57,7 @@ impl Cache {
             dir: None,
             packs: BTreeMap::new(),
             large: Pack::default(),
+            tailwind: BTreeMap::new(),
         }
     }
 

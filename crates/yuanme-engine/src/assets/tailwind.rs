@@ -2,11 +2,12 @@
 //! built by the Tailwind CLI, a Managed tool, from the Site's class
 //! tokens, before lightningcss bundles it with Tailwind's options.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use yuanme_assets::tailwind::{self, Error};
+use yuanme_assets::tailwind::{self, Error, Watch};
 use yuanme_assets::tool;
 use yuanme_content::config::Config;
 use yuanme_diag::{Diagnostic, Files, Span, codes};
@@ -17,7 +18,9 @@ use crate::Cache;
 /// The CLI's unminified output for each stylesheet in `entries`, by its
 /// path from the project root. Each is cached under its tokens, the CSS
 /// and plugins Tailwind may read, and the release, so a warm build runs no
-/// Tailwind. A stylesheet that fails has a Diagnostic instead.
+/// Tailwind. A stylesheet that fails has a Diagnostic instead. `watch`
+/// builds a miss with a CLI kept running in the cache, which is quicker
+/// than starting one.
 #[allow(clippy::too_many_arguments)] // Each is one thing the stage holds.
 pub(super) fn outputs(
     project: &Project<'_>,
@@ -25,6 +28,7 @@ pub(super) fn outputs(
     cache: &mut Cache,
     entries: &[String],
     tokens: &str,
+    watch: bool,
     sources: &mut Files,
     files: &mut SourceFiles,
     diagnostics: &mut Diagnostics,
@@ -109,7 +113,19 @@ pub(super) fn outputs(
         };
         let path = root.join(entry);
         let dir = path.parent().expect("a file is in a folder");
-        match run(&binary, dir, &css, tokens) {
+        let built = match watch {
+            true => {
+                let mut started = blake3::Hasher::new();
+                for part in [binary.as_os_str().as_encoded_bytes(), version.as_bytes()] {
+                    started.update(&(part.len() as u64).to_le_bytes());
+                    started.update(part);
+                }
+                started.update(inputs.as_bytes());
+                watched(cache, entry, &binary, dir, &css, tokens, started.finalize())
+            }
+            false => run(&binary, dir, &css, tokens),
+        };
+        match built {
             Ok(output) => {
                 cache.insert("tailwind", key, output.as_bytes());
                 out.insert(entry.clone(), output);
@@ -159,12 +175,7 @@ fn binary(version: &str) -> Result<PathBuf, (String, String)> {
 /// One run of the CLI, from `dir`, on the stylesheet `css` with the token
 /// file holding `tokens`, written to a folder of its own and removed.
 fn run(binary: &Path, dir: &Path, css: &str, tokens: &str) -> Result<String, Error> {
-    static RUNS: AtomicUsize = AtomicUsize::new(0);
-    let scratch = std::env::temp_dir().join(format!(
-        "yuanme-tailwind-{}-{}",
-        std::process::id(),
-        RUNS.fetch_add(1, Ordering::Relaxed)
-    ));
+    let scratch = scratch("tailwind");
     let file = scratch.join("tokens.txt");
     std::fs::create_dir_all(&scratch)
         .and_then(|()| std::fs::write(&file, tokens))
@@ -176,6 +187,87 @@ fn run(binary: &Path, dir: &Path, css: &str, tokens: &str) -> Result<String, Err
         eprintln!("warning: could not delete {}: {e}", scratch.display());
     }
     result
+}
+
+/// A new folder's path in the temporary folder, named for this process.
+fn scratch(what: &str) -> PathBuf {
+    static RUNS: AtomicUsize = AtomicUsize::new(0);
+    std::env::temp_dir().join(format!(
+        "yuanme-{what}-{}-{}",
+        std::process::id(),
+        RUNS.fetch_add(1, Ordering::Relaxed)
+    ))
+}
+
+/// A Tailwind CLI `yuanme dev` keeps running for one stylesheet.
+pub(crate) struct Watching {
+    /// `None` once stopped. In a lock only because the cache is shared
+    /// between render's threads, which never touch it.
+    watch: Mutex<Option<Watch>>,
+    /// Everything it read when it started: the binary, the release and the
+    /// project's stylesheets and plugins. It reads them only then, since
+    /// the stylesheet goes to it on stdin.
+    started: blake3::Hash,
+    /// The tokens it last built.
+    tokens: String,
+    /// Its own: the token file, its output and its temporary files.
+    folder: PathBuf,
+}
+
+impl Drop for Watching {
+    fn drop(&mut self) {
+        drop(self.watch.get_mut().map(Option::take));
+        if let Err(e) = std::fs::remove_dir_all(&self.folder) {
+            // Left behind, it costs a few bytes in the temporary folder.
+            eprintln!("warning: could not delete {}: {e}", self.folder.display());
+        }
+    }
+}
+
+/// The CSS for `tokens` from the CLI the cache keeps running for `entry`,
+/// started first if there is none, or none that would build what a new one
+/// does: one started on other files, or one that built a token `tokens`
+/// lacks, whose classes it would keep (#59).
+fn watched(
+    cache: &mut Cache,
+    entry: &str,
+    binary: &Path,
+    dir: &Path,
+    css: &str,
+    tokens: &str,
+    started: blake3::Hash,
+) -> Result<String, Error> {
+    if let Some(running) = cache.tailwind.get_mut(entry) {
+        let now: BTreeSet<&str> = tokens.lines().collect();
+        if running.started == started && running.tokens.lines().all(|t| now.contains(t)) {
+            let watch = running.watch.get_mut().expect("never poisoned");
+            let built = watch.as_mut().expect("running").update(tokens);
+            match &built {
+                Ok(_) => running.tokens = tokens.to_string(),
+                // A new CLI for the next build, rather than one in an
+                // unknown state.
+                Err(_) => drop(cache.tailwind.remove(entry)),
+            }
+            return built;
+        }
+    }
+    drop(cache.tailwind.remove(entry));
+    let folder = scratch("tailwind-watch");
+    std::fs::create_dir_all(&folder)
+        .map_err(|e| Error::Run(format!("can't create {}: {e}", folder.display())))?;
+    let mut running = Watching {
+        watch: Mutex::new(None),
+        started,
+        tokens: tokens.to_string(),
+        folder,
+    };
+    let file = running.folder.join("tokens.txt");
+    let input = tailwind::input(css, &file).expect("it imports Tailwind");
+    let output = running.folder.join("out.css");
+    let (watch, css) = Watch::start(binary, dir, &input, file, tokens, output)?;
+    running.watch = Mutex::new(Some(watch));
+    cache.tailwind.insert(entry.to_string(), running);
+    Ok(css)
 }
 
 /// Where `css` imports Tailwind.

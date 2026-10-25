@@ -322,6 +322,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         &templates,
         &mut sources,
         cache,
+        mode == Mode::Dev,
     );
     diagnostics.extend(stage.diagnostics);
     if mode != Mode::Dev && !diagnostics.iter().any(|d| d.level == Level::Error) {

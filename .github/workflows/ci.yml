@@ -56,8 +56,9 @@ jobs:
       - run: cargo nextest run --locked --workspace
 
   # The tests that run the real Tailwind CLI (#59): it matches the
-  # official --optimize, daisyui works from a Bun isolated install, and a
-  # warm build runs no Tailwind. The Engine downloads the CLI and Bun
+  # official --optimize, daisyui works from a Bun isolated install, a warm
+  # build runs no Tailwind, and the CLI `yuanme dev` keeps running builds
+  # what a fresh one does and stops with it (#67). The Engine downloads the CLI and Bun
   # installs daisyui, so they are ignored in the test job, which stays off
   # the network.
   tailwind:
@@ -78,7 +79,7 @@ jobs:
           bun-version: 1.4.3
       - if: runner.os == 'Linux'
         run: sudo apt-get install -y nasm
-      - run: cargo nextest run --locked -p yuanme-engine -p yuanme --run-ignored only -E 'binary(=tailwind) or test(=a_warm_build_runs_no_tailwind)'
+      - run: cargo nextest run --locked -p yuanme-engine -p yuanme --run-ignored only -E 'binary(=tailwind) or test(=a_warm_build_runs_no_tailwind) or test(=dev_keeps_a_tailwind_cli_running_until_it_stops)'
 
   # The tests that run the real tsc (#60): type errors are reported at
   # their spans, the types yuanme writes check, and an unchanged check runs

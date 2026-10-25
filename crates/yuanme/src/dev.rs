@@ -85,7 +85,13 @@ pub fn run(root: &Path, port: Option<u16>, poll: bool, out: Out) -> Result<u8, E
     })?;
     drop(watcher);
     // A build may be running; the cache is saved once it is done.
-    shared.cache.lock().expect("a build doesn't panic").save()?;
+    let mut cache = shared.cache.lock().expect("a build doesn't panic");
+    cache.save()?;
+    // Dropped, which stops the Tailwind CLIs it keeps running.
+    drop(std::mem::replace(
+        &mut *cache,
+        Cache::memory(ENGINE_VERSION),
+    ));
     Ok(0)
 }
 

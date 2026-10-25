@@ -258,3 +258,70 @@ fn the_watch_process_builds_again_only_when_the_tokens_change() {
     assert_eq!(watch.update("flex\ngrid\n").unwrap(), second);
     assert!(start.elapsed().as_millis() < 50);
 }
+
+/// The folders `yuanme dev`'s running Tailwind CLIs keep, one each.
+fn watching() -> Vec<PathBuf> {
+    let prefix = format!("yuanme-tailwind-watch-{}-", std::process::id());
+    std::fs::read_dir(std::env::temp_dir())
+        .unwrap()
+        .map(|e| e.unwrap().path())
+        .filter(|p| {
+            p.file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .starts_with(&prefix)
+        })
+        .collect()
+}
+
+/// `yuanme dev` keeps a Tailwind CLI running for each stylesheet (#59),
+/// and what it builds is what a fresh CLI builds: as classes come, as
+/// they go, which the running CLI would keep, and as the stylesheet
+/// changes, which it reads only once.
+#[test]
+#[ignore = "downloads the Tailwind CLI"]
+fn dev_builds_with_a_running_cli_what_a_fresh_one_builds() {
+    let dir = project("tailwind");
+    let root = dir.path();
+    let edit = |path: &str, from: &str, to: &str| {
+        let path = root.join(path);
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(text.contains(from), "{from}");
+        std::fs::write(&path, text.replacen(from, to, 1)).unwrap();
+    };
+    let mut cache = Cache::memory("1.0.0");
+    let mut started = None;
+    let steps: [(&str, &dyn Fn()); 4] = [
+        ("the first build", &|| {}),
+        ("a class added", &|| {
+            edit("templates/home.html", "p-4", "p-4 grid")
+        }),
+        ("a class removed", &|| {
+            edit("templates/home.html", " underline", "")
+        }),
+        ("the stylesheet edited", &|| {
+            edit("styles/site.css", "shadow-md", "shadow-md ring-1")
+        }),
+    ];
+    for (step, change) in steps {
+        change();
+        let dev = build(&load(root), &mut cache, Mode::Dev);
+        let fresh = build(&load(root), &mut Cache::memory("1.0.0"), Mode::Drafts);
+        let (ours, theirs) = (stylesheet(&dev, "site"), stylesheet(&fresh, "site"));
+        assert!(ours == theirs, "{step}:\n{ours}\n---\n{theirs}");
+        let [folder] = watching().try_into().unwrap();
+        // Only a class going away or a new stylesheet starts a new CLI.
+        if step == "a class added" {
+            assert_eq!(Some(&folder), started.as_ref(), "{step}");
+        }
+        started = Some(folder);
+    }
+    assert!(!stylesheet(&build(&load(root), &mut cache, Mode::Dev), "site").contains(".underline"));
+    drop(cache);
+    assert_eq!(
+        watching(),
+        Vec::<PathBuf>::new(),
+        "a CLI outlived its cache"
+    );
+}

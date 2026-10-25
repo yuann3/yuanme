@@ -914,6 +914,8 @@ impl Dev {
         let mut child = Command::new(env!("CARGO_BIN_EXE_yuanme"))
             .args(["dev", "--json", "--port", "0"])
             .current_dir(root)
+            .env_remove("YUANME_TAILWIND_BIN")
+            .env_remove("YUANME_TSC_BIN")
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .spawn()
@@ -1144,4 +1146,45 @@ title: Sea
     assert_eq!(yuanme(root, &["build", "-q"]).code, 0);
     let built = fs::read(root.join("dist").join(avif.trim_start_matches('/'))).unwrap();
     assert!(built == served, "dev encoded other bytes than build");
+}
+
+/// `yuanme dev` builds a Tailwind stylesheet with a CLI it keeps running
+/// (#59), and stops the CLI when it stops.
+#[cfg(unix)]
+#[test]
+#[ignore = "downloads the Tailwind CLI"]
+fn dev_keeps_a_tailwind_cli_running_until_it_stops() {
+    let dir = project(TAILWIND_SITE);
+    let root = dir.path();
+    let mut dev = Dev::start(root);
+    let prefix = format!("yuanme-tailwind-watch-{}-", dev.child.id());
+    let running = || {
+        fs::read_dir(std::env::temp_dir())
+            .unwrap()
+            .filter(|e| {
+                let name = e.as_ref().unwrap().file_name();
+                name.to_str().unwrap().starts_with(&prefix)
+            })
+            .count()
+    };
+    assert_eq!(running(), 1);
+
+    fs::write(
+        root.join("templates/home.html"),
+        "<link rel=\"stylesheet\" href=\"/styles/site.css\"><h1 class=\"text-4xl\">Home</h1>\n",
+    )
+    .unwrap();
+    assert_eq!(dev.until("build-finished")["ok"], true);
+    let page = dev.get("/").2;
+    let css = page.split('"').find(|s| s.ends_with(".css")).unwrap();
+    assert!(dev.get(css).2.contains(".text-4xl"));
+    assert_eq!(running(), 1);
+
+    let status = Command::new("kill")
+        .arg(dev.child.id().to_string())
+        .status()
+        .unwrap();
+    assert!(status.success());
+    assert_eq!(dev.child.wait().unwrap().code(), Some(0));
+    assert_eq!(running(), 0, "the Tailwind CLI outlived yuanme dev");
 }

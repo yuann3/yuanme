@@ -291,7 +291,7 @@ version = "4.2.4"
 
 The first build that needs a version downloads it with `curl` from Tailwind's GitHub release, 80 to 112 MB, and checks its SHA-256. It is kept for every project in your user's cache folder: `~/Library/Caches/yuanme/tools` on macOS, `$XDG_CACHE_HOME/yuanme/tools` or `~/.cache/yuanme/tools` on Linux, and `%LOCALAPPDATA%\yuanme\tools` on Windows. In CI, cache that folder. To build offline, set `YUANME_TAILWIND_BIN` to a Tailwind CLI binary, which yuanme runs instead.
 
-Tailwind's output is kept in `.yuanme/cache` under the class names, your project's CSS and JS files, your lockfile and the version, so a build that changes none of them doesn't run Tailwind.
+Tailwind's output is kept in `.yuanme/cache` under the class names, your project's CSS and JS files, your lockfile and the version, so a build that changes none of them doesn't run Tailwind. `yuanme dev` keeps one Tailwind CLI running for each stylesheet, which builds a new class in a few tens of milliseconds, and starts it again when a class goes away or a stylesheet changes, so what it serves stays what `yuanme build` writes.
 
 ## When something is wrong
 
