@@ -182,7 +182,7 @@ $$
 By $\eqref{eq:enrgy}$, a little mass is a lot of energy.
 ```
 
-A numbered equation's Label is an id on the Page, so an ordinary link reaches it: `[the energy equation](#eq:energy)` in Markdown, `[[eq:energy][the energy equation]]` in Org, and `[the energy equation](energy.md#eq:energy)` from another Entry. A link with no text to a Label doesn't get the equation's number filled in yet, so give the link text, or use `\eqref`.
+A numbered equation's Label is an id on the Page, so an ordinary link reaches it: `[the energy equation](#eq:energy)` in Markdown, `[[eq:energy][the energy equation]]` in Org, and `[the energy equation](energy.md#eq:energy)` from another Entry. A link with no text shows the equation's number: `[](#eq:energy)` in Markdown and `[[eq:energy]]` or `[[#eq:energy]]` in Org show `(1)`.
 
 ## Macros
 
@@ -314,5 +314,7 @@ A block's name and title run into its first paragraph, and a proof's ∎ ends it
 <p><span class="proof-head">Proof.</span> Cosets partition the group. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 ```
+
+A link with no text to a block's Label shows its name and number, as one to an equation shows `(1)`: `[](#thm:fermat)` shows "Theorem 1", and `[[lem:lagrange]]` or `[[#lem:lagrange]]` shows "Lemma 1". An unnumbered block's shows its name alone.
 
 When a block starts with display math or a list, its head is a paragraph of its own, and when a proof ends with one, ∎ is in a `<p class="qed">` after it. A block whose name isn't a kind is a plain `<div class="NAME">`, and a title on it is the warning `markdown/no-effect` or `org/no-effect`. A `\begin{theorem}` or `\begin{proof}` inside math is `math/unsupported`.

@@ -338,3 +338,87 @@ fn theorem_blocks_are_numbered_on_one_counter_in_both_formats() {
         assert!(doc.math_chars().contains(&'k'));
     }
 }
+
+/// Each link's URL and text, in document order.
+fn links(doc: &Document) -> Vec<(String, String)> {
+    let mut ids = doc.descendants(Document::ROOT);
+    ids.sort_by_key(|&id| doc.node(id).span.start);
+    ids.into_iter()
+        .filter_map(|id| match &doc.node(id).kind {
+            Kind::Link { url, .. } => Some((url.clone(), doc.text(id))),
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn an_empty_link_to_a_label_shows_its_number() {
+    let (md, diagnostics) = markdown(
+        r"By [](#thm:a), [](#eq:e), [the theorem](#thm:a), [](#rem:a) and [](#sec).
+
+## Sec {#sec}
+
+:::lemma{#lem:z}
+x
+:::
+
+:::theorem{#thm:a}
+x
+:::
+
+:::remark{#rem:a}
+y
+:::
+
+$$\begin{equation} E \label{eq:z} \end{equation}$$
+
+$$\begin{equation} E \label{eq:e} \end{equation}$$
+",
+    );
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    let got: Vec<_> = links(&md).into_iter().map(|(_, text)| text).collect();
+    // A heading's link is left as it is written.
+    assert_eq!(got, ["Theorem 2", "(2)", "the theorem", "Remark", ""]);
+
+    let (org, diagnostics) = org(
+        r"By [[thm:a]], [[#eq:e]], [[thm:a][the theorem]], [[#rem:a]] and [[Sec]].
+
+* Sec
+
+#+NAME: lem:z
+#+begin_lemma
+x
+#+end_lemma
+
+#+NAME: thm:a
+#+begin_theorem
+x
+#+end_theorem
+
+#+NAME: rem:a
+#+begin_remark
+y
+#+end_remark
+
+\begin{equation}
+E \label{eq:z}
+\end{equation}
+
+\begin{equation}
+E \label{eq:e}
+\end{equation}
+",
+    );
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    assert_eq!(
+        links(&org),
+        [
+            ("#thm:a".into(), "Theorem 2".into()),
+            ("#eq:e".into(), "(2)".into()),
+            ("#thm:a".into(), "the theorem".into()),
+            ("#rem:a".into(), "Remark".into()),
+            // Org shows a headline's title.
+            ("#sec".into(), "Sec".into()),
+        ]
+    );
+}

@@ -1527,9 +1527,13 @@ impl<'s> Lower<'s> {
             .collect();
         for (link, search, at) in std::mem::take(&mut self.searches) {
             let (query, found) = match &search {
+                // A Label too, as `[[#thm:a]]` (ADR 0010).
                 Search::CustomId(id) => (
                     format!("#{id}"),
-                    headings.contains_key(id).then(|| id.clone()),
+                    headings
+                        .contains_key(id)
+                        .then(|| id.clone())
+                        .or_else(|| names.targets.get(id).cloned()),
                 ),
                 Search::Title(t) => (format!("*{t}"), names.titles.get(t).cloned()),
                 Search::Fuzzy(t) => (
@@ -1543,7 +1547,9 @@ impl<'s> Lower<'s> {
             };
             let Some(fragment) = found else {
                 let message = match &search {
-                    Search::CustomId(id) => format!("no heading here has the `CUSTOM_ID` `{id}`"),
+                    Search::CustomId(id) => {
+                        format!("nothing here has the `CUSTOM_ID` or Label `{id}`")
+                    }
                     Search::Title(t) => format!("no headline here is titled `{t}`"),
                     Search::Fuzzy(t) => format!(
                         "nothing here is called `{t}`: no `<<target>>`, `#+NAME` or headline title"
@@ -1559,9 +1565,10 @@ impl<'s> Lower<'s> {
                 continue;
             };
             if self.doc.node(link).children.is_empty() {
-                let shown = match headings.get(&fragment) {
-                    Some(&h) => self.doc.text(h),
-                    None => query.trim_start_matches(['*', '#']).to_string(),
+                let shown = match (names.numbers.get(&fragment), headings.get(&fragment)) {
+                    (Some(number), _) => number.clone(),
+                    (None, Some(&h)) => self.doc.text(h),
+                    (None, None) => query.trim_start_matches(['*', '#']).to_string(),
                 };
                 let span = self.doc.node(link).span.clone();
                 self.doc.push(link, Kind::Text(shown), span);

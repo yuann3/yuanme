@@ -179,11 +179,15 @@ pub(crate) fn render(
         numbers.entry(name).or_insert(tag.as_deref());
         // A numbered equation has its Label as an id, which links find as
         // they find a `#+NAME`.
-        if tag.is_some() {
+        if let Some(tag) = tag {
             doc.names
                 .targets
                 .entry(name.clone())
                 .or_insert_with(|| name.clone());
+            doc.names
+                .numbers
+                .entry(name.clone())
+                .or_insert_with(|| format!("({tag})"));
         }
     }
     // Each unknown name is compared with every Label, so only the first
@@ -209,7 +213,7 @@ pub(crate) fn render(
             None if labels.contains(name) => {
                 let message = format!("`{name}` labels something other than an equation");
                 out.push(error(message).help(format!(
-                    "link to it instead: `[…](#{name})` in Markdown, `[[#{name}][…]]` in Org"
+                    "link to it instead: a link with no text shows a Theorem block's number, as `[](#{name})` in Markdown and `[[{name}]]` in Org"
                 )));
             }
             None => {

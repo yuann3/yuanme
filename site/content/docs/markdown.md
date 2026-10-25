@@ -211,7 +211,7 @@ Inside two blocks.
 
 After the name, `{…}` gives the block a Label as its id, classes and other attributes, as on a heading: `:::aside{#aside:setup .wide data-x=1}`. A value with spaces goes in quotes.
 
-A directive named after a Theorem kind, such as `:::theorem`, `:::lemma` or `:::proof`, is a Theorem block, numbered and with its kind's name in front. It takes a title in brackets, `:::theorem[Fermat's little theorem]{#thm:fermat}`, and `yuanme docs math` covers it. A title on any other directive, `:::tip[Title]`, has no effect and is the warning `markdown/no-effect`, as is anything else on the line after the name, the title and `{…}`.
+A directive named after a Theorem kind, such as `:::theorem`, `:::lemma` or `:::proof`, is a Theorem block, numbered and with its kind's name in front. It takes a title in brackets, `:::theorem[Fermat's little theorem]{#thm:fermat}`, and an empty-text link to its Label, `[](#thm:fermat)`, shows "Theorem 1". `yuanme docs math` covers them. A title on any other directive, `:::tip[Title]`, has no effect and is the warning `markdown/no-effect`, as is anything else on the line after the name, the title and `{…}`.
 
 A `:::` with no name opens a block that swallows the rest of the file, so it is an error, `markdown/empty-directive`. The usual cause is a closing fence shorter than the one it closes, or a Pandoc `::: {.name}` div:
 

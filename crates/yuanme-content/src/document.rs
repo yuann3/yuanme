@@ -34,6 +34,9 @@ pub(crate) struct Names {
     pub targets: BTreeMap<String, String>,
     /// Headline titles as written, which `*Title` and fuzzy links find.
     pub titles: BTreeMap<String, String>,
+    /// What a link with no text to a Label shows (ADR 0010): `(2)` for a
+    /// numbered equation, a Theorem block's name, such as `Theorem 3`.
+    pub numbers: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

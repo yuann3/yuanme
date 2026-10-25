@@ -104,7 +104,27 @@ pub(crate) fn parse(
             .iter()
             .any(|d| d.level == Level::Error);
     heading_ids(&mut doc, &labels);
+    show_numbers(&mut doc);
     ok.then_some(doc)
+}
+
+/// A link with no text to a numbered Label in the Entry shows its number,
+/// as `(2)` or `Theorem 3` (ADR 0010).
+fn show_numbers(doc: &mut Document) {
+    for id in doc.descendants(Document::ROOT) {
+        let node = doc.node(id);
+        let Kind::Link { url, .. } = &node.kind else {
+            continue;
+        };
+        if let Some(number) = url
+            .strip_prefix('#')
+            .and_then(|label| doc.names.numbers.get(label))
+            .filter(|_| node.children.is_empty())
+        {
+            let (number, span) = (number.clone(), node.span.clone());
+            doc.push(id, Kind::Text(number), span);
+        }
+    }
 }
 
 /// Warns on each paragraph with math written as LaTeX writes it, which

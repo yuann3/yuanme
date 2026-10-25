@@ -8,7 +8,8 @@ use crate::config::TheoremKind;
 use crate::document::{Document, Kind, NodeId};
 
 /// Fills in each Theorem block's name, such as `Lemma 2`, from `kinds`,
-/// which has every kind a block was lowered with.
+/// which has every kind a block was lowered with, and gives it to the
+/// block's Label as what a link to it shows.
 pub(crate) fn number(doc: &mut Document, kinds: &BTreeMap<String, TheoremKind>) {
     let mut blocks: Vec<NodeId> = doc
         .descendants(Document::ROOT)
@@ -31,5 +32,11 @@ pub(crate) fn number(doc: &mut Document, kinds: &BTreeMap<String, TheoremKind>) 
             }
             None => k.label.clone(),
         };
+        let name = name.clone();
+        let node = doc.node(id);
+        if let Some((_, label)) = node.attrs.iter().find(|(a, _)| a == "id") {
+            let label = label.clone();
+            doc.names.numbers.entry(label).or_insert(name);
+        }
     }
 }

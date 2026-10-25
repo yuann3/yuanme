@@ -158,7 +158,7 @@ print(6 * 7)
 
 - `https:`, `http:`, `mailto:` and `ftp:` links are written as they are. `doi:10.1000/xyz` links to `https://doi.org/10.1000/xyz`.
 - `file:` links to another Entry by its path from this file, `.org` or `.md`, and lead to its Page. A search after `::` finds a heading on it: `::*Title` by title, `::#id` by `CUSTOM_ID`, and `::name` by `<<target>>`, `#+NAME` or title. A path from the Site's root, such as `file:/cv.pdf`, is left as it is.
-- `[[#id]]`, `[[*Title]]` and `[[name]]` lead to a heading, target or named element in this file. With no description, the link shows the heading's title.
+- `[[#id]]`, `[[*Title]]` and `[[name]]` lead to a heading, target or named element in this file, and `[[#id]]` to a Label as well as a `CUSTOM_ID`. With no description, the link shows the heading's title, or a numbered equation's or Theorem block's number, such as "(1)" or "Theorem 2".
 - `[[id:…]]` leads to the Entry or headline whose `:PROPERTIES:` drawer has that `:ID:`, anywhere on the Site. Two with the same `:ID:` are `org/duplicate-id`.
 - A link that leads nowhere is `link/unresolved`.
 - Markdown Entries link to Org ones the same way: `[intro](post.org#intro)`.
