@@ -1,13 +1,13 @@
 //! Sites rendered through their Templates (#19): every kind of Route, the
 //! Engine's filters, the feed and the sitemap, and every Template error.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
 use std::path::Path;
 
-use yuanme_content::config;
-use yuanme_content::site::{self, Project};
-use yuanme_diag::{Diagnostic, Files, codes};
+use yuanme_content::config::{self, Config};
+use yuanme_content::site::{self, Project, Site};
+use yuanme_diag::{Diagnostic, FileId, Files, codes};
 use yuanme_render::template::{self, Page};
 
 /// Every file under `dir`, by its path from `dir`.
@@ -66,6 +66,26 @@ fn fixture(base: &str, files: &str) -> Vec<(String, String)> {
 /// Resolves the project and renders it. The project's content must be
 /// right; only its Templates may fail.
 fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
+    let project = resolve(written);
+    let (pages, diagnostics) = template::render(
+        &project.config,
+        &project.site,
+        &project.files,
+        &project.templates,
+        &project.statics,
+    );
+    (project.files, pages, diagnostics)
+}
+
+struct Resolved {
+    files: Files,
+    config: Config,
+    site: Site,
+    templates: BTreeMap<String, FileId>,
+    statics: BTreeSet<String>,
+}
+
+fn resolve(written: &[(String, String)]) -> Resolved {
     let mut files = Files::default();
     let text = |path: &str| &written.iter().find(|(p, _)| p == path).expect("listed").1;
     let config_file = files.add("yuanme.toml", text("yuanme.toml").as_str());
@@ -109,8 +129,13 @@ fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
         false,
     );
     let site = site.unwrap_or_else(|| panic!("{diagnostics:#?}"));
-    let (pages, diagnostics) = template::render(&config, &site, &files, &templates, &statics);
-    (files, pages, diagnostics)
+    Resolved {
+        files,
+        config,
+        site,
+        templates,
+        statics,
+    }
 }
 
 fn page<'p>(pages: &'p [Page], output: &str) -> &'p Page {
@@ -133,6 +158,73 @@ fn a_site_renders_every_kind_of_route() {
     let (_, pages, diagnostics) = render(&site("blog"));
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
     insta::assert_snapshot!(show(&pages));
+}
+
+/// The schemas `yuanme schema context` prints describe what Pages really
+/// see: each Template prints its whole context as JSON, which must match
+/// its kind's schema.
+#[test]
+fn every_page_sees_what_its_context_schema_says() {
+    let mut written = site("blog");
+    for (template, vars) in [
+        ("posts/entry.html", "entry"),
+        ("pages/entry.html", "entry"),
+        ("posts/list.html", "collection entries paginator"),
+        ("tags/term.html", "taxonomy term entries paginator"),
+        ("term.html", "taxonomy term entries paginator"),
+        ("tags/index.html", "taxonomy terms"),
+        ("series/index.html", "taxonomy terms"),
+        ("home.html", ""),
+        ("404.html", ""),
+        ("llms.txt", ""),
+        ("rss.xml", "feed entries"),
+    ] {
+        let names = "site data collections taxonomies page ".to_string() + vars;
+        let pairs: Vec<String> = names
+            .split_whitespace()
+            .map(|n| format!("'{n}': {n}"))
+            .collect();
+        let path = format!("templates/{template}");
+        written.retain(|(p, _)| *p != path);
+        written.push((
+            path,
+            format!("{{{{ {{{}}} | tojson }}}}\n", pairs.join(", ")),
+        ));
+    }
+    let project = resolve(&written);
+    let schemas = template::context_schemas(&project.config, &project.site);
+    assert_eq!(
+        schemas.keys().copied().collect::<Vec<_>>(),
+        ["entry", "feed", "index", "list", "template", "term"]
+    );
+    let (pages, diagnostics) = template::render(
+        &project.config,
+        &project.site,
+        &project.files,
+        &project.templates,
+        &project.statics,
+    );
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    let mut kinds = BTreeSet::new();
+    for page in pages.iter().filter(|p| !p.output.starts_with("sitemap")) {
+        let context: serde_json::Value = serde_json::from_str(&page.text)
+            .unwrap_or_else(|e| panic!("{}: {e}\n{}", page.output, page.text));
+        let kind = context["page"]["kind"].as_str().unwrap().to_string();
+        let validator = jsonschema::validator_for(&schemas[kind.as_str()]).unwrap();
+        let errors: Vec<String> = validator
+            .iter_errors(&context)
+            .map(|e| format!("{} at {}", e, e.instance_path()))
+            .collect();
+        assert!(errors.is_empty(), "{}: {errors:#?}", page.output);
+        kinds.insert(kind);
+    }
+    assert_eq!(kinds.len(), schemas.len(), "a Page of every kind");
+
+    // The schema is closed: a field no Template sees fails it.
+    let mut context: serde_json::Value =
+        serde_json::from_str(&page(&pages, "index.html").text).unwrap();
+    context["site"]["titel"] = "x".into();
+    assert!(!jsonschema::is_valid(&schemas["template"], &context));
 }
 
 #[test]

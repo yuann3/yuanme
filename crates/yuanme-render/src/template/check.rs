@@ -18,6 +18,7 @@ use minijinja::machinery::{Token, parse, tokenize};
 use minijinja::syntax::SyntaxConfig;
 use minijinja::value::ValueKind;
 use minijinja::{Environment, context};
+use serde_json::{Value, json};
 use yuanme_content::config::{Config, Field as Declared, FieldType, similar};
 use yuanme_content::fields;
 use yuanme_content::site::{self, RouteKind, Site};
@@ -507,6 +508,128 @@ impl Schema {
             ),
         }
     }
+}
+
+/// The draft 2020-12 JSON Schema of what each kind of Route's Template
+/// sees, by the name `page.kind` gives the kind: the schema `check` checks
+/// against (#21). A kind several Collections, Taxonomies or feeds make is
+/// any of their contexts.
+pub fn context_schemas(config: &Config, site: &Site) -> BTreeMap<&'static str, Value> {
+    let schema = Schema::new(config, site);
+    let collections = site::collections(config);
+    let mut variants: BTreeMap<&'static str, Vec<Vec<(&'static str, Ty)>>> = BTreeMap::new();
+    for ty in schema.entries.values() {
+        variants
+            .entry("entry")
+            .or_default()
+            .push(vec![("entry", ty.clone())]);
+    }
+    // Only Entry Routes name an Entry by its index; for the others, the
+    // pages and Entries a RouteKind holds don't change what is seen.
+    let mut kinds = vec![RouteKind::Template(String::new())];
+    for (name, c) in &collections {
+        if c.list_route.is_some() {
+            kinds.push(RouteKind::List {
+                collection: name.clone(),
+                page: 1,
+                entries: Vec::new(),
+            });
+        }
+    }
+    for taxonomy in config.taxonomies.keys() {
+        kinds.push(RouteKind::Term {
+            taxonomy: taxonomy.clone(),
+            term: 0,
+            page: 1,
+            entries: Vec::new(),
+        });
+        kinds.push(RouteKind::Terms {
+            taxonomy: taxonomy.clone(),
+        });
+    }
+    for name in config.feeds.keys() {
+        kinds.push(RouteKind::Feed {
+            name: name.clone(),
+            entries: Vec::new(),
+        });
+    }
+    for kind in &kinds {
+        let (name, _, values) = schema.route(config, site, kind);
+        variants.entry(name).or_default().push(values);
+    }
+    variants
+        .into_iter()
+        .map(|(kind, variants)| {
+            let mut contexts: Vec<Value> = Vec::new();
+            for values in variants {
+                let fields = schema
+                    .globals
+                    .iter()
+                    .chain(&values)
+                    .map(|(k, ty)| (k.to_string(), ty.clone(), false));
+                let context = object_schema(&format!("context of {kind}"), fields, false);
+                if !contexts.contains(&context) {
+                    contexts.push(context);
+                }
+            }
+            let mut schema = match <[Value; 1]>::try_from(contexts) {
+                Ok([one]) => one,
+                Err(many) => json!({ "anyOf": many }),
+            };
+            schema["$schema"] = "https://json-schema.org/draft/2020-12/schema".into();
+            schema.sort_all_objects();
+            (kind, schema)
+        })
+        .collect()
+}
+
+fn ty_schema(ty: &Ty) -> Value {
+    match ty {
+        Ty::Any | Ty::Macro(_) | Ty::Module(_) => json!({}),
+        Ty::None => json!({ "type": "null" }),
+        Ty::Str | Ty::Image => json!({ "type": "string" }),
+        Ty::Url => json!({ "type": "string", "format": "uri-reference" }),
+        Ty::Int => json!({ "type": "integer" }),
+        Ty::Float => json!({ "type": "number" }),
+        Ty::Bool => json!({ "type": "boolean" }),
+        Ty::Date => json!({ "type": "string", "format": "date" }),
+        Ty::Datetime => json!({ "type": "string", "format": "date-time" }),
+        Ty::Enum(values) => json!({ "enum": values.as_slice() }),
+        Ty::List(item) => json!({ "type": "array", "items": ty_schema(item) }),
+        Ty::Obj(o) => object_schema(
+            &o.name,
+            o.fields
+                .iter()
+                .map(|(k, f)| (k.clone(), f.ty.clone(), f.optional)),
+            o.open,
+        ),
+        Ty::Slot => json!({ "type": "string", "description": "HTML" }),
+        Ty::Attrs => json!({ "type": "object" }),
+    }
+}
+
+/// `title` is the type's name as `check`'s messages and props comments
+/// write it, such as `entry<posts>`.
+fn object_schema(
+    title: &str,
+    fields: impl Iterator<Item = (String, Ty, bool)>,
+    open: bool,
+) -> Value {
+    let mut properties = serde_json::Map::new();
+    let mut required = Vec::new();
+    for (name, ty, optional) in fields {
+        if !optional {
+            required.push(name.clone());
+        }
+        properties.insert(name, ty_schema(&ty));
+    }
+    json!({
+        "title": title,
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": open,
+    })
 }
 
 /// A declared field, which a Template finds absent only when it has no

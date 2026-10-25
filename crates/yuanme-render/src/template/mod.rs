@@ -18,6 +18,7 @@ use yuanme_content::config::{Collection, Config};
 use yuanme_content::site::{self, RouteKind, Site};
 use yuanme_diag::{Code, Diagnostic, FileId, Files, Span, codes};
 
+pub use check::context_schemas;
 use context::Context;
 use filters::{Coded, escape};
 
@@ -175,6 +176,15 @@ pub fn render(
     }
     pages.extend(sitemap);
     (pages, Vec::new())
+}
+
+/// Each Route's Template, in `site.routes`' order, as Site config chooses it.
+pub fn route_templates(config: &Config, site: &Site) -> Vec<String> {
+    let collections = site::collections(config);
+    site.routes
+        .iter()
+        .map(|r| template_of(config, &collections, site, &r.kind).0)
+        .collect()
 }
 
 /// One Diagnostic for each mistake, though many Pages hit it.
