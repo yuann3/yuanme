@@ -5090,6 +5090,7 @@ dependencies = [
  "flate2",
  "image",
  "insta",
+ "json-strip-comments",
  "rayon",
  "regex",
  "serde_json",

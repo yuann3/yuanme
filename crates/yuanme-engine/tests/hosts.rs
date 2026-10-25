@@ -369,6 +369,8 @@ fn case(
 const HOME: &str = "templates/home.html";
 const ENTRY: &str = "templates/posts/entry.html";
 const CONFIG: &str = "yuanme.toml";
+/// Not an input: the CLI reads it, and the case passes it to the check.
+const WRANGLER: &str = "wrangler.jsonc";
 
 fn cases() -> Vec<Case> {
     let page = |body: &str| {
@@ -508,6 +510,43 @@ fn cases() -> Vec<Case> {
             )],
             &[("host/cache-rule", CONFIG, "\"/assets/*\"")],
         ),
+        // `wrangler.jsonc` must serve the output directory, its URLs, and
+        // the 404 Page. Comments are no values.
+        case(
+            &[(
+                WRANGLER,
+                "{\n  // The Site\n  \"assets\": {\n    /* \"directory\": \"./dist\", */\n    \"directory\": \"./public\",\n    \"not_found_handling\": \"404-page\",\n  },\n}\n",
+            )],
+            &[("host/wrangler-mismatch", WRANGLER, "\"./public\"")],
+        ),
+        case(
+            &[(
+                WRANGLER,
+                "{ \"assets\": { \"directory\": \"dist/\", \"html_handling\": \"drop-trailing-slash\" } }",
+            )],
+            &[
+                (
+                    "host/wrangler-mismatch",
+                    WRANGLER,
+                    "\"drop-trailing-slash\"",
+                ),
+                ("host/wrangler-mismatch", WRANGLER, "\"assets\""),
+            ],
+        ),
+        case(
+            &[(
+                WRANGLER,
+                "{ \"assets\": { \"directory\": \"./dist\", \"not_found_handling\": \"404-page\" } }",
+            )],
+            &[],
+        ),
+        case(
+            &[
+                ("yuanme.toml=", "adapter = \"netlify\""),
+                (WRANGLER, "{ \"assets\": { \"directory\": \"./public\" } }"),
+            ],
+            &[],
+        ),
     ]
 }
 
@@ -522,7 +561,6 @@ fn each_mistake_is_reported_on_what_it_is_about() {
         .iter()
         .map(|c| c.name)
         .filter(|n| n.starts_with("host/") || (n.starts_with("link/") && *n != "link/unresolved"))
-        .filter(|n| *n != "host/wrangler-mismatch")
         .collect();
     assert_eq!(tested, all);
 
@@ -530,7 +568,7 @@ fn each_mistake_is_reported_on_what_it_is_about() {
         .iter()
         .filter_map(|case| {
             let mut inputs = fixture();
-            for (path, over) in &case.files {
+            for (path, over) in case.files.iter().filter(|(p, _)| *p != WRANGLER) {
                 let over = match (path.strip_suffix('+'), path.strip_suffix('=')) {
                     (Some(path), _) => text(&inputs, path) + "\n" + over,
                     (_, Some(path)) => {
@@ -541,7 +579,10 @@ fn each_mistake_is_reported_on_what_it_is_about() {
                 let path = path.trim_end_matches(['+', '=']);
                 inputs.insert(path, over.into_bytes());
             }
-            let build = run(&inputs);
+            let mut build = run(&inputs);
+            if let Some((_, text)) = case.files.iter().find(|(p, _)| *p == WRANGLER) {
+                yuanme_engine::wrangler(&mut build, text, "dist");
+            }
             let got: Vec<_> = build
                 .diagnostics
                 .iter()
@@ -556,7 +597,13 @@ fn each_mistake_is_reported_on_what_it_is_about() {
                 })
                 .collect();
             let failed = case.want.iter().any(|w| {
-                w.0.starts_with("host/") && w.0 != "host/unsupported" && w.0 != "host/cache-rule"
+                w.0.starts_with("host/")
+                    && ![
+                        "host/unsupported",
+                        "host/cache-rule",
+                        "host/wrangler-mismatch",
+                    ]
+                    .contains(&w.0)
             });
             let ok = got == case.want && build.failed() == failed;
             (!ok).then(|| {

@@ -406,6 +406,11 @@ codes! {
         example: "[[host.headers]]\npath = \"/*\"\nheaders = { \"Cache-Control\" = \"public, max-age=3600\" }",
         fix: "Narrow the rule's `path` to the files it is for, such as `/resume.pdf`.",
     }
+    HOST_WRANGLER_MISMATCH = "host/wrangler-mismatch" {
+        meaning: "`wrangler.jsonc` doesn't serve the Site the way the cloudflare adapter writes it: `assets.directory` must be the output directory, `assets.html_handling` must be \"auto-trailing-slash\", the default, and `assets.not_found_handling` must be \"404-page\" for the Site's 404 Page to be served.",
+        example: "{ \"assets\": { \"directory\": \"./public\" } }",
+        fix: "Set the value the message names, here `\"directory\": \"./dist\"`.",
+    }
     INTERNAL_PANIC = "internal/panic" {
         meaning: "yuanme crashed while processing a file. This is a bug in yuanme, not in the project.",
         example: "Any file can trigger it, if it reaches a bug in a parser or a renderer.",
