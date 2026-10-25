@@ -1,3 +1,5 @@
+mod scale;
+
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
@@ -8,6 +10,19 @@ fn main() -> ExitCode {
         Some("vendor-check") => vendor_check(),
         Some("docs") => docs(),
         Some("notices") => notices(),
+        Some("scale-site") => match std::env::args().nth(2) {
+            Some(dir) => match scale::generate(Path::new(&dir)) {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("can't write the Scale Site: {e}");
+                    ExitCode::FAILURE
+                }
+            },
+            None => {
+                eprintln!("usage: cargo xtask scale-site DIR");
+                ExitCode::FAILURE
+            }
+        },
         Some("release-version") => match std::env::args().nth(2) {
             Some(version) => release_version(&version),
             None => {
@@ -17,7 +32,7 @@ fn main() -> ExitCode {
         },
         _ => {
             eprintln!(
-                "usage: cargo xtask package-check | vendor-check | docs | notices | release-version X.Y.Z"
+                "usage: cargo xtask package-check | vendor-check | docs | notices | scale-site DIR | release-version X.Y.Z"
             );
             ExitCode::FAILURE
         }
