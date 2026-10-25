@@ -266,6 +266,80 @@ fn decode(value: &str) -> String {
     out
 }
 
+/// A URL a Page links to or loads, from any element's `href`, `src` or
+/// `poster`, or one candidate of a `srcset` or `imagesrcset`.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Url {
+    /// With character references decoded.
+    pub url: String,
+    /// Where it is in the HTML, as written.
+    pub at: Range<usize>,
+}
+
+/// Every URL in `html` that a browser follows or fetches, for the static
+/// output checks (#15). `<base>` is not read.
+pub fn urls(html: &str) -> Vec<Url> {
+    let bytes = html.as_bytes();
+    let mut out = Vec::new();
+    let mut i = 0;
+    while let Some(lt) = memchr(b'<', bytes, i) {
+        i = lt + 1;
+        if html[i..].starts_with("!--") {
+            i = html[i + 3..]
+                .find("-->")
+                .map_or(bytes.len(), |e| i + 3 + e + 3);
+            continue;
+        }
+        if !bytes.get(i).is_some_and(u8::is_ascii_alphabetic) {
+            continue;
+        }
+        let name_end = html[i..]
+            .find(|c: char| c.is_ascii_whitespace() || c == '/' || c == '>')
+            .map_or(bytes.len(), |e| i + e);
+        let name = html[i..name_end].to_ascii_lowercase();
+        let (attributes, end) = attributes(html, name_end);
+        i = end;
+        // A data block's `src` is never fetched.
+        let data_block = name == "script"
+            && attributes.iter().any(|a| {
+                a.name == "type" && {
+                    let ty = a.value(html).trim().to_ascii_lowercase();
+                    !["", "module"].contains(&ty.as_str())
+                        && !ty.contains("javascript")
+                        && !ty.contains("ecmascript")
+                }
+            });
+        for a in &attributes {
+            match a.name.as_str() {
+                "href" | "src" | "poster" if !data_block => out.push(Url {
+                    url: decode(a.value(html)),
+                    at: a.value.clone(),
+                }),
+                "srcset" | "imagesrcset" => {
+                    let mut at = a.value.start;
+                    for candidate in a.value(html).split(',') {
+                        let lead = candidate.len() - candidate.trim_start().len();
+                        let url = candidate.trim_start().split_ascii_whitespace().next();
+                        if let Some(url) = url {
+                            let start = at + lead;
+                            out.push(Url {
+                                url: decode(url),
+                                at: start..start + url.len(),
+                            });
+                        }
+                        at += candidate.len() + 1;
+                    }
+                }
+                _ => {}
+            }
+        }
+        if ["script", "style", "textarea", "title"].contains(&name.as_str()) {
+            i = closing(html, i, &name);
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -304,6 +378,30 @@ mod tests {
                 (Kind::Link, "/f.woff2".into(), "/f.woff2"),
             ]
         );
+    }
+
+    #[test]
+    fn every_url_a_browser_follows_or_fetches_is_found_where_it_is_written() {
+        let html = r#"<head><link rel=canonical href="https://e.com/a/"><script type=module src=/m.ts></script>
+<script type="application/json" src="/data.json"></script><!-- <a href="/no/"> --><style>a{background:url(/no.png)}</style>
+</head><body><A HREF='/b?x=1&amp;y=2#top'>b</A><img src="/c.png" srcset="/c-1x.png 1x,  /c-2x.png 2x" alt="">
+<video poster=/v.jpg><source srcset="/s.avif"></video><textarea><a href="/no/"></textarea><a>none</a></body>"#;
+        let found: Vec<(String, &str)> = urls(html)
+            .into_iter()
+            .map(|u| (u.url, &html[u.at]))
+            .collect();
+        let want = [
+            ("https://e.com/a/", "https://e.com/a/"),
+            ("/m.ts", "/m.ts"),
+            ("/b?x=1&y=2#top", "/b?x=1&amp;y=2#top"),
+            ("/c.png", "/c.png"),
+            ("/c-1x.png", "/c-1x.png"),
+            ("/c-2x.png", "/c-2x.png"),
+            ("/v.jpg", "/v.jpg"),
+            ("/s.avif", "/s.avif"),
+        ];
+        let want: Vec<(String, &str)> = want.iter().map(|(u, at)| (u.to_string(), *at)).collect();
+        assert_eq!(found, want);
     }
 
     #[test]
