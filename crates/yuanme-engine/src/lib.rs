@@ -105,6 +105,21 @@ pub struct Build {
     /// build that failed later still has it, for `yuanme routes` and the
     /// context schemas.
     pub site: Option<Site>,
+    /// What went into each Script bundle, for the build report (#20).
+    pub scripts: Vec<Bundle>,
+}
+
+/// One Script bundle of the Site.
+pub struct Bundle {
+    /// Its path in the output directory, such as
+    /// `assets/site-0123456789abcdef.js`.
+    pub file: String,
+    /// In bytes.
+    pub size: usize,
+    /// Each module in it, by its path from the project root, such as
+    /// `scripts/site.ts` or `node_modules/nanoid/index.browser.js`, with its
+    /// size in the bundle, in the order they run.
+    pub modules: Vec<(String, usize)>,
 }
 
 pub struct Output {
@@ -140,6 +155,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         sources,
         config,
         site,
+        scripts: Vec::new(),
     };
     let (config, mut diagnostics) = site_config(inputs, cache.engine_version(), &mut sources);
     let Some(config) = config else {
@@ -202,6 +218,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         sources,
         config: Some(config),
         site: Some(site),
+        // #58 fills it in.
+        scripts: Vec::new(),
     };
     if !build.failed() {
         cache.sweep();
