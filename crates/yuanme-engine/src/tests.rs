@@ -177,15 +177,15 @@ fn the_disk_cache_survives_a_restart_but_not_a_new_engine_version() {
 #[test]
 fn entries_unread_for_ten_successful_builds_are_deleted() {
     let dir = tempfile::tempdir().unwrap();
-    let after = |builds: usize| {
-        let path = dir.path().join(builds.to_string());
+    let after = |builds: usize, mode: Mode| {
+        let path = dir.path().join(format!("{builds}-{mode:?}"));
         let mut cache = Cache::open(path.clone(), "v").unwrap();
         let small = key(&cache, "entry", "a");
         let large = key(&cache, "image", "a");
         cache.insert("entry", small, b"x".as_slice());
         cache.insert_large(large, b"x").unwrap();
         for _ in 0..builds {
-            build(&project(), &mut cache, Mode::Build);
+            build(&project(), &mut cache, mode);
         }
         cache.save().unwrap();
         let cache = Cache::open(path.clone(), "v").unwrap();
@@ -199,8 +199,12 @@ fn entries_unread_for_ten_successful_builds_are_deleted() {
 
     // The first build wrote them, which counts as reading them. They are
     // kept while any of the last ten builds read them.
-    assert_eq!(after(10), (true, true, true));
-    assert_eq!(after(11), (false, false, false));
+    assert_eq!(after(10, Mode::Build), (true, true, true));
+    assert_eq!(after(11, Mode::Build), (false, false, false));
+    // `yuanme dev` builds on every save, and reads neither the image
+    // variants nor what only `yuanme build` reads, so its builds don't
+    // count.
+    assert_eq!(after(11, Mode::Dev), (true, true, true));
 }
 
 #[cfg(unix)]
