@@ -12,6 +12,8 @@ use std::io;
 use std::path::Path;
 
 use clap::CommandFactory;
+use serde_json::Value;
+use yuanme_content::config;
 use yuanme_diag::codes::{self, Code};
 
 /// The hand-written pages by name, in the index's order (#21). Each starts
@@ -19,6 +21,7 @@ use yuanme_diag::codes::{self, Code};
 const TOPICS: &[(&str, &str)] = &[
     ("getting-started", include_str!("docs/getting-started.md")),
     ("cli", include_str!("docs/cli.md")),
+    ("config", include_str!("docs/config.md")),
 ];
 
 pub struct Page {
@@ -50,8 +53,10 @@ fn topic(name: &str, source: &str) -> Page {
             .to_string()
     };
     let mut body = body.trim_start().to_string();
-    if name == "cli" {
-        body.push_str(&cli_reference());
+    match name {
+        "cli" => body.push_str(&cli_reference()),
+        "config" => body.push_str(&config_reference()),
+        _ => {}
     }
     Page {
         title: field("title"),
@@ -224,4 +229,156 @@ fn option(arg: &clap::Arg) -> String {
     }
     line.push('\n');
     line
+}
+
+/// Every key of Site config, from its JSON Schema, so the page can't drift
+/// from what `check` accepts.
+fn config_reference() -> String {
+    let schema = config::json_schema();
+    let mut out = String::from("\n## Reference\n");
+    table(&schema, "", &mut out);
+    for (name, title) in [
+        ("field", "Field types"),
+        ("item", "Types of Data files and list items"),
+    ] {
+        out.push_str(&format!("\n### {title}\n"));
+        for variant in schema["$defs"][name]["oneOf"]
+            .as_array()
+            .into_iter()
+            .flatten()
+        {
+            let ty = variant["properties"]["type"]["const"]
+                .as_str()
+                .unwrap_or("");
+            out.push_str(&format!(
+                "\n#### `type = \"{ty}\"`\n\n{}\n\n",
+                text(variant)
+            ));
+            keys(variant, &["type"], &mut out);
+        }
+    }
+    while out.contains("\n\n\n") {
+        out = out.replace("\n\n\n", "\n\n");
+    }
+    out
+}
+
+fn text(schema: &Value) -> &str {
+    schema["description"].as_str().unwrap_or("")
+}
+
+/// The table at `path`, its plain keys, then the tables inside it.
+fn table(schema: &Value, path: &str, out: &mut String) {
+    let heading = match path {
+        "" => "Top level".to_string(),
+        p if p.starts_with("[[") => format!("`{p}`"),
+        p => format!("`[{p}]`"),
+    };
+    out.push_str(&format!("\n### {heading}\n\n"));
+    if !path.is_empty() && !text(schema).is_empty() {
+        out.push_str(&format!("{}\n\n", text(schema)));
+    }
+    keys(schema, &[], out);
+    let Some(properties) = schema["properties"].as_object() else {
+        return;
+    };
+    for (key, value) in properties {
+        let inner = path.trim_start_matches("[[").trim_end_matches("]]");
+        let at = if inner.is_empty() {
+            key.clone()
+        } else {
+            format!("{inner}.{key}")
+        };
+        if value.get("properties").is_some() {
+            table(value, &at, out);
+        } else if value["additionalProperties"].get("properties").is_some() {
+            let mut entry = value["additionalProperties"].clone();
+            entry["description"] = value["description"].clone();
+            table(&entry, &format!("{at}.NAME"), out);
+        } else if value["items"].get("properties").is_some() {
+            let mut entry = value["items"].clone();
+            entry["description"] = value["description"].clone();
+            table(&entry, &format!("[[{at}]]"), out);
+        }
+    }
+}
+
+/// One line for each key that isn't a table of its own.
+fn keys(schema: &Value, skip: &[&str], out: &mut String) {
+    let Some(properties) = schema["properties"].as_object() else {
+        return;
+    };
+    let required: Vec<&str> = schema["required"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .collect();
+    let mut any = false;
+    for (key, value) in properties {
+        let nested = value.get("properties").is_some()
+            || value["additionalProperties"].get("properties").is_some()
+            || value["items"].get("properties").is_some();
+        if nested || skip.contains(&key.as_str()) {
+            continue;
+        }
+        let mut kind = kind(value);
+        if required.contains(&key.as_str()) {
+            kind.push_str(", required");
+        }
+        out.push_str(&format!("- `{key}` ({kind}): {}\n", text(value)));
+        any = true;
+    }
+    if any {
+        out.push('\n');
+    }
+}
+
+/// A key's TOML type, in words.
+fn kind(schema: &Value) -> String {
+    if let Some(values) = schema["enum"].as_array() {
+        let values: Vec<String> = values.iter().map(|v| format!("`{v}`")).collect();
+        return format!("one of {}", values.join(", "));
+    }
+    if let Some(reference) = schema["$ref"].as_str() {
+        return format!("a {}, below", def(reference));
+    }
+    match schema["type"].as_str() {
+        Some("string") => "string".into(),
+        Some("integer") => "integer".into(),
+        Some("number") => "number".into(),
+        Some("boolean") => "boolean".into(),
+        Some("array") => format!("list of {}", plural(&kind(&schema["items"]))),
+        Some("object") => match &schema["additionalProperties"] {
+            Value::Object(values) if values.contains_key("$ref") => {
+                let reference = values["$ref"].as_str().unwrap_or("");
+                format!("table of {}s, below", def(reference))
+            }
+            Value::Object(values) if !values.is_empty() => {
+                format!(
+                    "table of {}",
+                    plural(&kind(&schema["additionalProperties"]))
+                )
+            }
+            _ => "table".into(),
+        },
+        _ => "any value".into(),
+    }
+}
+
+/// What a `$ref` names, in words.
+fn def(reference: &str) -> &'static str {
+    match reference {
+        "#/$defs/field" => "field",
+        "#/$defs/item" => "type",
+        other => panic!("Site config's schema has a new definition, {other}"),
+    }
+}
+
+fn plural(kind: &str) -> String {
+    match kind {
+        "any value" => "values".into(),
+        k if k.starts_with("one of") || k.starts_with("list") || k.starts_with("table") => k.into(),
+        k => format!("{k}s"),
+    }
 }
