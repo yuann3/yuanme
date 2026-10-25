@@ -32,6 +32,15 @@ pub struct Config {
     pub feeds: BTreeMap<String, Feed>,
     pub build: Build,
     pub host: Host,
+    pub math: Math,
+}
+
+/// `[math]` (#17).
+#[derive(Debug, Default)]
+pub struct Math {
+    /// `[math.macros]`: each macro's name, without its backslash, and its
+    /// definition.
+    pub macros: Vec<(String, String)>,
 }
 
 /// The static host the Site is deployed to (#25).
@@ -401,6 +410,19 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
             )
         })
         .collect();
+    let math = table(root, "math");
+    let macros: Vec<(String, String)> = entries(math.and_then(|m| table(m, "macros")))
+        .iter()
+        .map(|(name, value)| {
+            let definition = value.get_ref().as_str().expect("checked as a string");
+            (name.get_ref().to_string(), definition.to_string())
+        })
+        .collect();
+    if let Err((i, message)) = crate::math::converter(&macros) {
+        let (name, value) = entries(math.and_then(|m| table(m, "macros")))[i];
+        let message = format!("the macro `\\{}` can't be read: {message}", name.get_ref());
+        checker.invalid(message, value.span());
+    }
     if let Some(tz) = site.get("timezone") {
         let name = tz.get_ref().as_str().expect("checked");
         // The bundled database, so a build never depends on the machine's.
@@ -454,6 +476,7 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         feeds,
         build: Build { targets },
         host,
+        math: Math { macros },
     }
 }
 

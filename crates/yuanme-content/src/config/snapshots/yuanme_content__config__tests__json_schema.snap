@@ -799,6 +799,20 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
       },
       "type": "object"
     },
+    "math": {
+      "additionalProperties": false,
+      "description": "How math renders.",
+      "properties": {
+        "macros": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "LaTeX macros for every Entry's math, by name without the backslash: `R = '\\mathbb{R}'`, or with arguments, `norm = '\\left\\lVert #1 \\right\\rVert'`.",
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
     "routes": {
       "additionalProperties": {
         "additionalProperties": false,

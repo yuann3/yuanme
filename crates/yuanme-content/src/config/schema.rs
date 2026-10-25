@@ -129,7 +129,14 @@ pub(crate) const ROOT: &[Key] = &[
         Shape::Table(HOST),
         "The static host the Site is deployed to, and the headers and redirects it sends.",
     ),
+    Key::optional("math", Shape::Table(MATH), "How math renders."),
 ];
+
+const MATH: &[Key] = &[Key::optional(
+    "macros",
+    Shape::Map(&Shape::String),
+    "LaTeX macros for every Entry's math, by name without the backslash: `R = '\\mathbb{R}'`, or with arguments, `norm = '\\left\\lVert #1 \\right\\rVert'`.",
+)];
 
 const HOST: &[Key] = &[
     Key::optional(

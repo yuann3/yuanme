@@ -98,6 +98,10 @@ template = "feeds/atom.xml"
 type = "list"
 items = { type = "object", fields = { label = { type = "string" }, href = { type = "string" } } }
 
+[math.macros]
+R = '\mathbb{R}'
+norm = '\left\lVert #1 \right\rVert'
+
 [build]
 targets = { chrome = "120", safari = "16.4.1" }
 
@@ -222,6 +226,17 @@ status = 302
         panic!("nav is a list");
     };
     assert!(matches!(**items, FieldType::Object(_)));
+
+    assert_eq!(
+        config.math.macros,
+        [
+            ("R".to_string(), r"\mathbb{R}".to_string()),
+            (
+                "norm".to_string(),
+                r"\left\lVert #1 \right\rVert".to_string()
+            ),
+        ]
+    );
 
     // Only the browsers listed: one left out is not supported.
     let targets: Vec<_> = config.build.targets.iter().collect();
@@ -375,6 +390,18 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "[site]\nurl = \"example.com\"\n",
         "\"example.com\"",
+    ),
+    // A macro with a name LaTeX can't call, and one using a command
+    // nothing defines.
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[math.macros]\nR = '\\mathbb{R}'\n\"my R\" = '\\mathbf{R}'\n",
+        "'\\mathbf{R}'",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[math.macros]\nnorm = '\\lVert #1 \\rVert'\nN = '\\norm{\\Nat}'\n",
+        "'\\norm{\\Nat}'",
     ),
     (
         "config/invalid-value",

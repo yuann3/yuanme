@@ -4,6 +4,7 @@ pub mod document;
 pub mod entry;
 pub mod fields;
 pub mod markdown;
+mod math;
 pub mod org;
 pub mod site;
 pub mod slug;
