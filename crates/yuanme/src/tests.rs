@@ -361,6 +361,7 @@ list_route = "/blog/"
 #[test]
 fn docs_examples_check_as_they_say() {
     let mut tested = 0;
+    let mut failed = Vec::new();
     for name in docs::names().filter(|n| *n != "index") {
         let page = docs::get(name).unwrap();
         let mut project = Project::default();
@@ -368,33 +369,35 @@ fn docs_examples_check_as_they_say() {
             .files
             .insert("yuanme.toml".into(), BASE_CONFIG.into());
         for example in examples(name, &page.body) {
-            let at = format!("docs {name}, line {} ({})", example.line, example.path);
+            let at = format!(
+                "docs {name}, the example on line {} after the front matter ({})",
+                example.line, example.path
+            );
             tested += 1;
             match &example.fails_with {
                 None => {
                     project.files.insert(example.path, example.text);
                     let build = project.build_with_stubs();
-                    assert!(
-                        build.diagnostics.is_empty(),
-                        "{at} should check clean:\n{}",
-                        rendered(&build)
-                    );
+                    if !build.diagnostics.is_empty() {
+                        failed.push(format!("{at} should check clean:\n{}", rendered(&build)));
+                    }
                 }
                 Some(code) => {
                     let mut failing = project.clone();
                     failing.files.insert(example.path, example.text);
                     let build = failing.build();
-                    assert_eq!(
-                        codes_of(&build),
-                        [code.as_str()],
-                        "{at}:\n{}",
-                        rendered(&build)
-                    );
+                    if codes_of(&build) != [code.as_str()] {
+                        failed.push(format!(
+                            "{at} should report only {code}:\n{}",
+                            rendered(&build)
+                        ));
+                    }
                 }
             }
         }
     }
     assert!(tested > 0, "no examples found");
+    assert!(failed.is_empty(), "{}", failed.join("\n\n"));
 }
 
 /// The docs site's copy of every page but the index (#38), by path from
