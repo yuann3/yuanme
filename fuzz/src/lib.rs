@@ -41,6 +41,11 @@ const PIECES: &[&str] = &[
     "\n:::a\n", ":::a\n", "\n:::\n", ":::\n", "\n::::a\n", "\n::::\n", "\n:::theorem{#thm:a}\n",
     "\n:::proof\n", "\n:::note[T]\n", "\n$$\n", "\n| a | b |", "\n|-|-|", "\n---\n", "\n***\n",
     "\n[^a]: ", "\n[a]: b", "\n[a]: <", "\n<div>\n", "\n</div>\n", "\n<!--\n", "\n-->\n",
+    // Math, which math-core converts (#50): groups, environments, Labels
+    // and macros, whose expansions can multiply what is written.
+    "{", "\\frac{", "\\sqrt", "\\left(", "\\right)", "^", "_", "&", "\\\\", "\\begin{align}",
+    "\\end{align}", "\\begin{matrix}", "\\end{matrix}", "\\label{a}", "\\eqref{a}", "\\notag",
+    "\\newcommand{\\a}{", "\\newcommand{\\b}{\\a\\a", "\\a", "\\b", "\\text{", "\\begin{a}",
 ];
 
 #[derive(Arbitrary, Debug)]
@@ -87,7 +92,7 @@ pub fn bound(text: &str) -> Duration {
 }
 
 /// The best time to parse `reference_document` on that M4 Max, in release.
-const REFERENCE: Duration = Duration::from_micros(2_700);
+const REFERENCE: Duration = Duration::from_micros(3_600);
 
 /// How many times slower than the M4 Max this machine parses, at least 1.
 ///
