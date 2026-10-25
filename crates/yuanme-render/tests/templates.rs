@@ -483,6 +483,14 @@ const ERRORS: &[(&str, &str, &str, &str)] = &[
         "templates/home.html",
         "url('/blog/z/')",
     ),
+    // Recursion that never ends stops at minijinja's limit, before the
+    // render thread's stack runs out and aborts the process.
+    (
+        "template/render",
+        "=== templates/components/c.html\n{# props: #}\n{% macro c() %}{{ self.main() }}{% endmacro %}\n=== templates/home.html\n{% from \"components/c.html\" import c %}{% block main %}{{ c() }}{% endblock %}",
+        "templates/home.html",
+        "c()",
+    ),
     // Org the Engine reports as an error fails its filter.
     (
         "template/render",

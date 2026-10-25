@@ -24,6 +24,12 @@ use filters::{Coded, escape};
 /// The built-in feed Template. `templates/rss.xml` replaces it.
 const RSS: (&str, &str) = ("rss.xml", include_str!("rss.xml"));
 
+/// Each render thread's stack, which is reserved, not used. minijinja fails
+/// a render 500 Templates and macros deep; a debug build needed more than
+/// rayon's 2 MiB to get there, so a Template that recursed forever aborted
+/// the process instead. 4 MiB was enough for the Template in tests/.
+const STACK: usize = 64 << 20;
+
 /// The sitemap protocol's limit of URLs in one file.
 const SITEMAP_URLS: usize = 50_000;
 
@@ -135,23 +141,28 @@ pub fn render(
 
     let uses = uses(&sources);
     let context = Context::new(config, site, &origin);
-    let rendered: Vec<Result<Page, Diagnostic>> = site
-        .routes
-        .par_iter()
-        .zip(&chosen)
-        .map(|(route, (name, at))| {
-            let template = env.get_template(name).expect("added above");
-            match template.render(context.page(route)) {
-                Ok(text) => Ok(Page {
-                    output: route.output.clone(),
-                    text,
-                    templates: closure(name, &uses),
-                }),
-                Err(e) => Err(diagnostic(&e, files, templates, Some(at))
-                    .note(format!("while rendering `{}`", route.url))),
-            }
-        })
-        .collect();
+    let threads = rayon::ThreadPoolBuilder::new()
+        .stack_size(STACK)
+        .build()
+        .expect("render threads start");
+    let rendered: Vec<Result<Page, Diagnostic>> = threads.install(|| {
+        site.routes
+            .par_iter()
+            .zip(&chosen)
+            .map(|(route, (name, at))| {
+                let template = env.get_template(name).expect("added above");
+                match template.render(context.page(route)) {
+                    Ok(text) => Ok(Page {
+                        output: route.output.clone(),
+                        text,
+                        templates: closure(name, &uses),
+                    }),
+                    Err(e) => Err(diagnostic(&e, files, templates, Some(at))
+                        .note(format!("while rendering `{}`", route.url))),
+                }
+            })
+            .collect()
+    });
     let mut pages = Vec::new();
     for r in rendered {
         match r {
