@@ -47,6 +47,9 @@ pub enum Event<'a> {
         urls: Vec<String>,
     },
     BrowserConsole(Console),
+    /// `yuanme dev status`, and `stop` once it has stopped one: the dev
+    /// server running for the project, if there is one.
+    DevStatus(Option<&'a crate::dev::running::Running>),
 }
 
 /// What the dev client forwards from a browser's console (#21).
@@ -177,6 +180,14 @@ impl Event<'_> {
                 json!({ "type": "server-ready", "url": url, "pid": pid })
             }
             Event::Reload { urls } => json!({ "type": "reload", "urls": urls }),
+            Event::DevStatus(None) => json!({ "type": "dev-status", "running": false }),
+            Event::DevStatus(Some(r)) => {
+                let mut json = json!({ "type": "dev-status", "running": true, "build": r.build });
+                for key in ["pid", "port", "url", "version", "started", "log"] {
+                    json[key] = r.info[key].clone();
+                }
+                json
+            }
             Event::BrowserConsole(c) => json!({
                 "type": "browser-console",
                 "level": c.level,
@@ -252,33 +263,59 @@ pub fn schema() -> Value {
         ],
         &[],
     );
-    let events = [
-        event(
-            Some("diagnostic"),
-            "An error or warning about the project, shaped like rustc's (ADR 0012).",
-            &[
-                ("level", json!({ "enum": ["error", "warning"] })),
-                (
-                    "code",
-                    json!({ "type": "string", "pattern": "^[a-z]+/[a-z0-9-]+$", "description": "area/kebab-name, never reused." }),
-                ),
-                ("message", string.clone()),
-                (
-                    "spans",
-                    json!({ "type": "array", "items": span, "minItems": 1, "description": "The first is the primary span." }),
-                ),
-                ("children", json!({ "type": "array", "items": child })),
-                (
-                    "docs",
-                    json!({ "type": "string", "description": "The command that prints the code's docs page." }),
-                ),
-                (
-                    "rendered",
-                    json!({ "type": "string", "description": "What a person sees in a terminal." }),
-                ),
-            ],
-            &[],
+    let diagnostic = event(
+        Some("diagnostic"),
+        "An error or warning about the project, shaped like rustc's (ADR 0012).",
+        &[
+            ("level", json!({ "enum": ["error", "warning"] })),
+            (
+                "code",
+                json!({ "type": "string", "pattern": "^[a-z]+/[a-z0-9-]+$", "description": "area/kebab-name, never reused." }),
+            ),
+            ("message", string.clone()),
+            (
+                "spans",
+                json!({ "type": "array", "items": span, "minItems": 1, "description": "The first is the primary span." }),
+            ),
+            ("children", json!({ "type": "array", "items": child })),
+            (
+                "docs",
+                json!({ "type": "string", "description": "The command that prints the code's docs page." }),
+            ),
+            (
+                "rendered",
+                json!({ "type": "string", "description": "What a person sees in a terminal." }),
+            ),
+        ],
+        &[],
+    );
+    let build_finished = [
+        ("ok", json!({ "type": "boolean" })),
+        ("duration_ms", count.clone()),
+        (
+            "pages",
+            json!({ "type": "integer", "minimum": 0, "description": "Routes built, or that a check would build." }),
         ),
+        (
+            "changed_urls",
+            json!({ "type": "array", "items": string, "description": "URLs whose files this build wrote. A check writes none." }),
+        ),
+        ("errors", count.clone()),
+        ("warnings", count.clone()),
+    ];
+    let mut status = build_finished.to_vec();
+    status.push((
+        "diagnostics",
+        json!({ "type": "array", "items": diagnostic }),
+    ));
+    let status = event(
+        None,
+        "The dev server's last build, as `/__yuanme/status` returns it. Once they are checked, the type errors of a build that succeeded are among its Diagnostics.",
+        &status,
+        &[],
+    );
+    let events = [
+        diagnostic,
         event(
             Some("build-started"),
             "A build or check began.",
@@ -288,20 +325,7 @@ pub fn schema() -> Value {
         event(
             Some("build-finished"),
             "A build or check ended. `ok` is false if it reported an error.",
-            &[
-                ("ok", json!({ "type": "boolean" })),
-                ("duration_ms", count.clone()),
-                (
-                    "pages",
-                    json!({ "type": "integer", "minimum": 0, "description": "Routes built, or that a check would build." }),
-                ),
-                (
-                    "changed_urls",
-                    json!({ "type": "array", "items": string, "description": "URLs whose files this build wrote. A check writes none." }),
-                ),
-                ("errors", count.clone()),
-                ("warnings", count.clone()),
-            ],
+            &build_finished,
             &[],
         ),
         event(
@@ -348,6 +372,29 @@ pub fn schema() -> Value {
                 ("stack", json!({ "type": ["string", "null"] })),
             ],
             &[],
+        ),
+        event(
+            Some("dev-status"),
+            "The dev server running for the project, from `yuanme dev status`, or none, as `yuanme dev stop` leaves it. Its fields but `running` and `build` are `.yuanme/dev.json`'s.",
+            &[("running", json!({ "type": "boolean" }))],
+            &[
+                ("pid", count.clone()),
+                ("port", count.clone()),
+                ("url", string.clone()),
+                (
+                    "version",
+                    json!({ "type": "string", "description": "The Engine version of the server." }),
+                ),
+                (
+                    "started",
+                    json!({ "type": "string", "format": "date-time" }),
+                ),
+                (
+                    "log",
+                    json!({ "type": ["string", "null"], "description": "Where it writes what it prints, from the project root: only a server started with `--background` has one." }),
+                ),
+                ("build", status),
+            ],
         ),
         event(
             Some("route"),

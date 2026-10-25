@@ -191,7 +191,7 @@ fn subcommand(command: &clap::Command, out: &mut String) {
     out.push_str(&format!("```text\n{usage}\n```\n"));
     let args: Vec<String> = command
         .get_arguments()
-        .filter(|a| !a.is_global_set() && a.get_id() != "help")
+        .filter(|a| !a.is_global_set() && !a.is_hide_set() && a.get_id() != "help")
         .filter(|a| !a.is_positional() || a.get_help().is_some())
         .map(option)
         .collect();

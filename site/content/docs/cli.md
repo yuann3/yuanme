@@ -31,6 +31,7 @@ Each line is one event with a `type`:
 - `server-ready`: `yuanme dev` is serving, at `url`, from the process `pid`.
 - `reload`: `yuanme dev` told browsers to reload the Pages at `urls`.
 - `browser-console`: a browser on `yuanme dev` logged something or threw an uncaught error.
+- `dev-status`: from `yuanme dev status`, whether a dev server runs for the project, and if one does, where, and its last build as `/__yuanme/status` returns it. `yuanme dev stop` prints one once it has stopped.
 - `route`: one line of `yuanme routes`.
 - `entry-created`: what `yuanme new` wrote.
 - `schema`: what `yuanme schema` prints.
@@ -40,16 +41,25 @@ Each line is one event with a `type`:
 
 ## The dev server
 
-`yuanme dev` builds the Site with its Drafts, serves it on `http://127.0.0.1:4590/`, or the next free port, and builds it again on every save. Read the URL from `server-ready` rather than assuming the port.
+`yuanme dev` builds the Site with its Drafts, serves it on `http://127.0.0.1:4590/`, or the next free port, and builds it again on every save. Read the URL from `server-ready` or `.yuanme/dev.json` rather than assuming the port.
 
 - **Everything is in memory.** Nothing is written to the output directory, which never holds Drafts.
-- **Every save rebuilds the whole Site**, in milliseconds, and the Pages whose files changed are reloaded. What it serves is what `yuanme build --drafts` makes, but for two things that would slow a save: an image is encoded when a browser first asks for it, and math uses the whole math font rather than a subset.
-- **An error keeps the last good build served.** Its Diagnostics are printed, as `build` prints them, until a save fixes it.
+- **Every save rebuilds the whole Site**, in milliseconds, and what changed is shown in the browser without a reload where it can be: a stylesheet is swapped where it is, and with the Router on, a Page is swapped in place, keeping its scroll and what the Site keeps between Pages, and its Sidecar scripts are mounted again, their new code included. Any other change, such as to a Site Script, is a full load. What it serves is what `yuanme build --drafts` makes, but for two things that would slow a save: an image is encoded when a browser first asks for it, and math uses the whole math font rather than a subset. A small dev-only script is added to each HTML file as it is served.
+- **An error keeps the last good build served**, with an overlay on the Page that shows its Diagnostics until a save fixes it. They are printed too, as `build` prints them. With `[typescript] check = true`, types are checked after each build that succeeds, and the overlay shows the type errors.
+- **What a browser logs reaches the terminal**: console output and uncaught errors, as `browser-console` events with `--json`.
 - **`--poll`** looks at every file every 100 ms, for file systems that never say a file changed, such as some network and container mounts.
+
+One dev server runs for a project. While it runs, `.yuanme/dev.json` says where: its `pid`, `port`, `url`, Engine `version`, when it `started`, and its `log`. Another `yuanme dev` prints its URL, as `server-ready`, and exits 0 rather than starting a second.
+
+- **`yuanme dev --background`** starts it in a process of its own and returns once the first build has finished, with that build's Diagnostics and `server-ready`. It exits 1 if that build failed, but the server runs on, and serves the Site once a save fixes it.
+- **`yuanme dev status`** says whether one runs, where, and how its last build went. With `--json`, that is one `dev-status` event.
+- **`yuanme dev logs`** prints what the server started with `--background` printed, which is in `.yuanme/dev.log`, in the form it was started with. `--follow` goes on printing until it stops.
+- **`yuanme dev stop`** stops it, and returns once it has saved its cache. Stopping when none runs is no error.
+- **`GET /__yuanme/status`** on the server returns its last build: `build-finished`'s fields, and its `diagnostics` as `--json` prints them.
 
 ## Working with an agent
 
-The loop is: edit, run `yuanme check --json`, and fix each Diagnostic by its code, applying its suggested edits where they are `machine-applicable`. `yuanme docs CODE` explains a code; `yuanme routes --json` finds which file makes a URL; `yuanme schema` gives the shape of Site config, of each Collection's front matter and of what each Template sees.
+The loop is: edit, run `yuanme check --json`, and fix each Diagnostic by its code, applying its suggested edits where they are `machine-applicable`. To look at the Site, start `yuanme dev --background --json` once; `yuanme dev status --json` then gives its last build. `yuanme docs CODE` explains a code; `yuanme routes --json` finds which file makes a URL; `yuanme schema` gives the shape of Site config, of each Collection's front matter and of what each Template sees.
 
 ## Reference
 
@@ -93,10 +103,38 @@ Serve the Site with its Drafts from memory, and rebuild it on every change.
 
 ```text
 yuanme dev [OPTIONS]
+       yuanme dev <COMMAND>
 ```
 
 - `--port PORT`: The port on 127.0.0.1. By default 4590, or the next free one.
 - `--poll`: Look for changes every 100 ms instead of being told of them, for file systems that tell nothing, such as some network and container mounts.
+- `--background`: Run in the background, and return once the first build has finished. `yuanme dev status`, `logs` and `stop` manage it.
+
+### `yuanme dev status`
+
+Say whether a dev server runs for the project, where, and how its last build went.
+
+```text
+yuanme dev status [OPTIONS]
+```
+
+### `yuanme dev stop`
+
+Stop the dev server running for the project.
+
+```text
+yuanme dev stop [OPTIONS]
+```
+
+### `yuanme dev logs`
+
+Print what the dev server started with `--background` printed.
+
+```text
+yuanme dev logs [OPTIONS]
+```
+
+- `--follow`: Go on printing what it prints until it stops.
 
 ### `yuanme new`
 

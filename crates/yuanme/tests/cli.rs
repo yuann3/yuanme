@@ -1196,6 +1196,190 @@ fn dev_shows_what_the_type_check_finds() {
     assert_eq!(status["diagnostics"], serde_json::json!([found]));
 }
 
+/// Each line of `stdout` as JSON, validated against `yuanme schema
+/// events` with every object closed.
+fn events(root: &Path, stdout: &str) -> Vec<Value> {
+    let mut schema = serde_json::from_str(&yuanme(root, &["schema", "events"]).stdout).unwrap();
+    strict(&mut schema);
+    let validator = jsonschema::validator_for(&schema).unwrap();
+    stdout
+        .lines()
+        .map(|line| {
+            let event: Value = serde_json::from_str(line).unwrap();
+            let errors: Vec<String> = validator
+                .iter_errors(&event)
+                .map(|e| e.to_string())
+                .collect();
+            assert!(errors.is_empty(), "{line}\n{errors:#?}");
+            event
+        })
+        .collect()
+}
+
+/// The one event of type `kind`.
+fn only(events: &[Value], kind: &str) -> Value {
+    let found: Vec<&Value> = events.iter().filter(|e| e["type"] == kind).collect();
+    let [event] = found.as_slice() else {
+        panic!("not one {kind}: {}", show(events))
+    };
+    (*event).clone()
+}
+
+/// Stops the dev server of a project, even when the test that started it
+/// fails.
+struct StopsDev<'a>(&'a Path);
+
+impl Drop for StopsDev<'_> {
+    fn drop(&mut self) {
+        yuanme(self.0, &["dev", "stop"]);
+    }
+}
+
+/// Whether anything answers at `address`.
+fn answers(address: &str) -> bool {
+    std::net::TcpStream::connect(address).is_ok()
+}
+
+/// `yuanme dev --background` starts a server that outlives it, once its
+/// first build has finished, and `.yuanme/dev.json` says where it is. A
+/// second `dev` finds it rather than starting another; `status`, `logs`
+/// and `stop` manage it, and a `dev.json` whose server is gone is
+/// replaced.
+#[test]
+fn dev_runs_in_the_background_until_it_is_stopped() {
+    let dir = project(SITE);
+    let root = dir.path();
+    let _stops = StopsDev(root);
+    let start = yuanme(root, &["dev", "--background", "--json", "--port", "0"]);
+    assert_eq!((start.code, start.stderr.as_str()), (0, ""));
+    let started = events(root, &start.stdout);
+    let kinds: Vec<&str> = started
+        .iter()
+        .map(|e| e["type"].as_str().unwrap())
+        .collect();
+    assert_eq!(kinds, ["build-started", "build-finished", "server-ready"]);
+    let ready = only(&started, "server-ready");
+    let url = ready["url"].as_str().unwrap();
+    let address = url.strip_prefix("http://").unwrap().trim_end_matches('/');
+    let info: Value =
+        serde_json::from_str(&fs::read_to_string(root.join(".yuanme/dev.json")).unwrap()).unwrap();
+    assert_eq!(info["pid"], ready["pid"]);
+    assert_eq!(info["url"], url);
+    assert_eq!(
+        Some(info["port"].as_u64().unwrap().to_string().as_str()),
+        address.rsplit(':').next()
+    );
+    assert_eq!(info["log"], ".yuanme/dev.log");
+    let version = yuanme(root, &["--version"]).stdout;
+    assert_eq!(
+        Some(info["version"].as_str().unwrap()),
+        version.split_whitespace().nth(1)
+    );
+    assert!(info["started"].as_str().unwrap().ends_with('Z'), "{info}");
+    assert!(answers(address), "it outlived the command that started it");
+
+    for args in [&["dev", "--json"][..], &["dev", "--background", "--json"]] {
+        let again = yuanme(root, args);
+        assert_eq!(again.code, 0, "{args:?}: {}", again.stderr);
+        let found = only(&events(root, &again.stdout), "server-ready");
+        assert_eq!(found, ready, "{args:?} found the running server");
+    }
+
+    let status = |root: &Path| {
+        only(
+            &events(root, &yuanme(root, &["dev", "status", "--json"]).stdout),
+            "dev-status",
+        )
+    };
+    let running = status(root);
+    assert_eq!(running["running"], true);
+    for key in ["pid", "url", "port", "version", "started", "log"] {
+        assert_eq!(running[key], info[key], "{key}");
+    }
+    assert_eq!(running["build"]["ok"], true);
+
+    // `logs --follow` prints until the server stops.
+    let follow = Command::new(env!("CARGO_BIN_EXE_yuanme"))
+        .args(["dev", "logs", "--follow"])
+        .current_dir(root)
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    // An error, as the last build sees it.
+    let post = root.join("content/posts/first.md");
+    let text = fs::read_to_string(&post).unwrap();
+    fs::write(&post, text.replace("kind: essay", "kind: poem")).unwrap();
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(30);
+    let failed = loop {
+        let now = status(root);
+        if now["build"]["ok"] == false {
+            break now;
+        }
+        assert!(std::time::Instant::now() < deadline, "{now}");
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    };
+    let codes: Vec<&str> = failed["build"]["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| d["code"].as_str().unwrap())
+        .collect();
+    assert_eq!(codes, ["entry/invalid-value"]);
+    let logs = events(root, &yuanme(root, &["dev", "logs"]).stdout);
+    assert_eq!(only(&logs, "server-ready"), ready);
+    assert_eq!(only(&logs, "diagnostic")["code"], "entry/invalid-value");
+
+    let (mut socket, _) = tungstenite::connect(format!("ws://{address}/__yuanme/ws")).unwrap();
+    let stop = yuanme(root, &["dev", "stop", "--json"]);
+    assert_eq!(stop.code, 0, "{}", stop.stderr);
+    assert_eq!(
+        only(&events(root, &stop.stdout), "dev-status")["running"],
+        false
+    );
+    assert!(!root.join(".yuanme/dev.json").exists());
+    assert!(!answers(address));
+    // A connected client, which was shown the error, is let go.
+    while let Ok(message) = socket.read() {
+        assert!(message.is_text(), "{message:?}");
+    }
+    assert!(root.join(".yuanme/cache/generation").exists());
+    let followed = follow.wait_with_output().unwrap();
+    assert!(followed.status.success());
+    assert_eq!(
+        only(
+            &events(root, &String::from_utf8(followed.stdout).unwrap()),
+            "server-ready"
+        ),
+        ready
+    );
+    assert_eq!(
+        status(root),
+        serde_json::json!({ "type": "dev-status", "running": false })
+    );
+    let again = yuanme(root, &["dev", "stop", "--json"]);
+    assert_eq!(again.code, 0, "stopping no server is no error");
+
+    // A server killed without cleaning up, whose project has an error:
+    // the next one replaces its file, and exits 1 for the error but runs.
+    fs::write(
+        root.join(".yuanme/dev.json"),
+        r#"{"pid": 1, "port": 9, "url": "http://127.0.0.1:9/", "version": "0.0.0", "started": "2026-01-01T00:00:00Z", "log": null}"#,
+    )
+    .unwrap();
+    assert_eq!(status(root)["running"], false);
+    assert!(
+        !root.join(".yuanme/dev.json").exists(),
+        "the stale file is gone"
+    );
+    let start = yuanme(root, &["dev", "--background", "--json", "--port", "0"]);
+    assert_eq!(start.code, 1, "{}", start.stderr);
+    let started = events(root, &start.stdout);
+    assert_eq!(only(&started, "build-finished")["ok"], false);
+    let ready = only(&started, "server-ready");
+    assert_eq!(status(root)["pid"], ready["pid"]);
+}
+
 /// Interrupted, `yuanme dev` saves its cache and exits 0.
 #[cfg(unix)]
 #[test]

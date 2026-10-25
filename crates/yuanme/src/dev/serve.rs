@@ -1,6 +1,7 @@
 //! The dev server's HTTP side (#11, #68): every file of the snapshot,
 //! with the dev client on each HTML file, a WebSocket that tells the dev
-//! client what to reload and show, and the last build's status.
+//! client what to reload and show, and the endpoints `yuanme dev status`
+//! and `stop` use.
 
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -8,11 +9,11 @@ use axum::Router;
 use axum::body::Body as HttpBody;
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{Request, State};
-use axum::http::{StatusCode, header};
+use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use serde_json::{Value, json};
-use tokio::sync::broadcast;
+use tokio::sync::{Notify, broadcast};
 use yuanme_diag::{Diagnostic, Files, Level};
 use yuanme_engine::{Body, Build, Cache, image};
 
@@ -27,6 +28,13 @@ use crate::{ENGINE_VERSION, Out};
 pub const SOCKET: &str = "/__yuanme/ws";
 /// The last build, as [`Status::json`].
 pub const STATUS: &str = "/__yuanme/status";
+/// `POST` with [`PID`] set to the server's pid stops it. A browser can't
+/// send that header to another origin without asking first, and nothing
+/// answers it, so a web page can't stop a dev server.
+pub const STOP: &str = "/__yuanme/stop";
+/// On every answer, so `yuanme dev status` knows the server is the one
+/// `.yuanme/dev.json` names.
+pub const PID: &str = "x-yuanme-pid";
 
 pub struct Shared {
     pub snapshot: RwLock<Arc<Snapshot>>,
@@ -34,6 +42,8 @@ pub struct Shared {
     /// Each message to dev clients, as JSON.
     pub messages: broadcast::Sender<String>,
     pub status: RwLock<Status>,
+    /// Notified by a `POST` to [`STOP`].
+    pub stop: Notify,
     pub out: Out,
 }
 
@@ -106,10 +116,20 @@ impl Status {
 }
 
 pub fn router(shared: Arc<Shared>) -> Router {
+    let pid = std::process::id().to_string();
     Router::new()
         .route(SOCKET, get(socket))
         .route(STATUS, get(status))
+        .route(STOP, post(stop))
         .fallback(file)
+        .layer(axum::middleware::map_response(move |mut r: Response| {
+            let pid = pid.clone();
+            async move {
+                r.headers_mut()
+                    .insert(PID, pid.parse().expect("digits are a header value"));
+                r
+            }
+        }))
         .with_state(shared)
 }
 
@@ -128,6 +148,15 @@ async fn status(State(shared): State<Arc<Shared>>) -> Response {
         json,
     )
         .into_response()
+}
+
+async fn stop(State(shared): State<Arc<Shared>>, headers: HeaderMap) -> StatusCode {
+    let pid = std::process::id().to_string();
+    if headers.get(PID).and_then(|v| v.to_str().ok()) != Some(pid.as_str()) {
+        return StatusCode::FORBIDDEN;
+    }
+    shared.stop.notify_one();
+    StatusCode::ACCEPTED
 }
 
 async fn file(State(shared): State<Arc<Shared>>, request: Request) -> Response {

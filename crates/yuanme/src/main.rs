@@ -93,15 +93,7 @@ enum Command {
     /// Report every Diagnostic `build` would, rendering every Page in memory and writing none.
     Check(CheckArgs),
     /// Serve the Site with its Drafts from memory, and rebuild it on every change.
-    Dev {
-        /// The port on 127.0.0.1. By default 4590, or the next free one.
-        #[arg(long)]
-        port: Option<u16>,
-        /// Look for changes every 100 ms instead of being told of them, for
-        /// file systems that tell nothing, such as some network and container mounts.
-        #[arg(long)]
-        poll: bool,
-    },
+    Dev(DevArgs),
     /// Create an Entry whose required fields are filled in, and print its path and Route.
     New {
         /// The Collection, by its name in yuanme.toml.
@@ -127,6 +119,42 @@ enum Command {
     Docs {
         /// A topic, such as `templates`, or a code, such as `entry/unknown-key`.
         topic: Option<String>,
+    },
+}
+
+#[derive(Args)]
+#[command(args_conflicts_with_subcommands = true)]
+struct DevArgs {
+    #[command(subcommand)]
+    manage: Option<Manage>,
+    /// The port on 127.0.0.1. By default 4590, or the next free one.
+    #[arg(long)]
+    port: Option<u16>,
+    /// Look for changes every 100 ms instead of being told of them, for
+    /// file systems that tell nothing, such as some network and container mounts.
+    #[arg(long)]
+    poll: bool,
+    /// Run in the background, and return once the first build has finished.
+    /// `yuanme dev status`, `logs` and `stop` manage it.
+    #[arg(long)]
+    background: bool,
+    /// Where a server started with `--background` prints, which it records.
+    #[arg(long, hide = true, value_name = "FILE")]
+    log: Option<String>,
+}
+
+/// What manages the dev server running for the project.
+#[derive(Subcommand)]
+enum Manage {
+    /// Say whether a dev server runs for the project, where, and how its last build went.
+    Status,
+    /// Stop the dev server running for the project.
+    Stop,
+    /// Print what the dev server started with `--background` printed.
+    Logs {
+        /// Go on printing what it prints until it stops.
+        #[arg(long)]
+        follow: bool,
     },
 }
 
@@ -271,7 +299,22 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
             build(&root, out_dir, clean, &check, strict_budgets, out)
         }
         Command::Check(check) => self::check(&root, &check, out),
-        Command::Dev { port, poll } => dev::run(&root, port, poll, *out),
+        Command::Dev(args) => match args.manage {
+            Some(Manage::Status) => dev::running::status(&root, *out),
+            Some(Manage::Stop) => dev::running::stop(&root, *out),
+            Some(Manage::Logs { follow }) => dev::running::logs(&root, follow),
+            None if args.background => {
+                let mut forwarded = Vec::new();
+                if let Some(port) = args.port {
+                    forwarded.extend(["--port".to_string(), port.to_string()]);
+                }
+                if args.poll {
+                    forwarded.push("--poll".to_string());
+                }
+                dev::running::background(&root, &forwarded, *out)
+            }
+            None => dev::run(&root, args.port, args.poll, args.log.as_deref(), *out),
+        },
         Command::New {
             collection,
             title,

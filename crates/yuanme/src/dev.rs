@@ -3,6 +3,7 @@
 //! Site (ADR 0011), and the Pages whose files changed are what the dev
 //! client reloads.
 
+pub mod running;
 mod serve;
 #[cfg(test)]
 mod tests;
@@ -15,7 +16,7 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
 
-use tokio::sync::broadcast;
+use tokio::sync::{Notify, broadcast};
 use yuanme_engine::{Build, Cache, Inputs, Mode};
 
 use crate::events::Event;
@@ -26,9 +27,21 @@ use crate::{ENGINE_VERSION, Error, Out, load, plural};
 const PORT: u16 = 4590;
 
 /// `yuanme dev`: builds, serves on 127.0.0.1 and rebuilds on every change
-/// until it is interrupted. `port` is tried alone when it is given.
-pub fn run(root: &Path, port: Option<u16>, poll: bool, out: Out) -> Result<u8, Error> {
+/// until it is interrupted or stopped, unless a server already runs for
+/// the project. `port` is tried alone when it is given; `log` is where
+/// `--background` sends what it prints.
+pub fn run(
+    root: &Path,
+    port: Option<u16>,
+    poll: bool,
+    log: Option<&str>,
+    out: Out,
+) -> Result<u8, Error> {
     let root = root.canonicalize()?;
+    if let Some(running) = running::find(&root) {
+        running::already(&running, out);
+        return Ok(0);
+    }
     let started = Instant::now();
     // Watching first, so a change during the first build isn't missed.
     let (watcher, batches) = watch::watch(&root, poll)
@@ -70,13 +83,15 @@ pub fn run(root: &Path, port: Option<u16>, poll: bool, out: Out) -> Result<u8, E
         cache: session.cache.clone(),
         messages: broadcast::channel(64).0,
         status: RwLock::new(status),
+        stop: Notify::new(),
         out,
     });
     out.say(&format!("serving {url}"));
     out.event(Event::ServerReady {
-        url,
+        url: url.clone(),
         pid: std::process::id(),
     });
+    running::record(&root, &url, address.port(), log)?;
 
     let (checks, checked) = mpsc::channel();
     let checker = shared.clone();
@@ -86,9 +101,10 @@ pub fn run(root: &Path, port: Option<u16>, poll: bool, out: Out) -> Result<u8, E
     }
     let builder = shared.clone();
     std::thread::spawn(move || rebuild(session, &batches, &builder, &checks));
+    let stopping = shared.clone();
     runtime.block_on(async {
         axum::serve(listener, serve::router(shared.clone()))
-            .with_graceful_shutdown(stopped())
+            .with_graceful_shutdown(async move { stopped(&stopping).await })
             .await
     })?;
     drop(watcher);
@@ -100,11 +116,13 @@ pub fn run(root: &Path, port: Option<u16>, poll: bool, out: Out) -> Result<u8, E
         &mut *cache,
         Cache::memory(ENGINE_VERSION),
     ));
+    // Last, so `yuanme dev stop` returns once all of that is done.
+    running::forget(&root);
     Ok(0)
 }
 
-/// Ctrl-C, or a SIGTERM such as `kill` sends.
-async fn stopped() {
+/// Ctrl-C, a SIGTERM such as `kill` sends, or `yuanme dev stop`.
+async fn stopped(shared: &serve::Shared) {
     #[cfg(unix)]
     {
         use tokio::signal::unix::{SignalKind, signal};
@@ -112,10 +130,14 @@ async fn stopped() {
         tokio::select! {
             _ = tokio::signal::ctrl_c() => {}
             _ = term.recv() => {}
+            _ = shared.stop.notified() => {}
         }
     }
     #[cfg(not(unix))]
-    let _ = tokio::signal::ctrl_c().await;
+    tokio::select! {
+        _ = tokio::signal::ctrl_c() => {}
+        _ = shared.stop.notified() => {}
+    }
 }
 
 /// A snapshot to check the types of, with the number of the build that
