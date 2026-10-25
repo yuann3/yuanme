@@ -10,6 +10,21 @@ repository.workspace = true
 homepage = "https://github.com/yuann3/yuanme"
 include = ["/src", "/build.rs"]
 
+# `cargo binstall yuanme` takes the release's archive (#37). dist's tarballs
+# hold one folder; its zips hold the files.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "txz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
+bin-dir = "{ bin }{ binary-ext }"
+
+[package.metadata.binstall.overrides.aarch64-pc-windows-msvc]
+pkg-fmt = "zip"
+bin-dir = "{ bin }{ binary-ext }"
+
 [dependencies]
 yuanme-engine.workspace = true
 yuanme-content.workspace = true
