@@ -1,0 +1,38 @@
+---
+source: crates/yuanme-content/tests/sites.rs
+expression: out
+---
+routes:
+  /blog/md/ -> blog/md/index.html  entry content/posts/md.md
+  /blog/org/ -> blog/org/index.html  entry content/posts/org.org
+  /blog/other/ -> blog/other/index.html  entry content/posts/other.org
+  /blog/ -> blog/index.html  posts page 1: org, md, other
+  /series/ -> series/index.html  series index
+  /series/intro/ -> series/intro/index.html  series `Intro` page 1: org
+  /tags/ -> tags/index.html  tags index
+  /tags/rust/ -> tags/rust/index.html  tags `Rust` page 1: org
+  /tags/wasm/ -> tags/wasm/index.html  tags `wasm` page 1: org
+entries:
+  posts/md "Md" no date, 9 words
+  posts/org "Org -- a post" 2025-12-12, 11 words
+    at = 2025-12-12T10:00:00+00:00[UTC]
+    kind = "note"
+    n = 3
+    series: Intro
+    tags: Rust, wasm
+  posts/other "Other" no date, 5 words
+  md links to /blog/org/#intro
+  md links to /blog/other/#cid
+  org links to /blog/md/#second-part
+  org links to /blog/other/#cid
+  org links to /blog/other/#cid
+  org links to /blog/other/#cid
+  org links to /blog/md/
+  other links to /blog/org/
+lists:
+  pages: 
+  posts: org, md, other
+data:
+  md has h2 #second-part "Second part"
+  org has h2 #intro "Intro"
+  other has h2 #cid "Heading two"

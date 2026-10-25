@@ -10,7 +10,7 @@ use yuanme_diag::{Diagnostic, FileId, Files, Level, Span, codes};
 
 use crate::config::{Collection, Config, SortKey, Taxonomy};
 use crate::document::{Document, Kind, Links};
-use crate::entry::{self, Entry};
+use crate::entry::{self, Entry, SourceFormat};
 use crate::fields::{Cx, Value, compare};
 use crate::slug;
 use crate::{data, markdown, org};
@@ -601,24 +601,88 @@ fn links(
         .enumerate()
         .map(|(i, e)| (e.path.as_str(), i))
         .collect();
+    // Every id a fragment can name: headings', and Org's targets and names.
     let anchors: Vec<Vec<String>> = entries
         .iter()
-        .map(|e| e.document.headings().into_iter().map(|h| h.id).collect())
+        .map(|e| {
+            let headings = e.document.headings().into_iter().map(|h| h.id);
+            headings
+                .chain(e.document.names.targets.values().cloned())
+                .collect()
+        })
         .collect();
+    // Where an Org `::search` finds a headline: Org's titles as written, and
+    // a Markdown heading's text.
+    let titles: Vec<BTreeMap<String, String>> = entries
+        .iter()
+        .map(|e| match e.format {
+            SourceFormat::Org => e.document.names.titles.clone(),
+            SourceFormat::Markdown => {
+                let headings = e.document.headings().into_iter().rev();
+                headings.map(|h| (squash(&h.text), h.id)).collect()
+            }
+        })
+        .collect();
+    // The Site-wide `:ID:` index: an Entry, and a heading's id or nothing.
+    let mut ids: BTreeMap<&str, (usize, &str, Span)> = BTreeMap::new();
+    for (i, e) in entries.iter().enumerate() {
+        for (id, anchor, at) in &e.document.names.ids {
+            let span = Span {
+                file: e.file,
+                range: at.clone(),
+            };
+            if let Some((_, _, first)) = ids.get(id.as_str()) {
+                diagnostics.push(
+                    Diagnostic::error(
+                        &codes::ORG_DUPLICATE_ID,
+                        format!("the ID `{id}` is given twice"),
+                        span,
+                    )
+                    .label("given again here")
+                    .secondary(first.clone(), "first given here")
+                    .help("give one of them a new ID; in Emacs, `org-id-get-create` makes one"),
+                );
+                continue;
+            }
+            ids.insert(id, (i, anchor, span));
+        }
+    }
     entries
         .iter()
         .enumerate()
         .map(|(i, e)| {
             let doc = &e.document;
+            let org = e.format == SourceFormat::Org;
             let mut out = Links::new();
             for id in doc.descendants(Document::ROOT) {
                 let node = doc.node(id);
                 let Kind::Link { url, .. } = &node.kind else { continue };
-                if is_external(url) {
+                let span = Span { file: e.file, range: node.span.clone() };
+                if org && let Some(key) = url.strip_prefix("id:") {
+                    match ids.get(key) {
+                        Some((j, anchor, _)) => {
+                            let route = url_of[j];
+                            let href = if anchor.is_empty() { route.to_string() } else { format!("{route}#{anchor}") };
+                            out.insert(id, href);
+                        }
+                        None => diagnostics.push(
+                            Diagnostic::error(&codes::LINK_UNRESOLVED, format!("no Entry or heading has the ID `{key}`"), span)
+                                .help("an `id:` link leads to the Entry or headline whose `:PROPERTIES:` drawer has that `:ID:`"),
+                        ),
+                    }
                     continue;
                 }
-                let (path, fragment) = url.split_once('#').map_or((url.as_str(), None), |(p, f)| (p, Some(f)));
-                let span = Span { file: e.file, range: node.span.clone() };
+                // Org's `file:a.org::*Title` and `::name` search the other file.
+                let search = url
+                    .split_once("::")
+                    .filter(|(p, _)| org && !is_external(p));
+                if search.is_none() && is_external(url) {
+                    continue;
+                }
+                let (path, fragment) = match search {
+                    Some((p, _)) => (p, None),
+                    None => url.split_once('#').map_or((url.as_str(), None), |(p, f)| (p, Some(f))),
+                };
                 let target = if path.is_empty() {
                     i
                 } else {
@@ -644,20 +708,45 @@ fn links(
                         }
                     }
                 };
-                // `#` alone is the top of the page.
-                if let Some(fragment) = fragment.filter(|f| !f.is_empty()) {
-                    let fragment = percent_decode(fragment);
-                    if !anchors[target].contains(&fragment) {
-                        let page = &entries[target].path;
-                        let message = format!("`{page}` has no heading with the id `{fragment}`");
-                        let mut d = Diagnostic::error(&codes::LINK_UNRESOLVED, message, span);
-                        if let Some(near) = crate::config::similar(&fragment, anchors[target].iter().map(String::as_str)) {
-                            d = d.help(format!("the closest id is `{near}`"));
+                let page = &entries[target].path;
+                let fragment = match search {
+                    Some((_, query)) => {
+                        let found = match query.strip_prefix('*') {
+                            Some(title) => titles[target].get(&squash(title)),
+                            None => entries[target]
+                                .document
+                                .names
+                                .targets
+                                .get(&squash(query))
+                                .or_else(|| titles[target].get(&squash(query))),
+                        };
+                        match found {
+                            Some(anchor) => Some(anchor.clone()),
+                            None => {
+                                let message = format!("`{page}` has nothing `::{query}` finds: no headline with that title, `<<target>>` or `#+NAME`");
+                                diagnostics.push(Diagnostic::error(&codes::LINK_UNRESOLVED, message, span));
+                                continue;
+                            }
                         }
-                        diagnostics.push(d);
-                        continue;
                     }
-                }
+                    // `#` alone is the top of the page.
+                    None => match fragment.filter(|f| !f.is_empty()) {
+                        Some(f) => {
+                            if !anchors[target].contains(&percent_decode(f)) {
+                                let fragment = percent_decode(f);
+                                let message = format!("`{page}` has no heading with the id `{fragment}`");
+                                let mut d = Diagnostic::error(&codes::LINK_UNRESOLVED, message, span);
+                                if let Some(near) = crate::config::similar(&fragment, anchors[target].iter().map(String::as_str)) {
+                                    d = d.help(format!("the closest id is `{near}`"));
+                                }
+                                diagnostics.push(d);
+                                continue;
+                            }
+                            Some(f.to_string())
+                        }
+                        None => fragment.map(str::to_string),
+                    },
+                };
                 // `a.md#x` in `a.md` itself still needs its Route.
                 if !path.is_empty() {
                     let route = url_of[&target];
@@ -671,6 +760,11 @@ fn links(
             out
         })
         .collect()
+}
+
+/// Runs of whitespace as one space, as Org compares titles.
+fn squash(s: &str) -> String {
+    s.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 /// A URL with a scheme, a protocol-relative one, or a path from the Site's

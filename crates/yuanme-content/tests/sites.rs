@@ -281,6 +281,55 @@ fn a_blog_resolves_into_routes_lists_and_terms() {
     insta::assert_snapshot!(summary(&site.expect("no errors")));
 }
 
+/// An Org Entry's keywords are its fields, and links between Org and
+/// Markdown Entries reach headings by title, `CUSTOM_ID` and `:ID:` (#16).
+#[test]
+fn org_keywords_fill_fields_and_links_cross_source_formats() {
+    let files = r#"=== content/posts/org.org
+:PROPERTIES:
+:ID: the-org-post
+:END:
+#+TITLE: Org -- a post
+#+date: [2025-12-12 Fri]
+#+FILETAGS: :Rust:wasm:
+#+SERIES: Intro
+#+N: 3
+#+KIND: note
+#+AT: <2025-12-12 Fri 10:00>
+#+DRAFT: false
+#+STARTUP: overview
+
+* Intro
+See [[file:md.md::*Second part][the second part]], [[id:head-2][a heading]],
+[[file:other.org::#cid]], [[file:other.org::Heading two]] and [[file:md.md]].
+=== content/posts/md.md
+---
+title: Md
+---
+## Second part
+
+Back to [the Org post](org.org#intro) and [its heading](other.org#cid).
+=== content/posts/other.org
+#+TITLE: Other
+* Heading two
+:PROPERTIES:
+:ID: head-2
+:CUSTOM_ID: cid
+:END:
+See [[id:the-org-post][the Org post]].
+"#;
+    let (_, site, diagnostics) = resolve(&fixture(files), false);
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    let site = site.expect("no errors");
+    let mut out = summary(&site);
+    for e in &site.entries {
+        for h in e.document.headings() {
+            writeln!(out, "  {} has h{} #{} {:?}", e.slug, h.level, h.id, h.text).unwrap();
+        }
+    }
+    insta::assert_snapshot!(out);
+}
+
 #[test]
 fn org_keywords_for_emacs_alone_warn_and_the_entry_still_builds() {
     let files = "=== content/posts/a.org\n#+TITLE: A\n#+AUTHOR: Yuan\n#+DATE: [2025-12-12 Mon]\n#+OPTIONS: toc:nil num:t\n";
@@ -613,6 +662,12 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "class=x",
     ),
     (
+        "org/duplicate-id",
+        "=== content/posts/a.org\n:PROPERTIES:\n:ID: 1\n:END:\n#+TITLE: A\n=== content/posts/b.org\n#+TITLE: B\n* B\n:PROPERTIES:\n:ID: 1\n:END:\n",
+        "content/posts/b.org",
+        ":ID: 1",
+    ),
+    (
         "org/misplaced-keyword",
         "=== content/posts/a.org\n#+TITLE: A\n\nText.\n#+DATE: 2025-01-01\n",
         "content/posts/a.org",
@@ -666,6 +721,18 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "=== content/posts/a.org\nText.\n",
         "content/posts/a.org",
         "",
+    ),
+    (
+        "link/unresolved",
+        "=== content/posts/a.org\n#+TITLE: A\n\nSee [[file:b.org::*Nope]].\n=== content/posts/b.org\n#+TITLE: B\n* Yes\n",
+        "content/posts/a.org",
+        "[[file:b.org::*Nope]]",
+    ),
+    (
+        "link/unresolved",
+        "=== content/posts/a.org\n#+TITLE: A\n\nSee [[id:nope]] and [[*Yes]].\n* Yes\n",
+        "content/posts/a.org",
+        "[[id:nope]]",
     ),
     (
         "link/unresolved",

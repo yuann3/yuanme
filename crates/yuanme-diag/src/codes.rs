@@ -171,6 +171,11 @@ codes! {
         example: "#+ATTR_HTML: class=\"wide\"\n[[file:cat.png]]",
         fix: "Write each attribute as `:name value`, here `#+ATTR_HTML: :class wide`.",
     }
+    ORG_DUPLICATE_ID = "org/duplicate-id" {
+        meaning: "Two Org Entries or headings have the same `:ID:` property, so an `id:` link to it could lead to either.",
+        example: "content/posts/a.org and content/posts/b.org, both with `:ID: 1234`",
+        fix: "Give one of them a new ID; in Emacs, `org-id-get-create` makes one.",
+    }
     ORG_MISPLACED_KEYWORD = "org/misplaced-keyword" {
         meaning: "A keyword that sets one of the Entry's fields, such as `#+TITLE` or `#+DATE`, comes after the first headline or body text. Fields are written at the top of the file.",
         example: "* Intro\n#+DATE: 2025-12-12",
