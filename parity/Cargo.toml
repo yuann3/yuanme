@@ -13,8 +13,6 @@ markup5ever_rcdom = "0.39.0"
 regex = "1.13.1"
 serde_json = "1.0.154"
 similar = "2.7.0"
+tempfile = "3.27.0"
 url = "2.5.8"
 walkdir = "2.5.0"
-
-[dev-dependencies]
-tempfile = "3.27.0"

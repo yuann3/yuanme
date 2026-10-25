@@ -1,17 +1,21 @@
 //! `cargo run -p parity -- check BASELINE SITE`: URL equality and the
 //! normalized DOM. BASELINE is an unpacked Parity baseline (`fetch.sh`),
-//! SITE a built Site. `build` builds one with the Engine's CLI.
+//! SITE a built Site. `build` builds one with the Engine's CLI, and
+//! `self-test` checks the harness against the baseline itself.
 
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 
-use parity::{Report, compare, exception_ids};
+use parity::{Difference, Report, compare, exception_ids};
 use serde_json::Value;
+
+mod seeds;
 
 const USAGE: &str = "usage:
   parity check BASELINE SITE
-  parity build PROJECT OUT [--yuanme BIN]";
+  parity build PROJECT OUT [--yuanme BIN]
+  parity self-test BASELINE";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -20,6 +24,7 @@ fn main() -> ExitCode {
         ["check", baseline, site] => check(Path::new(baseline), Path::new(site)),
         ["build", project, out] => build(Path::new(project), Path::new(out), "yuanme"),
         ["build", project, out, "--yuanme", bin] => build(Path::new(project), Path::new(out), bin),
+        ["self-test", baseline] => self_test(Path::new(baseline)),
         _ => Err(USAGE.to_string()),
     };
     match result {
@@ -111,4 +116,57 @@ fn build(project: &Path, out: &Path, yuanme: &str) -> Result<bool, String> {
     }
     println!("built {} Pages into {}", finished["pages"], out.display());
     Ok(true)
+}
+
+/// The baseline compared with itself passes, and every seeded change is
+/// caught, or let through, as it should be.
+fn self_test(baseline: &Path) -> Result<bool, String> {
+    let site = baseline_site(baseline)?;
+    let ids = ids()?;
+    let mut ok = true;
+    let report = compare(&site, &site, &ids)?;
+    if !report.differences.is_empty() {
+        ok = false;
+        for d in &report.differences {
+            println!("{d}");
+        }
+    }
+    println!(
+        "{} the baseline against itself",
+        if ok { "ok  " } else { "FAIL" }
+    );
+    for seed in seeds::SEEDS {
+        let copy = tempfile::tempdir().map_err(|e| e.to_string())?;
+        seeds::copy(&site, copy.path())?;
+        seed.apply(copy.path())
+            .map_err(|e| format!("seed {}: {e}", seed.name))?;
+        let report = compare(&site, copy.path(), &ids)?;
+        let pass = (seed.expect)(&report.differences);
+        ok &= pass;
+        println!(
+            "{} {}: {}",
+            if pass { "ok  " } else { "FAIL" },
+            seed.name,
+            describe(&report.differences)
+        );
+        if !pass {
+            for d in &report.differences {
+                println!("{d}");
+            }
+        }
+    }
+    Ok(ok)
+}
+
+fn describe(differences: &[Difference]) -> String {
+    match differences {
+        [] => "no differences".to_string(),
+        [one] => one
+            .to_string()
+            .lines()
+            .next()
+            .unwrap_or_default()
+            .to_string(),
+        many => format!("{} differences", many.len()),
+    }
 }
