@@ -17,6 +17,9 @@ routes:
   /tags/c-sharp/ -> tags/c-sharp/index.html  tags `C#` page 1: second
   /tags/cplusplus/ -> tags/cplusplus/index.html  tags `C++` page 1: hello-world
   /tags/rust/ -> tags/rust/index.html  tags `Rust` page 1: second, hello-world
+  / -> index.html  template route home
+  /404.html -> 404.html  template route not_found
+  /rss.xml -> rss.xml  feed rss: second, hello-world, 2024/custom-name, about, undated
 entries:
   pages/about "About" no date, 0 words
   posts/2024/custom-name "Custom" 2025-02-01, 4 words

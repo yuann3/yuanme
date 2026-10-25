@@ -67,6 +67,13 @@ pub enum RouteKind {
     Terms {
         taxonomy: String,
     },
+    /// A Page made by a Template alone, by its name in Site config.
+    Template(String),
+    /// A feed's published, listed Entries, newest first.
+    Feed {
+        name: String,
+        entries: Vec<usize>,
+    },
 }
 
 /// What the build reads, besides Site config.
@@ -496,6 +503,36 @@ fn routes(
         }
     }
 
+    for (name, r) in &config.routes {
+        let at = Span {
+            file: config.file,
+            range: r.template_at.clone(),
+        };
+        routes.push((r.path.clone(), RouteKind::Template(name.clone()), at));
+    }
+    for (name, f) in &config.feeds {
+        let mut ids: Vec<usize> = (0..entries.len())
+            .filter(|&i| {
+                let e = &entries[i];
+                !e.draft && !e.unlisted && f.collections.contains(&e.collection)
+            })
+            .collect();
+        let newest_first = SortKey {
+            field: "date".into(),
+            descending: true,
+        };
+        sort(&mut ids, entries, &[newest_first]);
+        let kind = RouteKind::Feed {
+            name: name.clone(),
+            entries: ids,
+        };
+        let at = Span {
+            file: config.file,
+            range: f.template_at.clone(),
+        };
+        routes.push((f.path.clone(), kind, at));
+    }
+
     let mut out: Vec<Route> = Vec::new();
     let mut taken: BTreeMap<String, usize> = BTreeMap::new();
     for (url, kind, at) in routes {
@@ -530,6 +567,8 @@ fn describe(kind: &RouteKind, entries: &[Entry]) -> String {
         } => format!("page {page} of the `{collection}` list"),
         RouteKind::Term { taxonomy, page, .. } => format!("page {page} of a `{taxonomy}` Term"),
         RouteKind::Terms { taxonomy } => format!("the `{taxonomy}` index"),
+        RouteKind::Template(name) => format!("`[routes.{name}]`"),
+        RouteKind::Feed { name, .. } => format!("`[feeds.{name}]`"),
     }
 }
 

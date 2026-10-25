@@ -100,6 +100,18 @@ single = true
 [data.nav]
 type = "list"
 items = { type = "object", fields = { name = { type = "string" }, href = { type = "string" } } }
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.not_found]
+path = "/404.html"
+template = "404.html"
+
+[feeds.rss]
+collections = ["posts", "pages"]
+path = "/rss.xml"
 === content/posts/hello-world.md
 ---
 title: Hello, World
@@ -219,6 +231,8 @@ fn summary(site: &Site) -> String {
                 )
             }
             RouteKind::Terms { taxonomy } => format!("{taxonomy} index"),
+            RouteKind::Template(name) => format!("template route {name}"),
+            RouteKind::Feed { name, entries } => format!("feed {name}: {}", slugs(entries)),
         };
         writeln!(out, "  {} -> {}  {what}", r.url, r.output).unwrap();
     }
@@ -489,6 +503,13 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "=== content/posts/x.md\n---\ntitle: X\n---\n=== content/pages/blog.md\n---\ntitle: Blog\n---\n",
         "yuanme.toml",
         "posts",
+    ),
+    // A Route a Template makes alone collides like any other.
+    (
+        "entry/output-collision",
+        "=== yuanme.toml\n[site]\nurl = \"https://e.com\"\n[routes.about]\npath = \"/about/\"\ntemplate = \"about.html\"\n=== content/pages/about.md\n---\ntitle: About\n---\n",
+        "yuanme.toml",
+        "\"about.html\"",
     ),
     (
         "entry/duplicate-data-file",
