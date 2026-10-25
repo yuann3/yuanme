@@ -29,8 +29,8 @@ import{t as e}from"./shared-314d7d6a5180420a.js";function t(t){e(`the ${t} page`
 import{t as e}from"./greeting-300b65b0486446c6.js";e(`home`);
 === assets/lazy-7778b55870ffd6e5.js
 import{t as e}from"./site-4c4935fd71841245.js";import{t}from"./shared-314d7d6a5180420a.js";var n=()=>t(e[0]);export{n as default};
-=== assets/photo-c771b586186fd4a8.js
-import{t as e}from"./shared-314d7d6a5180420a.js";function t(t){for(let n of document.querySelectorAll(`.photo`))n.addEventListener(`click`,()=>e(t.url.pathname),{signal:t.signal});return()=>e(`bye`)}export{t as mount};
+=== assets/page-8ab0fc4159222753.js
+import{t as e}from"./shared-314d7d6a5180420a.js";var t=Object.defineProperty,n=(e,n)=>{let r={};for(var i in e)t(r,i,{get:e[i],enumerable:!0});return n||t(r,Symbol.toStringTag,{value:`Module`}),r};const r=new Map,i=new WeakMap;let a,o=[];const s=(e,t)=>r.set(e,t);function c(){a=new AbortController;let e=new URL(location.href);for(let t of document.scripts)for(let n of r.get(t.src)||[])if(n.mount){i.has(n)||i.set(n,{});try{o.push(n.mount({url:e,signal:a.signal,data:i.get(n)}))}catch(e){reportError(e)}}}var l=n({mount:()=>u});function u(t){for(let n of document.querySelectorAll(`.photo`))n.addEventListener(`click`,()=>e(t.url.pathname),{signal:t.signal});return()=>e(`bye`)}s(import.meta.url,[l]),c();
 === assets/shared-314d7d6a5180420a.js
 function e(e){console.log(`hi ${e}`)}export{e as t};
 === assets/site-3efc0d3b1d9fc240.js
@@ -44,7 +44,7 @@ body{margin:0}
 <html>
 <head>
 <title>Home</title>
-<link rel="stylesheet" href="/assets/site-dfde4704d3fb14ac.css"><script type="module" src="/assets/photo-c771b586186fd4a8.js"></script><link rel="modulepreload" href="/assets/site-4c4935fd71841245.js"><link rel="modulepreload" href="/assets/greeting-300b65b0486446c6.js"><link rel="modulepreload" href="/assets/shared-314d7d6a5180420a.js">
+<link rel="stylesheet" href="/assets/site-dfde4704d3fb14ac.css"><script type="module" src="/assets/page-8ab0fc4159222753.js"></script><link rel="modulepreload" href="/assets/site-4c4935fd71841245.js"><link rel="modulepreload" href="/assets/greeting-300b65b0486446c6.js"><link rel="modulepreload" href="/assets/shared-314d7d6a5180420a.js">
 <script type="module" src="/assets/site-3efc0d3b1d9fc240.js"></script>
 <script type="module" src="/assets/home-76b3c0a822153fa4.js"></script></head>
 <body><figure class="photo"></figure></body>

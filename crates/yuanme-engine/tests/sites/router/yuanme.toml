@@ -1,0 +1,24 @@
+[site]
+url = "https://e.com"
+
+[router]
+mode = "swap"
+
+[collections.posts]
+route = "/posts/{slug}/"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.about]
+path = "/about/"
+template = "about.html"
+
+[routes.projects]
+path = "/projects/"
+template = "projects.html"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"

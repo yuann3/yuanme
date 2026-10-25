@@ -13,7 +13,8 @@ use std::sync::Arc;
 use rayon::prelude::*;
 use yuanme_assets::css::{self, Import, Packages};
 use yuanme_assets::html::{self, Kind};
-use yuanme_content::config::{self, Config};
+use yuanme_assets::js;
+use yuanme_content::config::{self, Config, RouterMode};
 use yuanme_content::fields::Value;
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Level, Span, codes};
 use yuanme_render::template::Page;
@@ -72,22 +73,6 @@ pub(crate) fn assets(
             )
         })
         .filter(|path| inputs.files.contains_key(path))
-        .collect();
-    // Each Page's Sidecar scripts, in the order of its Templates.
-    let sidecar_scripts: Vec<Vec<String>> = pages
-        .iter()
-        .map(|page| {
-            page.templates
-                .iter()
-                .flat_map(|t| {
-                    let stem = t.rsplit_once('.').map_or(&**t, |(s, _)| s);
-                    scripts::EXTENSIONS
-                        .iter()
-                        .map(move |e| format!("templates/{stem}{e}"))
-                })
-                .filter(|path| inputs.files.contains_key(path))
-                .collect()
-        })
         .collect();
     let project = Project {
         inputs,
@@ -184,11 +169,37 @@ pub(crate) fn assets(
             edits[i].push((r.at.clone(), use_));
         }
     }
-    for path in sidecar_scripts.iter().flatten() {
-        if !script_entries.contains(path) {
-            script_entries.push(path.clone());
-        }
-    }
+    // Each Page's Script (ADR 0013): the Sidecar scripts of its Templates,
+    // in their order. Pages with the same Sidecar scripts share one.
+    let mut page_scripts: Vec<Vec<String>> = Vec::new();
+    let page_script: Vec<Option<usize>> = pages
+        .iter()
+        .zip(&scans)
+        .map(|(page, scan)| {
+            scan.as_ref()?.stylesheet_at?;
+            let sidecars: Vec<String> = page
+                .templates
+                .iter()
+                .flat_map(|t| {
+                    let stem = t.rsplit_once('.').map_or(&**t, |(s, _)| s);
+                    scripts::EXTENSIONS
+                        .iter()
+                        .map(move |e| format!("templates/{stem}{e}"))
+                })
+                .filter(|path| inputs.files.contains_key(path))
+                .collect();
+            if sidecars.is_empty() {
+                return None;
+            }
+            Some(match page_scripts.iter().position(|s| *s == sidecars) {
+                Some(i) => i,
+                None => {
+                    page_scripts.push(sidecars);
+                    page_scripts.len() - 1
+                }
+            })
+        })
+        .collect();
 
     // Every stylesheet, bundled.
     let mut bundles: Vec<(String, &str)> = entries
@@ -235,11 +246,16 @@ pub(crate) fn assets(
         }
         codes.push((bundle.code, urls));
     }
+    let entries_js: Vec<js::Entry> = script_entries
+        .iter()
+        .map(|path| js::Entry::Script(path.clone()))
+        .chain(page_scripts.into_iter().map(js::Entry::Page))
+        .collect();
     let scripts = scripts::bundle(
         &project,
         config,
         data,
-        &script_entries,
+        &entries_js,
         sources,
         &mut files,
         &mut diagnostics,
@@ -303,14 +319,15 @@ pub(crate) fn assets(
             placeholder_of(copies.len() + entries.len())
         )
     });
+    let page_chunk = |i: usize| scripts.entries[script_entries.len() + i];
 
     let pages = pages
         .into_iter()
         .zip(scans)
         .zip(edits)
-        .zip(&sidecar_scripts)
-        .map(|(((page, scan), edits), sidecar_scripts)| {
-            // Its Sidecar stylesheet and scripts go after its own
+        .zip(page_script)
+        .map(|(((page, scan), edits), page_script)| {
+            // Its Sidecar stylesheet and Page Script go after its own
             // stylesheets, and then a preload of every chunk its Scripts
             // import, so the browser fetches them all at once.
             let loaded: Vec<usize> = edits
@@ -319,7 +336,7 @@ pub(crate) fn assets(
                     Use::Script(path) => Some(script(path)),
                     _ => None,
                 })
-                .chain(sidecar_scripts.iter().map(|p| script(p)))
+                .chain(page_script.map(page_chunk))
                 .collect();
             let mut preloads: Vec<usize> = Vec::new();
             for &chunk in &loaded {
@@ -330,8 +347,11 @@ pub(crate) fn assets(
                 }
             }
             let mut tags = sidecars_link.clone().unwrap_or_default();
-            for path in sidecar_scripts {
-                let src = placeholder_of(chunks_at + script(path));
+            if config.router == RouterMode::Native {
+                tags += "<style>@view-transition{navigation:auto}</style>";
+            }
+            if let Some(i) = page_script {
+                let src = placeholder_of(chunks_at + page_chunk(i));
                 tags += &format!("<script type=\"module\" src=\"{src}\"></script>");
             }
             for chunk in preloads {

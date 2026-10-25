@@ -30,11 +30,25 @@ pub struct Project {
     pub files: BTreeMap<String, Arc<[u8]>>,
 }
 
-/// The virtual module of the Router's API (#20). With no Router on the
-/// Page, `navigate` is a full load; #61 swaps in the Router's own.
+/// What a build bundles.
+pub enum Entry {
+    /// A Script, by its path from the project root.
+    Script(String),
+    /// A Page's Script (ADR 0013): it registers these Sidecar scripts, by
+    /// path from the project root, so their `mount` runs for the Page.
+    Page(Vec<String>),
+}
+
+/// The Engine's own modules, by the specifier that imports them. Only
+/// `yuanme:router` is the Authors'; the others are imported by the
+/// Engine's modules alone.
+const MODULES: &[(&str, &str)] = &[("yuanme:mount", include_str!("js/mount.ts"))];
 const ROUTER: &str = "yuanme:router";
-const ROUTER_ID: &str = "\0yuanme:router";
-const ROUTER_CODE: &str = "export function navigate(url, { history = \"auto\" } = {}) {\n  if (history === \"replace\") location.replace(url);\n  else location.assign(url);\n}\n";
+/// `yuanme:router` with no Router on the Page: `navigate` is a full load;
+/// #61 swaps in the Router's own.
+const NAVIGATE: &str = "export function navigate(url, { history = \"auto\" } = {}) {\n  if (history === \"replace\") location.replace(url);\n  else location.assign(url);\n}\n";
+/// What a Page Script's module id starts with, before its index.
+const PAGE: &str = "\0yuanme:page:";
 
 pub struct Chunk {
     /// rolldown's file name for it, such as `shared-Dig5JG4F.js`, which the
@@ -100,12 +114,11 @@ pub enum At {
     Start,
 }
 
-/// Bundles `entries`, project files by their path from the project root,
-/// for `targets`: the oldest version of each browser, as
+/// Bundles `entries` for `targets`: the oldest version of each browser, as
 /// `[major, minor, patch]` by Site config's key for it.
 pub fn bundle(
     project: Project,
-    entries: &[String],
+    entries: &[Entry],
     targets: &BTreeMap<String, [u32; 3]>,
 ) -> Result<Bundles, Vec<Problem>> {
     // Resolved paths are real paths, so a symlinked project root must be
@@ -120,18 +133,33 @@ pub fn bundle(
         None => "/".to_string(),
     };
     let problems = Arc::new(Mutex::new(Vec::new()));
+    let pages = entries
+        .iter()
+        .filter_map(|e| match e {
+            Entry::Page(sidecars) => Some(page_code(sidecars)),
+            Entry::Script(_) => None,
+        })
+        .collect();
     let plugin = Files {
         has_packages: root.is_some(),
         files: project.files,
+        pages,
         prefix: prefix.clone(),
         problems: problems.clone(),
     };
-    let ids: Vec<String> = entries.iter().map(|e| format!("{prefix}{e}")).collect();
+    let mut page = 0..;
+    let ids: Vec<String> = entries
+        .iter()
+        .map(|e| match e {
+            Entry::Script(path) => format!("{prefix}{path}"),
+            Entry::Page(_) => format!("{PAGE}{}", page.next().expect("endless")),
+        })
+        .collect();
     let options = BundlerOptions {
         input: Some(
             ids.iter()
                 .map(|id| InputItem {
-                    name: None,
+                    name: id.starts_with(PAGE).then(|| "page".to_string()),
                     import: id.clone(),
                 })
                 .collect(),
@@ -274,11 +302,28 @@ fn target_list(targets: &BTreeMap<String, [u32; 3]>) -> Vec<String> {
     out
 }
 
-fn relative(id: &str, prefix: &str) -> String {
-    if id == ROUTER_ID {
-        return ROUTER.to_string();
+/// A Page Script's code: it registers the Sidecar scripts and mounts them
+/// at once.
+fn page_code(sidecars: &[String]) -> String {
+    let mut code = String::from("import { page, mount } from \"yuanme:mount\";\n");
+    for (i, path) in sidecars.iter().enumerate() {
+        code += &format!("import * as s{i} from {:?};\n", format!("/{path}"));
     }
-    id.strip_prefix(prefix).unwrap_or(id).to_string()
+    let names: Vec<String> = (0..sidecars.len()).map(|i| format!("s{i}")).collect();
+    code += &format!("page(import.meta.url, [{}]);\nmount();\n", names.join(", "));
+    code
+}
+
+/// A module's name in the build report: a project file by its path from
+/// the root, and the Engine's own by the specifier that imports them.
+fn relative(id: &str, prefix: &str) -> String {
+    if id.starts_with(PAGE) {
+        return "yuanme:page".to_string();
+    }
+    id.strip_prefix('\0')
+        .or_else(|| id.strip_prefix(prefix))
+        .unwrap_or(id)
+        .to_string()
 }
 
 /// Project files for rolldown: it resolves and loads them from the Engine's
@@ -289,6 +334,8 @@ fn relative(id: &str, prefix: &str) -> String {
 struct Files {
     files: BTreeMap<String, Arc<[u8]>>,
     has_packages: bool,
+    /// Each Page Script's code, by its index.
+    pages: Vec<String>,
     /// What a project file's module id starts with: the project root.
     prefix: String,
     problems: Arc<Mutex<Vec<Problem>>>,
@@ -366,8 +413,9 @@ impl Plugin for Files {
         args: &HookResolveIdArgs<'_>,
     ) -> HookResolveIdReturn {
         let specifier = args.specifier;
-        if specifier == ROUTER {
-            return Ok(Some(HookResolveIdOutput::from_id(ROUTER_ID)));
+        let own = args.importer.is_some_and(|i| i.starts_with('\0'));
+        if specifier == ROUTER || (own && MODULES.iter().any(|(m, _)| *m == specifier)) {
+            return Ok(Some(HookResolveIdOutput::from_id(format!("\0{specifier}"))));
         }
         let Some(importer) = args.importer else {
             // An entry, which the Engine has found already.
@@ -376,7 +424,13 @@ impl Plugin for Files {
         let is_path = specifier.starts_with('/')
             || specifier.starts_with("./")
             || specifier.starts_with("../");
-        if let Some(from) = self.project_file(importer)
+        // A Page Script imports Sidecar scripts from `/`, as a project
+        // file at the root would.
+        let from = match importer.starts_with(PAGE) {
+            true => Some(""),
+            false => self.project_file(importer),
+        };
+        if let Some(from) = from
             && is_path
         {
             let Some(path) = self.find(specifier, from) else {
@@ -458,10 +512,21 @@ impl Plugin for Files {
     }
 
     async fn load(&self, _ctx: SharedLoadPluginContext, args: &HookLoadArgs<'_>) -> HookLoadReturn {
-        if args.id == ROUTER_ID {
+        if let Some(name) = args.id.strip_prefix('\0') {
+            let (code, module_type) = match name.strip_prefix(&PAGE[1..]) {
+                Some(i) => (
+                    self.pages[i.parse::<usize>().expect("an index")].clone(),
+                    ModuleType::Js,
+                ),
+                None if name == ROUTER => (NAVIGATE.to_string(), ModuleType::Js),
+                None => {
+                    let (_, code) = MODULES.iter().find(|(m, _)| *m == name).expect("resolved");
+                    (code.to_string(), ModuleType::Ts)
+                }
+            };
             return Ok(Some(HookLoadOutput {
-                code: ROUTER_CODE.into(),
-                module_type: Some(ModuleType::Js),
+                code: code.into(),
+                module_type: Some(module_type),
                 ..HookLoadOutput::default()
             }));
         }

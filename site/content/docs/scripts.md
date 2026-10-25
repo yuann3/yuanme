@@ -163,8 +163,15 @@ A Sidecar script is a Script with the same name as a Template, beside it, such a
 ```
 
 ```ts check templates/partials/clock.ts
-for (const el of document.querySelectorAll(".clock")) {
-  el.textContent = new Date().toLocaleTimeString();
+export function mount() {
+  const tick = () => {
+    for (const el of document.querySelectorAll(".clock")) {
+      el.textContent = new Date().toLocaleTimeString();
+    }
+  };
+  tick();
+  const timer = setInterval(tick, 1000);
+  return () => clearInterval(timer);
 }
 ```
 
@@ -182,9 +189,17 @@ for (const el of document.querySelectorAll(".clock")) {
 </html>
 ```
 
-You don't load a Sidecar script. Each Page that rendered the Template gets it as a `<script type="module">`, just after the Page's last `<link rel="stylesheet">`, or else just before `</head>`; a Page with neither gets none. A Page that didn't render the Template doesn't load it.
+You don't load a Sidecar script. Each Page that rendered the Template loads it through a module yuanme writes for the Page, `/assets/page-….js`, with a `<script type="module">` just after the Page's last `<link rel="stylesheet">`, or else just before `</head>`; a Page with neither gets none. Pages that rendered the same Templates share that module, and a Page that didn't render the Template doesn't load its Sidecar script.
 
-A Sidecar script may export `mount`, and its exports survive bundling, but yuanme doesn't call `mount` yet. Until it does, do the work at the module's top level, as above, which runs on every page load.
+### mount
+
+A Sidecar script's top level runs once per document. Do a Page's work in an exported `mount` instead, which yuanme calls on every Page load that rendered the Template: once after a full page load, and and, once yuanme has the Router, again each time it swaps in another Page that rendered it. `mount` gets one argument, `ctx`:
+
+- `ctx.url`: the Page's URL, as a `URL`.
+- `ctx.signal`: an `AbortSignal` that aborts before the Router swaps the Page out. A listener added with `{ signal: ctx.signal }` goes away with the Page.
+- `ctx.data`: an object of the Sidecar script's own, which lasts from Page to Page until the next full load.
+
+`mount` may return a function, which runs when the signal aborts: the clock above stops its timer there. Without the Router, each move between Pages is a full page load, so `mount` runs once per load and its cleanup never runs. A `mount` that throws is reported in the browser's console, and the other Sidecar scripts still mount.
 
 ## The Router
 

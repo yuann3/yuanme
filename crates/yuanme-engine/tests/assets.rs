@@ -236,23 +236,32 @@ fn scripts_are_one_build_with_shared_chunks_and_transitive_preloads() {
         assert_eq!(got, want, "{page}");
         assert_eq!(got.len(), preloads.len(), "{page} preloads a chunk twice");
     }
-    // The home Page renders the photo Template, so it loads its Sidecar
-    // script, whose `mount` survives bundling (ADR 0013).
+    // The home Page renders the photo Template, so its Page Script holds
+    // the Sidecar script, whose `mount` it registers (ADR 0013). The about
+    // Page renders no Template with one, so it gets no Page Script.
     let (home, about) = (text("index.html"), text("about/index.html"));
     let ((home, _), (about, _)) = (script_urls(&home), script_urls(&about));
-    let photo: Vec<_> = home
+    let page: Vec<_> = home
         .iter()
-        .filter(|s| s.starts_with("/assets/photo-"))
+        .filter(|s| s.starts_with("/assets/page-"))
         .collect();
-    let [photo] = photo.as_slice() else {
+    let [page] = page.as_slice() else {
         panic!("{home:?}")
     };
-    assert!(!about.contains(photo));
     assert!(
-        text(&photo[1..]).contains(" as mount}"),
-        "{}",
-        text(&photo[1..])
+        !about.iter().any(|s| s.starts_with("/assets/page-")),
+        "{about:?}"
     );
+    let bundle = build.scripts.iter().find(|b| b.file == page[1..]).unwrap();
+    assert!(
+        bundle
+            .modules
+            .iter()
+            .any(|(m, _)| m == "templates/components/photo.ts"),
+        "{:?}",
+        bundle.modules
+    );
+    assert!(text(&page[1..]).contains(".mount"), "{}", text(&page[1..]));
 
     // What went into each bundle, for the build report.
     let site = build
@@ -273,6 +282,79 @@ fn scripts_are_one_build_with_shared_chunks_and_transitive_preloads() {
         ]
     );
     assert!(site.modules.iter().all(|(_, size)| *size > 0));
+}
+
+/// The router fixture with `[router] mode` set to `mode`.
+fn router_site(mode: &str) -> Build {
+    let root = fixture("router");
+    let mut inputs = load(&root);
+    let config = std::fs::read_to_string(root.join("yuanme.toml")).unwrap();
+    inputs.insert(
+        "yuanme.toml",
+        config
+            .replace("mode = \"swap\"", &format!("mode = \"{mode}\""))
+            .into_bytes(),
+    );
+    run(&inputs)
+}
+
+fn text(build: &Build, path: &str) -> String {
+    match &build.files[path].body {
+        Body::Bytes(bytes) => std::str::from_utf8(bytes).unwrap().to_string(),
+        other => panic!("{path} is {other:?}"),
+    }
+}
+
+/// Each Page's `<script type="module">` tags, whole.
+fn script_tags(page: &str) -> Vec<&str> {
+    page.match_indices("<script type=\"module\"")
+        .map(|(at, _)| &page[at..at + page[at..].find('>').unwrap() + 1])
+        .collect()
+}
+
+#[test]
+fn each_page_mounts_its_sidecar_scripts_through_one_page_script() {
+    for mode in ["off", "native"] {
+        let build = router_site(mode);
+        assert!(!build.failed(), "{}", diagnostics(&build));
+        // Pages that render the same Templates' Sidecar scripts share a
+        // Page Script, which holds them or imports them.
+        let page_script = |page: &str| -> String {
+            let html = text(&build, page);
+            let tags: Vec<&str> = script_tags(&html)
+                .into_iter()
+                .filter(|t| t.contains("/assets/page-"))
+                .collect();
+            let [tag] = tags.as_slice() else {
+                panic!("{mode} {page}: {tags:?}")
+            };
+            assert_eq!(
+                html.contains("<style>@view-transition{navigation:auto}</style>"),
+                mode == "native",
+                "{mode} {page}"
+            );
+            let src = tag.split("src=\"/").nth(1).unwrap();
+            src[..src.find('"').unwrap()].to_string()
+        };
+        let home = page_script("index.html");
+        assert_eq!(page_script("projects/index.html"), home, "{mode}");
+        let about = page_script("about/index.html");
+        assert_ne!(about, home, "{mode}");
+        assert_eq!(page_script("posts/long/index.html"), about, "{mode}");
+        let (statics, _) = chunk_imports(&text(&build, &home));
+        let bundle = |file: &str| build.scripts.iter().find(|b| b.file == file).unwrap();
+        let modules: Vec<&str> = statics
+            .iter()
+            .chain([&home])
+            .flat_map(|c| bundle(c).modules.iter().map(|(m, _)| m.as_str()))
+            .collect();
+        for sidecar in [
+            "templates/layouts/base.ts",
+            "templates/components/counter.ts",
+        ] {
+            assert!(modules.contains(&sidecar), "{mode}: {modules:?}");
+        }
+    }
 }
 
 #[test]

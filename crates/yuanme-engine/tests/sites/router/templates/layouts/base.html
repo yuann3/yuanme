@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" data-page="{% block name %}{% endblock %}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>{% block title %}{% endblock %} | Router</title>
+<link rel="stylesheet" href="/styles/site.css">
+<script type="module" src="/scripts/site.ts"></script>
+</head>
+<body>
+<nav data-yuanme-persist="rail">
+<a data-nav-link data-section="home" href="/">Home</a>
+<a data-nav-link data-section="about" href="/about/">About</a>
+<a data-nav-link data-section="projects" href="/projects/">Projects</a>
+<a data-nav-link data-section="writing" href="/posts/long/">Writing</a>
+<a id="feed" href="/feed.xml">Feed</a>
+<a id="plain" href="/plain/">Plain</a>
+<a id="reload" href="/projects/" data-yuanme-reload>Projects, loaded in full</a>
+<a id="no-prefetch" href="/projects/" data-yuanme-prefetch="false">Projects, not prefetched</a>
+<a id="fragment" href="/posts/long/#section-2">Section 2</a>
+</nav>
+<canvas data-yuanme-persist="film" data-film-canvas width="64" height="64"></canvas>
+<main data-panel-content>{% block body %}{% endblock %}</main>
+</body>
+</html>

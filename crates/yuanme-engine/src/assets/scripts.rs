@@ -28,13 +28,13 @@ pub(super) struct Scripts {
 /// The extensions of a Script.
 pub(super) const EXTENSIONS: &[&str] = &[".ts", ".js", ".mts", ".mjs"];
 
-/// Bundles `entries`, project files by their path from the project root.
-/// `None` when it fails, with the Diagnostics in `diagnostics`.
+/// Bundles `entries`. `None` when it fails, with the Diagnostics in
+/// `diagnostics`.
 pub(super) fn bundle(
     project: &Project<'_>,
     config: &Config,
     data: &BTreeMap<String, Value>,
-    entries: &[String],
+    entries: &[js::Entry],
     sources: &mut Files,
     files: &mut SourceFiles,
     diagnostics: &mut Diagnostics,

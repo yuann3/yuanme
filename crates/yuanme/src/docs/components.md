@@ -185,7 +185,7 @@ li time {
 ```
 
 - **A Sidecar stylesheet**: yuanme bundles the Sidecar stylesheets of every Template that any Page uses into one stylesheet, and links it from every HTML Page, after its last `<link rel="stylesheet">` or else just before `</head>`. yuanme doesn't scope Sidecar styles to their Template yet, so a Sidecar's rules apply to every Page.
-- **A Sidecar script**: yuanme bundles it as a module and loads it with a `<script type="module">` in the same place, on each Page that uses its Template. yuanme doesn't call a Sidecar script's exported `mount` yet.
+- **A Sidecar script**: yuanme bundles it as a module and loads it, from the same place, on each Page that uses its Template, and calls its exported `mount` on each of those Page loads (`yuanme docs scripts`).
 
 A Page with neither a `<link rel="stylesheet">` nor a `</head>` gets no Sidecars.
 

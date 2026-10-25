@@ -1,0 +1,12 @@
+{% extends "layouts/base.html" %}
+{% block name %}home{% endblock %}
+{% block title %}Home{% endblock %}
+{% block body %}
+<h1>Home</h1>
+{% include "components/counter.html" %}
+<pre><code>let home = 1;</code></pre>
+<ul>
+{% for entry in collections.posts %}<li><a href="{{ entry.url }}">{{ entry.title }}</a></li>{% endfor %}
+</ul>
+<div class="tall"></div>
+{% endblock %}

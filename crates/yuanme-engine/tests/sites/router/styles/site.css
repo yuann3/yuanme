@@ -1,0 +1,7 @@
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; }
+nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; }
+canvas { display: block; width: 64px; height: 64px; }
+.tall { height: 3000px; }
+/* Mounting fills it after a traversal restores the scroll; a height of
+   its own keeps that from moving what is below it. */
+[data-counter] { height: 24px; margin: 0; }
