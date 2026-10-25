@@ -21,6 +21,7 @@ yuanme-org = { path = "vendor/organic", version = "0.0.0" }
 # `cargo install` (#27). Each one's manifest says where its fork is.
 comrak = { package = "yuanme-comrak", path = "vendor/comrak", version = "0.0.0" }
 ravif = { package = "yuanme-ravif", path = "vendor/ravif", version = "0.0.0" }
+math-core = { package = "yuanme-math-core", path = "vendor/math-core", version = "0.0.0" }
 
 # The image pipeline's tests encode real photos, which takes minutes
 # unoptimised. At release's opt-level, they hash release's bytes.

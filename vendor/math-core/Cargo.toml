@@ -1,0 +1,55 @@
+[package]
+name = "yuanme-math-core"
+description = "The LaTeX to MathML converter for yuanme, forked from math-core 0.9.0 for its labels and bounds on nesting, expansion and operator inference. Internal; no stability promise."
+version.workspace = true
+edition = "2024"
+rust-version.workspace = true
+license = "MIT"
+repository.workspace = true
+include = ["/src", "/LICENSE"]
+readme = false
+
+# Everything here but this file is yuann3/math-core's crates/math-core at
+# `rev`, which is where the fork is changed, tested and rebased onto each
+# math-core release. `cargo xtask vendor-check` fails if the two differ
+# (#50). Its LICENSE is a link to the repository's.
+[package.metadata.fork]
+repository = "https://github.com/yuann3/math-core"
+rev = "75a7cfb5d5d7b70b2629c21e26d63fe7854cdbd0"
+dir = "crates/math-core"
+
+[lib]
+name = "math_core"
+# math-core's tests and their snapshots run in the fork.
+test = false
+doctest = false
+bench = false
+
+[dependencies]
+# Exact: math-core releases the two together, and the renderer is internal
+# to it.
+mathml-renderer = { package = "math-core-renderer-internal", version = "=0.9.0", default-features = false, features = ["std"] }
+phf = { version = "0.14.0", default-features = false, features = ["macros", "std"] }
+strum = { version = "0.28.0", default-features = false, features = ["std"] }
+strum_macros = "0.28.0"
+static_assertions = "1.1.0"
+rustc-hash = { version = "2.1.2", default-features = false }
+hashbrown = { version = "0.17", default-features = false }
+kstring = { version = "2.0.4", default-features = false, features = ["unsafe", "max_inline"] }
+memchr = { version = "2.8.1", default-features = false, features = ["std"] }
+
+[features]
+default = ["std"]
+# math-core's own switch; the dependencies' `std` is on above.
+std = []
+
+[lints.rust]
+# kstring 2.0.5 deprecates the `KString` math-core uses throughout.
+deprecated = "allow"
+# Its `serde` and `ariadne` features, which need dependencies yuanme
+# doesn't vendor.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("serde", "ariadne"))'] }
+
+[lints.clippy]
+# math-core's own style, which yuanme doesn't change.
+all = { level = "allow", priority = -1 }

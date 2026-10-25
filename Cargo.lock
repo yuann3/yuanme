@@ -1807,6 +1807,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "kstring"
+version = "2.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a09b82a7f771ed02dc0dd9b27130a0fa5499fa15ed3027116c1e5e4e591bd9e"
+dependencies = [
+ "static_assertions",
+]
+
+[[package]]
 name = "lazy-regex"
 version = "3.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1976,6 +1985,25 @@ name = "matches"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2532096657941c2fea9c289d370a250971c689d4f143798ff67113ec042024a5"
+
+[[package]]
+name = "math-core-renderer-internal"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2a232c604d4a08a856316ab2e608b884db7b141a36e60e1056911a48116f949"
+dependencies = [
+ "bitflags 2.13.2",
+ "dtoa",
+ "hashbrown 0.17.1",
+ "kstring",
+ "percent-encoding",
+ "rustc-hash",
+ "serde",
+ "stable-arena",
+ "static_assertions",
+ "strum",
+ "strum_macros",
+]
 
 [[package]]
 name = "maybe-rayon"
@@ -4136,6 +4164,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8e2fb0f499abb4d162f2bedad68f5ef91a1682b5a03596ddb67efd37768d100"
 
 [[package]]
+name = "stable-arena"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e016625b2c482bea7d5a301e88c75f40ffb2a3bc9c7f8bc16c68e05156fb6807"
+
+[[package]]
 name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5024,6 +5058,21 @@ dependencies = [
  "yuanme-content",
  "yuanme-diag",
  "yuanme-render",
+]
+
+[[package]]
+name = "yuanme-math-core"
+version = "0.0.0"
+dependencies = [
+ "hashbrown 0.17.1",
+ "kstring",
+ "math-core-renderer-internal",
+ "memchr",
+ "phf 0.14.0",
+ "rustc-hash",
+ "static_assertions",
+ "strum",
+ "strum_macros",
 ]
 
 [[package]]
