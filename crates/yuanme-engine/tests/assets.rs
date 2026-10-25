@@ -268,3 +268,88 @@ fn rendered_asset_diagnostics() {
     let build = run(&inputs);
     assert!(!build.failed(), "{}", diagnostics(&build));
 }
+
+/// The Reference site's two stylesheets as Astro and Tailwind 3 built them,
+/// through the default targets: everything the parity inventory says must
+/// survive does, and only `css-targets`' fallbacks go (#20, #23).
+#[test]
+fn the_reference_sites_css_keeps_what_the_parity_inventory_lists() {
+    let root = fixture("reference-css");
+    let build = run(&load(&root));
+    assert!(!build.failed(), "{}", diagnostics(&build));
+    let bundle = |name: &str| {
+        let prefix = format!("assets/{name}-");
+        let (_, output) = build
+            .files
+            .iter()
+            .find(|(path, _)| path.starts_with(&prefix))
+            .unwrap_or_else(|| panic!("no {name} bundle"));
+        let Body::Bytes(bytes) = &output.body else {
+            panic!("a bundle is in memory")
+        };
+        String::from_utf8(bytes.to_vec()).unwrap()
+    };
+    // Minifying drops whitespace, so both sides are compared without it.
+    let squeeze = |css: &str| css.split_whitespace().collect::<String>();
+    let count = |css: &str, what: &str| css.matches(&squeeze(what)).count();
+
+    // (stylesheet, what must survive)
+    let kept: &[(&str, &[&str])] = &[
+        (
+            "global",
+            &[
+                "@property --",
+                ":has(",
+                "linear-gradient(in oklab",
+                "color-mix(in oklab",
+                "@supports (color: oklab(from red l a b))",
+                "oklab(from color-mix(",
+                "text-wrap:pretty",
+                "100dvh",
+                "100svh",
+                "35svh",
+                "::selection",
+                // The droplet's fallbacks, which no target needs but a
+                // custom property's value can't prove.
+                "background:#f27baa;background:var(--droplet);background:linear-gradient(",
+                "-webkit-background-clip:text",
+                "-webkit-text-fill-color:transparent",
+                "@media (prefers-reduced-motion:",
+                "@media (hover:hover) and (pointer:fine)",
+                "@keyframes",
+            ],
+        ),
+        (
+            "about",
+            &[
+                "@container",
+                "container-type:size",
+                "cqw",
+                "cqh",
+                "@media (scripting:enabled)",
+                "translate:",
+                "rotate:",
+                "scale:",
+                "@keyframes",
+            ],
+        ),
+    ];
+    let mut wrong = Vec::new();
+    for (name, features) in kept {
+        let source =
+            squeeze(&std::fs::read_to_string(root.join(format!("styles/{name}.css"))).unwrap());
+        let built = squeeze(&bundle(name));
+        for feature in *features {
+            let (before, after) = (count(&source, feature), count(&built, feature));
+            if before == 0 || before != after {
+                wrong.push(format!("{name}: `{feature}` {before} -> {after}"));
+            }
+        }
+    }
+    assert!(wrong.is_empty(), "{}", wrong.join("\n"));
+
+    // `css-targets`: every target supports dvh, svh and `::selection`.
+    let global = squeeze(&bundle("global"));
+    assert_eq!(count(&global, "100vh"), 0);
+    assert_eq!(count(&global, "::-moz-selection"), 0);
+}

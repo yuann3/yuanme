@@ -1,0 +1,6 @@
+[site]
+url = "https://eyuan.me"
+
+[routes.home]
+path = "/"
+template = "home.html"
