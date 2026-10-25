@@ -1,0 +1,6 @@
+# The Parity baseline (#39): Astro's build of eyuan.me at `rev`, made by
+# baseline/build.sh, published as the release `tag` with this sha256, and
+# unpacked by fetch.sh.
+rev = "6567e0162330fdf6effa97b5e61353d32ab17a50"
+tag = "parity-baseline-6567e01"
+sha256 = "777bb1f5ecd9c06e3b440c482ed74135a208a500083234b1edc325be8f1c036d"
