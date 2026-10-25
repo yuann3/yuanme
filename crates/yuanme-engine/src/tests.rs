@@ -322,3 +322,89 @@ fn templates_render_each_route_and_the_sitemap_and_sidecars_are_not_templates() 
     let codes: Vec<_> = build.diagnostics.iter().map(|d| d.code.name).collect();
     assert_eq!(codes, ["entry/output-collision"]);
 }
+
+#[test]
+fn code_is_highlighted_through_the_cache_and_styled_by_one_stylesheet() {
+    let mut inputs = project();
+    inputs.insert(
+        "yuanme.toml",
+        [
+            CONFIG,
+            b"[collections.posts]\nroute = \"/blog/{slug}/\"\n".as_slice(),
+        ]
+        .concat(),
+    );
+    // The same text in two languages, which a key without the grammar
+    // would give one highlighting.
+    let post = "---\ntitle: Pew\n---\n```rust\nfn f() {}\n```\n\n```c\nfn f() {}\n```\n\n```pyhton\nx\n```\n";
+    inputs.insert("content/posts/pew.md", post.as_bytes());
+    inputs.insert(
+        "content/posts/plain.md",
+        b"---\ntitle: Plain\n---\nHi.".as_slice(),
+    );
+    inputs.insert(
+        "templates/posts/entry.html",
+        b"<html><head><title>{{ entry.title }}</title></head><body>{{ entry.content }}</body></html>"
+            .as_slice(),
+    );
+
+    let mut cache = Cache::memory("1.0.0");
+    let build = super::build(&inputs, &mut cache, Mode::Build);
+
+    assert!(!build.failed(), "{:#?}", build.diagnostics);
+    let [d] = build.diagnostics.as_slice() else {
+        panic!("{:#?}", build.diagnostics)
+    };
+    assert_eq!(d.code.name, "entry/unknown-language");
+    let at = &d.primary().range;
+    assert_eq!(&post[at.clone()], "pyhton");
+    let edit = &d.children[0].suggestions[0].edits[0];
+    assert_eq!(
+        (&edit.span.range, edit.replacement.as_str()),
+        (at, "python")
+    );
+
+    let page = text(&build.files["blog/pew/index.html"].body);
+    let css_path = build
+        .files
+        .keys()
+        .find(|p| p.starts_with("assets/code-") && p.ends_with(".css"))
+        .expect("a stylesheet for the code");
+    let (head, body) = page.split_once("</head>").unwrap();
+    assert!(
+        head.ends_with(&format!("<link rel=\"stylesheet\" href=\"/{css_path}\">")),
+        "{head}"
+    );
+    let blocks: Vec<&str> = body.split("<pre").skip(1).collect();
+    assert_eq!(blocks.len(), 3, "{body}");
+    assert!(
+        blocks[0].starts_with(
+            " class=\"y-code\" tabindex=\"0\" data-language=\"rust\"><code><span class=\""
+        ),
+        "{}",
+        blocks[0]
+    );
+    assert!(blocks[1].contains("data-language=\"c\""));
+    let code = |b: &str| b.split_once("<code>").unwrap().1.to_string();
+    // Rust colours `fn` as a keyword; C has no such keyword.
+    assert_ne!(code(blocks[0]), code(blocks[1]));
+    assert_eq!(
+        blocks[2],
+        " class=\"y-code\" tabindex=\"0\" data-language=\"plaintext\"><code>x</code></pre></body></html>"
+    );
+    // Every class the Page uses has a rule, in both themes.
+    let css = text(&build.files[css_path].body);
+    let class = code(blocks[0]);
+    let class = class.split('"').nth(1).unwrap();
+    assert_eq!(
+        css.matches(&format!(".y-code .{class}{{")).count(),
+        2,
+        "{css}"
+    );
+    // A Page with no code gets no stylesheet.
+    assert!(!text(&build.files["blog/plain/index.html"].body).contains("<link"));
+
+    // A warm build reads the cache and writes the same bytes.
+    let again = super::build(&inputs, &mut cache, Mode::Build);
+    assert_eq!(text(&again.files["blog/pew/index.html"].body), page);
+}

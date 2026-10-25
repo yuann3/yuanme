@@ -859,6 +859,8 @@ fn every_entry_code_has_a_case_here() {
             "org/no-effect",
             "org/wrong-weekday",
             "org/too-deep",
+            // The Engine's, where code is highlighted (#53).
+            "entry/unknown-language",
         ])
         .collect();
     let all: BTreeSet<&str> = codes::ALL

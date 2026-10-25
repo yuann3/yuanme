@@ -3,6 +3,7 @@
 
 mod assets;
 mod cache;
+mod highlight;
 pub mod image;
 mod link;
 #[cfg(test)]
@@ -158,11 +159,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
     }
-    let code: Vec<_> = site
-        .entries
-        .iter()
-        .map(|e| yuanme_render::highlight::document(&e.document))
-        .collect();
+    let (code, more) = highlight::code(&site, &sources, cache);
+    diagnostics.extend(more);
     let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
     let (pages, more) =
         yuanme_render::template::render(&config, &site, &sources, &templates, &static_urls, &code);
@@ -193,7 +191,9 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
     }
-    let mut files = link(stage.pages, stage.assets);
+    let (mut pages, mut assets) = (stage.pages, stage.assets);
+    highlight::stylesheet(&mut pages, &mut assets);
+    let mut files = link(pages, assets);
     files.extend(statics);
 
     let build = Build {

@@ -136,6 +136,11 @@ codes! {
         example: "data/nav.toml and data/nav.yaml",
         fix: "Delete or rename one of them.",
     }
+    ENTRY_UNKNOWN_LANGUAGE = "entry/unknown-language" {
+        meaning: "A code block names a language that no grammar highlights, so it is shown as plain text. yuanme reads Shiki's language names and aliases, Org's own names such as `elisp` and `C`, and `jupyter-X` as `X`. `text`, `none`, `fundamental` and `example` are plain text with no warning.",
+        example: "```pyhton\nprint(1)\n```",
+        fix: "Correct the name, here `python`, or write `text` for a block that is meant to be plain.",
+    }
     ORG_UNSUPPORTED_CONSTRUCT = "org/unsupported-construct" {
         meaning: "An Org body uses something outside the Org subset: macros, `#+INCLUDE`, `#+CALL` and other code that runs, citations, radio targets, dynamic blocks, inline tasks, headlines deeper than level 5, or a link type yuanme can't follow. Emacs would export it; yuanme fails the build rather than drop it or pass it through.",
         example: "#+TITLE: Pew\n\nBuilt on {{{date}}}.",
