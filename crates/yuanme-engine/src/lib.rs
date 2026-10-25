@@ -158,9 +158,14 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
     }
+    let code: Vec<_> = site
+        .entries
+        .iter()
+        .map(|e| yuanme_render::highlight::document(&e.document))
+        .collect();
     let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
     let (pages, more) =
-        yuanme_render::template::render(&config, &site, &sources, &templates, &static_urls);
+        yuanme_render::template::render(&config, &site, &sources, &templates, &static_urls, &code);
     diagnostics.extend(more);
     // Routes were checked against Static files before render; this is the
     // sitemap's files.

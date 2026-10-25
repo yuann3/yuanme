@@ -307,3 +307,19 @@ fn languages_resolve_as_shiki_then_org_name_them() {
         .collect();
     assert_eq!(got, cases);
 }
+
+/// #53's bar for markup size: Shiki's inline styles made the code on the
+/// Reference site's largest Post 105,814 bytes.
+#[test]
+fn code_markup_on_extending_c_stdlib_is_at_most_40_kb() {
+    let doc = document(&Path::new(CORPUS).join("md/eyuan-me/blog--extending_c_stdlib.md")).unwrap();
+    let html = yuanme_render::html::body(&doc, &Default::default(), &highlight::document(&doc));
+    let blocks: Vec<&str> = html
+        .split("<pre")
+        .skip(1)
+        .map(|b| &b[..b.find("</pre>").unwrap() + 6])
+        .collect();
+    assert_eq!(blocks.len(), 29);
+    let bytes: usize = blocks.iter().map(|b| "<pre".len() + b.len()).sum();
+    assert!(bytes <= 40_000, "{bytes} bytes of code markup");
+}

@@ -1,7 +1,8 @@
 // Writes what the Reference site's Markdown pipeline renders for each
 // Reference Post, and for each edge case in cases/, the bodies
 // tests/corpus.rs must match byte for byte.
-// Shiki is off: code highlighting arrives with #53.
+// Shiki is off: tests/corpus.rs compares highlighted code by its text, and
+// tests/highlight.rs checks its colours against tests/shiki/tokens.json.
 //
 // Run from the repository root, with the Reference site checked out and
 // installed (Astro 5.16.5, @astrojs/markdown-remark 6.3.10):

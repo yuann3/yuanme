@@ -14,6 +14,8 @@ use yuanme_content::document::{Document, Kind, Links};
 use yuanme_content::{config, markdown, org};
 use yuanme_diag::{Code, Diagnostic, Files, Level, codes};
 
+use crate::highlight;
+
 /// What the filters read from the Site.
 pub(super) struct Site {
     /// Without a trailing `/`.
@@ -296,7 +298,7 @@ fn fragment(
             ));
         }
     };
-    let html = crate::html::body(&doc, &Links::new());
+    let html = crate::html::body(&doc, &Links::new(), &highlight::document(&doc));
     let root = &doc.node(Document::ROOT).children;
     let single = root.len() == 1 && doc.node(root[0]).kind == Kind::Paragraph;
     let html = match html

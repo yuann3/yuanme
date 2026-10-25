@@ -46,14 +46,16 @@ pub struct Page {
 
 /// Renders every Route, then the sitemap. `templates` is every file of
 /// `templates/` in `files`, by its path there; `statics` is the URL of
-/// every Static file, which `url()` accepts as well as Routes. Any error
-/// fails the whole render, after every Page has been tried.
+/// every Static file, which `url()` accepts as well as Routes; `code` is
+/// each Entry's highlighted code blocks. Any error fails the whole render,
+/// after every Page has been tried.
 pub fn render(
     config: &Config,
     site: &Site,
     files: &Files,
     templates: &BTreeMap<String, FileId>,
     statics: &BTreeSet<String>,
+    code: &[crate::highlight::Code],
 ) -> (Vec<Page>, Vec<Diagnostic>) {
     let origin = config.site.url.trim_end_matches('/').to_string();
     let sitemap = sitemap(site, &origin);
@@ -141,7 +143,7 @@ pub fn render(
     }
 
     let uses = uses(&sources);
-    let context = Context::new(config, site, &origin);
+    let context = Context::new(config, site, code, &origin);
     let threads = rayon::ThreadPoolBuilder::new()
         .stack_size(STACK)
         .build()

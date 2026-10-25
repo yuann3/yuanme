@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use yuanme_content::markdown;
 use yuanme_diag::Files;
+use yuanme_render::highlight;
 
 const CORPUS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../corpus/md");
 
@@ -23,6 +24,10 @@ fn files(dir: &Path) -> Vec<PathBuf> {
 
 /// A file's body as HTML, or its Diagnostics if it fails.
 fn render(path: &Path) -> String {
+    render_with(path, false)
+}
+
+fn render_with(path: &Path, highlighted: bool) -> String {
     let text = std::fs::read_to_string(path).unwrap();
     // Front matter is the Entry's, not the body's.
     let body = text
@@ -33,7 +38,13 @@ fn render(path: &Path) -> String {
     let name = path.strip_prefix(CORPUS).unwrap_or(path).to_str().unwrap();
     let file = sources.add(name, text.as_str());
     match markdown::document(&sources, file, body..text.len()) {
-        (Some(doc), _) => yuanme_render::html::body(&doc, &Default::default()),
+        (Some(doc), _) => {
+            let code = match highlighted {
+                true => highlight::document(&doc),
+                false => Default::default(),
+            };
+            yuanme_render::html::body(&doc, &Default::default(), &code)
+        }
         (None, diagnostics) => diagnostics
             .iter()
             .map(|d| d.render(&sources, false) + "\n")
@@ -54,8 +65,36 @@ fn every_corpus_file() {
     }
 }
 
+/// Each `<pre>` as only the text of its code, as the parity test compares
+/// highlighted code (docs/parity-exceptions.md); its colours are
+/// tests/highlight.rs's.
+fn pre_as_text(html: &str) -> String {
+    let mut out = String::new();
+    let mut rest = html;
+    while let Some(start) = rest.find("<pre") {
+        out.push_str(&rest[..start]);
+        let end = start + rest[start..].find("</pre>").unwrap() + 6;
+        let pre = &rest[start..end];
+        let code = &pre[pre.find("<code").unwrap()..pre.rfind("</code>").unwrap()];
+        let mut text = String::new();
+        for (i, part) in code.split('<').enumerate() {
+            text.push_str(if i == 0 {
+                part
+            } else {
+                part.split_once('>').unwrap().1
+            });
+        }
+        out.push_str(&format!(
+            "<pre>{}</pre>",
+            text.strip_suffix('\n').unwrap_or(&text)
+        ));
+        rest = &rest[end..];
+    }
+    out + rest
+}
+
 /// The Reference site's Posts render byte for byte as Astro renders them
-/// (tests/astro/generate.mjs), Shiki aside.
+/// (tests/astro/generate.mjs), and highlighted, their code has Astro's text.
 #[test]
 fn reference_posts_render_as_astro_does() {
     let dir = Path::new(CORPUS).join("eyuan-me");
@@ -72,7 +111,8 @@ fn reference_posts_render_as_astro_does() {
                 .join("tests/astro")
                 .join(&name);
             let want = std::fs::read_to_string(astro).unwrap();
-            (render(path) != want).then_some(name)
+            let highlighted = pre_as_text(&render_with(path, true)) != pre_as_text(&want);
+            (render(path) != want || highlighted).then_some(name)
         })
         .collect();
     assert!(wrong.is_empty(), "differ from Astro: {wrong:?}");

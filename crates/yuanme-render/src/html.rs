@@ -9,12 +9,16 @@ use yuanme_content::document::{
     Align, Checkbox, Document, Kind, Links, NodeId, footnote_identifier,
 };
 
+use crate::highlight::{self, Code};
+
 /// `links` says where resolved links go; any other link keeps the URL it
-/// was written with.
-pub fn body(doc: &Document, links: &Links) -> String {
+/// was written with. A code block missing from `code` is written as Astro
+/// writes it with Shiki off.
+pub fn body(doc: &Document, links: &Links, code: &Code) -> String {
     let mut w = Writer {
         doc,
         links,
+        code,
         out: String::new(),
         references: BTreeMap::new(),
     };
@@ -32,6 +36,7 @@ pub fn body(doc: &Document, links: &Links) -> String {
 struct Writer<'d> {
     doc: &'d Document,
     links: &'d Links,
+    code: &'d Code,
     out: String,
     /// How often each footnote has been referenced so far.
     references: BTreeMap<String, usize>,
@@ -121,6 +126,21 @@ impl Writer<'_> {
                 unreachable!("written by its list")
             }
             Kind::DescriptionList { tight } => self.description_list(id, !tight),
+            Kind::CodeBlock { lang, .. } if self.code.contains_key(&id) => {
+                // As Astro names it: the language as written if it has a
+                // grammar or is plain text.
+                let language = lang
+                    .as_deref()
+                    .filter(|l| highlight::language(l).is_some())
+                    .unwrap_or("plaintext");
+                self.out.push_str(&format!(
+                    "<pre{} class=\"{}\" tabindex=\"0\" data-language=\"{}\"><code>{}</code></pre>",
+                    self.attrs(id),
+                    highlight::PRE_CLASS,
+                    attribute(language),
+                    self.code[&id]
+                ));
+            }
             Kind::CodeBlock { lang, text: code } => {
                 self.out.push_str(&format!("<pre{}><code", self.attrs(id)));
                 if let Some(lang) = lang {

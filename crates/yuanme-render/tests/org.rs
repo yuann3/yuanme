@@ -33,7 +33,11 @@ fn render(name: &str, text: &str) -> String {
         .map(|d| d.render(&sources, false) + "\n")
         .collect();
     if let Some(doc) = doc {
-        out.push_str(&yuanme_render::html::body(&doc, &Default::default()));
+        out.push_str(&yuanme_render::html::body(
+            &doc,
+            &Default::default(),
+            &Default::default(),
+        ));
     }
     out
 }
@@ -43,7 +47,7 @@ fn markdown_html(name: &str, text: &str) -> String {
     let file = sources.add(name, text);
     let (doc, diagnostics) = markdown::document(&sources, file, 0..text.len());
     assert!(diagnostics.is_empty(), "{name}: {diagnostics:?}");
-    yuanme_render::html::body(&doc.unwrap(), &Default::default())
+    yuanme_render::html::body(&doc.unwrap(), &Default::default(), &Default::default())
 }
 
 /// A construct both Source formats have renders as Markdown renders it

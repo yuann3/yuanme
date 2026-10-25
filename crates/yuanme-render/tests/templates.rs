@@ -8,6 +8,7 @@ use std::path::Path;
 use yuanme_content::config::{self, Config};
 use yuanme_content::site::{self, Project, Site};
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
+use yuanme_render::highlight;
 use yuanme_render::template::{self, Page};
 
 /// Every file under `dir`, by its path from `dir`.
@@ -73,6 +74,7 @@ fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
         &project.files,
         &project.templates,
         &project.statics,
+        &project.code,
     );
     (project.files, pages, diagnostics)
 }
@@ -83,6 +85,7 @@ struct Resolved {
     site: Site,
     templates: BTreeMap<String, FileId>,
     statics: BTreeSet<String>,
+    code: Vec<highlight::Code>,
 }
 
 fn resolve(written: &[(String, String)]) -> Resolved {
@@ -129,12 +132,18 @@ fn resolve(written: &[(String, String)]) -> Resolved {
         false,
     );
     let site = site.unwrap_or_else(|| panic!("{diagnostics:#?}"));
+    let code = site
+        .entries
+        .iter()
+        .map(|e| highlight::document(&e.document))
+        .collect();
     Resolved {
         files,
         config,
         site,
         templates,
         statics,
+        code,
     }
 }
 
@@ -203,6 +212,7 @@ fn every_page_sees_what_its_context_schema_says() {
         &project.files,
         &project.templates,
         &project.statics,
+        &project.code,
     );
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
     let mut kinds = BTreeSet::new();
