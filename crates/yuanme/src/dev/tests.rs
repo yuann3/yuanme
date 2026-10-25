@@ -288,3 +288,49 @@ fn every_edit_serves_what_a_clean_build_makes() {
     assert!(matches!(session.build(), Update::Built(_)));
     assert_served_is_clean(&session, root, "a Rescan");
 }
+
+/// #15's Gate for the Reference site: a prose edit rebuilds in at most
+/// 50 ms at p95, Engine side: reading the saved file again, building the
+/// Site and finding the URLs that changed.
+#[test]
+#[ignore = "a timing, meaningful only in a release build; CI's dev-budget job runs it"]
+fn a_prose_edit_rebuilds_in_at_most_50_ms_p95() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = &dir.path().canonicalize().unwrap();
+    reference(root);
+    let mut session =
+        Session::start(root.clone(), root.join("dist"), Cache::memory("test")).unwrap();
+    let post = root.join("content/posts/extending_c_stdlib.md");
+    let text = fs::read_to_string(&post).unwrap();
+    let batch = Batch {
+        paths: BTreeSet::from([post.clone()]),
+        rescan: false,
+    };
+    let mut times = Vec::new();
+    for i in 0..60 {
+        write(
+            &post,
+            &text.replacen("\n\n", &format!("\n\nEdit {i}.\n\n"), 1),
+        );
+        let started = std::time::Instant::now();
+        assert!(session.refresh(&batch).unwrap());
+        let Update::Built(urls) = session.build() else {
+            panic!("the edit failed the build")
+        };
+        let took = started.elapsed();
+        assert_eq!(urls, ["/blog/extending_c_stdlib/"]);
+        // The first edits warm what the first build didn't.
+        if i >= 10 {
+            times.push(took);
+        }
+    }
+    times.sort();
+    let p95 = times[(times.len() * 95).div_ceil(100) - 1];
+    eprintln!(
+        "{} Pages; a prose edit rebuilt in {:?} at p50, {p95:?} at p95, {:?} at most",
+        session.snapshot().build.site.as_ref().unwrap().routes.len(),
+        times[times.len() / 2],
+        times.last().unwrap()
+    );
+    assert!(p95 <= Duration::from_millis(50), "{p95:?} at p95");
+}
