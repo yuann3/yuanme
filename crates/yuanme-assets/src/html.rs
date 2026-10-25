@@ -274,6 +274,9 @@ pub struct Url {
     pub url: String,
     /// Where it is in the HTML, as written.
     pub at: Range<usize>,
+    /// Not an `href` the visitor follows, as `<a>`'s is: any `src`,
+    /// `srcset` or `poster`, and `<link href>`, which an icon is.
+    pub loaded: bool,
 }
 
 /// Every URL in `html` that a browser follows or fetches, for the static
@@ -314,6 +317,7 @@ pub fn urls(html: &str) -> Vec<Url> {
                 "href" | "src" | "poster" if !data_block => out.push(Url {
                     url: decode(a.value(html)),
                     at: a.value.clone(),
+                    loaded: a.name != "href" || name == "link",
                 }),
                 "srcset" | "imagesrcset" => {
                     let mut at = a.value.start;
@@ -325,6 +329,7 @@ pub fn urls(html: &str) -> Vec<Url> {
                             out.push(Url {
                                 url: decode(url),
                                 at: start..start + url.len(),
+                                loaded: true,
                             });
                         }
                         at += candidate.len() + 1;
@@ -386,10 +391,14 @@ mod tests {
 <script type="application/json" src="/data.json"></script><!-- <a href="/no/"> --><style>a{background:url(/no.png)}</style>
 </head><body><A HREF='/b?x=1&amp;y=2#top'>b</A><img src="/c.png" srcset="/c-1x.png 1x,  /c-2x.png 2x" alt="">
 <video poster=/v.jpg><source srcset="/s.avif"></video><textarea><a href="/no/"></textarea><a>none</a></body>"#;
-        let found: Vec<(String, &str)> = urls(html)
-            .into_iter()
-            .map(|u| (u.url, &html[u.at]))
+        let found = urls(html);
+        let followed: Vec<&str> = found
+            .iter()
+            .filter(|u| !u.loaded)
+            .map(|u| u.url.as_str())
             .collect();
+        assert_eq!(followed, ["/b?x=1&y=2#top"]);
+        let found: Vec<(String, &str)> = found.into_iter().map(|u| (u.url, &html[u.at])).collect();
         let want = [
             ("https://e.com/a/", "https://e.com/a/"),
             ("/m.ts", "/m.ts"),
