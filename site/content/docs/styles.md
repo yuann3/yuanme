@@ -1,6 +1,6 @@
 ---
 title: "Styles"
-description: "Link stylesheets from a Template; yuanme bundles their imports, adds prefixes for your browsers, minifies and hashes them, and copies Static files as they are."
+description: "Link stylesheets from a Template; yuanme bundles their imports, runs Tailwind for one that imports it, adds prefixes for your browsers, minifies and hashes them, and copies Static files as they are."
 ---
 
 A Page gets a stylesheet the way any HTML page does: its Template has a `<link rel="stylesheet" href>` that names a CSS file of the project. yuanme bundles that file, minifies it, writes it under `/assets/` with a hash in its name, and rewrites the `href`. You write plain CSS; nothing needs to be installed.
@@ -233,7 +233,65 @@ A Static file at the path of a Page is `entry/output-collision`, and one with th
 
 ## Tailwind
 
-yuanme doesn't run Tailwind yet.
+A stylesheet a Template links turns Tailwind on by importing it. There is no setting and nothing to install: yuanme runs the official Tailwind CLI for it.
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-brand: oklch(0.6 0.2 250);
+}
+
+.card {
+  @apply rounded-lg p-4 shadow-md;
+}
+```
+
+Tailwind doesn't scan your project. yuanme hands it the class names the Site uses, from three places:
+
+- every `class` attribute in the rendered Pages, so a class a Template writes with an expression is found too;
+- every string in your Scripts, such as `el.classList.add("hidden")`;
+- the text of your Sidecar stylesheets, so a theme variable a Sidecar uses, such as `var(--color-brand)`, is kept.
+
+A class put together from pieces, such as `"text-" + size`, is in none of them: write each whole class name somewhere. You don't need `@source`, and yuanme replaces any `source()` on the import with `source(none)`.
+
+Tailwind's CSS is then bundled like any other stylesheet's, for your browser targets, with Tailwind's own optimizations, so it matches what the CLI's `--minify` writes. A relative `url()` in a file the stylesheet imports stays relative to the linked stylesheet, as the CLI leaves it, so write such URLs from `/`.
+
+`@apply` and Tailwind's other directives work in the stylesheet that imports Tailwind and in the files it imports. Only a stylesheet a Template links can import Tailwind. A Sidecar stylesheet stays plain CSS: use the theme's variables there instead of `@apply`. Tailwind puts its CSS in cascade layers, and Sidecar rules aren't in one, so a Sidecar's rule beats a utility on the same element; write it inside `@layer components { … }` for utilities to win.
+
+### Plugins
+
+Install a plugin with Bun, and name it with `@plugin`. yuanme reads it from `node_modules`, with either of Bun's linkers:
+
+```sh
+bun add daisyui
+```
+
+```css
+@import "tailwindcss";
+@plugin "daisyui";
+```
+
+### Version and download
+
+Each yuanme release runs one Tailwind release, 4.3.3 for this one. `[tailwind] version` in Site config runs another Tailwind 4 release:
+
+```toml check
+[site]
+url = "https://example.com"
+title = "Example"
+
+[collections.posts]
+route = "/blog/{slug}/"
+list_route = "/blog/"
+
+[tailwind]
+version = "4.2.4"
+```
+
+The first build that needs a version downloads it with `curl` from Tailwind's GitHub release, 80 to 112 MB, and checks its SHA-256. It is kept for every project in your user's cache folder: `~/Library/Caches/yuanme/tools` on macOS, `$XDG_CACHE_HOME/yuanme/tools` or `~/.cache/yuanme/tools` on Linux, and `%LOCALAPPDATA%\yuanme\tools` on Windows. In CI, cache that folder. To build offline, set `YUANME_TAILWIND_BIN` to a Tailwind CLI binary, which yuanme runs instead.
+
+Tailwind's output is kept in `.yuanme/cache` under the class names, your project's CSS and JS files, your lockfile and the version, so a build that changes none of them doesn't run Tailwind.
 
 ## When something is wrong
 
@@ -266,5 +324,7 @@ The codes for stylesheets and the files they name:
 - `asset/dependencies-not-installed`: an `@import` of a package, with a `package.json` and no `node_modules`.
 - `asset/unmatched-selector`: a Sidecar's selector matches no tag its Template writes. A warning.
 - `asset/scope-collision`: two Sidecars' paths make the same attribute. Rename one of them.
+- `asset/tailwind-error`: Tailwind reports an error, such as an `@apply` of a class it doesn't have, or a stylesheet no Template links imports Tailwind.
+- `asset/tool-unavailable`: yuanme can't download the Tailwind CLI, or `YUANME_TAILWIND_BIN` names no file.
 
 `yuanme docs CODE` explains each one.
