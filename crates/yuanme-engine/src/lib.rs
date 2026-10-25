@@ -98,6 +98,12 @@ pub struct Build {
     pub diagnostics: Vec<Diagnostic>,
     /// The files the Diagnostics point into.
     pub sources: Files,
+    /// Site config, unless it has an error.
+    pub config: Option<Config>,
+    /// The resolved Site, unless an Entry or Data file has an error. A
+    /// build that failed later still has it, for `yuanme routes` and the
+    /// context schemas.
+    pub site: Option<Site>,
 }
 
 pub struct Output {
@@ -127,14 +133,16 @@ impl Build {
 /// `inputs` must hold `yuanme.toml`: finding it is what makes a folder a project.
 pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let mut sources = Files::default();
-    let failed = |diagnostics, sources| Build {
+    let failed = |diagnostics, sources, config, site| Build {
         files: BTreeMap::new(),
         diagnostics,
         sources,
+        config,
+        site,
     };
     let (config, mut diagnostics) = site_config(inputs, cache.engine_version(), &mut sources);
     let Some(config) = config else {
-        return failed(diagnostics, sources);
+        return failed(diagnostics, sources, None, None);
     };
     // Entries are parsed afresh each build until #47 caches them. `mode` is
     // also for images on request, through `image::encode` (#63), and the
@@ -142,13 +150,13 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let (site, more) = resolve(inputs, &config, mode != Mode::Build, &mut sources);
     diagnostics.extend(more);
     let Some(site) = site else {
-        return failed(diagnostics, sources);
+        return failed(diagnostics, sources, Some(config), None);
     };
     let statics = static_files(inputs);
     diagnostics.extend(static_collisions(&config, &site, &statics));
     let templates = templates(inputs, &mut sources, &mut diagnostics);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
-        return failed(diagnostics, sources);
+        return failed(diagnostics, sources, Some(config), Some(site));
     }
     let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
     let (pages, more) =
@@ -173,12 +181,12 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         }
     }
     if diagnostics.iter().any(|d| d.level == Level::Error) {
-        return failed(diagnostics, sources);
+        return failed(diagnostics, sources, Some(config), Some(site));
     }
     let stage = assets::assets(inputs, &config, pages, &templates, &mut sources);
     diagnostics.extend(stage.diagnostics);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
-        return failed(diagnostics, sources);
+        return failed(diagnostics, sources, Some(config), Some(site));
     }
     let mut files = link(stage.pages, stage.assets);
     files.extend(statics);
@@ -187,6 +195,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         files,
         diagnostics,
         sources,
+        config: Some(config),
+        site: Some(site),
     };
     if !build.failed() {
         cache.sweep();
