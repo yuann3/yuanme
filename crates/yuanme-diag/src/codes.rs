@@ -392,9 +392,14 @@ codes! {
         fix: "Change the stylesheet as the message says, here `rounded-lg`. Install a plugin with `bun add`. Move `@import \"tailwindcss\"` into the stylesheet a Template links; a Sidecar uses Tailwind's theme through `var(--color-sky-500)` instead of `@apply`.",
     }
     ASSET_TOOL_UNAVAILABLE = "asset/tool-unavailable" {
-        meaning: "yuanme can't get a Managed tool the Site needs, such as the Tailwind CLI for a stylesheet that imports Tailwind. yuanme downloads it with `curl` on first use, checks its SHA-256 and keeps it in a per-user cache, so the download failed, perhaps offline, its checksum didn't match, the version isn't released for this platform, or the environment variable that names a local binary, such as `YUANME_TAILWIND_BIN`, names no file.",
+        meaning: "yuanme can't get a Managed tool the Site needs, such as the Tailwind CLI for a stylesheet that imports Tailwind, or TypeScript's `tsc` with `[typescript] check = true`. yuanme downloads it with `curl` on first use, checks its SHA-256 and keeps it in a per-user cache, so the download failed, perhaps offline, its checksum didn't match, the version isn't released for this platform, the environment variable that names a local binary, such as `YUANME_TAILWIND_BIN`, names no file, or the tool doesn't run.",
         example: "@import \"tailwindcss\";\n(on a first build without internet)",
-        fix: "Build once with internet, or set `YUANME_TAILWIND_BIN` to a Tailwind CLI binary downloaded from its GitHub release. For a checksum that doesn't match, build again; if it persists, report it. Check that `[tailwind] version` is a released version.",
+        fix: "Build once with internet, or set `YUANME_TAILWIND_BIN` to a Tailwind CLI binary downloaded from its GitHub release, or `YUANME_TSC_BIN` to the `tsc` in TypeScript's release, with its `lib.*.d.ts` beside it. For a checksum that doesn't match, build again; if it persists, report it. Check that `[tailwind] version` is a released version.",
+    }
+    ASSET_TYPE_ERROR = "asset/type-error" {
+        meaning: "With `[typescript] check = true`, TypeScript's `tsc` finds a type error in a Script, or in a file a Script imports. The message is TypeScript's, after its own code, such as `TS2322`. yuanme checks every TypeScript Script a Page loads, Sidecar scripts included, with the Site's `tsconfig.json`, when it has one, and the types in `.yuanme/types/yuanme.d.ts`.",
+        example: "const year: number = \"2026\";",
+        fix: "Change the code as the message says, here `const year: number = 2026;`. Search for the TS code for TypeScript's explanation of it.",
     }
     IMAGE_NOT_FOUND = "image/not-found" {
         meaning: "An image in an Entry's body, an `image` field or `image()` names a path where no image is. In an Entry, a relative path starts from the Entry's folder, so in `content/posts/sea/index.md`, `![](plot.png)` is `content/posts/sea/plot.png`; a path starting with `/` starts from the project's root, as every path `image()` takes does.",

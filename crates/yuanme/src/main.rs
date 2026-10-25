@@ -245,6 +245,8 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     let root = dir;
     // The docs always match the binary that runs in the project (#21).
     docs::write(&root.join(".yuanme/docs"), ENGINE_VERSION)?;
+    // For the Author's editor, whether or not the build checks types.
+    yuanme_engine::write_types(&root)?;
     match cli.command {
         Command::Build {
             check,

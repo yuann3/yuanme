@@ -642,6 +642,8 @@ fn each_mistake_is_one_diagnostic_on_the_url_it_is_about() {
         // It needs a Managed tool's download to fail: the CLI's tests have
         // it, through the variable that names a binary instead.
         .filter(|n| *n != "asset/tool-unavailable")
+        // It needs `tsc`, which tests/typescript.rs runs.
+        .filter(|n| *n != "asset/type-error")
         .collect();
     assert_eq!(tested, all);
 

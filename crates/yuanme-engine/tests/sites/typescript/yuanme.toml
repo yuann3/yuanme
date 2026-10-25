@@ -1,0 +1,12 @@
+[site]
+url = "https://e.com"
+
+[router]
+mode = "swap"
+
+[typescript]
+check = true
+
+[routes.home]
+path = "/"
+template = "home.html"

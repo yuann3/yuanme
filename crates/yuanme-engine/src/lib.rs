@@ -13,6 +13,7 @@ mod links;
 mod math;
 #[cfg(test)]
 mod tests;
+mod typescript;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
@@ -26,6 +27,7 @@ use yuanme_render::template::scope;
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
 use link::link;
+pub use typescript::{check_types, write_types};
 
 /// A snapshot of the project's files, by path relative to the project root
 /// with `/` separators. It is everything a build reads.
@@ -286,6 +288,10 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         cache,
     );
     diagnostics.extend(stage.diagnostics);
+    if mode != Mode::Dev && !diagnostics.iter().any(|d| d.level == Level::Error) {
+        let more = check_types(inputs, &config, &stage.scripts, cache, &mut sources);
+        diagnostics.extend(more);
+    }
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
     }

@@ -104,17 +104,18 @@ struct Output {
 }
 
 fn yuanme(root: &Path, args: &[&str]) -> Output {
-    yuanme_with(root, args, None)
+    yuanme_with(root, args, &[])
 }
 
-/// With `YUANME_TAILWIND_BIN` set to `tailwind`, or unset with `None`.
-fn yuanme_with(root: &Path, args: &[&str], tailwind: Option<&Path>) -> Output {
+/// With the Managed tool overrides in `env` set, and the others unset.
+fn yuanme_with(root: &Path, args: &[&str], env: &[(&str, &Path)]) -> Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_yuanme"));
-    command.args(args).current_dir(root);
-    match tailwind {
-        Some(path) => command.env("YUANME_TAILWIND_BIN", path),
-        None => command.env_remove("YUANME_TAILWIND_BIN"),
-    };
+    command
+        .args(args)
+        .current_dir(root)
+        .env_remove("YUANME_TAILWIND_BIN")
+        .env_remove("YUANME_TSC_BIN")
+        .envs(env.iter().copied());
     let out = command.output().unwrap();
     Output {
         code: out.status.code().unwrap(),
@@ -764,7 +765,11 @@ fn a_tailwind_cli_that_isnt_there_is_a_diagnostic() {
     let dir = project(TAILWIND_SITE);
     let root = dir.path();
     let missing = root.join("no-such-tailwindcss");
-    let out = yuanme_with(root, &["build", "--json"], Some(&missing));
+    let out = yuanme_with(
+        root,
+        &["build", "--json"],
+        &[("YUANME_TAILWIND_BIN", &missing)],
+    );
     assert_eq!((out.code, out.stderr.as_str()), (1, ""));
     let [(code, message)] = codes(&out.stdout).try_into().unwrap();
     assert_eq!(code, "asset/tool-unavailable");
@@ -787,13 +792,13 @@ fn a_warm_build_runs_no_tailwind() {
             .unwrap();
         fs::read_to_string(root.join("dist/assets").join(name)).unwrap()
     };
-    let cold = yuanme_with(root, &["build"], None);
+    let cold = yuanme_with(root, &["build"], &[]);
     assert_eq!(cold.code, 0, "{}", cold.stderr);
     let css = stylesheet(root);
     assert!(css.contains(".text-3xl{"), "{css}");
 
     let missing = root.join("no-such-tailwindcss");
-    let warm = yuanme_with(root, &["build"], Some(&missing));
+    let warm = yuanme_with(root, &["build"], &[("YUANME_TAILWIND_BIN", &missing)]);
     assert_eq!(warm.code, 0, "{}", warm.stderr);
     assert_eq!(stylesheet(root), css);
 
@@ -803,8 +808,93 @@ fn a_warm_build_runs_no_tailwind() {
         "<link rel=\"stylesheet\" href=\"/styles/site.css\"><h1 class=\"text-4xl\">Home</h1>\n",
     )
     .unwrap();
-    let changed = yuanme_with(root, &["build", "--json"], Some(&missing));
+    let changed = yuanme_with(
+        root,
+        &["build", "--json"],
+        &[("YUANME_TAILWIND_BIN", &missing)],
+    );
     assert_eq!(changed.code, 1);
+    let codes: Vec<String> = codes(&changed.stdout).into_iter().map(|(c, _)| c).collect();
+    assert_eq!(codes, ["asset/tool-unavailable"]);
+}
+
+const TYPESCRIPT_SITE: &str = r#"=== yuanme.toml
+[site]
+url = "https://example.com"
+
+[typescript]
+check = true
+
+[routes.home]
+path = "/"
+template = "home.html"
+=== scripts/site.ts
+const year: number = "2026";
+console.log(year);
+=== templates/home.html
+<script type="module" src="/scripts/site.ts"></script><h1>Home</h1>
+"#;
+
+/// Offline, with no `tsc` to run, the check says how to give it one. A
+/// Site whose Scripts are all JavaScript has nothing to check.
+#[test]
+fn a_tsc_that_isnt_there_is_a_diagnostic() {
+    let dir = project(TYPESCRIPT_SITE);
+    let root = dir.path();
+    let missing = root.join("no-such-tsc");
+    let env = [("YUANME_TSC_BIN", missing.as_path())];
+    let out = yuanme_with(root, &["check", "--json"], &env);
+    assert_eq!((out.code, out.stderr.as_str()), (1, ""));
+    let [(code, message)] = codes(&out.stdout).try_into().unwrap();
+    assert_eq!(code, "asset/tool-unavailable");
+    assert!(message.contains("`YUANME_TSC_BIN` names"), "{message}");
+    // Written for the Author's editor, whether or not types are checked.
+    let types = fs::read_to_string(root.join(".yuanme/types/yuanme.d.ts")).unwrap();
+    assert!(types.contains("declare module 'yuanme:router'"), "{types}");
+
+    fs::remove_file(root.join("scripts/site.ts")).unwrap();
+    fs::write(root.join("scripts/site.js"), "console.log(2026);\n").unwrap();
+    fs::write(
+        root.join("templates/home.html"),
+        "<script type=\"module\" src=\"/scripts/site.js\"></script><h1>Home</h1>\n",
+    )
+    .unwrap();
+    let out = yuanme_with(root, &["check", "--json"], &env);
+    assert_eq!(out.code, 0, "{}", out.stdout);
+}
+
+/// `tsc`'s result is cached in `.yuanme/cache` under every file it may
+/// read, so a check of an unchanged project runs no `tsc`, even with none
+/// to run, and still reports its type errors.
+#[test]
+#[ignore = "downloads tsc"]
+fn an_unchanged_check_runs_no_tsc() {
+    let dir = project(TYPESCRIPT_SITE);
+    let root = dir.path();
+    let cold = yuanme_with(root, &["check", "--json"], &[]);
+    assert_eq!(cold.code, 1, "{}", cold.stderr);
+    let errors = codes(&cold.stdout);
+    assert_eq!(
+        errors,
+        [(
+            "asset/type-error".to_string(),
+            "TS2322: Type 'string' is not assignable to type 'number'.".to_string()
+        )]
+    );
+
+    let missing = root.join("no-such-tsc");
+    let env = [("YUANME_TSC_BIN", missing.as_path())];
+    let warm = yuanme_with(root, &["check", "--json"], &env);
+    assert_eq!(warm.code, 1, "{}", warm.stderr);
+    assert_eq!(codes(&warm.stdout), errors);
+
+    // An edit is a new input, which only tsc can check.
+    fs::write(
+        root.join("scripts/site.ts"),
+        "const year: number = 2026;\nconsole.log(year);\n",
+    )
+    .unwrap();
+    let changed = yuanme_with(root, &["check", "--json"], &env);
     let codes: Vec<String> = codes(&changed.stdout).into_iter().map(|(c, _)| c).collect();
     assert_eq!(codes, ["asset/tool-unavailable"]);
 }
