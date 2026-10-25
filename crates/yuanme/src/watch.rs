@@ -161,4 +161,20 @@ mod tests {
         add(&mut batch, Ok(flag));
         assert!(batch.rescan);
     }
+
+    /// `--poll` sees a change no event announces.
+    #[test]
+    fn polling_finds_a_changed_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().canonicalize().unwrap();
+        let file = root.join("a.md");
+        std::fs::write(&file, "a").unwrap();
+        let (_watcher, batches) = watch(&root, true).unwrap();
+        // Polling compares modification times, which some file systems
+        // keep only to the second.
+        std::thread::sleep(Duration::from_millis(1100));
+        std::fs::write(&file, "b").unwrap();
+        let batch = batches.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert!(batch.paths.contains(&file), "{batch:?}");
+    }
 }
