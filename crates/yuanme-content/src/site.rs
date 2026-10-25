@@ -92,6 +92,8 @@ fn pages() -> Collection {
             descending: true,
         }],
         fields: BTreeMap::new(),
+        template: None,
+        template_at: 0..0,
     }
 }
 

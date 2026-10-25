@@ -628,6 +628,10 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
               "type": "string"
             },
             "type": "array"
+          },
+          "template": {
+            "description": "The Template of each Entry's Page. Defaults to \"<name>/entry.html\".",
+            "type": "string"
           }
         },
         "required": [
@@ -643,6 +647,59 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
         "$ref": "#/$defs/item"
       },
       "description": "Schemas for Data files: `[data.nav]` checks `data/nav.toml`, `.yaml` or `.json`. A Data file without one is not checked.",
+      "type": "object"
+    },
+    "feeds": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "collections": {
+            "description": "The Collections whose Entries the feed holds.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "path": {
+            "description": "The URL of the feed, such as \"/rss.xml\".",
+            "pattern": "^/[^{}]*$",
+            "type": "string"
+          },
+          "template": {
+            "description": "The Template that writes the feed. Defaults to \"rss.xml\": the built-in RSS 2.0 Template, unless `templates/rss.xml` replaces it.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "collections",
+          "path"
+        ],
+        "type": "object"
+      },
+      "description": "Feeds of published, listed Entries, newest first.",
+      "type": "object"
+    },
+    "routes": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "description": "The URL of the Page, such as \"/\" or \"/404.html\".",
+            "pattern": "^/[^{}]*$",
+            "type": "string"
+          },
+          "template": {
+            "description": "The Template that makes the Page, by its path in `templates/`, such as \"home.html\".",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "template"
+        ],
+        "type": "object"
+      },
+      "description": "Pages made by a Template alone, such as the home page or the 404 page.",
       "type": "object"
     },
     "site": {
@@ -727,6 +784,10 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
               "type": "string"
             },
             "type": "array"
+          },
+          "template": {
+            "description": "The Template of each Term's Page. Defaults to \"<name>/term.html\".",
+            "type": "string"
           }
         },
         "required": [

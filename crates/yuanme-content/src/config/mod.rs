@@ -28,6 +28,25 @@ pub struct Config {
     pub taxonomies: BTreeMap<String, Taxonomy>,
     /// Schemas for Data files, by name.
     pub data: BTreeMap<String, DataSchema>,
+    pub routes: BTreeMap<String, TemplateRoute>,
+    pub feeds: BTreeMap<String, Feed>,
+}
+
+/// A Page made by a Template alone (#19).
+#[derive(Debug)]
+pub struct TemplateRoute {
+    pub path: String,
+    pub template: String,
+    pub template_at: Range<usize>,
+}
+
+#[derive(Debug)]
+pub struct Feed {
+    pub collections: Vec<String>,
+    pub path: String,
+    pub template: String,
+    /// Where `template` is set, or the feed named when it isn't.
+    pub template_at: Range<usize>,
 }
 
 #[derive(Debug)]
@@ -58,6 +77,10 @@ pub struct Collection {
     pub paginate: Option<u64>,
     pub sort: Vec<SortKey>,
     pub fields: BTreeMap<String, Field>,
+    /// The Template of each Entry's Page, when not the default.
+    pub template: Option<String>,
+    /// Where `template` is set, or the Collection named when it isn't.
+    pub template_at: Range<usize>,
 }
 
 #[derive(Debug)]
@@ -70,6 +93,10 @@ pub struct Taxonomy {
     pub lowercase: bool,
     /// Slugs the Author chose, by Term.
     pub slugs: BTreeMap<String, String>,
+    /// The Template of each Term's Page, when not the default.
+    pub template: Option<String>,
+    /// Where `template` is set, or the Taxonomy named when it isn't.
+    pub template_at: Range<usize>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -237,6 +264,34 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
             )
         })
         .collect();
+    let routes = entries(table(root, "routes"))
+        .iter()
+        .map(|(name, r)| {
+            let r = as_table(r);
+            let route = TemplateRoute {
+                path: string(r, "path").expect("required"),
+                template: string(r, "template").expect("required"),
+                template_at: r["template"].span(),
+            };
+            (name.get_ref().to_string(), route)
+        })
+        .collect();
+    let feeds = entries(table(root, "feeds"))
+        .iter()
+        .map(|(name, f)| {
+            let f = as_table(f);
+            for c in items(&f["collections"]) {
+                collection_name(c, &names, checker);
+            }
+            let feed = Feed {
+                collections: strings(&f["collections"]),
+                path: string(f, "path").expect("required"),
+                template: string(f, "template").unwrap_or_else(|| "rss.xml".into()),
+                template_at: f.get("template").map_or(name.span(), |t| t.span()),
+            };
+            (name.get_ref().to_string(), feed)
+        })
+        .collect();
     let data = entries(table(root, "data"))
         .iter()
         .map(|(name, spec)| {
@@ -280,6 +335,8 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         collections,
         taxonomies,
         data,
+        routes,
+        feeds,
     }
 }
 
@@ -339,6 +396,8 @@ fn collection(
         paginate: paginate.map(|p| int(p) as u64),
         sort: sort(c.get("sort"), &sortable, &unsortable, checker),
         fields,
+        template: string(c, "template"),
+        template_at: c.get("template").map_or(key.span(), |t| t.span()),
     }
 }
 
@@ -364,22 +423,12 @@ fn taxonomy(
             let (yes, no) = self::sortable(&c.fields);
             sortable.extend(yes);
             unsortable.extend(no);
-        } else if !names.contains(s) {
-            checker.invalid(format!("there is no Collection `{s}`"), collection.span());
-            if let Some(near) = similar(s, names.iter().copied()) {
-                checker.suggest(
-                    format!("did you mean `{near}`?"),
-                    collection.span(),
-                    format!("\"{near}\""),
-                );
-            }
+        } else {
+            collection_name(collection, names, checker);
         }
     }
     Taxonomy {
-        collections: items(&t["collections"])
-            .iter()
-            .map(|c| c.get_ref().as_str().expect("checked").to_string())
-            .collect(),
+        collections: strings(&t["collections"]),
         route: string(t, "route").expect("required"),
         paginate: t.get("paginate").map(|p| int(p) as u64),
         single: boolean(t, "single"),
@@ -403,7 +452,32 @@ fn taxonomy(
                 (term.get_ref().to_string(), s.to_string())
             })
             .collect(),
+        template: string(t, "template"),
+        template_at: t.get("template").map_or(name.span(), |t| t.span()),
     }
+}
+
+/// Checks that `name` is a Collection's.
+fn collection_name(name: &Value<'_>, names: &BTreeSet<&str>, checker: &mut Checker) {
+    let s = name.get_ref().as_str().expect("checked");
+    if names.contains(s) {
+        return;
+    }
+    checker.invalid(format!("there is no Collection `{s}`"), name.span());
+    if let Some(near) = similar(s, names.iter().copied()) {
+        checker.suggest(
+            format!("did you mean `{near}`?"),
+            name.span(),
+            format!("\"{near}\""),
+        );
+    }
+}
+
+fn strings(v: &Value<'_>) -> Vec<String> {
+    items(v)
+        .iter()
+        .map(|s| s.get_ref().as_str().expect("checked").to_string())
+        .collect()
 }
 
 /// The fields Entries can sort by, and the ones they can't: lists and objects

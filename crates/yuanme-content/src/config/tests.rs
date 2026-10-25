@@ -73,12 +73,26 @@ cover = { type = "object", fields = { src = { type = "image" }, alt = { type = "
 [collections.projects]
 dir = "content/work/"
 route = "/projects/{slug}/"
+template = "layouts/project.html"
 
 [taxonomies.tags]
 collections = ["posts"]
 route = "/tags/{term}/"
 lowercase = true
 slugs = { "C++" = "cplusplus" }
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[feeds.rss]
+collections = ["posts", "pages"]
+path = "/rss.xml"
+
+[feeds.atom]
+collections = ["projects"]
+path = "/atom.xml"
+template = "feeds/atom.xml"
 
 [data.nav]
 type = "list"
@@ -160,10 +174,30 @@ items = { type = "object", fields = { label = { type = "string" }, href = { type
         }]
     );
 
+    assert_eq!(posts.template, None);
+    assert_eq!(projects.template.as_deref(), Some("layouts/project.html"));
+    assert_eq!(
+        &text[projects.template_at.clone()],
+        "\"layouts/project.html\""
+    );
+
     let tags = &config.taxonomies["tags"];
     assert_eq!(tags.collections, ["posts"]);
     assert!(tags.lowercase && !tags.single);
     assert_eq!(tags.slugs["C++"], "cplusplus");
+    assert_eq!(tags.template, None);
+
+    let home = &config.routes["home"];
+    assert_eq!(
+        (home.path.as_str(), home.template.as_str()),
+        ("/", "home.html")
+    );
+    let rss = &config.feeds["rss"];
+    assert_eq!(rss.collections, ["posts", "pages"]);
+    assert_eq!(rss.path, "/rss.xml");
+    // The built-in feed Template, which a file in `templates/` can replace.
+    assert_eq!(rss.template, "rss.xml");
+    assert_eq!(config.feeds["atom"].template, "feeds/atom.xml");
 
     let FieldType::List { items, .. } = &config.data["nav"].kind else {
         panic!("nav is a list");
@@ -265,6 +299,16 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"blog/{slug}/\"\n",
         "\"blog/{slug}/\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[routes.home]\npath = \"{slug}\"\ntemplate = \"home.html\"\n",
+        "\"{slug}\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[collections.posts]\nroute = \"/{slug}/\"\n[feeds.rss]\ncollections = [\"psts\"]\npath = \"/rss.xml\"\n",
+        "\"psts\"",
     ),
     (
         "config/invalid-value",

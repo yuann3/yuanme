@@ -99,6 +99,47 @@ pub(crate) const ROOT: &[Key] = &[
         Shape::Map(&Shape::Field { in_table: false }),
         "Schemas for Data files: `[data.nav]` checks `data/nav.toml`, `.yaml` or `.json`. A Data file without one is not checked.",
     ),
+    Key::optional(
+        "routes",
+        Shape::Map(&Shape::Table(ROUTE)),
+        "Pages made by a Template alone, such as the home page or the 404 page.",
+    ),
+    Key::optional(
+        "feeds",
+        Shape::Map(&Shape::Table(FEED)),
+        "Feeds of published, listed Entries, newest first.",
+    ),
+];
+
+const ROUTE: &[Key] = &[
+    Key::required(
+        "path",
+        Shape::Route(None),
+        "The URL of the Page, such as \"/\" or \"/404.html\".",
+    ),
+    Key::required(
+        "template",
+        Shape::String,
+        "The Template that makes the Page, by its path in `templates/`, such as \"home.html\".",
+    ),
+];
+
+const FEED: &[Key] = &[
+    Key::required(
+        "collections",
+        Shape::Strings,
+        "The Collections whose Entries the feed holds.",
+    ),
+    Key::required(
+        "path",
+        Shape::Route(None),
+        "The URL of the feed, such as \"/rss.xml\".",
+    ),
+    Key::optional(
+        "template",
+        Shape::String,
+        "The Template that writes the feed. Defaults to \"rss.xml\": the built-in RSS 2.0 Template, unless `templates/rss.xml` replaces it.",
+    ),
 ];
 
 const SITE: &[Key] = &[
@@ -162,6 +203,11 @@ const COLLECTION: &[Key] = &[
         Shape::Map(&Shape::Field { in_table: true }),
         "Fields Entries have beyond the built-in `title`, `date`, `updated`, `slug`, `draft` and `unlisted`. Declaring `date` makes it required.",
     ),
+    Key::optional(
+        "template",
+        Shape::String,
+        "The Template of each Entry's Page. Defaults to \"<name>/entry.html\".",
+    ),
 ];
 
 const TAXONOMY: &[Key] = &[
@@ -195,6 +241,11 @@ const TAXONOMY: &[Key] = &[
         "slugs",
         Shape::Map(&Shape::String),
         "Slugs that override the ones yuanme derives, by Term: { \"C++\" = \"cpp\" }.",
+    ),
+    Key::optional(
+        "template",
+        Shape::String,
+        "The Template of each Term's Page. Defaults to \"<name>/term.html\".",
     ),
 ];
 
