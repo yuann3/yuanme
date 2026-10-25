@@ -118,6 +118,9 @@ counter = false
 [build]
 targets = { chrome = "120", safari = "16.4.1" }
 
+[router]
+mode = "swap"
+
 [host]
 adapter = "netlify"
 
@@ -282,6 +285,8 @@ allow_unoptimized = ["/favicon.png"]
         ]
     );
 
+    assert_eq!(config.router, RouterMode::Swap);
+
     let host = &config.host;
     assert_eq!(host.adapter, Adapter::Netlify);
     assert_eq!(&text[host.adapter_at.clone()], "\"netlify\"");
@@ -345,6 +350,8 @@ allow_unoptimized = ["/favicon.png"]
             allow_unoptimized: Vec::new(),
         }
     );
+    // A Site is plain Pages until it turns the Router on (#20).
+    assert_eq!(config.router, RouterMode::Off);
     // Workers static assets is the default host (#25).
     assert_eq!(config.host.adapter, Adapter::Cloudflare);
     assert!(config.host.headers.is_empty() && config.host.redirects.is_empty());
@@ -614,6 +621,11 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "[site]\nurl = \"https://e.com\"\n[host]\nadapter = \"netlfy\"\n",
         "\"netlfy\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[router]\nmode = \"spa\"\n",
+        "\"spa\"",
     ),
     (
         "config/wrong-type",

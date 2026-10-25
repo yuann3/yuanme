@@ -31,6 +31,8 @@ pub struct Config {
     pub routes: BTreeMap<String, TemplateRoute>,
     pub feeds: BTreeMap<String, Feed>,
     pub build: Build,
+    /// `[router] mode`.
+    pub router: RouterMode,
     pub host: Host,
     pub math: Math,
     pub images: Images,
@@ -101,6 +103,17 @@ pub struct TheoremKind {
     /// The counter its blocks are numbered on, which kinds can share; none
     /// for an unnumbered kind.
     pub counter: Option<String>,
+}
+
+/// How a visitor moves between Pages (#20, ADR 0007).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RouterMode {
+    /// Full page loads.
+    Off,
+    /// Full page loads with cross-document View Transitions, and no JS.
+    Native,
+    /// The Router on every Page.
+    Swap,
 }
 
 /// The static host the Site is deployed to (#25).
@@ -536,6 +549,15 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
             .collect(),
     };
 
+    let router = match table(root, "router")
+        .and_then(|r| string(r, "mode"))
+        .as_deref()
+    {
+        None | Some("off") => RouterMode::Off,
+        Some("native") => RouterMode::Native,
+        Some("swap") => RouterMode::Swap,
+        Some(_) => unreachable!("checked as a choice"),
+    };
     let host = host(table(root, "host"), checker);
     let images = images(table(root, "images"), checker);
 
@@ -561,6 +583,7 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         routes,
         feeds,
         build: Build { targets },
+        router,
         host,
         math: Math { macros, theorems },
         images,

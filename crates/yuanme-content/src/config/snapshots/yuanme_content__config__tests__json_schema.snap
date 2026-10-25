@@ -906,6 +906,21 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
       },
       "type": "object"
     },
+    "router": {
+      "additionalProperties": false,
+      "description": "How a visitor moves between Pages.",
+      "properties": {
+        "mode": {
+          "description": "\"off\" (the default): every move between Pages is a full page load. \"native\": full page loads that the browser animates with a cross-document View Transition, with no JS. \"swap\": the Router on every Page, which swaps the next Page into the current document, so elements marked `data-yuanme-persist` survive; browsers without the Navigation API get full page loads.",
+          "enum": [
+            "off",
+            "native",
+            "swap"
+          ]
+        }
+      },
+      "type": "object"
+    },
     "routes": {
       "additionalProperties": {
         "additionalProperties": false,

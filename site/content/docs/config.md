@@ -132,6 +132,12 @@ Theorem block kinds, by the name a block is written with: `[math.theorems.claim]
 - `counter` (string or `false`): The counter the kind's blocks are numbered on, per Entry: "theorem", which the built-in numbered kinds share, a name of its own, or false for unnumbered blocks. Defaults to the built-in kind's, or to "theorem".
 - `label` (string): What the kind's blocks are called on the Page, as in "Claim 2". Defaults to the built-in kind's, or to the name with its first letter capitalized.
 
+### `[router]`
+
+How a visitor moves between Pages.
+
+- `mode` (one of `"off"`, `"native"`, `"swap"`): "off" (the default): every move between Pages is a full page load. "native": full page loads that the browser animates with a cross-document View Transition, with no JS. "swap": the Router on every Page, which swaps the next Page into the current document, so elements marked `data-yuanme-persist` survive; browsers without the Navigation API get full page loads.
+
 ### `[routes.NAME]`
 
 Pages made by a Template alone, such as the home page or the 404 page.

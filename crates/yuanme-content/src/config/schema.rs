@@ -130,6 +130,11 @@ pub(crate) const ROOT: &[Key] = &[
         "How yuanme builds the Site's stylesheets and Scripts.",
     ),
     Key::optional(
+        "router",
+        Shape::Table(ROUTER),
+        "How a visitor moves between Pages.",
+    ),
+    Key::optional(
         "host",
         Shape::Table(HOST),
         "The static host the Site is deployed to, and the headers and redirects it sends.",
@@ -207,6 +212,12 @@ const THEOREM: &[Key] = &[
         "The counter the kind's blocks are numbered on, per Entry: \"theorem\", which the built-in numbered kinds share, a name of its own, or false for unnumbered blocks. Defaults to the built-in kind's, or to \"theorem\".",
     ),
 ];
+
+const ROUTER: &[Key] = &[Key::optional(
+    "mode",
+    Shape::Choice(&["off", "native", "swap"]),
+    "\"off\" (the default): every move between Pages is a full page load. \"native\": full page loads that the browser animates with a cross-document View Transition, with no JS. \"swap\": the Router on every Page, which swaps the next Page into the current document, so elements marked `data-yuanme-persist` survive; browsers without the Navigation API get full page loads.",
+)];
 
 const HOST: &[Key] = &[
     Key::optional(
