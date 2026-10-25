@@ -1,5 +1,6 @@
 mod events;
 mod load;
+mod report;
 mod schemas;
 mod sync;
 #[cfg(test)]
@@ -9,7 +10,7 @@ use std::fs;
 use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use serde_json::Value;
@@ -224,12 +225,16 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
 
 struct Run {
     build: Build,
+    load: Duration,
+    took: Duration,
 }
 
 /// One build in memory. `out` is the output directory, which the walk
 /// leaves out.
 fn engine_build(root: &Path, out: &Path, drafts: bool, strict: bool) -> io::Result<Run> {
+    let started = Instant::now();
     let inputs = load::load(root, out)?;
+    let load = started.elapsed();
     let mut cache = Cache::open(root.join(".yuanme/cache"), ENGINE_VERSION)?;
     let mode = if drafts { Mode::Drafts } else { Mode::Build };
     let mut build = yuanme_engine::build(&inputs, &mut cache, mode);
@@ -242,7 +247,11 @@ fn engine_build(root: &Path, out: &Path, drafts: bool, strict: bool) -> io::Resu
             }
         }
     }
-    Ok(Run { build })
+    Ok(Run {
+        build,
+        load,
+        took: started.elapsed() - load,
+    })
 }
 
 fn counts(build: &Build) -> (usize, usize) {
@@ -296,7 +305,7 @@ fn build(
     }
     let started = Instant::now();
     out.event(Event::BuildStarted { command: "build" });
-    let Run { build } = engine_build(root, out_dir, args.drafts, args.strict)?;
+    let Run { build, load, took } = engine_build(root, out_dir, args.drafts, args.strict)?;
     schemas::write(
         &root.join(".yuanme/schemas"),
         build.config.as_ref(),
@@ -304,6 +313,7 @@ fn build(
     )?;
     out.diagnostics(&build.diagnostics, &build.sources);
 
+    let writing = Instant::now();
     let written = if build.failed() {
         None
     } else {
@@ -318,6 +328,19 @@ fn build(
         }
         Some(sync::sync(&build, root, out_dir, &manifest)?)
     };
+    let stages = report::Stages {
+        load,
+        build: took,
+        write: writing.elapsed(),
+    };
+    report::write(
+        &root.join(".yuanme"),
+        root,
+        &build,
+        &stages,
+        written.as_ref(),
+    )?;
+
     let (errors, warnings) = counts(&build);
     let shown = out_dir.strip_prefix(root).unwrap_or(out_dir).display();
     match &written {
@@ -346,6 +369,7 @@ fn build(
                     w.deleted.len(),
                     plural(warnings, "warning")
                 ),
+                "report: .yuanme/report.md".to_string(),
             ];
             match out.terminal {
                 true => out.say(&summary.join("\n")),

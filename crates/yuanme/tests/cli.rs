@@ -228,6 +228,21 @@ fn build_writes_the_site_and_its_yuanme_files() {
         ]
     );
 
+    let report: Value =
+        serde_json::from_str(&fs::read_to_string(root.join(".yuanme/report.json")).unwrap())
+            .unwrap();
+    let pages: Vec<&str> = report["pages"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|p| p["url"].as_str().unwrap())
+        .collect();
+    assert_eq!(pages.len(), 6, "{pages:?}");
+    assert!(pages.contains(&"/blog/first/"));
+    assert_eq!(report["written"], 9);
+    let md = fs::read_to_string(root.join(".yuanme/report.md")).unwrap();
+    assert!(md.contains("| `/blog/first/` |"), "{md}");
+
     // Nothing changed, so nothing is written; a new title writes its Page,
     // and the list and feed that show it.
     let (_, events) = json(root, &["build"]);
