@@ -2055,8 +2055,8 @@ error[link/unresolved]: no headline here is titled `Enable for the whole project
      |
      = note: run `yuanme docs link/unresolved` for more
 <h2 id="main">Homepage</h2>
-<div class="note">
-<p>See the <a href="https://ox-hugo.scripter.co/doc/examples/">Real World Examples</a> section to quickly jump to sites generated
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> See the <a href="https://ox-hugo.scripter.co/doc/examples/">Real World Examples</a> section to quickly jump to sites generated
 using <code>ox-hugo</code> and their Org sources.</p>
 </div>
 <h3 id="screenshots-1">Screenshots</h3>
@@ -2109,8 +2109,8 @@ you see when you hit <code>C-c C-e</code> to initiate any export).</p>
 </code></pre>
 <p><em>This was verified to work on Spacemacs <code>develop</code> branch (<a href="https://github.com/kaushalmodi/ox-hugo/pull/440">ref</a>).</em></p>
 <h3 id="usage">Usage</h3>
-<div class="note">
-<p>Jump to the  section to quickly try
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Jump to the  section to quickly try
 out <code>ox-hugo</code> with Hugo.</p>
 </div>
 <h4 id="before-you-export">Before you export</h4>
@@ -2455,8 +2455,8 @@ all Org files.</p>
 file will be deleted from this project, and then doing that
 <em>require</em> will throw an error.</li>
 </ul>
-<div class="note">
-<p>The <code>ox-hugo-auto-export.el</code> has been deleted from this project. So
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> The <code>ox-hugo-auto-export.el</code> has been deleted from this project. So
 doing that <em>require</em> will throw an error now. – <span class="timestamp-wrapper"><time class="timestamp" datetime="2019-04-15">&#x3C;2019-04-15 Mon></time></span></p>
 </div>
 </li>
@@ -2509,8 +2509,8 @@ have the <code>hugo</code> executable available:</p>
 <pre><code class="language-shell">hugo version
 </code></pre>
 </figure>
-<div class="note">
-<p>Hugo version used when writing this post:</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Hugo version used when writing this post:</p>
 <blockquote>
 <p>hugo v0.91.2-1798BD3F linux/amd64 BuildDate=2021-12-23T15:33:34Z VendorInfo=gohugoio</p>
 </blockquote>
@@ -3303,8 +3303,8 @@ Org files in a way that’s compatible with <code>ox-hugo</code> and Hugo.</p>
 <p>Now if you have a file <code>~/hugo/static/images/foo.png</code>, <code>ox-hugo</code> makes
 it convenient for you to reference that image by simply
 <code>/images/foo.png</code>.</p>
-<div class="note">
-<p>Note that this is <strong>not</strong> the default behavior of other Org exporters.</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Note that this is <strong>not</strong> the default behavior of other Org exporters.</p>
 </div>
 <p>But in the case of Hugo, as the referenced file will <em>normally</em> be in
 the Hugo <em>static</em> directory, <code>ox-hugo</code> allows the <code>/images/foo.png</code>
@@ -3572,8 +3572,8 @@ reference name enclosed in single parenthesis.</p>
 <p>You can also add a <code>-r</code> switch which removes the labels from the
 source code.</p>
 </blockquote>
-<div class="note">
-<p>One convenience feature added by <code>ox-hugo</code> is that the <code>-n</code> is always
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> One convenience feature added by <code>ox-hugo</code> is that the <code>-n</code> is always
 implied when code references are detected in the source or example
 blocks.</p>
 </div>
@@ -3618,8 +3618,8 @@ In line [[(sc1)]] we remember the current position. [[(jump1)][Line (jump1)]] ju
 <p>In line  we remember the current position.  jumps to
 <code>point-min</code>.</p>
 <h5 id="highlight-shortcode"><code>highlight</code> shortcode</h5>
-<div class="note">
-<p>By default, <code>ox-hugo</code> tries to avoid using this shortcode because it
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> By default, <code>ox-hugo</code> tries to avoid using this shortcode because it
 is buggy (), and also it’s better to export
 <em>CommonMark</em> supported code fences than Hugo-specific shortcodes.</p>
 </div>
@@ -3672,8 +3672,8 @@ $$ a=+\sqrt{2} $$ or \[ a=-\sqrt{2} \]
 <p>Above renders to below using Mathjax:</p>
 <p>If <math><msup><mi>a</mi><mn>2</mn></msup><mo>=</mo><mi>b</mi></math> and <math><mi>b</mi><mo>=</mo><mn>2</mn></math>, then the solution must be either
 <math display="block"><mi>a</mi><mo>=</mo><mo lspace="0" rspace="0">+</mo><msqrt><mn>2</mn></msqrt></math> or <math display="block"><mi>a</mi><mo>=</mo><mo lspace="0" rspace="0">−</mo><msqrt><mn>2</mn></msqrt></math></p>
-<div class="note">
-<p>Note that the last two equations show up on their own lines because
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Note that the last two equations show up on their own lines because
 those equations are wrapped in <code>\[ .. \]</code>.</p>
 </div>
 <h5 id="environments">Environments</h5>
@@ -3686,8 +3686,8 @@ C = W\log_{2} (1+\mathrm{SNR})
 </code></pre>
 <p>will render as below using MathJax:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mi>C</mi><mo>=</mo><mi>W</mi><msub><mo lspace="0.1667em" rspace="0">log</mo><mn>2</mn></msub><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mrow><mspace/><mi>SNR</mi></mrow><mo stretchy="false">)</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="eq:1"><mtext>(1)</mtext></mtd></mtr></mtable></math>
-<div class="note">
-<p>You can find many more equation examples at .</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> You can find many more equation examples at .</p>
 </div>
 <h6 id="referencing-equations">Referencing Equations</h6>
 <p>Equation referencing will also work <strong><strong>but it requires MathJax</strong></strong>. <a href="#mathjax-config-example">Here</a>
@@ -3717,8 +3717,8 @@ post subtree’s property drawer.</li>
 <li>Similarly, to export the equations to PNG, use the <code>tex:dvipng</code>
 option instead.</li>
 </ul>
-<div class="note">
-<p>Referencing to equations using <code>\ref{..}</code> will not work if equations
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Referencing to equations using <code>\ref{..}</code> will not work if equations
 are exported as images.</p>
 </div>
 <h4 id="tags-and-categories">Tags and Categories</h4>
@@ -3746,8 +3746,8 @@ property or the usual Org tags in the post subtree heading.</p>
 <p>By default, Org tags from parent headings, and the tags set in the
 <code>#+filetags</code> keyword get inherited (as the default value of
 <code>org-use-tag-inheritance</code> is <code>t</code>).</p>
-<div class="note">
-<p>If the tag inheritance doesn’t work as expected, check the value of
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> If the tag inheritance doesn’t work as expected, check the value of
 <code>org-use-tag-inheritance</code>.</p>
 </div>
 <figure id="code__tags_in_headings">
@@ -3797,8 +3797,8 @@ are derived from Org tags set for the post subtree heading (if
 prefix) from parent headings, and the ones set in the <code>#+filetags</code>
 keyword too get inherited (as the default value of
 <code>org-use-tag-inheritance</code> is <code>t</code>).</p>
-<div class="note">
-<p>If the tag inheritance doesn’t work as expected, check the value of
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> If the tag inheritance doesn’t work as expected, check the value of
 <code>org-use-tag-inheritance</code>.</p>
 </div>
 <figure id="code__categories_in_headings">
@@ -3857,8 +3857,8 @@ assigned for the current post.</p>
 <h6 id="categories--file-based-export">Categories</h6>
 <p>Categories for file-based exports can be set using the
 <code>#+hugo_categories</code> or <code>#+filetags</code> keyword.</p>
-<div class="note">
-<p>Tags with <code>@</code> in <code>#+filetags</code> are parsed as Categories by <code>ox-hugo</code>.</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Tags with <code>@</code> in <code>#+filetags</code> are parsed as Categories by <code>ox-hugo</code>.</p>
 </div>
 
 
@@ -3901,8 +3901,8 @@ underscores. So an Org tag <strong>abc___def</strong> will be exported as <em>ta
 <strong>“abc_def”</strong> (and the same for categories). If you rather prefer to
 always export <em>single underscores</em> as underscores, set
 <code>org-hugo-prefer-hyphen-in-tags</code> to nil.</p>
-<div class="note">
-<p>These two variables <strong>also affect</strong> the tags set via <code>#+filetags</code>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> These two variables <strong>also affect</strong> the tags set via <code>#+filetags</code>
 keyword.</p>
 </div>
 <p>These variables do not affect the tags set via keywords <code>#+hugo_tags</code>,
@@ -4161,8 +4161,8 @@ Here are the /details/.
 <div class="details">
 <p>Here are the <em>details</em>.</p>
 </div>
-<div class="note">
-<p>In the absence of summary, most browsers will use a default string
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> In the absence of summary, most browsers will use a default string
 “Details” for the summary.</p>
 </div>
 </li>
@@ -4181,8 +4181,8 @@ Some Summary
 <p>Some Summary</p>
 </div>
 </div>
-<div class="note">
-<p>Even if the details part is absent, the collapsing triangle will
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Even if the details part is absent, the collapsing triangle will
 still be rendered. But nothing will show up when that triangle is
 uncollapsed.. <em>as the details portion is not there</em>.</p>
 </div>
@@ -4207,8 +4207,8 @@ Here are the /details/.
 </div>
 <p>Here are the <em>details</em>.</p>
 </div>
-<div class="note">
-<p>For open-by-default disclosure widgets, the <code>#+attr_html</code> keyword
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> For open-by-default disclosure widgets, the <code>#+attr_html</code> keyword
 specifically needs to contain <code>:open t</code>.</p>
 </div>
 <h5 id="details-css">CSS rules for these widgets</h5>
@@ -4298,8 +4298,8 @@ config.</p>
 </li>
 </ul>
 <h5 id="tweaking-your-hugo-template-to-support-list-author">Tweaking your Hugo template to support <em>list</em> <code>author</code></h5>
-<div class="note">
-<p>The <code>author</code> front-matter parameter is <strong>always</strong> exported as a
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> The <code>author</code> front-matter parameter is <strong>always</strong> exported as a
 TOML/YAML <strong>list</strong>.</p>
 </div>
 <p>If you have Hugo posts with the <code>author</code> front-matter already set, it
@@ -4356,8 +4356,8 @@ My post content.
 <div class="description">
 <p>How Org Drawers get exported to front-matter.</p>
 </div>
-<div class="note">
-<p>This feature will work only if the <code>org-hugo-front-matter-format</code> is
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> This feature will work only if the <code>org-hugo-front-matter-format</code> is
 left at its default value of <code>"toml"</code>.</p>
 </div>
 <p>See  to learn more about the Org Drawers feature.</p>
@@ -4368,8 +4368,8 @@ left at its default value of <code>"toml"</code>.</p>
 <li><em>TODO</em> state changes saved to these drawers.</li>
 <li>Notes saved to the <code>:LOGBOOK:</code> drawers.</li>
 </ol>
-<div class="note">
-<p>The <code>:LOGBOOK:</code> dates and notes exporting features work only if the
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> The <code>:LOGBOOK:</code> dates and notes exporting features work only if the
 <code>org-log-note-headings</code> variable is left uncustomized, at its default
 value.</p>
 </div>
@@ -4396,8 +4396,8 @@ timestamp associated with the <strong>last</strong> TODO state transition to the
 <em>DONE</em> state, or with the <strong>last</strong> added note (whichever is the
 latest).</dd>
 </dl>
-<div class="note">
-<p>The <code>date</code> and <code>lastmod</code> values parsed from the <code>:LOGBOOK:</code> drawer
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> The <code>date</code> and <code>lastmod</code> values parsed from the <code>:LOGBOOK:</code> drawer
 state transitions will have the highest precedence. See
 for
 more info.</p>
@@ -4495,8 +4495,8 @@ Hugo-rendered post each time you saved your post in Org?</p>
 <h6 id="step--enable-minor-mode-org-hugo-auto-export-mode">Step : Enable minor mode <code>org-hugo-auto-export-mode</code></h6>
 <p>This minor mode is disabled by default. It can be enabled separately
 at project level or file level.</p>
-<div class="note">
-<p>Note that once you update the <code>.dir-locals.el</code> file or file-local
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Note that once you update the <code>.dir-locals.el</code> file or file-local
 Variables as shown below, you will be prompted by Emacs to tell it if
 those settings are safe. Hit <code>!</code> in that prompt to says <em>yes</em> and to
 save that choice for future Emacs sessions.</p>
@@ -4555,8 +4555,8 @@ the auto-exporting:</p>
 override its enabled state in <code>.dir-locals.el</code>.</p>
 </li>
 </ol>
-<div class="note">
-<p>After updating the state of <code>org-hugo-auto-export-mode</code> using either
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> After updating the state of <code>org-hugo-auto-export-mode</code> using either
 of the above methods, remember to:</p>
 <ol>
 <li>Save the Org file where you expect the auto-exporting to work.</li>
@@ -4757,8 +4757,8 @@ the content dir:</p>
 </code></pre>
 </li>
 </ul>
-<div class="note">
-<p>If the attachment path does <span class="underline">not</span> contain the bundle name, it will be
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> If the attachment path does <span class="underline">not</span> contain the bundle name, it will be
 copied as usual to the <code>static/</code> directory (See the documentation for
 ).</p>
 </div>
@@ -4807,8 +4807,8 @@ keyword equivalents in file-based flow too.</dd>
 <p>Starting with <strong>v0.55.0</strong>, Hugo now supports <code>summary</code> as a built-in
 front-matter variable to directly specify the post <em>summary</em>. See Hugo
 commit <a href="https://github.com/gohugoio/hugo/commit/3a62d54745e2cbfda6772390830042908d725c71">3a62d547</a> for details.</p>
-<div class="note">
-<p><code>ox-hugo</code> has also been supporting the <code>description</code> front-matter
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> <code>ox-hugo</code> has also been supporting the <code>description</code> front-matter
 variable. So support for the new <code>summary</code> front-matter variable,
 which is essentially a duplicate of <code>description</code>, is not added
 explicitly.</p>
@@ -4873,8 +4873,8 @@ front-matter keys”</em> in .</p>
 <li>Those examples are exported as .</li>
 </ul>
 <h4 id="org-cite-citations">Org Cite Citations</h4>
-<div class="note">
-<p>The Ox-Hugo Pandoc Citation feature needs to be disabled for Org Cite
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> The Ox-Hugo Pandoc Citation feature needs to be disabled for Org Cite
 based citation processing to work.</p>
 <p>So make sure that you don’t have <code>:EXPORT_HUGO_PANDOC_CITATIONS: t</code> in
 your post tree or <code>#+hugo_pandoc_citations: t</code> in your Org file!</p>
@@ -4986,8 +4986,8 @@ Below, the "References" heading will be auto-inserted.
 </code></pre>
 </figure>
 <h4 id="pandoc-citations">Pandoc Citations</h4>
-<div class="note">
-<p>Org mode has built-in supporting for exporting citations starting</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Org mode has built-in supporting for exporting citations starting</p>
 <div class="mark">
 <p>version 9.5</p>
 </div>
@@ -4996,15 +4996,15 @@ Below, the "References" heading will be auto-inserted.
 <p>The <a href="https://pandoc.org/">Pandoc</a> Citations are prefixed with the <strong>@</strong> character. If the
 citation is <code>@foo</code>, that particular <em>foo</em> reference much be present in
 one of the specified bibliography files.</p>
-<div class="note">
-<p>Users need to have the <code>pandoc</code> executable<sup><a href="#user-content-fn-7" id="user-content-fnref-7" data-footnote-ref="" aria-describedby="footnote-label">14</a></sup> present in the <code>PATH</code>.</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Users need to have the <code>pandoc</code> executable<sup><a href="#user-content-fn-7" id="user-content-fnref-7" data-footnote-ref="" aria-describedby="footnote-label">14</a></sup> present in the <code>PATH</code>.</p>
 </div>
 <h5 id="enabling">Enabling</h5>
 <p>Pandoc based citation parsing is enabled by setting the
 <code>#+hugo_pandoc_citations:</code> keyword or <code>:EXPORT_HUGO_PANDOC_CITATIONS:</code>
 subtree property to <code>t</code>.</p>
-<div class="note">
-<p>If a post has neither <a href="#nocite"><code>nocite</code></a> meta-data, nor valid citation keys
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> If a post has neither <a href="#nocite"><code>nocite</code></a> meta-data, nor valid citation keys
 (<code>@foo</code>), the Pandoc parsing step is skipped <strong>even if</strong> the above
 Pandoc Citations parsing option is enabled.</p>
 </div>
@@ -5154,8 +5154,8 @@ booleans = [true, false]
 </code></pre>
 <h5 id="maps-of-single-and-list-values">Maps of single and list values</h5>
 <p>Maps of keys with single or list values are supported.</p>
-<div class="note">
-<p><em>Maps of maps</em> or <em>TOML tables of tables</em> are not supported. See <a href="#front-matter-extra">Front-matter Extra</a> section for an alternative.</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> <em>Maps of maps</em> or <em>TOML tables of tables</em> are not supported. See <a href="#front-matter-extra">Front-matter Extra</a> section for an alternative.</p>
 </div>
 <h6 id="syntax-2">Syntax</h6>
 <pre><code class="language-org">:PROPERTIES:
@@ -5350,8 +5350,8 @@ the parent hierarchy.</p>
 <p>The collective concatenated value of <code>EXPORT_HUGO_SECTION_FRAG</code>
 properties is further prefixed with the value of the good old
 <code>HUGO_SECTION</code> keyword/property that’s effective in that subtree.</p>
-<div class="note">
-<p><code>EXPORT_HUGO_SECTION_FRAG</code> <strong>has to be set as a subtree
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> <code>EXPORT_HUGO_SECTION_FRAG</code> <strong>has to be set as a subtree
 property</strong>. There is no Org keyword equivalent for this, because this
 property is designed (and makes sense) only for the <em>per-subtree</em>
 flow.</p>
@@ -5451,8 +5451,8 @@ example, if the bundle needs to be generated as
 <dt>Branch Bundle</dt>
 <dd>Set <code>:EXPORT_FILE_NAME: _index</code></dd>
 </dl>
-<div class="note">
-<p>For file-based flow, use <code>#+hugo_bundle</code> and <code>#+export_file_name</code>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> For file-based flow, use <code>#+hugo_bundle</code> and <code>#+export_file_name</code>
 keywords instead.</p>
 </div>
 <h5 id="examples-1">Examples</h5>
@@ -5585,8 +5585,8 @@ we can do:</p>
 This marked text's foreground is red.
 #+end_mark
 </code></pre>
-<div class="note">
-<p>You may choose to have a CSS snippet like above either inline in the
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> You may choose to have a CSS snippet like above either inline in the
 exported Markdown, or in your website’s CSS file.</p>
 </div>
 <p>and that will render as:</p>
@@ -5729,8 +5729,8 @@ removed.</li>
 <li>If <code>:trim-post</code> is set to <code>t</code>, whitespace after the block is
 removed.</li>
 </ul>
-<div class="note">
-<p>For the types not specified in
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> For the types not specified in
 <code>org-hugo-special-block-type-properties</code>, the default behavior is like
 that of <code>'(:trim-pre nil :trim-post nil)</code>.</p>
 </div>
@@ -5748,8 +5748,8 @@ this variable in that UI.</p>
 <p>The default values set this way can be overridden in the Org file by
 using the <code>#+header:</code> keyword above the special blocks. Below examples
 demonstrate the usage of this <code>#+header</code> keyword.</p>
-<div class="note">
-<p>If a special block tag is not recognized as an HTML block or inline
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> If a special block tag is not recognized as an HTML block or inline
 element, or as a Hugo shortcode, it defaults to exporting <a href="#special-blocks--div-tags">with <code>&#x3C;div></code>
 tags</a>. But if either pre or post trimming options are detected for a
 special block, it will export with <code>&#x3C;span></code> tags.</p>
@@ -5758,7 +5758,8 @@ special block, it will export with <code>&#x3C;span></code> tags.</p>
 <div class="description">
 <p>Support for Hugo Shortcodes in Org source</p>
 </div>
-<div class="note">
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span></p>
 <ul>
 <li>Do <span class="underline">not</span> use raw Hugo shortcodes in Org source.</li>
 <li><strong>{{&#x3C; .. >}}</strong> and <strong>{{% .. %}}</strong> are not legal Org syntax.</li>
@@ -5887,8 +5888,8 @@ Something
 {{&#x3C; /myshortcode >}}
 </code></pre>
 <h6 id="markdown-shortcodes">Markdown Shortcodes ({{% .. %}})</h6>
-<div class="note">
-<p>All of the above applies to Markdown Shortcodes as well.</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> All of the above applies to Markdown Shortcodes as well.</p>
 </div>
 <p>The content within these shortcodes <strong>is</strong> parsed by the Hugo Markdown
 parser. See <a href="https://gohugo.io/content-management/shortcodes/#shortcodes-with-markdown">Hugo Doc – Shortcodes With Markdown</a>.</p>
@@ -5954,8 +5955,8 @@ specified backend like so:</p>
 <p><em>Using <code>#+md:..</code> or <code>#+html:..</code> will also export the same way.</em></p>
 <h6 id="begin_export-hugo"><code>#+begin_export hugo</code></h6>
 <p><a id=".embedding-shortcodes-discouraged"></a></p>
-<div class="note">
-<p>This method is discouraged because we would then end up with Org text
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> This method is discouraged because we would then end up with Org text
 with a lot of content which can be exported for only Hugo consumption!</p>
 </div>
 <p>The earlier sections  and  are the recommended methods if
@@ -6214,8 +6215,8 @@ those objects in this manner:</p>
 </figure>
 <p>So on each <em>Page</em>, the user can specify the keys of the associated
 <em>Menu Entry</em> using the <code>menu</code> front-matter.</p>
-<div class="note">
-<p>A <em>Menu Entry</em> is uniquely associated with a <em>Page</em>.</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> A <em>Menu Entry</em> is uniquely associated with a <em>Page</em>.</p>
 </div>
 <p>Here are the valid keys for that <code>menu</code> config as derived from the
 <a href="https://gohugo.io/variables/menus/#menu-entry-variables">Menu Entry Variables</a> documentation:</p>
@@ -6393,8 +6394,8 @@ look something like this:</p>
     identifier = "foo1"
 </code></pre>
 <h5 id="overriding-menu-entry-keys">Overriding Menu Entry keys</h5>
-<div class="note">
-<p>This feature is applicable only to subtree-based flow.</p>
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> This feature is applicable only to subtree-based flow.</p>
 </div>
 <p>Use the <code>:EXPORT_HUGO_MENU_OVERRIDE:</code> property if you need to override
 only some of the inherited Menu Entry keys.</p>
@@ -6463,13 +6464,15 @@ locally will need to have a <a href="https://go.dev/doc/install">recent version 
 because the test and doc sites use <a href="https://gohugo.io/hugo-modules/use-modules/">Hugo Modules</a> approach for managing
 the theme and component dependencies, Go is required for that.</p>
 <h5 id="doc_contributor_reqs">Requirements for doc contributor</h5>
-<div class="note">
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span></p>
 <ul>
 <li>Minimum required <code>hugo</code> version:</li>
 </ul>
 </div>
 <h5 id="code_contributor_reqs">Requirements for code contributor</h5>
-<div class="note">
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span></p>
 <ul>
 <li>Org mode version used for tests:</li>
 <li>Minimum required <code>hugo</code> version:</li>

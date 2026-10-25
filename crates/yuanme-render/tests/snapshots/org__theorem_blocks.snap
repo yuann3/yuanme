@@ -1,0 +1,34 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "markdown_html(\"a.md\", &text)"
+---
+<div class="theorem" data-kind="theorem" id="thm:fermat">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 1</span> <span class="theorem-title">(Fermat’s little theorem)</span>.</span> If <math><mi>p</mi></math> is prime, then <math><msup><mi>a</mi><mi>p</mi></msup><mo>≡</mo><mi>a</mi><mspace width="0.44444445em"/><mo stretchy="false">(</mo><mrow><mspace/><mi>mod</mi></mrow><mspace width="0.33333334em"/><mi>p</mi><mo stretchy="false">)</mo></math>.</p>
+</div>
+<div class="proof">
+<p><span class="proof-head">Proof.</span> By induction on <math><mi>a</mi></math>:</p>
+<math display="block"><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mn>1</mn><msup><mo stretchy="false">)</mo><mi>p</mi></msup><mo>≡</mo><msup><mi>a</mi><mi>p</mi></msup><mo>+</mo><mn>1</mn></math>
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
+</div>
+<div class="theorem key" data-kind="lemma" id="lem:zorn">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 2</span> <span class="theorem-title">(Zorn, for <math><mi>ω</mi></math>)</span>.</span></p>
+<math display="block"><mi>x</mi></math>
+<p>Every chain has an upper bound.</p>
+</div>
+<div class="proof">
+<p><span class="proof-head">Proof of the lemma.</span></p>
+<ul>
+<li>one</li>
+<li>two</li>
+</ul>
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
+</div>
+<div class="theorem" data-kind="remark">
+<p><span class="theorem-head"><span class="theorem-name">Remark</span>.</span> A remark.</p>
+</div>
+<div class="proof">
+<p><span class="proof-head">Proof.</span> Short. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
+</div>
+<div class="aside">
+<p>Not a kind.</p>
+</div>

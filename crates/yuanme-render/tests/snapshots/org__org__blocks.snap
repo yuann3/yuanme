@@ -16,8 +16,8 @@ warning[org/no-effect]: `-n` has no effect in yuanme
 <div class="org-center">
 <p>Centered.</p>
 </div>
-<div class="note wide" data-x="1">
-<p>A note.</p>
+<div class="aside wide" data-x="1">
+<p>An aside.</p>
 </div>
 <dl>
 <dt>Org</dt>

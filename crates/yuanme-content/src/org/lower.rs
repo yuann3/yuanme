@@ -8,6 +8,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
 use yuanme_diag::{Diagnostic, FileId, Span, codes};
+use yuanme_org::parser::{ParseError, parse_with_settings};
+use yuanme_org::settings::GlobalSettings;
 use yuanme_org::types::{
     AffiliatedKeywordValue, AffiliatedKeywords, AstNode, CheckboxType, Document as OrgDocument,
     DocumentElement, Element, FootnoteReference, Heading, LinkType, NodeProperty, Object,
@@ -15,10 +17,11 @@ use yuanme_org::types::{
     TimestampRangeType, TimestampType,
 };
 
-use super::{Keyword, Read};
+use super::{Keyword, NoFiles, Read};
+use crate::config::{Math, TheoremKind};
 use crate::document::{Align, Checkbox, Document, Kind, NodeId, footnote_identifier};
 use crate::smartypants::Dashes;
-use crate::{markdown, math};
+use crate::{markdown, math, theorem};
 
 /// How `x_y` and `x^{y}` read: `^:{}` by default, so `snake_case` stays
 /// as it is (Org divergence 1).
@@ -42,12 +45,7 @@ enum Search {
 /// Image links ox-html shows as images (`org-html-inline-image-rules`).
 const IMAGES: &[&str] = &["avif", "gif", "jpeg", "jpg", "png", "svg", "webp"];
 
-pub(super) fn lower(
-    text: &str,
-    file: FileId,
-    parsed: &OrgDocument<'_>,
-    macros: &[(String, String)],
-) -> Read {
+pub(super) fn lower(text: &str, file: FileId, parsed: &OrgDocument<'_>, math: &Math) -> Read {
     let mut l = Lower {
         text,
         file,
@@ -65,6 +63,7 @@ pub(super) fn lower(
         references: Vec::new(),
         anonymous: 0,
         headers: Vec::new(),
+        theorems: &math.theorems,
     };
     let keywords = l.keywords(parsed);
     for p in parsed.get_additional_properties() {
@@ -81,7 +80,7 @@ pub(super) fn lower(
     for h in &parsed.children {
         l.heading(h, selecting, false);
     }
-    l.finish(macros);
+    l.finish(math);
     let preamble_end = preamble_end(text, parsed);
     Read {
         document: Some(l.doc),
@@ -163,6 +162,7 @@ struct Lower<'s> {
     anonymous: usize,
     /// Math macros from `#+LATEX_HEADER`.
     headers: Vec<math::Header>,
+    theorems: &'s BTreeMap<String, TheoremKind>,
 }
 
 impl<'s> Lower<'s> {
@@ -428,12 +428,34 @@ impl<'s> Lower<'s> {
                 self.decorate(&b.affiliated_keywords, id, false);
                 self.elements(&b.children, id);
             }
+            // Org reads a block's type in any case, and ox-latex the text
+            // after it as the title (#17).
             Element::SpecialBlock(b) => {
-                let kind = Kind::Directive {
-                    name: b.block_type.to_string(),
+                let name = b.block_type.to_lowercase();
+                let title = b.parameters.map(str::trim).filter(|t| !t.is_empty());
+                let theorem = self.theorems.contains_key(&name);
+                let kind = if theorem {
+                    Kind::Theorem {
+                        kind: name,
+                        name: String::new(),
+                    }
+                } else {
+                    if let Some(title) = title {
+                        self.no_effect(
+                            format!("a title has no effect on `#+begin_{}`", b.block_type),
+                            self.at(title),
+                            "only Theorem blocks show a title",
+                        );
+                    }
+                    Kind::Directive {
+                        name: b.block_type.to_string(),
+                    }
                 };
                 let id = self.doc.push(parent, kind, at);
                 self.decorate(&b.affiliated_keywords, id, true);
+                if let Some(title) = title.filter(|_| theorem) {
+                    self.title(title, id);
+                }
                 self.elements(&b.children, id);
             }
             Element::DynamicBlock(b) => self.unsupported(
@@ -512,6 +534,52 @@ impl<'s> Lower<'s> {
             | Element::Clock(_)
             | Element::DiarySexp(_)
             | Element::Planning(_) => {}
+        }
+    }
+
+    /// A Theorem block's title, read as the objects a paragraph holds, into
+    /// a Caption. org-element leaves it as text, but the title is shown,
+    /// and math in it is math (#17).
+    fn title(&mut self, title: &'s str, parent: NodeId) {
+        let caption = self.doc.push(parent, Kind::Caption, self.at(title));
+        let settings = GlobalSettings {
+            file_access: &NoFiles,
+            ..GlobalSettings::default()
+        };
+        let parsed = match parse_with_settings(title, &settings) {
+            Ok(parsed) => parsed,
+            Err(e) => {
+                let code = match e {
+                    ParseError::OutOfFuel { .. } => &codes::ORG_OUT_OF_FUEL,
+                    ParseError::TooDeep { .. } => &codes::ORG_TOO_DEEP,
+                    ParseError::Failed(message) => panic!("organic failed to parse: {message}"),
+                };
+                let d = Diagnostic::error(
+                    code,
+                    "this title takes too long to parse",
+                    self.span(self.at(title)),
+                )
+                .help("markup opened many times and never closed is almost always a mistake");
+                self.diagnostics.push(d);
+                return;
+            }
+        };
+        // A title that reads as something other than a paragraph, such as
+        // `- a`, is shown as it is written.
+        let paragraph = match (&parsed.zeroth_section, parsed.children.is_empty()) {
+            (Some(z), true) => match z.children.as_slice() {
+                [Element::Paragraph(p)] => Some(p),
+                _ => None,
+            },
+            _ => None,
+        };
+        match paragraph {
+            Some(p) => {
+                for o in &p.children {
+                    self.object(o, caption);
+                }
+            }
+            None => self.text(title, caption),
         }
     }
 
@@ -1412,7 +1480,7 @@ impl<'s> Lower<'s> {
 
     /// What only the whole file says: footnote numbers, smart punctuation,
     /// heading ids, and where in-page links go.
-    fn finish(&mut self, macros: &[(String, String)]) {
+    fn finish(&mut self, math: &Math) {
         for (key, at) in std::mem::take(&mut self.references) {
             if !self.definitions.contains(&key) {
                 let message = format!("the footnote `{}` is never defined", key.to_lowercase());
@@ -1423,11 +1491,12 @@ impl<'s> Lower<'s> {
         }
         markdown::number_footnotes(&mut self.doc);
         markdown::smarten(&mut self.doc, Dashes::Oldschool, &self.verbatim);
+        theorem::number(&mut self.doc, &math.theorems);
         let labels = math::render(
             &mut self.doc,
             self.text,
             self.file,
-            macros,
+            &math.macros,
             &self.headers,
             &mut self.diagnostics,
         );

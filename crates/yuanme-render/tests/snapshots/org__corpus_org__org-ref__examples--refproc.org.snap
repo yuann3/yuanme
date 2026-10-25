@@ -202,18 +202,18 @@ plt.plot([1, 2, 4])
 </ul>
 <h3 id="math-environments">math environments</h3>
 <h4 id="lemmas">Lemmas</h4>
-<div class="lemma" id="lm-1">
-<p>A named lemma</p>
+<div class="theorem" data-kind="lemma" id="lm-1">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 1</span>.</span> A named lemma</p>
 </div>
 <p>see cref:lm-1.</p>
 <h4 id="corollary">Corollary</h4>
-<div class="corollary" id="co-1">
-<p>see  cref:lm-1.</p>
+<div class="theorem" data-kind="corollary" id="co-1">
+<p><span class="theorem-head"><span class="theorem-name">Corollary 2</span>.</span> see  cref:lm-1.</p>
 </div>
 <p>cref:co-1</p>
 <h4 id="theorem">theorem</h4>
-<div class="theorem" id="thm-1">
-<p>I have a theorem this will work. See the margin</p>
+<div class="theorem" data-kind="theorem" id="thm-1">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 3</span>.</span> I have a theorem this will work. See the margin</p>
 </div>
 <p>Margin note cref:thm-1</p>
 <h2 id="build">build</h2>

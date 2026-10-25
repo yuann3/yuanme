@@ -1,7 +1,7 @@
 //! One Label namespace per Entry (ADR 0010): equations' `\label`s, the
-//! ids written on headings, and Org's `#+NAME`s and `<<targets>>` each
-//! become an id on the Page, so no two may be the same, and each is kept
-//! to characters an id and a `#fragment` take as written.
+//! ids written on headings and directives, and Org's `#+NAME`s and
+//! `<<targets>>` each become an id on the Page, so no two may be the same,
+//! and each is kept to characters an id and a `#fragment` take as written.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
@@ -37,9 +37,13 @@ pub(crate) fn check(
             }
             _ => {}
         }
+        let what = match node.kind {
+            Kind::Theorem { .. } => "a Theorem block",
+            _ => "an element",
+        };
         for (name, value) in &node.attrs {
             if name == "id" {
-                written.push((value.clone(), node.span.clone(), "an element"));
+                written.push((value.clone(), node.span.clone(), what));
             }
         }
     }
@@ -48,10 +52,13 @@ pub(crate) fn check(
     let mut seen: BTreeMap<String, (Range<usize>, &str)> = BTreeMap::new();
     for (name, at, what) in written {
         // The Label itself where it is written as it is, so a fix replaces
-        // only it.
-        let exact = text
-            .get(at.clone())
-            .and_then(|s| s.find(name.as_str()))
+        // only it: as `{#name}` first, where a directive's or heading's
+        // text could hold the name before it.
+        let written = text.get(at.clone()).unwrap_or("");
+        let exact = written
+            .find(&format!("#{name}"))
+            .map(|i| i + 1)
+            .or_else(|| written.find(name.as_str()))
             .map(|i| at.start + i..at.start + i + name.len());
         if !is_valid(&name) {
             let fixed = corrected(&name);

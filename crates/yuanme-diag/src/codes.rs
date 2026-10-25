@@ -203,7 +203,7 @@ codes! {
     }
     MARKDOWN_NO_EFFECT = "markdown/no-effect" {
         meaning: "Something in a Markdown body is valid but changes nothing in the output, such as a `[title]` on a directive that isn't a Theorem block.",
-        example: ":::note[Heads up]\nText\n:::",
+        example: ":::tip[Heads up]\nText\n:::",
         fix: "Remove it, or use a construct that shows it.",
     }
     MARKDOWN_OUT_OF_FUEL = "markdown/out-of-fuel" {

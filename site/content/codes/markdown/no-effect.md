@@ -8,7 +8,7 @@ Something in a Markdown body is valid but changes nothing in the output, such as
 ## Example
 
 ```
-:::note[Heads up]
+:::tip[Heads up]
 Text
 :::
 ```

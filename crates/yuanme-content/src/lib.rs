@@ -10,4 +10,5 @@ pub mod org;
 pub mod site;
 pub mod slug;
 pub mod smartypants;
+mod theorem;
 pub mod yaml;

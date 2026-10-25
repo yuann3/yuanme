@@ -241,4 +241,78 @@ In Org, `#+LATEX_HEADER:` lines in the file define macros for its math: `\newcom
 
 ## Theorem blocks
 
-yuanme doesn't render Theorem blocks yet: they get no number, title or Label. Until it does, `:::theorem` in Markdown and `#+begin_theorem` in Org are plain blocks, each a `<div class="theorem">`, and a `[title]` on a Markdown directive is the warning `markdown/no-effect`. A `\begin{theorem}` or `\begin{proof}` inside math is `math/unsupported`.
+A Theorem block is a theorem, lemma, definition, proof or another kind, written in the Source format's own block syntax: a block directive in Markdown, a special block in Org. Its title, if it has one, can hold markup and math, and its Label is a `{#…}` in Markdown and a `#+NAME:` in Org, in the same namespace as every other Label in the Entry:
+
+```md check content/posts/primes.md
+---
+title: Primes
+---
+
+:::theorem[Fermat's little theorem]{#thm:fermat}
+If $p$ is prime, then $a^p \equiv a \pmod p$.
+:::
+
+::::proof
+By induction on $a$.
+
+:::lemma[$p$ divides $\binom{p}{k}$]{#lem:binom}
+For $0 < k < p$.
+:::
+::::
+```
+
+```text check content/posts/groups.org
+#+TITLE: Groups
+
+#+NAME: lem:lagrange
+#+begin_lemma Lagrange
+The order of a subgroup divides the order of the group.
+#+end_lemma
+
+#+begin_proof
+Cosets partition the group.
+#+end_proof
+```
+
+Blocks are numbered in the order they are written, starting again in each Entry. The built-in kinds:
+
+- `theorem`, `lemma`, `proposition`, `corollary`, `conjecture`, `definition`, `example` and `exercise` are numbered on one counter: Theorem 1, Lemma 2, Definition 3.
+- `remark` and `note` aren't numbered.
+- `proof` isn't numbered and ends with ∎. Its title replaces "Proof": `:::proof[Proof of Theorem 1]`.
+
+`[math.theorems]` in Site config changes a kind or adds one. `label` is what its blocks are called, and `counter` is the counter they're numbered on: `"theorem"`, a name of the kind's own, or `false` for none. Here claims count on their own, and remarks join the shared counter:
+
+```toml check
+[site]
+url = "https://example.com"
+title = "Example"
+
+[collections.posts]
+route = "/blog/{slug}/"
+list_route = "/blog/"
+
+[math.macros]
+R = '\mathbb{R}'
+norm = '\left\lVert #1 \right\rVert'
+rank = '\operatorname{rank}'
+
+[math.theorems.claim]
+label = "Claim"
+counter = "claim"
+
+[math.theorems.remark]
+counter = "theorem"
+```
+
+A block's name and title run into its first paragraph, and a proof's ∎ ends its last:
+
+```html
+<div class="theorem" data-kind="lemma" id="lem:lagrange">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 1</span> <span class="theorem-title">(Lagrange)</span>.</span> The order of a subgroup divides …</p>
+</div>
+<div class="proof">
+<p><span class="proof-head">Proof.</span> Cosets partition the group. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
+</div>
+```
+
+When a block starts with display math or a list, its head is a paragraph of its own, and when a proof ends with one, ∎ is in a `<p class="qed">` after it. A block whose name isn't a kind is a plain `<div class="NAME">`, and a title on it is the warning `markdown/no-effect` or `org/no-effect`. A `\begin{theorem}` or `\begin{proof}` inside math is `math/unsupported`.

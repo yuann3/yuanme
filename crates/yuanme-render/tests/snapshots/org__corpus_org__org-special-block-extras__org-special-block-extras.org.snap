@@ -498,6 +498,14 @@ warning[org/no-effect]: this `#+LATEX_HEADER` has no effect in yuanme
      |
      = note: yuanme reads `\newcommand`, `\renewcommand`, `\def` and `\DeclareMathOperator` lines, which define macros for the Entry's math, and accepts `\usepackage` of amsmath, amssymb, amsfonts, amsthm, mathtools and bm
      = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: a title has no effect on `#+begin_org-demo`
+    --> org-special-block-extras/org-special-block-extras.org:4121:21
+     |
+4121 |    #+begin_org-demo :source-color "custard" :result-color "custard"
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: only Theorem blocks show a title
+     = note: run `yuanme docs org/no-effect` for more
 error[math/unsupported]: invalid parameter number. Must be 1-9
    --> org-special-block-extras/org-special-block-extras.org:199:68
     |

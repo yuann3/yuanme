@@ -100,7 +100,7 @@ Which headlines are shown follows Org's export rules:
 - Unordered and ordered lists, with checkboxes (`[X]`, `[ ]`, `[-]`) and counters such as `[@3]`. A description list, `- term :: details`, is a `<dl>`.
 - Tables: the rows before the first rule `|---|` are the head. A row of alignment cookies such as `<r>`, `<l>` or `<c>` sets the columns' alignment and isn't shown.
 - `#+begin_quote` is a `<blockquote>`, `#+begin_center` is `<div class="org-center">`, and `#+begin_verse` is `<p class="verse">`, with a `<br>` after each line.
-- Any other block, `#+begin_NAME`, is `<div class="NAME">`, such as `#+begin_note`.
+- A block named after a Theorem kind, such as `#+begin_theorem Title` or `#+begin_proof`, is a Theorem block, with a `#+NAME:` as its Label; `yuanme docs math` covers them. Any other block, `#+begin_NAME`, is `<div class="NAME">`, such as `#+begin_aside`, and text after its name is the warning `org/no-effect`.
 - `#+begin_example` and `: ` fixed-width lines are plain code blocks.
 - A drawer's contents are shown without the drawer, except a `LOGBOOK`'s. Property drawers, planning lines, clocks, comment lines and `#+begin_comment` blocks are never shown.
 - Raw HTML passes through: `#+begin_export html`, `@@html:…@@` and `#+HTML:`. Export blocks and snippets for other back ends, such as `latex`, are dropped, as Emacs's HTML export drops them.
@@ -121,9 +121,9 @@ Where to buy:
 | <l>   | <r>   |
 | Bread |   2.5 |
 
-#+begin_note
+#+begin_aside
 Shops close early on Sundays.
-#+end_note
+#+end_aside
 
 #+begin_quote
 Food is the most primitive form of comfort. -- Sheilah Graham

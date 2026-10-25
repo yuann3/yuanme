@@ -182,6 +182,7 @@ impl Writer<'_> {
                 let open = format!("<div class=\"{}\"{rest}>", attribute(&class));
                 self.block(&open, "div", id);
             }
+            Kind::Theorem { kind, name } => self.theorem(id, kind, name),
             Kind::Figure => {
                 let open = format!("<figure{}>", self.attrs(id));
                 self.block(&open, "figure", id);
@@ -256,6 +257,101 @@ impl Writer<'_> {
             )),
             Kind::Math { mathml, .. } => self.out.push_str(mathml),
         }
+    }
+
+    /// A Theorem block as #17 writes it: its head runs into its first
+    /// paragraph, and a proof's ∎ ends its last, or each is a paragraph of
+    /// its own where the block starts or ends with something else, such as
+    /// display math or a list.
+    fn theorem(&mut self, id: NodeId, kind: &str, name: &str) {
+        let doc = self.doc;
+        let node = doc.node(id);
+        let proof = kind == "proof";
+        let mut class = if proof { "proof" } else { "theorem" }.to_string();
+        let mut rest = String::new();
+        for (attr, value) in &node.attrs {
+            match attr.as_str() {
+                "class" => class = format!("{class} {value}"),
+                _ => rest.push_str(&format!(" {attr}=\"{}\"", attribute(value))),
+            }
+        }
+        self.out
+            .push_str(&format!("<div class=\"{}\"", attribute(&class)));
+        if !proof {
+            self.out
+                .push_str(&format!(" data-kind=\"{}\"", attribute(kind)));
+        }
+        self.out.push_str(&rest);
+        self.out.push_str(">\n");
+
+        let mut children = node.children.as_slice();
+        let title = match children.first() {
+            Some(&c) if doc.node(c).kind == Kind::Caption => {
+                children = &children[1..];
+                Some(c)
+            }
+            _ => None,
+        };
+        let paragraph =
+            |c: &&NodeId| doc.node(**c).kind == Kind::Paragraph && lifted(doc, **c).is_none();
+        let runs_in = children.first().filter(paragraph).copied();
+        let ends = children.last().filter(|c| proof && paragraph(c)).copied();
+        if runs_in.is_none() {
+            self.out.push_str("<p>");
+            self.theorem_head(proof, name, title);
+            if proof && children.is_empty() {
+                self.out.push(' ');
+                self.out.push_str(QED);
+            }
+            self.out.push_str("</p>");
+        }
+        for (i, &c) in children.iter().enumerate() {
+            if i > 0 || runs_in.is_none() {
+                self.out.push('\n');
+            }
+            if Some(c) != runs_in && Some(c) != ends {
+                self.node(c);
+                continue;
+            }
+            self.out.push_str(&format!("<p{}>", self.attrs(c)));
+            if Some(c) == runs_in {
+                self.theorem_head(proof, name, title);
+                self.out.push(' ');
+            }
+            self.inline(c);
+            if Some(c) == ends {
+                self.out.push(' ');
+                self.out.push_str(QED);
+            }
+            self.out.push_str("</p>");
+        }
+        if proof && ends.is_none() && !children.is_empty() {
+            self.out.push_str(&format!("\n<p class=\"qed\">{QED}</p>"));
+        }
+        self.out.push_str("\n</div>");
+    }
+
+    /// `Lemma 2 (Zorn).`, or a proof's `Proof.`, which its title replaces.
+    fn theorem_head(&mut self, proof: bool, name: &str, title: Option<NodeId>) {
+        if proof {
+            self.out.push_str("<span class=\"proof-head\">");
+            match title {
+                Some(title) => self.inline(title),
+                None => self.out.push_str(&text(name)),
+            }
+            self.out.push_str(".</span>");
+            return;
+        }
+        self.out.push_str(&format!(
+            "<span class=\"theorem-head\"><span class=\"theorem-name\">{}</span>",
+            text(name)
+        ));
+        if let Some(title) = title {
+            self.out.push_str(" <span class=\"theorem-title\">(");
+            self.inline(title);
+            self.out.push_str(")</span>");
+        }
+        self.out.push_str(".</span>");
     }
 
     /// mdast-util-to-hast's list and listItem: a tight item's paragraphs
@@ -556,6 +652,9 @@ impl Writer<'_> {
         self.out.push_str("\n</ol>\n</section>");
     }
 }
+
+/// What ends a proof (#17), read out as words.
+const QED: &str = "<span class=\"qed\" role=\"img\" aria-label=\"End of proof\">∎</span>";
 
 /// The display math a paragraph holds and nothing else but white space,
 /// which is written without the `<p>` (#17).

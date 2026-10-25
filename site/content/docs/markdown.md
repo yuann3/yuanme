@@ -185,21 +185,21 @@ Each block is a `<pre class="y-code" data-language="NAME">`, which your styleshe
 
 A block directive wraps Markdown in a `<div>` whose class is the directive's name:
 
-```md check content/posts/note.md
+```md check content/posts/tip.md
 ---
-title: Note
+title: Tip
 ---
 
-:::note
+:::tip
 Markdown inside, with **emphasis**.
 :::
 ```
 
-This writes `<div class="note">` around the paragraph. The name is letters, digits, `-` and `_`, right after the colons. A closing `:::` must be at least as long as its opening fence, so an outer block takes more colons than the blocks inside it:
+This writes `<div class="tip">` around the paragraph. The name is letters, digits, `-` and `_`, right after the colons. A closing `:::` must be at least as long as its opening fence, so an outer block takes more colons than the blocks inside it:
 
-```md check content/posts/note.md
+```md check content/posts/tip.md
 ---
-title: Note
+title: Tip
 ---
 
 ::::aside
@@ -209,19 +209,21 @@ Inside two blocks.
 ::::
 ```
 
+After the name, `{…}` gives the block a Label as its id, classes and other attributes, as on a heading: `:::aside{#aside:setup .wide data-x=1}`. A value with spaces goes in quotes.
+
+A directive named after a Theorem kind, such as `:::theorem`, `:::lemma` or `:::proof`, is a Theorem block, numbered and with its kind's name in front. It takes a title in brackets, `:::theorem[Fermat's little theorem]{#thm:fermat}`, and `yuanme docs math` covers it. A title on any other directive, `:::tip[Title]`, has no effect and is the warning `markdown/no-effect`, as is anything else on the line after the name, the title and `{…}`.
+
 A `:::` with no name opens a block that swallows the rest of the file, so it is an error, `markdown/empty-directive`. The usual cause is a closing fence shorter than the one it closes, or a Pandoc `::: {.name}` div:
 
-```md fail markdown/empty-directive content/posts/note.md
+```md fail markdown/empty-directive content/posts/tip.md
 ---
-title: Note
+title: Tip
 ---
 
-::: {.note}
+::: {.tip}
 Pandoc's syntax.
 :::
 ```
-
-A title in brackets, `:::note[Title]`, has no effect and is the warning `markdown/no-effect`. yuanme doesn't render Theorem blocks yet: `:::theorem` and `:::proof` are `<div>`s like any other. Braces after the name, such as `:::theorem{#thm:main}`, aren't read yet either: that line is text, and its closing `:::` reports `markdown/empty-directive`.
 
 ## Math
 

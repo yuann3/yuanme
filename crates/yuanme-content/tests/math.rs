@@ -228,3 +228,113 @@ fn the_characters_math_shows_are_recorded() {
     // The equation number is shown in the math font too.
     assert_eq!(chars, "()1<abα");
 }
+
+/// Each Theorem block as `kind: name (title) #label`, and each other
+/// directive as `div NAME`, in document order.
+fn blocks(doc: &Document) -> Vec<String> {
+    let mut out = Vec::new();
+    for id in doc.descendants(Document::ROOT) {
+        let node = doc.node(id);
+        match &node.kind {
+            Kind::Theorem { kind, name } => {
+                let mut s = format!("{kind}: {name}");
+                if let Some(&first) = node.children.first()
+                    && doc.node(first).kind == Kind::Caption
+                {
+                    s.push_str(&format!(" ({})", doc.text(first)));
+                }
+                for (attr, value) in &node.attrs {
+                    if attr == "id" {
+                        s.push_str(&format!(" #{value}"));
+                    }
+                }
+                out.push(s);
+            }
+            Kind::Directive { name } => out.push(format!("div {name}")),
+            _ => {}
+        }
+    }
+    out
+}
+
+/// The same Theorem blocks, as each Source format writes them.
+const THEOREMS_MARKDOWN: &str = r#":::theorem[Fermat's little theorem]{#thm:fermat}
+If $p$ is prime, then $a^p \equiv a \pmod p$.
+:::
+
+::::proof
+By induction on $a$.
+
+:::lemma[$p$ divides $\binom{p}{k}$]{#lem:binom .key}
+For $0 < k < p$.
+:::
+::::
+
+:::definition{#def:group}
+A group.
+:::
+
+:::remark
+Unnumbered.
+:::
+
+:::claim
+Not a kind.
+:::
+
+:::corollary
+Last.
+:::
+"#;
+
+const THEOREMS_ORG: &str = r"#+NAME: thm:fermat
+#+begin_theorem Fermat's little theorem
+If \(p\) is prime, then \(a^p \equiv a \pmod p\).
+#+end_theorem
+
+#+begin_proof
+By induction on \(a\).
+
+#+NAME: lem:binom
+#+ATTR_HTML: :class key
+#+BEGIN_LEMMA \(p\) divides \(\binom{p}{k}\)
+For \(0 < k < p\).
+#+END_LEMMA
+#+end_proof
+
+#+NAME: def:group
+#+begin_definition
+A group.
+#+end_definition
+
+#+begin_remark
+Unnumbered.
+#+end_remark
+
+#+begin_claim
+Not a kind.
+#+end_claim
+
+#+begin_corollary
+Last.
+#+end_corollary
+";
+
+#[test]
+fn theorem_blocks_are_numbered_on_one_counter_in_both_formats() {
+    let want = [
+        "theorem: Theorem 1 (Fermat’s little theorem) #thm:fermat",
+        "proof: Proof",
+        r"lemma: Lemma 2 (p divides \binom{p}{k}) #lem:binom",
+        "definition: Definition 3 #def:group",
+        "remark: Remark",
+        "div claim",
+        "corollary: Corollary 4",
+    ];
+    for (doc, diagnostics) in [markdown(THEOREMS_MARKDOWN), org(THEOREMS_ORG)] {
+        assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+        assert_eq!(blocks(&doc), want);
+        // A title's math is converted like the body's.
+        assert!(doc.math_chars().contains(&'k'));
+    }
+}

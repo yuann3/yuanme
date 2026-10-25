@@ -12,6 +12,7 @@ use yuanme_diag::{Diagnostic, FileId, Files, Span, codes};
 use yuanme_org::parser::{ParseError, parse_with_settings};
 use yuanme_org::settings::{FileAccessInterface, GlobalSettings};
 
+use crate::config::Math;
 use crate::document::Document;
 
 pub(crate) use keywords::head;
@@ -41,13 +42,13 @@ pub(crate) struct Read {
 /// The Document is there even when the file has errors, as long as it
 /// parsed; an Entry with an error fails.
 pub fn document(files: &Files, file: FileId) -> (Option<Document>, Vec<Diagnostic>) {
-    let read = read(files.text(file), file, &[]);
+    let read = read(files.text(file), file, &Math::default());
     (read.document, read.diagnostics)
 }
 
 /// organic parses `#+SETUPFILE` itself, which reads a file. The Engine
 /// reports the keyword as an error instead (#16), so the file is never read.
-struct NoFiles;
+pub(super) struct NoFiles;
 
 impl FileAccessInterface for NoFiles {
     fn read_file(&self, _path: &str) -> Result<String, std::io::Error> {
@@ -59,16 +60,16 @@ impl FileAccessInterface for NoFiles {
 /// room above that for lowering the tree it built.
 const STACK: usize = 8 << 20;
 
-/// Reads `text`, an Org file, with the Site's math `macros`, on a thread of
+/// Reads `text`, an Org file, with the Site's `[math]`, on a thread of
 /// its own: its stack is big enough for the deepest tree organic builds,
 /// whatever thread the caller is on. A panic there goes on unwinding here,
 /// for the caller's `catch_panic`.
-pub(crate) fn read(text: &str, file: FileId, macros: &[(String, String)]) -> Read {
+pub(crate) fn read(text: &str, file: FileId, math: &Math) -> Read {
     std::thread::scope(|scope| {
         let worker = std::thread::Builder::new()
             .name("org".into())
             .stack_size(STACK)
-            .spawn_scoped(scope, || read_here(text, file, macros))
+            .spawn_scoped(scope, || read_here(text, file, math))
             .expect("start a thread to parse Org");
         worker
             .join()
@@ -76,13 +77,13 @@ pub(crate) fn read(text: &str, file: FileId, macros: &[(String, String)]) -> Rea
     })
 }
 
-fn read_here(text: &str, file: FileId, macros: &[(String, String)]) -> Read {
+fn read_here(text: &str, file: FileId, math: &Math) -> Read {
     let settings = GlobalSettings {
         file_access: &NoFiles,
         ..GlobalSettings::default()
     };
     match parse_with_settings(text, &settings) {
-        Ok(parsed) => lower::lower(text, file, &parsed, macros),
+        Ok(parsed) => lower::lower(text, file, &parsed, math),
         Err(e) => {
             let d = match e {
                 ParseError::OutOfFuel { opener } => Diagnostic::error(

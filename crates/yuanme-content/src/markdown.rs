@@ -4,16 +4,17 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
-use comrak::nodes::{AstNode, ListType, NodeBlockDirective, NodeValue, Sourcepos, TableAlignment};
+use comrak::nodes::{AstNode, ListType, NodeValue, Sourcepos, TableAlignment};
 use comrak::{Arena, Options};
 use jiff::tz::TimeZone;
 use yuanme_diag::{Diagnostic, FileId, Files, Level, codes};
 
+use crate::config::{Math, TheoremKind};
 use crate::document::{Align, Checkbox, Document, Kind, NodeId, footnote_identifier};
 use crate::fields::Cx;
-use crate::math;
 use crate::slug::Slugger;
 use crate::smartypants::{self, Dashes, Piece};
+use crate::{math, theorem};
 
 /// The comrak extensions the Engine reads (#2, #17). Raw HTML is kept and
 /// written out as it is (ADR 0009); comrak's own HTML is never used.
@@ -47,16 +48,16 @@ pub fn document(
         dir: "",
         is_file: &|_| false,
     };
-    let doc = parse(files.text(file), body, &[], &mut cx);
+    let doc = parse(files.text(file), body, &Math::default(), &mut cx);
     (doc, diagnostics)
 }
 
-/// Parses an Entry's body, `text[body]`, with the Site's math `macros`.
-/// Spans are bytes in `text`.
+/// Parses an Entry's body, `text[body]`, with the Site's `[math]`. Spans
+/// are bytes in `text`.
 pub(crate) fn parse(
     text: &str,
     body: Range<usize>,
-    macros: &[(String, String)],
+    math: &Math,
     cx: &mut Cx<'_>,
 ) -> Option<Document> {
     let source = &text[body.clone()];
@@ -85,6 +86,7 @@ pub(crate) fn parse(
         lines: line_starts(source),
         base: body.start,
         ok: true,
+        theorems: &math.theorems,
         cx,
     };
     for child in root.children() {
@@ -94,8 +96,9 @@ pub(crate) fn parse(
     tex_delimiters(&doc, text, cx);
     number_footnotes(&mut doc);
     smarten(&mut doc, Dashes::Default, &BTreeSet::new());
+    theorem::number(&mut doc, &math.theorems);
     let before = cx.diagnostics.len();
-    let labels = math::render(&mut doc, text, cx.file, macros, &[], cx.diagnostics);
+    let labels = math::render(&mut doc, text, cx.file, &math.macros, &[], cx.diagnostics);
     let ok = ok
         && !cx.diagnostics[before..]
             .iter()
@@ -292,6 +295,7 @@ struct Lower<'c, 'd> {
     lines: Vec<usize>,
     base: usize,
     ok: bool,
+    theorems: &'c BTreeMap<String, TheoremKind>,
     cx: &'c mut Cx<'d>,
 }
 
@@ -313,25 +317,10 @@ impl Lower<'_, '_> {
         let kind = match &ast.value {
             NodeValue::Paragraph => Kind::Paragraph,
             NodeValue::Heading(h) => {
-                // `{#a .b id=c class=d}`: `#a` wins over `id=`, and the
-                // classes join, so each attribute is written once.
-                let mut id = None;
-                let mut classes = Vec::new();
-                let mut attrs = Vec::new();
-                if let Some(a) = ast.attrs.as_deref() {
-                    id = a.id.clone();
-                    classes.extend(a.classes.iter().cloned());
-                    for (name, value) in &a.pairs {
-                        match name.as_str() {
-                            "id" => id = id.or_else(|| Some(value.clone())),
-                            "class" => classes.push(value.clone()),
-                            _ => attrs.push((name.clone(), value.clone())),
-                        }
-                    }
-                }
-                if !classes.is_empty() {
-                    attrs.insert(0, ("class".to_string(), classes.join(" ")));
-                }
+                let (id, attrs) = match ast.attrs.as_deref() {
+                    Some(a) => attributes(a.id.clone(), &a.classes, &a.pairs),
+                    None => (None, Vec::new()),
+                };
                 Kind::Heading {
                     level: h.level,
                     // Filled in once smartypants has run, as Astro's are (#18).
@@ -404,10 +393,11 @@ impl Lower<'_, '_> {
             NodeValue::FootnoteDefinition(f) => Kind::FootnoteDefinition {
                 label: self.label(&span).unwrap_or(&f.name).to_string(),
             },
-            NodeValue::BlockDirective(d) => match self.directive(d, span.clone()) {
-                Some(kind) => kind,
-                None => return,
-            },
+            NodeValue::BlockDirective(d) => {
+                let fence = d.fence_length;
+                drop(ast);
+                return self.directive(node, fence, parent, span);
+            }
             // mdast keeps a soft break as a newline in its text, which
             // smartypants then sees.
             NodeValue::Text(t) => return self.text(parent, t, span),
@@ -483,17 +473,33 @@ impl Lower<'_, '_> {
         self.doc.push(parent, Kind::Text(text.to_string()), span);
     }
 
-    /// `:::name[Title]{…}`. Theorem kinds arrive with #51; until then every
-    /// directive is a `<div class="NAME">` (#17).
-    fn directive(&mut self, d: &NodeBlockDirective, span: Range<usize>) -> Option<Kind> {
-        let info = d.info.as_str();
-        let name: String = info
+    /// `:::name[Title]{#label .class key=value}`, read from the opening
+    /// line as written: comrak's info string has its escapes resolved, so
+    /// a title read from it couldn't be lowered with spans in the file. A
+    /// directive whose name is a Theorem kind is a Theorem block; any other
+    /// is a `<div class="NAME">` (#17).
+    fn directive<'a>(
+        &mut self,
+        node: &'a AstNode<'a>,
+        fence: usize,
+        parent: NodeId,
+        span: Range<usize>,
+    ) {
+        let opener = span.start..span.start + fence;
+        let start = opener.end - self.base;
+        let end = self.source[start..]
+            .find(['\r', '\n'])
+            .map_or(self.source.len(), |i| start + i);
+        let line = &self.source[start..end];
+        // Where `line[range]` is in the file.
+        let at = |range: Range<usize>| opener.end + range.start..opener.end + range.end;
+        let mut i = line.len() - line.trim_start().len();
+        let name: String = line[i..]
             .chars()
             .take_while(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_')
             .collect();
-        let opener = span.start..span.start + d.fence_length;
         if name.is_empty() {
-            let d = match info.trim() {
+            let d = match line.trim() {
                 // A bare `:::` opens a directive that swallows the rest of
                 // the file (#2).
                 "" => self
@@ -515,16 +521,213 @@ impl Lower<'_, '_> {
             };
             self.cx.push(d);
             self.ok = false;
-            return None;
+            return;
         }
-        if info[name.len()..].trim_start().starts_with('[') {
+        i += name.len();
+        let skip = |i: usize| i + line[i..].len() - line[i..].trim_start().len();
+        let mut title = None;
+        if line[skip(i)..].starts_with('[')
+            && let Some(len) = closing(&line[skip(i)..], '[', ']')
+        {
+            title = Some(skip(i) + 1..skip(i) + len - 1);
+            i = skip(i) + len;
+        }
+        let mut attrs = Vec::new();
+        if line[skip(i)..].starts_with('{')
+            && let Some(len) = closing(&line[skip(i)..], '{', '}')
+            && let Some(read) = directive_attributes(&line[skip(i) + 1..skip(i) + len - 1])
+        {
+            attrs = read;
+            i = skip(i) + len;
+        }
+        let rest = line[i..].trim();
+        if !rest.is_empty() {
+            let from = skip(i);
+            let message = format!("`{rest}` has no effect on `:::{name}`");
+            let d = Diagnostic::warning(
+                &codes::MARKDOWN_NO_EFFECT,
+                message,
+                self.cx.span(at(from..from + rest.len())),
+            )
+            .note("yuanme reads `:::name[Title]{#label .class key=value}`, with `\\]` for a `]` in the title and `\"…\"` around a value with spaces");
+            self.cx.push(d);
+        }
+
+        let theorem = self.theorems.contains_key(&name);
+        if title.is_some() && !theorem {
             let message = format!("a title has no effect on `:::{name}`");
             let d = Diagnostic::warning(&codes::MARKDOWN_NO_EFFECT, message, self.cx.span(opener))
                 .note("only Theorem blocks show a title");
             self.cx.push(d);
         }
-        Some(Kind::Directive { name })
+        let kind = if theorem {
+            Kind::Theorem {
+                kind: name,
+                name: String::new(),
+            }
+        } else {
+            Kind::Directive { name }
+        };
+        let id = self.doc.push(parent, kind, span);
+        if let Some((_, label)) = attrs.iter().find(|(a, _)| a == "id") {
+            self.doc
+                .names
+                .targets
+                .entry(label.clone())
+                .or_insert_with(|| label.clone());
+        }
+        *self.doc.attrs_mut(id) = attrs;
+        if let Some(title) = title.filter(|t| theorem && !t.is_empty()) {
+            self.title(start + title.start..start + title.end, id);
+        }
+        for child in node.children() {
+            self.node(child, id);
+        }
     }
+
+    /// A Theorem block's title, `self.source[range]`, as inline Markdown in
+    /// a Caption.
+    fn title(&mut self, range: Range<usize>, parent: NodeId) {
+        let source = self.source;
+        let text = &source[range.clone()];
+        let at = self.base + range.start..self.base + range.end;
+        let caption = self.doc.push(parent, Kind::Caption, at.clone());
+        let arena = Arena::new();
+        let root = match comrak::parse_document_bounded(&arena, text, &options()) {
+            Ok(root) => root,
+            Err(comrak::OutOfFuel { .. }) => {
+                let d = self
+                    .cx
+                    .error(
+                        &codes::MARKDOWN_OUT_OF_FUEL,
+                        "this title takes too long to parse".into(),
+                        at,
+                    )
+                    .help("markup opened many times and never closed is almost always a mistake");
+                self.cx.push(d);
+                self.ok = false;
+                return;
+            }
+        };
+        // A title that reads as a block of its own, such as `1. Main`, is
+        // shown as it is written.
+        let paragraph = root
+            .first_child()
+            .filter(|p| p.next_sibling().is_none())
+            .filter(|p| matches!(p.data.borrow().value, NodeValue::Paragraph));
+        let Some(paragraph) = paragraph else {
+            return self.text(caption, text, at);
+        };
+        let lines = std::mem::replace(&mut self.lines, line_starts(text));
+        let base = std::mem::replace(&mut self.base, at.start);
+        self.source = text;
+        for child in paragraph.children() {
+            self.node(child, caption);
+        }
+        (self.source, self.lines, self.base) = (source, lines, base);
+    }
+}
+
+/// `{#a .b id=c class=d}` as an element's id and its other attributes:
+/// `#a` wins over `id=`, and the classes join, so each attribute is
+/// written once.
+fn attributes(
+    mut id: Option<String>,
+    classes: &[String],
+    pairs: &[(String, String)],
+) -> (Option<String>, Vec<(String, String)>) {
+    let mut classes = classes.to_vec();
+    let mut attrs = Vec::new();
+    for (name, value) in pairs {
+        match name.as_str() {
+            "id" => id = id.or_else(|| Some(value.clone())),
+            "class" => classes.push(value.clone()),
+            _ => attrs.push((name.clone(), value.clone())),
+        }
+    }
+    if !classes.is_empty() {
+        attrs.insert(0, ("class".to_string(), classes.join(" ")));
+    }
+    (id, attrs)
+}
+
+/// The attributes between a directive's `{` and `}`, the id first, or
+/// none if a word there is not `#label`, `.class` or `key=value`. Unlike a
+/// heading's, a Label is read whatever it holds, so a wrong one is
+/// reported as a Label rather than as text with no effect. A value can be
+/// quoted, with `\` escaping in the quotes.
+fn directive_attributes(inner: &str) -> Option<Vec<(String, String)>> {
+    let mut words = Vec::new();
+    let mut word: Option<String> = None;
+    let mut quoted = false;
+    let mut chars = inner.chars();
+    while let Some(c) = chars.next() {
+        match c {
+            '"' => {
+                quoted = !quoted;
+                word.get_or_insert_default();
+            }
+            '\\' if quoted => word.get_or_insert_default().push(chars.next()?),
+            c if c.is_whitespace() && !quoted => words.extend(word.take()),
+            c => word.get_or_insert_default().push(c),
+        }
+    }
+    if quoted {
+        return None;
+    }
+    words.extend(word);
+    let mut id = None;
+    let mut classes = Vec::new();
+    let mut pairs = Vec::new();
+    for w in words {
+        if let Some(label) = w.strip_prefix('#').filter(|l| !l.is_empty()) {
+            id = Some(label.to_string());
+        } else if let Some(class) = w.strip_prefix('.').filter(|c| !c.is_empty()) {
+            classes.push(class.to_string());
+        } else {
+            let (key, value) = w.split_once('=')?;
+            if key.is_empty()
+                || !key
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || "-_:.".contains(c))
+            {
+                return None;
+            }
+            pairs.push((key.to_string(), value.to_string()));
+        }
+    }
+    let (id, mut attrs) = attributes(id, &classes, &pairs);
+    if let Some(id) = id {
+        attrs.insert(0, ("id".to_string(), id));
+    }
+    Some(attrs)
+}
+
+/// The length of the group `s` opens with `open`, through the `close` that
+/// ends it, with groups nested inside it and `\` escaping a character. A
+/// `"…"` in `{…}` can hold a `}`.
+fn closing(s: &str, open: char, close: char) -> Option<usize> {
+    let mut depth = 0;
+    let mut quoted = false;
+    let mut chars = s.char_indices();
+    while let Some((i, c)) = chars.next() {
+        match c {
+            '\\' => {
+                chars.next();
+            }
+            '"' if open == '{' => quoted = !quoted,
+            _ if quoted => {}
+            c if c == open => depth += 1,
+            c if c == close => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(i + 1);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
 }
 
 /// A code or HTML block's literal as mdast's value: without its final line

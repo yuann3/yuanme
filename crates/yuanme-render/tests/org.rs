@@ -78,7 +78,16 @@ fn org_renders_what_markdown_renders() {
         "differ from Markdown:\n{}",
         wrong.join("\n")
     );
-    assert_eq!(pairs.len(), 7);
+    assert_eq!(pairs.len(), 8);
+}
+
+/// Theorem blocks as #17 writes them, which the pair above shows Org
+/// writes the same.
+#[test]
+fn theorem_blocks() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/pairs/theorems.md");
+    let text = std::fs::read_to_string(path).unwrap();
+    insta::assert_snapshot!(markdown_html("a.md", &text));
 }
 
 /// Org's own constructs, and what it reads but doesn't render.

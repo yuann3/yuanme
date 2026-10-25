@@ -11131,8 +11131,8 @@ fine.</p>
 <h4 id="code-blocks-in-list-using-highlight-shortcode">Code blocks in list using <code>highlight</code> shortcode</h4>
 <p>Reference: ,</p>
 <style> .red { color: red; }</style>
-<div class="note red">
-<p>Switched from exporting the <code>highlight</code> shortcode to exporting the
+<div class="theorem red" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Switched from exporting the <code>highlight</code> shortcode to exporting the
 code fenced blocks with attributes. These code fences are support by
 Hugo + Goldmark since v0.60.0.</p>
 <p><strong>Below notes are now outdated and thus grayed out.</strong></p>
@@ -12564,8 +12564,8 @@ spacing:
 try an inline formula like <math><mi>p</mi><mo stretchy="false">→</mo><mi>q</mi></math>. Does this work? <math><mi>r</mi><mo stretchy="false">→</mo><mi>s</mi></math></p>
 <p>Example of a block equation:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mi>C</mi><mo>=</mo><mi>W</mi><msub><mo lspace="0.1667em" rspace="0">log</mo><mn>2</mn></msub><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mrow><mspace/><mi>SNR</mi></mrow><mo stretchy="false">)</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(20)</mtext></mtd></mtr></mtable></math>
-<div class="note">
-<p>Referencing to equation labels does not work when
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Referencing to equation labels does not work when
 equations are exported as images.</p>
 </div>
 <h4 id="tikz">tikz</h4>
@@ -12581,8 +12581,8 @@ equations are exported as images.</p>
 <p>Example of an inline equation: <math display="block"><mi>a</mi><mo>+</mo><mi>b</mi></math></p>
 <p>Example of a block equation:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mi>C</mi><mo>=</mo><mi>W</mi><msub><mo lspace="0.1667em" rspace="0">log</mo><mn>2</mn></msub><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mrow><mspace/><mi>SNR</mi></mrow><mo stretchy="false">)</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(21)</mtext></mtd></mtr></mtable></math>
-<div class="note">
-<p>Referencing to equation labels does not work when
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> Referencing to equation labels does not work when
 equations are exported as images.</p>
 </div>
 <h2 id="lists">Lists</h2>
@@ -14087,8 +14087,8 @@ this “Post sub-heading 2.2” section.</p>
 using one or more <code>#+bibliography: &#x3C;file.bib></code> keywords or using the
 <code>org-cite-global-bibliography</code> variable.</p>
 <p>Example: <code>#+bibliography: orgcite.bib</code></p>
-<div class="note">
-<p><code>:EXPORT_BIBLIOGRAPHY:</code> in subtree property drawers will <strong>not</strong> work
+<div class="theorem" data-kind="note">
+<p><span class="theorem-head"><span class="theorem-name">Note</span>.</span> <code>:EXPORT_BIBLIOGRAPHY:</code> in subtree property drawers will <strong>not</strong> work
 with Org Cite!</p>
 </div>
 <h5 id="citation-syntax">Citation Syntax</h5>

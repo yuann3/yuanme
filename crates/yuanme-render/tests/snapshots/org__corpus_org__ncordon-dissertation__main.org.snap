@@ -4912,21 +4912,21 @@ or <a href=""></a> have been used. Ergodic Markov chains section is based on <a 
 <a href=""></a>. Mean first passage time section is mainly based on <a href=""></a>.</p>
 <h3 id="definition">Definition</h3>
 <p>For convenience, unless otherwise indicated, we will consider <math><mn>0</mn><mo>∈</mo><mi>ℕ</mi></math>.</p>
-<div class="definition">
-<p>A stochastic random process , is a Markov chain iff the future process
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 1</span>.</span> A stochastic random process , is a Markov chain iff the future process
 <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>k</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">&gt;</mo><mi>n</mi></mrow></msub></math> is independent of the past process <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>k</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">&lt;</mo><mi>n</mi></mrow></msub></math> conditionally on <math><msub><mi>X</mi><mi>n</mi></msub></math>.</p>
 </div>
-<div class="definition">
-<p>Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">≥</mo><mn>0</mn></mrow></msub></math> a Markov chain, let us call the state space the set
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 2</span>.</span> Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">≥</mo><mn>0</mn></mrow></msub></math> a Markov chain, let us call the state space the set
 , i.e. the set
 where the Markov chain takes its values.</p>
 </div>
-<div class="lemma">
-<p><math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">≥</mo><mn>0</mn></mrow></msub></math> is a Markov chain iff for all <math><mi>n</mi><mo>∈</mo><mi>ℕ</mi></math> and given arbitrary <math><msub><mi>s</mi><mn>0</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>∈</mo><mi>S</mi></math>, then it holds:</p>
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 3</span>.</span> <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">≥</mo><mn>0</mn></mrow></msub></math> is a Markov chain iff for all <math><mi>n</mi><mo>∈</mo><mi>ℕ</mi></math> and given arbitrary <math><msub><mi>s</mi><mn>0</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>∈</mo><mi>S</mi></math>, then it holds:</p>
 <math display="block"><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><msub><mi>s</mi><mn>0</mn></msub><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo></math>
 </div>
 <div class="proof">
-<p>From left to right. By Markov chain definition, if <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>k</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">&gt;</mo><mi>n</mi></mrow></msub></math> is independent of the past
+<p><span class="proof-head">Proof.</span> From left to right. By Markov chain definition, if <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>k</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">&gt;</mo><mi>n</mi></mrow></msub></math> is independent of the past
 process <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>k</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">&lt;</mo><mi>n</mi></mrow></msub></math> conditionally on <math><msub><mi>X</mi><mi>n</mi></msub></math>, then:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><msub><mi>s</mi><mn>0</mn></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><msub><mi>s</mi><mn>0</mn></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <p>The following argument ends (formally) the proof:</p>
@@ -4939,6 +4939,7 @@ process <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>k</mi></msub><msub>
 <math display="block"><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mi>k</mi></msub><mo>=</mo><msub><mi>s</mi><mi>k</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mi>k</mi></msub><mo>=</mo><msub><mi>s</mi><mi>k</mi></msub><mo stretchy="false">)</mo><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>k</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>k</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>k</mi></msub><mo>=</mo><msub><mi>s</mi><mi>k</mi></msub><mo stretchy="false">)</mo><mo lspace="0.1667em" rspace="0.1667em">⋯</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo stretchy="false">)</mo></math>
 <p>Therefore (adjusting the values of <math><mi>n</mi></math> and <math><mi>k</mi></math> above appropriately):</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><msub><mi>s</mi><mn>0</mn></msub><mo stretchy="false">)</mo><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mfrac><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo stretchy="false">)</mo></mrow><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo stretchy="false">)</mo></mrow></mfrac><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mfrac><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo stretchy="false">)</mo></mrow><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>p</mi><mo lspace="0" rspace="0">−</mo><mn>2</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo stretchy="false">)</mo></mrow></mfrac><mo lspace="0.1667em" rspace="0.1667em">⋯</mo><mfrac><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo stretchy="false">)</mo></mrow><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mn>0</mn></msub><mo stretchy="false">)</mo></mrow></mfrac><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi></mrow></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo stretchy="false">)</mo><mo lspace="0.1667em" rspace="0.1667em">⋯</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo></mrow><mrow><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo></mrow></mfrac><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>q</mi></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h3 id="chapman-kolmogorov-equation">Chapman-Kolmogorov equation</h3>
 <p>Since we intend to represent Markov chains in a computer, we will also assume <math><mi>S</mi></math> is finite henceforth,
@@ -4948,11 +4949,11 @@ can be expressed as:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><msub><mi>s</mi><mn>0</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><msub><mi>s</mi><mn>0</mn></msub><mo stretchy="false">)</mo><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo>=</mo><msub><mi>s</mi><mn>1</mn></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><msub><mi>s</mi><mn>0</mn></msub><mo stretchy="false">)</mo><mo lspace="0.1667em" rspace="0.1667em">⋯</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><msub><mi>s</mi><mi>n</mi></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo stretchy="false">)</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="eq:trans-probs"><mtext>(1)</mtext></mtd></mtr></mtable></math>
 <p>and also, for <math><mi>n</mi><mo>&gt;</mo><mi>k</mi></math>:</p>
 
-<div class="definition">
-<p>Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">∈</mo><mi>I</mi></mrow></msub></math> a Markov chain with finite state space <math><mi>S</mi></math>, let us define the initial distribution as <math><mi>μ</mi><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><mi>s</mi><mo stretchy="false">)</mo><mo>,</mo><mi>s</mi><mo>∈</mo><mi>S</mi></math>.</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 4</span>.</span> Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">∈</mo><mi>I</mi></mrow></msub></math> a Markov chain with finite state space <math><mi>S</mi></math>, let us define the initial distribution as <math><mi>μ</mi><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mn>0</mn></msub><mo>=</mo><mi>s</mi><mo stretchy="false">)</mo><mo>,</mo><mi>s</mi><mo>∈</mo><mi>S</mi></math>.</p>
 </div>
-<div class="definition">
-<p>Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">∈</mo><mi>I</mi></mrow></msub></math> a Markov chain with finite state space <math><mi>S</mi></math>, let us define the transition probabilities as</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 5</span>.</span> Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><msub><mo stretchy="false">}</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">∈</mo><mi>I</mi></mrow></msub></math> a Markov chain with finite state space <math><mi>S</mi></math>, let us define the transition probabilities as</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>j</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>k</mi></msub><mo>=</mo><mi>i</mi><mo stretchy="false">)</mo><mo>,</mo><mspace width="1em"/><mi>i</mi><mo>,</mo><mi>j</mi><mo>∈</mo><mi>S</mi><mo>,</mo><mspace width="1em"/><mi>n</mi><mo>,</mo><mi>k</mi><mo>∈</mo><mi>ℕ</mi><mo>,</mo><mi>n</mi><mo>≠</mo><mi>k</mi></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>n</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>=</mo><msub><mi>𝟙</mi><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mi>j</mi></mrow></msub></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 </div>
 <p>Therefore, we can rewrite Equation <a href="#eq:trans-probs">(1)</a> as:</p>
@@ -4960,37 +4961,37 @@ can be expressed as:</p>
 <p>Summing over all possible values for <math><msub><mi>s</mi><mrow><mi>k</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub></math> in Equation
 <a href="#eq:trans-cond-probs">()</a> and considering <math><msub><mi>s</mi><mi>k</mi></msub><mo>=</mo><mi>s</mi><mo>,</mo><msub><mi>s</mi><mi>n</mi></msub><mo>=</mo><mi>t</mi></math>, we deduce:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><msub><mi>p</mi><mrow><mi>s</mi><mo rspace="0">,</mo><mi>t</mi></mrow></msub><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo lspace="0">∑</mo><mrow><msub><mi>s</mi><mrow><mi>k</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo lspace="0" rspace="0">∈</mo><mi>S</mi></mrow></munder><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><munder><mo lspace="0">∑</mo><mrow><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo lspace="0" rspace="0">∈</mo><mi>S</mi></mrow></munder><mo minsize="2.047em" maxsize="2.047em">{</mo><msub><mi>p</mi><mrow><mi>s</mi><mo rspace="0">,</mo><msub><mi>s</mi><mrow><mi>k</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub></mrow></msub><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>k</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mo lspace="0.1667em" rspace="0.1667em">⋯</mo><msub><mi>p</mi><mrow><msub><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mo rspace="0">,</mo><mi>t</mi></mrow></msub><mo stretchy="false">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">}</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="eq:sum-probs"><mtext>(2)</mtext></mtd></mtr></mtable></math>
-<div class="definition">
-<p>We define the matrix <math><mi>P</mi><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>=</mo><mo stretchy="false">(</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><msub><mo stretchy="false">)</mo><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi><mo lspace="0" rspace="0">∈</mo><mi>S</mi></mrow></msub></math>.</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 6</span>.</span> We define the matrix <math><mi>P</mi><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>=</mo><mo stretchy="false">(</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><msub><mo stretchy="false">)</mo><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi><mo lspace="0" rspace="0">∈</mo><mi>S</mi></mrow></msub></math>.</p>
 </div>
-<div class="proposition">
-<p><math><mi>P</mi></math> verifies the semigroup property, best known as Chapman-Kolmogorov equation:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 7</span>.</span> <math><mi>P</mi></math> verifies the semigroup property, best known as Chapman-Kolmogorov equation:</p>
 <math display="block"><mi>P</mi><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>=</mo><mi>P</mi><mo stretchy="false">(</mo><mi>k</mi><mo>,</mo><mi>l</mi><mo stretchy="false">)</mo><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>P</mi><mo stretchy="false">(</mo><mi>l</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>,</mo><mspace width="1em"/><mo>∀</mo><mi>k</mi><mo>≤</mo><mi>l</mi><mo>≤</mo><mi>n</mi></math>
 <p></p>
 </div>
 <div class="proof">
-<p>Straightforward from Equation <a href="#eq:sum-probs">(2)</a></p>
+<p><span class="proof-head">Proof.</span> Straightforward from Equation <a href="#eq:sum-probs">(2)</a> <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h2 id="time-homogeneous-markov-chains">Time-homogeneous Markov chains</h2>
-<div class="definition">
-<p>Given a Markov chain <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">}</mo></math> with finite space state <math><mi>S</mi></math>, it is said to be a time-homogeneous Markov chain
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 8</span>.</span> Given a Markov chain <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">}</mo></math> with finite space state <math><mi>S</mi></math>, it is said to be a time-homogeneous Markov chain
 iff the transition probabilities do not depend on time:</p>
 <math display="block"><mo>∀</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>∈</mo><mi>S</mi><mo>,</mo><mspace width="0.16666667em"/><mo>∀</mo><mi>n</mi><mo>∈</mo><mi>ℕ</mi><mspace width="2em"/><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>n</mi><mo>,</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>∈</mo><mo stretchy="false">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false">]</mo></math>
 <p><math><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub></math> is called one-step transition probability and <math><mi>P</mi><mo>=</mo><mo stretchy="false">(</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><msub><mo stretchy="false">)</mo><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi><mo lspace="0" rspace="0">∈</mo><mi>S</mi></mrow></msub></math> the transition matrix.</p>
 </div>
 <p>We will use DTMC to refer to discrete time-homogeneous Markov chains with finite space state henceforth.</p>
-<div class="proposition">
-<p>Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">}</mo></math> a DTMC it holds <math><mi>P</mi><mo stretchy="false">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>P</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mi>m</mi></mrow></msup></math></p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 9</span>.</span> Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">}</mo></math> a DTMC it holds <math><mi>P</mi><mo stretchy="false">(</mo><mi>m</mi><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>P</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mi>m</mi></mrow></msup></math></p>
 </div>
 <div class="proof">
-<p>Trivial</p>
+<p><span class="proof-head">Proof.</span> Trivial <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="proposition">
-<p>Naming <math><msub><mi>μ</mi><mi>n</mi></msub><mo>=</mo><mrow><mo>(</mo><msub><mi>μ</mi><mi>n</mi></msub><mo stretchy="false">(</mo><mn>0</mn><mo stretchy="false">)</mo><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>μ</mi><mi>n</mi></msub><mo stretchy="false">(</mo><mi>k</mi><mo stretchy="false">)</mo><mo>)</mo></mrow></math>, it holds:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 10</span>.</span> Naming <math><msub><mi>μ</mi><mi>n</mi></msub><mo>=</mo><mrow><mo>(</mo><msub><mi>μ</mi><mi>n</mi></msub><mo stretchy="false">(</mo><mn>0</mn><mo stretchy="false">)</mo><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>μ</mi><mi>n</mi></msub><mo stretchy="false">(</mo><mi>k</mi><mo stretchy="false">)</mo><mo>)</mo></mrow></math>, it holds:</p>
 <math display="block"><msub><mi>μ</mi><mi>n</mi></msub><mo>=</mo><msub><mi>μ</mi><mn>0</mn></msub><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msup><mi>P</mi><mi>n</mi></msup></math>
 </div>
 <div class="proof">
-<p>Trivial from Equation <a href="#eq:trans-probs">(1)</a></p>
+<p><span class="proof-head">Proof.</span> Trivial from Equation <a href="#eq:trans-probs">(1)</a> <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <p>Note there is bijection between a DTMC with <math><mi>S</mi><mo>=</mo><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">}</mo></math>,
 a by-row stochastic matrix <math><mi>P</mi></math> of dimension <math><mi>m</mi><mo lspace="0.2222em" rspace="0.2222em">×</mo><mi>m</mi></math> (we will note it $P<sub>m× m</sub>$) and a directed
@@ -4998,8 +4999,8 @@ graph <math><mi>G</mi><mo stretchy="false">(</mo><mi>P</mi><mo stretchy="false">
 From now on we will use any of these three concepts interchangeably. Also, when we talk about
 stochastic matrices, we will refer to by-row stochastic ones.</p>
 <h3 id="stopping-times-and-strong-markov-property">Stopping times and strong Markov property</h3>
-<div class="definition">
-<p>Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">}</mo></math> a Markov chain, defined over <math><mo stretchy="false">(</mo><mrow><mspace/><mi mathvariant="normal">Ω</mi></mrow><mo>,</mo><mrow><mspace/><mi>ℱ︀</mi></mrow><mo>,</mo><mi>P</mi><mo stretchy="false">)</mo></math>, then a stopping time is a random variable
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 11</span>.</span> Given <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">}</mo></math> a Markov chain, defined over <math><mo stretchy="false">(</mo><mrow><mspace/><mi mathvariant="normal">Ω</mi></mrow><mo>,</mo><mrow><mspace/><mi>ℱ︀</mi></mrow><mo>,</mo><mi>P</mi><mo stretchy="false">)</mo></math>, then a stopping time is a random variable
 <math><mi>τ</mi><mo lspace="0.2778em" rspace="0.2778em">:</mo><mrow><mspace/><mi mathvariant="normal">Ω</mi></mrow><mo stretchy="false">↦</mo><mi>ℕ</mi><mo rspace="0">⋂</mo><mo stretchy="false">{</mo><mi>∞</mi><mo stretchy="false">}</mo></math> such that:</p>
 <math display="block"><mo stretchy="false">{</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo stretchy="false">}</mo><mo>∈</mo><msub><mrow><mspace/><mi>ℱ︀</mi></mrow><mi>n</mi></msub><mo>=</mo><mi>σ</mi><mo stretchy="false">(</mo><msub><mi>X</mi><mn>0</mn></msub><mo>,</mo><msub><mi>X</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">)</mo><mo>,</mo><mspace width="1em"/><mo>∀</mo><mi>n</mi><mo>∈</mo><mi>ℕ</mi></math>
 <p>Moreover, we call the <math><mi>σ</mi></math> -algebra of events previous to <math><mi>τ</mi></math>, namely <math><msub><mrow><mspace/><mi>ℱ︀</mi></mrow><mi>τ</mi></msub></math>, the one which contains all
@@ -5011,13 +5012,13 @@ in a row, is a valid stopping time, because we only have to account for the prev
 variables. However, the first toss where we are just one toss away from having obtained <math><mn>4</mn></math> heads
 is not a valid stopping time, since it involves future events.</p>
 <p>We would denote <math><msup><mi>S</mi><mi>m</mi></msup><mo>=</mo><mo stretchy="false">{</mo><mo stretchy="false">(</mo><msup><mi>s</mi><mrow><mo stretchy="false">(</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msup><mi>s</mi><mrow><mo stretchy="false">(</mo><mi>m</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">)</mo><mo lspace="0.2778em" rspace="0.2778em">:</mo><msup><mi>s</mi><mrow><mo stretchy="false">(</mo><mi>j</mi><mo stretchy="false">)</mo></mrow></msup><mo>∈</mo><mi>S</mi><mo stretchy="false">}</mo></math>.</p>
-<div class="proposition">
-<p>Let <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">}</mo></math> be an arbitrary Markov chain and <math><mi>τ</mi></math> a stopping time.
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 12</span>.</span> Let <math><mo stretchy="false">{</mo><msub><mi>X</mi><mi>n</mi></msub><mo stretchy="false">}</mo></math> be an arbitrary Markov chain and <math><mi>τ</mi></math> a stopping time.
 Then for all <math><mi>m</mi><mo>∈</mo><mi>ℕ</mi><mo>,</mo><mi>C</mi><mo>⊆</mo><msup><mi>S</mi><mi>m</mi></msup><mo>,</mo><mi>A</mi><mo>∈</mo><msub><mrow><mspace/><mi>ℱ︀</mi></mrow><mi>τ</mi></msub><mo>,</mo><mi>i</mi><mo>∈</mo><mi>S</mi></math>, if <math><mi>P</mi><mo stretchy="false">(</mo><mi>A</mi><mo rspace="0">⋂</mo><mo stretchy="false">{</mo><msub><mi>X</mi><mi>τ</mi></msub><mo>=</mo><mi>i</mi><mo stretchy="false">}</mo><mo stretchy="false">)</mo><mo>&gt;</mo><mn>0</mn></math> it holds:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mi>m</mi></mrow></msub><mo stretchy="false">)</mo><mo>∈</mo><mi>C</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>τ</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow><mo>=</mo><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><mo stretchy="false">(</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mi>m</mi></mrow></msub><mo stretchy="false">)</mo><mo>∈</mo><mi>C</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>τ</mi></msub><mo>=</mo><mi>i</mi><mo rspace="0.1667em">)</mo></mrow></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="ec:strong-mc"><mtext>(3)</mtext></mtd></mtr></mtable></math>
 </div>
 <div class="proof">
-<p>Let us start taking <math><mi>m</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>C</mi><mo>=</mo><mo stretchy="false">{</mo><mi>j</mi><mo stretchy="false">}</mo></math>. Then, intersecting with <math><mo stretchy="false">{</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo stretchy="false">}</mo></math>, we have:</p>
+<p><span class="proof-head">Proof.</span> Let us start taking <math><mi>m</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>C</mi><mo>=</mo><mo stretchy="false">{</mo><mi>j</mi><mo stretchy="false">}</mo></math>. Then, intersecting with <math><mo stretchy="false">{</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo stretchy="false">}</mo></math>, we have:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><mi>j</mi><mo>,</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>τ</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>0</mn></mrow><mi>∞</mi></munderover><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo>,</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>,</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>0</mn></mrow><mi>∞</mi></munderover><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo>,</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><mi>j</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo>,</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>0</mn></mrow><mi>∞</mi></munderover><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo>,</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><mi>j</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><munderover><mo>∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>0</mn></mrow><mi>∞</mi></munderover><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo>,</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>τ</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <p>where we have used <math><mi>A</mi><mo rspace="0">⋂</mo><mo stretchy="false">{</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo stretchy="false">}</mo><mo>∈</mo><msub><mrow><mspace/><mi>ℱ︀</mi></mrow><mi>n</mi></msub></math> to simplify
 <math><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><mi>j</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>τ</mi><mo>=</mo><mi>n</mi><mo>,</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow></math>
@@ -5030,7 +5031,7 @@ as <math><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mrow><mi>n
 <p>That last step proves the equality:</p>
 <math display="block"><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>i</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mi>m</mi></mrow></msub><mo>=</mo><msub><mi>i</mi><mi>m</mi></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>A</mi><mo>,</mo><msub><mi>X</mi><mi>τ</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow><mo>=</mo><mi>P</mi><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>i</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>X</mi><mrow><mi>τ</mi><mo lspace="0" rspace="0">+</mo><mi>m</mi></mrow></msub><mo>=</mo><msub><mi>i</mi><mi>m</mi></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>X</mi><mi>τ</mi></msub><mo>=</mo><mi>i</mi><mo>)</mo></mrow></math>
 <p>We have shown that Equation <a href="#ec:strong-mc">(3)</a> holds for <math><mi>C</mi><mo>=</mo><mo stretchy="false">{</mo><mo stretchy="false">(</mo><msub><mi>i</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>i</mi><mi>m</mi></msub><mo stretchy="false">)</mo><mo stretchy="false">}</mo></math>. For
-<math><mi>C</mi><mo>⊆</mo><msup><mi>S</mi><mi>m</mi></msup></math> it would suffice summing over <math><mo stretchy="false">(</mo><msub><mi>i</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>i</mi><mi>m</mi></msub><mo stretchy="false">)</mo><mo>∈</mo><mi>C</mi></math>.</p>
+<math><mi>C</mi><mo>⊆</mo><msup><mi>S</mi><mi>m</mi></msup></math> it would suffice summing over <math><mo stretchy="false">(</mo><msub><mi>i</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>i</mi><mi>m</mi></msub><mo stretchy="false">)</mo><mo>∈</mo><mi>C</mi></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <p>The previous result means all Markov chains in discrete time have the strong Markov
 property, and it can be interpreted as the Markov chain restarting each time it hits the arbitrary state
@@ -5040,30 +5041,30 @@ property, and it can be interpreted as the Markov chain restarting each time it 
 Then <math><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><msub><mi>P</mi><mi>i</mi></msub><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>j</mi><mo>)</mo></mrow></math> gives us of the probability
 of the chain reaching state <math><mi>j</mi></math> in the <math><mi>n</mi></math> -th step, if it starts from <math><mi>i</mi></math>. Specifically, we are interested
 now in the first time that a given state is reached.</p>
-<div class="definition">
-<p>We define the hitting time for the state <math><mi>j</mi><mo>∈</mo><mi>S</mi></math> as:</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 13</span>.</span> We define the hitting time for the state <math><mi>j</mi><mo>∈</mo><mi>S</mi></math> as:</p>
 <math display="block"><msub><mi>τ</mi><mi>j</mi></msub><mo>=</mo><mi>m</mi><mi>i</mi><mi>n</mi><mo stretchy="false">{</mo><mi>n</mi><mo>&gt;</mo><mn>0</mn><mo lspace="0.2778em" rspace="0.2778em">:</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>j</mi><mo stretchy="false">}</mo></math>
 </div>
-<div class="definition">
-<p></p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 14</span>.</span> </p>
 <p>The probability that the first hitting time for <math><mi>j</mi></math>, starting at <math><mi>i</mi></math>, is <math><mi>n</mi></math>, is:</p>
 <math display="block"><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><msub><mi>P</mi><mi>i</mi></msub><mrow><mo lspace="0.1667em">(</mo><msub><mi>τ</mi><mi>j</mi></msub><mo>=</mo><mi>n</mi><mo>)</mo></mrow><mo>=</mo><msub><mi>P</mi><mi>i</mi></msub><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>=</mo><mi>j</mi><mo>,</mo><msub><mi>X</mi><mi>k</mi></msub><mo>≠</mo><mi>j</mi><mspace width="1em"/><mo>∀</mo><mi>k</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo>)</mo></mrow></math>
 <p>and we will define the (first) hitting probability for <math><mi>j</mi></math> starting at <math><mi>i</mi></math> as:</p>
 
 </div>
 <p>Note that we coul have <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>&lt;</mo><mn>1</mn></math> iff <math><msub><mi>P</mi><mi>i</mi></msub><mrow><mo lspace="0.1667em">(</mo><msub><mi>X</mi><mi>n</mi></msub><mo>≠</mo><mi>j</mi><mo>,</mo><mo>∀</mo><mi>n</mi><mo>&gt;</mo><mn>0</mn><mo>)</mo></mrow><mo>&gt;</mo><mn>0</mn></math>.</p>
-<div class="definition">
-<p>We will call return time distribution for the state <math><mi>i</mi></math> to <math><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><msub><mi>P</mi><mi>i</mi></msub><mrow><mo lspace="0.1667em">(</mo><msub><mi>τ</mi><mi>i</mi></msub><mo>=</mo><mi>n</mi><mo>)</mo></mrow></math>,
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 15</span>.</span> We will call return time distribution for the state <math><mi>i</mi></math> to <math><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><msub><mi>P</mi><mi>i</mi></msub><mrow><mo lspace="0.1667em">(</mo><msub><mi>τ</mi><mi>i</mi></msub><mo>=</mo><mi>n</mi><mo>)</mo></mrow></math>,
 and we will denote <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><msub><mi>P</mi><mi>i</mi></msub><mrow><mo lspace="0.1667em">(</mo><msub><mi>τ</mi><mi>i</mi></msub><mo>&lt;</mo><mi>∞</mi><mo>)</mo></mrow></math> (i.e. the probability of ever returning
 to the start state $i$).</p>
 </div>
 <p>The values <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub></math> verify the recurrence:</p>
 
-<div class="lemma">
-<p>If <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math> and <math><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><mo>&gt;</mo><mn>0</mn></math>, then <math><msub><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math></p>
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 16</span>.</span> If <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math> and <math><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><mo>&gt;</mo><mn>0</mn></math>, then <math><msub><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math></p>
 </div>
 <div class="proof">
-<p>Straightforward from Equation <a href="#eq:fij-recurrence">()</a> and the fact that <math><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">∈</mo><mi>S</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><mo>=</mo><mn>1</mn></math></p>
+<p><span class="proof-head">Proof.</span> Straightforward from Equation <a href="#eq:fij-recurrence">()</a> and the fact that <math><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">∈</mo><mi>S</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><mo>=</mo><mn>1</mn></math> <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h4 id="computation-through-absorption">Computation through absorption</h4>
 <p>Let us consider a fixed state <math><mi>j</mi></math>. The aim is to compute <math><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup></math> with <math><mi>i</mi><mo>≠</mo><mi>j</mi></math>.
@@ -5097,37 +5098,37 @@ functions, we can determine a theoretical relationship between both:</p>
 
 <p>and if the condition <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math> is met:</p>
 
-<div class="definition">
-<p>Taking a fixed state <math><mi>j</mi></math>, we can name:</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 17</span>.</span> Taking a fixed state <math><mi>j</mi></math>, we can name:</p>
 <ol>
 <li>The total number of visits to <math><mi>j</mi></math>  as <math><msub><mi>V</mi><mi>j</mi></msub><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><msub><mi>𝟙</mi><mrow><msub><mi>X</mi><mi>n</mi></msub><mo lspace="0" rspace="0">=</mo><mi>j</mi></mrow></msub></math></li>
 <li>The expected number of visits to <math><mi>j</mi></math>  as </li>
 </ol>
 </div>
-<div class="proposition">
-<p>It holds that 
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 18</span>.</span> It holds that 
 </p>
 </div>
 <div class="proof">
-<p>Straightforward from </p>
+<p><span class="proof-head">Proof.</span> Straightforward from  <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h4 id="mean-number-of-visits-to-a-state">Mean number of visits to a state</h4>
-<div class="proposition">
-<p>If <math><msub><mi>f</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>≠</mo><mn>1</mn></math>, we have:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 19</span>.</span> If <math><msub><mi>f</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>≠</mo><mn>1</mn></math>, we have:</p>
 
 <p>Moreover, it holds .
 </p>
 </div>
 <div class="proof">
-<p>From <a href="#eq:Fs-Ps-relation">(4)</a>, <a href="#prop:hitting-probs-F">()</a> and
+<p><span class="proof-head">Proof.</span> From <a href="#eq:Fs-Ps-relation">(4)</a>, <a href="#prop:hitting-probs-F">()</a> and
 Proposition <a href="#prop:mean-num-visits-P">()</a> we can deduce  and</p>
 
 <p>In the case <math><msub><mi>f</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mn>0</mn></math> is easy to prove . <math><msub><mi>f</mi><mrow><mi>j</mi><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math> and <math><msub><mi>f</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>&gt;</mo><mn>0</mn></math>
 implies , using reductio ad absurdum in
-</p>
+ <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="proposition">
-<p>There is an equivalence between:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 20</span>.</span> There is an equivalence between:</p>
 <ol>
 <li><math><mo>∃</mo><mi>n</mi><mo>&gt;</mo><mn>0</mn><mo lspace="0.2778em" rspace="0.2778em">:</mo><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>&gt;</mo><mn>0</mn></math> (note we will name this  afterwards)</li>
 <li></li>
@@ -5136,44 +5137,45 @@ implies , using reductio ad absurdum in
 <p></p>
 </div>
 <div class="proof">
-<p>Since , clearly i. is equivalent to ii.</p>
+<p><span class="proof-head">Proof.</span> Since , clearly i. is equivalent to ii.</p>
 <p>ii. is equivalent to iii. can be deduced from  and using similar
-arguments to the ones in the previous proof.</p>
+arguments to the ones in the previous proof. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h3 id="classification-of-states">Classification of states</h3>
 <h4 id="communicating-classes">Communicating classes</h4>
-<div class="definition">
-<p>The state <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> communicates with <math><mi>j</mi><mo>∈</mo><mi>S</mi></math>, and we will write it like <math><mi>i</mi><mo stretchy="false">→</mo><mi>j</mi></math>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 21</span>.</span> The state <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> communicates with <math><mi>j</mi><mo>∈</mo><mi>S</mi></math>, and we will write it like <math><mi>i</mi><mo stretchy="false">→</mo><mi>j</mi></math>
 iff <math><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>&gt;</mo><mn>0</mn></math> for some <math><mi>n</mi><mo>&gt;</mo><mn>0</mn></math>. It can be proven it is a transitive relation
 using Proposition <a href="#prop:chapman-kolmogorov">()</a>.</p>
 <p>If  and  then we will say that both states communicate and
 we will represent it as .</p>
 </div>
-<div class="definition">
-<p>State <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> is essential if  always implies . We denote the set
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 22</span>.</span> State <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> is essential if  always implies . We denote the set
 of essential states by <math><msup><mi>S</mi><mo>∗</mo></msup></math>.</p>
 </div>
-<div class="lemma">
-<p>If <math><mi>i</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math> and , then <math><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math>
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 23</span>.</span> If <math><mi>i</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math> and , then <math><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math>
 </p>
 </div>
 <div class="proof">
-<p>Given , then by transitivity . Since <math><mi>i</mi></math> is essential, ,
-which applying transitivity again from , gives us .</p>
+<p><span class="proof-head">Proof.</span> Given , then by transitivity . Since <math><mi>i</mi></math> is essential, ,
+which applying transitivity again from , gives us . <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="proposition">
-<p> is an equivalence relation in <math><msup><mi>S</mi><mo>∗</mo></msup></math>, and we can decompose:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 24</span>.</span>  is an equivalence relation in <math><msup><mi>S</mi><mo>∗</mo></msup></math>, and we can decompose:</p>
 <math display="block"><msup><mi>S</mi><mo>∗</mo></msup><mo>=</mo><msub><mi>C</mi><mn>1</mn></msub><mo>∪</mo><msub><mi>C</mi><mn>2</mn></msub><mo>∪</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo><mo>∪</mo><msub><mi>C</mi><mi>r</mi></msub></math>
 <p>where for every <math><mi>i</mi><mo>,</mo><mi>j</mi><mo>∈</mo><msub><mi>C</mi><mi>k</mi></msub></math>, it holds .</p>
 <p></p>
 </div>
 <div class="proof">
-<p>We have:</p>
+<p><span class="proof-head">Proof.</span> We have:</p>
 <ol>
 <li>Reflexivity holds because given <math><mi>i</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math>, and <math><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>&gt;</mo><mn>0</mn></math> for some <math><mi>j</mi><mo>∈</mo><mi>S</mi></math> then <math><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math> and  using previous Lemma <a href="#lemma:transitive-es">()</a>.</li>
 <li>Symmetry holds trivially.</li>
 <li>Transitivity holds because if <math><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>&gt;</mo><mn>0</mn></math> and <math><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>k</mi></mrow><mrow><mo stretchy="false">(</mo><mi>m</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>&gt;</mo><mn>0</mn></math> then <math><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>m</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>≥</mo><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>k</mi></mrow><mrow><mo stretchy="false">(</mo><mi>m</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>&gt;</mo><mn>0</mn></math></li>
 </ol>
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <p>For a DTMC, we can reorder the states of the matrix: let <math><msub><mi>P</mi><mi>k</mi></msub></math> be the transition matrix for the
 states in <math><msub><mi>C</mi><mi>k</mi></msub></math> (which only communicate with themselves); <math><msub><mi>Q</mi><mi>k</mi></msub></math> the probabilities of
@@ -5181,32 +5183,32 @@ going from <math><mi>S</mi><mo>−</mo><msup><mi>S</mi><mo>∗</mo></msup></math
 of the non-essential states communicating with themselves. The transition (stochastic by rows)
 matrix we get is:</p>
 
-<div class="definition">
-<p>If we consider an ordered finite set <math><mi>S</mi></math> and it holds:</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 25</span>.</span> If we consider an ordered finite set <math><mi>S</mi></math> and it holds:</p>
 <ol>
 <li>States are ordered inside each class, <math><mi>S</mi><mo>−</mo><msup><mi>S</mi><mo>∗</mo></msup></math> included.</li>
 <li><math><msub><mi>C</mi><mi>k</mi></msub><mo>=</mo><mo stretchy="false">[</mo><msub><mi>s</mi><mi>k</mi></msub><mo stretchy="false">]</mo></math> where <math><msub><mi>s</mi><mi>k</mi></msub></math> is the minimum of <math><msub><mi>C</mi><mi>k</mi></msub></math> and <math><msub><mi>s</mi><mi>i</mi></msub><mo>&lt;</mo><msub><mi>s</mi><mrow><mi>i</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub></math> for all <math><mi>i</mi></math>.</li>
 </ol>
 <p>Then we can say <a href="#eq:canonic-form">()</a> is the canonic form for the Markov chain.</p>
 </div>
-<div class="definition">
-<p>A Markov chain where there only exists a communicating class is called irreducible (or ergodic)
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 26</span>.</span> A Markov chain where there only exists a communicating class is called irreducible (or ergodic)
 Markov chain.
 </p>
 </div>
 <h4 id="recurrence-and-transience">Recurrence and transience</h4>
-<div class="definition">
-<p>An state <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> is called recurrent iff <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><mn>1</mn></math> and transient iff <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>&lt;</mo><mn>1</mn></math></p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 27</span>.</span> An state <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> is called recurrent iff <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><mn>1</mn></math> and transient iff <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>&lt;</mo><mn>1</mn></math></p>
 </div>
 <p>Hence <math><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup></math> diverges when <math><mi>i</mi></math> is recurrent and converges when <math><mi>i</mi></math> is transient.</p>
-<div class="proposition">
-<p>If <math><mi>i</mi></math> is a recurrent state and <math><mi>i</mi></math> communicates with <math><mi>j</mi></math>, then <math><msub><mi>f</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><msub><mi>f</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math>,
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 28</span>.</span> If <math><mi>i</mi></math> is a recurrent state and <math><mi>i</mi></math> communicates with <math><mi>j</mi></math>, then <math><msub><mi>f</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><msub><mi>f</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math>,
 and <math><mi>j</mi></math> is recurrent. Therefore, all the states of a communicating class are either
 recurrent or transient.
 </p>
 </div>
 <div class="proof">
-<p>By Proposition <a href="#prop:fij-equivs">()</a>, <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>&gt;</mo><mn>0</mn></math>. Since <math><mi>i</mi></math> is recurrent <math><msub><mi>f</mi><mrow><mi>i</mi><mi>i</mi></mrow></msub><mo>=</mo><mn>1</mn></math>
+<p><span class="proof-head">Proof.</span> By Proposition <a href="#prop:fij-equivs">()</a>, <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>&gt;</mo><mn>0</mn></math>. Since <math><mi>i</mi></math> is recurrent <math><msub><mi>f</mi><mrow><mi>i</mi><mi>i</mi></mrow></msub><mo>=</mo><mn>1</mn></math>
 and by Equation <a href="#eq:fij-recurrence">()</a>:</p>
 <math display="block"><mn>1</mn><mo>=</mo><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>i</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><msub><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub></math>
 <p> means there exists <math><msub><mi>k</mi><mn>1</mn></msub><mo>,</mo><msub><mi>k</mi><mn>2</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>k</mi><mi>r</mi></msub></math> verifying:</p>
@@ -5223,93 +5225,93 @@ So for every <math><mi>n</mi><mo>≥</mo><mi>u</mi><mo>+</mo><mi>v</mi></math> w
 and therefore <math><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi></mrow><mi>∞</mi></munderover><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><mi>∞</mi></math></p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>≥</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi></mrow><mi>∞</mi></munderover><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>≥</mo><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></msubsup><munderover><mo>∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi></mrow><mi>∞</mi></munderover><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><mi>∞</mi></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <p>Again from Proposition <a href="#prop:fii-equiv">()</a> we deduce <math><msub><mi>f</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math>. We have proved <math><mi>j</mi></math> is
-recurrent, but also that , and we can deduce <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math> with an identical procedure.</p>
+recurrent, but also that , and we can deduce <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math> with an identical procedure. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="definition">
-<p>We will say a communicating class is recurrent (resp. transient) iff all of its states
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 29</span>.</span> We will say a communicating class is recurrent (resp. transient) iff all of its states
 are recurrent (resp. transient). We will say a communicating class <math><mi>C</mi></math> is closed if it
 holds  and <math><mi>i</mi><mo>∈</mo><mi>C</mi></math> implies <math><mi>j</mi><mo>∈</mo><mi>C</mi></math>.</p>
 </div>
-<div class="proposition">
-<p>All the closed irreducible subchains of a DTMC are recurrent, and every DTMC has
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 30</span>.</span> All the closed irreducible subchains of a DTMC are recurrent, and every DTMC has
 at least one subchain of such type. A state is transient iff it is non-essential.
 </p>
 </div>
 <div class="proof">
-<p>Let us fix some <math><mi>i</mi><mo>∈</mo><mi>S</mi></math>. We have</p>
+<p><span class="proof-head">Proof.</span> Let us fix some <math><mi>i</mi><mo>∈</mo><mi>S</mi></math>. We have</p>
 
 <p>We conclude there exits at least one , so the subchain which
-contains <math><mi>j</mi></math> is recurrent. The same argument can be applied to the other subchains.</p>
+contains <math><mi>j</mi></math> is recurrent. The same argument can be applied to the other subchains. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="corollary">
-<p>In a DTMC, a communicating class is recurrent iff it is closed.
+<div class="theorem" data-kind="corollary">
+<p><span class="theorem-head"><span class="theorem-name">Corollary 31</span>.</span> In a DTMC, a communicating class is recurrent iff it is closed.
 </p>
 </div>
 <div class="proof">
-<p>If we have a non closed class <math><mi>C</mi></math>, there exist <math><mi>i</mi><mo>∈</mo><mi>C</mi><mo>,</mo><mi>j</mi><mo>∈</mo><mi>S</mi><mo>−</mo><mi>C</mi></math> such that  and .
+<p><span class="proof-head">Proof.</span> If we have a non closed class <math><mi>C</mi></math>, there exist <math><mi>i</mi><mo>∈</mo><mi>C</mi><mo>,</mo><mi>j</mi><mo>∈</mo><mi>S</mi><mo>−</mo><mi>C</mi></math> such that  and .
 Therefore <math><msub><mi>f</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><mn>0</mn></math> by Proposition <a href="#prop:fij-equivs">()</a>.</p>
 <p>Therefore:</p>
 <math display="block"><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>i</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><msub><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><msub><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>&lt;</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><munder><mo>&lt;</mo><mrow><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo lspace="0" rspace="0">&gt;</mo><mn>0</mn></mrow></munder><mn>1</mn></math>
 <p>and the class would not be recurrent.</p>
-<p>Reciprocally, Proposition <a href="#prop:one-recurrent-class">()</a> gives us the result we want.</p>
+<p>Reciprocally, Proposition <a href="#prop:one-recurrent-class">()</a> gives us the result we want. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="definition">
-<p>We define the mean recurrence time for <math><mi>i</mi></math> as
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 32</span>.</span> We define the mean recurrence time for <math><mi>i</mi></math> as
 </p>
 </div>
-<div class="definition">
-<p>We say that a recurrent state <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> is:</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 33</span>.</span> We say that a recurrent state <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> is:</p>
 <ol>
 <li>Positive recurrent iff <math><msub><mi>r</mi><mi>i</mi></msub><mo>&lt;</mo><mi>∞</mi></math>.</li>
 <li>Null recurrent iff <math><msub><mi>r</mi><mi>i</mi></msub><mo>=</mo><mi>∞</mi></math>.</li>
 </ol>
 </div>
-<div class="lemma">
-<p>A state <math><mi>i</mi></math> is recurrent positive iff:</p>
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 34</span>.</span> A state <math><mi>i</mi></math> is recurrent positive iff:</p>
 
 <p></p>
 </div>
 <div class="proof">
-<p>Let us observe that for the limit to exist it must be <math><mrow><msub><mrow><mspace/><mi>lim</mi></mrow><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></msub><mo lspace="0.1667em">&ApplyFunction;</mo><msub><mi>F</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub></mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo>=</mo><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><mn>1</mn></math>.</p>
+<p><span class="proof-head">Proof.</span> Let us observe that for the limit to exist it must be <math><mrow><msub><mrow><mspace/><mi>lim</mi></mrow><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></msub><mo lspace="0.1667em">&ApplyFunction;</mo><msub><mi>F</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub></mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo>=</mo><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><mn>1</mn></math>.</p>
 <math display="block"><mrow><munder><mrow><mspace/><mi>lim</mi></mrow><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></munder><mo lspace="0.1667em">&ApplyFunction;</mo><mfrac><mrow><mn>1</mn><mo>−</mo><msub><mi>F</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><mrow><mn>1</mn><mo>−</mo><mi>s</mi></mrow></mfrac></mrow><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>−</mo><mi>s</mi></mrow></mfrac><munderover><mo rspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msup><mi>s</mi><mi>n</mi></msup><mo stretchy="false">)</mo><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mi>s</mi><mo>+</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo><mo>+</mo><msup><mi>s</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><mo stretchy="false">)</mo><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><munder><mo stretchy="false">→</mo><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></munder><munderover><mo>∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><mi>n</mi><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><msub><mi>r</mi><mi>i</mi></msub></math>
-<p>The second part is deduced from Equation <a href="#eq:Fs-Ps-relation">(4)</a>.</p>
+<p>The second part is deduced from Equation <a href="#eq:Fs-Ps-relation">(4)</a>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="proposition">
-<p>If <math><mi>i</mi><mo>,</mo><mi>j</mi></math> are communicating recurrent states, then they are both positive recurrent or null recurrent.
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 35</span>.</span> If <math><mi>i</mi><mo>,</mo><mi>j</mi></math> are communicating recurrent states, then they are both positive recurrent or null recurrent.
 </p>
 </div>
 <div class="proof">
-<p>By the procedure used in the proof of Proposition <a href="#prop:recurrent-classes">()</a>, we have:</p>
+<p><span class="proof-head">Proof.</span> By the procedure used in the proof of Proposition <a href="#prop:recurrent-classes">()</a>, we have:</p>
 <math display="block"><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>&gt;</mo><mn>0</mn><mo>,</mo><mspace width="1em"/><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>≥</mo><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">−</mo><mi>u</mi><mo lspace="0" rspace="0">−</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></msubsup><mspace width="1em"/><mo>∀</mo><mi>n</mi><mo>≥</mo><mi>u</mi><mo>+</mo><mi>v</mi></math>
 <p>Therefore:</p>
 <p></p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><msub><mi>P</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">}</mo><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><msup><mi>s</mi><mi>n</mi></msup><mo minsize="2.047em" maxsize="2.047em">}</mo><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mrow><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></munderover><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><msup><mi>s</mi><mi>n</mi></msup><mo>+</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi></mrow><mi>∞</mi></munderover><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><msup><mi>s</mi><mi>n</mi></msup><mo minsize="2.047em" maxsize="2.047em">}</mo><mo rspace="0">≥</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mrow><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></munderover><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><msup><mi>s</mi><mi>n</mi></msup><mo>+</mo><msup><mi>s</mi><mrow><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></msubsup><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><munderover><mo>∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><msup><mi>s</mi><mi>n</mi></msup><mo minsize="2.047em" maxsize="2.047em">}</mo><mo rspace="0">≥</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><msup><mi>s</mi><mrow><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></msubsup><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><msub><mi>P</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">}</mo><mo rspace="0">=</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><msub><mi>P</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">}</mo><msup><mi>s</mi><mrow><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></msubsup><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>−</mo><msup><mi>s</mi><mrow><mi>u</mi><mo lspace="0" rspace="0">+</mo><mi>v</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></msubsup><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><mo minsize="2.047em" maxsize="2.047em">}</mo></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <p>Hence:</p>
 <math display="block"><mrow><munder><mrow><mspace/><mi>lim</mi></mrow><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></munder><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></mrow><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><msub><mi>P</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">}</mo><mo>≥</mo><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow></msubsup><msubsup><mi>p</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>i</mi></mrow><mrow><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo></mrow></msubsup><mspace width="0.1667em"/><mrow><munder><mrow><mspace/><mi>lim</mi></mrow><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></munder><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></mrow><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><msub><mi>P</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">}</mo></math>
-<p>And exchanging the roles of <math><mi>i</mi></math> and <math><mi>j</mi></math>, we deduce <math><mi>i</mi></math> is positive recurrent iff <math><mi>j</mi></math> is.</p>
+<p>And exchanging the roles of <math><mi>i</mi></math> and <math><mi>j</mi></math>, we deduce <math><mi>i</mi></math> is positive recurrent iff <math><mi>j</mi></math> is. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="proposition">
-<p>Every irreducible DTMC is positive recurrent</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 36</span>.</span> Every irreducible DTMC is positive recurrent</p>
 </div>
 <div class="proof">
-<p>Let us fix a <math><mi>s</mi><mo>∈</mo><mo stretchy="false">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false">[</mo></math>. We have, using that <math><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><msup><mi>s</mi><mi>n</mi></msup><mo>=</mo><mfrac><mi>s</mi><mrow><mn>1</mn><mo lspace="0" rspace="0">−</mo><mi>s</mi></mrow></mfrac></math>:</p>
+<p><span class="proof-head">Proof.</span> Let us fix a <math><mi>s</mi><mo>∈</mo><mo stretchy="false">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false">[</mo></math>. We have, using that <math><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><msup><mi>s</mi><mi>n</mi></msup><mo>=</mo><mfrac><mi>s</mi><mrow><mn>1</mn><mo lspace="0" rspace="0">−</mo><mi>s</mi></mrow></mfrac></math>:</p>
 
 <p>Taking <math><msub><mrow><mspace/><mi>lim</mi></mrow><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></msub></math> we have <math><munder><mo lspace="0">∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">∈</mo><mi>S</mi></mrow></munder><mrow><msub><mrow><mspace/><mi>lim</mi></mrow><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></msub><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></mrow><munder><munder accentunder="true"><mrow><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><mo>⏟</mo></munder><mrow><munder><mo stretchy="false" lspace="0" rspace="0">→</mo><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></munder><mn>1</mn></mrow></munder><mo minsize="2.047em" maxsize="2.047em">{</mo><mn>1</mn><mo>+</mo><msub><mi>P</mi><mrow><mi>j</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo minsize="2.047em" maxsize="2.047em">}</mo><mo>=</mo><mn>1</mn></math></p>
 <p>Therefore, there must exist <math><mi>j</mi><mo>∈</mo><mi>S</mi></math> with <math><mrow><msub><mrow><mspace/><mi>lim</mi></mrow><mrow><mi>s</mi><mo lspace="0" rspace="0">↗</mo><mn>1</mn></mrow></msub><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></mrow><msub><mi>F</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo>&gt;</mo><mn>0</mn></math>. By Lemma <a href="#lemma:positive-rec-characterization">()</a>,
 we deduce <math><mi>j</mi></math> is positive recurrent, therefore recurrent. By Proposition <a href="#prop:recurrent-classes">()</a> all states
 communicating with <math><mi>j</mi></math> are also recurrent, and by Proposition <a href="#prop:all-positive-all-null">()</a>, all the states of
-the chain are positive recurrent.</p>
+the chain are positive recurrent. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h4 id="absorption">Absorption</h4>
 <p>Although the concept of absorbing state has arisen before, we give a formal definition.</p>
-<div class="definition">
-<p>A state <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> is absorbing iff <math><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><mn>1</mn></math>.</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 37</span>.</span> A state <math><mi>i</mi><mo>∈</mo><mi>S</mi></math> is absorbing iff <math><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>i</mi></mrow></msub><mo>=</mo><mn>1</mn></math>.</p>
 </div>
 <p>Let us observe the matrix <a href="#eq:canonic-form">()</a>. This matrix poses some interesting questions for
 the non-essential states. Let us take a non-essential state, namely <math><mi>i</mi></math>. Then it is likely the chain
 will go to a state in <math><msup><mi>S</mi><mo>∗</mo></msup></math> at some point, and never come back.</p>
-<div class="definition">
-<p>We define the absorbing time as <math><msup><mi>τ</mi><mo>∗</mo></msup><mo>=</mo><mrow><mrow><mspace/><mi>min</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">{</mo><mi>n</mi><mo>&gt;</mo><mn>0</mn><mo lspace="0.2778em" rspace="0.2778em">:</mo><msub><mi>X</mi><mi>n</mi></msub><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup><mo stretchy="false">}</mo></mrow></mrow></math>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 38</span>.</span> We define the absorbing time as <math><msup><mi>τ</mi><mo>∗</mo></msup><mo>=</mo><mrow><mrow><mspace/><mi>min</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">{</mo><mi>n</mi><mo>&gt;</mo><mn>0</mn><mo lspace="0.2778em" rspace="0.2778em">:</mo><msub><mi>X</mi><mi>n</mi></msub><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup><mo stretchy="false">}</mo></mrow></mrow></math>
 If <math><msup><mi>τ</mi><mo>∗</mo></msup><mo>&lt;</mo><mi>∞</mi></math>, we can define the entry absorbing state as the value <math><msub><mi>X</mi><msup><mi>τ</mi><mo>∗</mo></msup></msub></math>.</p>
 <p>We define:</p>
 <ol>
@@ -5319,8 +5321,8 @@ If <math><msup><mi>τ</mi><mo>∗</mo></msup><mo>&lt;</mo><mi>∞</mi></math>, w
 </ol>
 
 </div>
-<div class="proposition">
-<p>The following holds for each <math><mi>i</mi><mo>∉</mo><msup><mi>S</mi><mo>∗</mo></msup><mo>,</mo><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math>:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 39</span>.</span> The following holds for each <math><mi>i</mi><mo>∉</mo><msup><mi>S</mi><mo>∗</mo></msup><mo>,</mo><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math>:</p>
 <ol>
 <li><math><msubsup><mi>f</mi><mi>i</mi><mo>∗</mo></msubsup><mo>=</mo><munder><mo lspace="0">∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">∈</mo><msup><mi>S</mi><mo>∗</mo></msup></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">∉</mo><msup><mi>S</mi><mo>∗</mo></msup></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><msubsup><mi>f</mi><mi>j</mi><mo>∗</mo></msubsup></math></li>
 <li><math><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mo>∗</mo></msubsup><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">∉</mo><msup><mi>S</mi><mo>∗</mo></msup></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><msubsup><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mo>∗</mo></msubsup></math></li>
@@ -5338,14 +5340,14 @@ or the row vector <math><mo stretchy="false">(</mo><mn>1</mn><mo>,</mo><mn>1</mn
 <math><mi>S</mi><mo>−</mo><msup><mi>S</mi><mo>∗</mo></msup></math> to <math><msup><mi>S</mi><mo>∗</mo></msup></math>, and  (the row-wise sum of $Q$). And we will call
 <math><msup><mi>F</mi><mo>∗</mo></msup><mo>=</mo><mo stretchy="false">(</mo><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mo>∗</mo></msubsup><msub><mo stretchy="false">)</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">∈</mo><mi>S</mi><mo lspace="0" rspace="0">−</mo><msup><mi>S</mi><mo>∗</mo></msup><mo rspace="0">,</mo><mi>j</mi><mo lspace="0" rspace="0">∈</mo><msup><mi>S</mi><mo>∗</mo></msup></mrow></msub></math>,
 <math><msup><mi>f</mi><mo>∗</mo></msup><mo>=</mo><mo stretchy="false">(</mo><msubsup><mi>f</mi><mi>i</mi><mo>∗</mo></msubsup><msub><mo stretchy="false">)</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">∈</mo><mi>S</mi><mo lspace="0" rspace="0">−</mo><msup><mi>S</mi><mo>∗</mo></msup></mrow></msub></math>.</p>
-<div class="proposition">
-<p>The following relations hold:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 40</span>.</span> The following relations hold:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msup><mi>F</mi><mo>∗</mo></msup></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>V</mi><mo stretchy="false">)</mo><mi>Q</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="prop:Fast-matrix"><mtext>(5)</mtext></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msup><mi>f</mi><mo>∗</mo></msup></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>V</mi><mo stretchy="false">)</mo><mi>q</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="prop:fast-matrix"><mtext>(6)</mtext></mtd></mtr></mtable></math>
 <p>The distribution for <math><msup><mi>τ</mi><mo>∗</mo></msup></math> is 
 </p>
 </div>
 <div class="proof">
-<p>Let us fix <math><mi>i</mi><mo>∈</mo><mi>S</mi><mo>−</mo><msup><mi>S</mi><mo>∗</mo></msup><mo>,</mo><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math>. We have:</p>
+<p><span class="proof-head">Proof.</span> Let us fix <math><mi>i</mi><mo>∈</mo><mi>S</mi><mo>−</mo><msup><mi>S</mi><mo>∗</mo></msup><mo>,</mo><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math>. We have:</p>
 
 <p>Also, using <math><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mn>0</mn><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><msub><mi>δ</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub></math>, we have:</p>
 
@@ -5353,24 +5355,25 @@ or the row vector <math><mo stretchy="false">(</mo><mn>1</mn><mo>,</mo><mn>1</mn
 To get <a href="#prop:fast-matrix">(6)</a>, it suffices to sum in <math><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math> in
 Equation <a href="#eq:tau-ast-inf">()</a>. And summing in <math><mi>j</mi><mo>∈</mo><msup><mi>S</mi><mo>∗</mo></msup></math> in <a href="#eq:tau-ast-nat">()</a> we arrive at:</p>
 
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="definition">
-<p>The matrix <math><mi>N</mi><mo lspace="0.2778em" rspace="0">:</mo><mo lspace="0">=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup></math> is called fundamental matrix for the Markov chain. The entry <math><msub><mi>n</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math> represents the
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 41</span>.</span> The matrix <math><mi>N</mi><mo lspace="0.2778em" rspace="0">:</mo><mo lspace="0">=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup></math> is called fundamental matrix for the Markov chain. The entry <math><msub><mi>n</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math> represents the
 number of times the process is in transient state <math><mi>j</mi></math> if it is started in also transient state <math><mi>i</mi></math>
 (counting the initial state as <math><mn>1</mn></math> step).</p>
 </div>
-<div class="definition">
-<p>We will call <math><msub><mi>t</mi><mi>i</mi></msub></math> to the mean number of steps before the chain is absorbed, given that the chain starts in <math><mi>i</mi></math>,
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 42</span>.</span> We will call <math><msub><mi>t</mi><mi>i</mi></msub></math> to the mean number of steps before the chain is absorbed, given that the chain starts in <math><mi>i</mi></math>,
 with <math><mi>i</mi></math> a transient state.</p>
 </div>
-<div class="proposition">
-<p>If <math><mi>S</mi><mo>−</mo><msup><mi>S</mi><mo>∗</mo></msup></math> is finite, then <math><mi>N</mi><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup></math> exists, <math><mi>N</mi><mo>=</mo><mi>I</mi><mo>+</mo><mi>V</mi></math> and:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 43</span>.</span> If <math><mi>S</mi><mo>−</mo><msup><mi>S</mi><mo>∗</mo></msup></math> is finite, then <math><mi>N</mi><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup></math> exists, <math><mi>N</mi><mo>=</mo><mi>I</mi><mo>+</mo><mi>V</mi></math> and:</p>
 
 <p>where the last equation tells us the absorption would take place almost surely.
 </p>
 </div>
 <div class="proof">
-<p>It holds:
+<p><span class="proof-head">Proof.</span> It holds:
 <math display="block"><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>V</mi><mo stretchy="false">)</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><mo stretchy="false">)</mo><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">=</mo><mn>0</mn></mrow><mi>∞</mi></munderover><msup><mi>R</mi><mi>k</mi></msup><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><mo stretchy="false">)</mo><mo>=</mo><mi>I</mi></math>
 and therefore <math><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>V</mi><mo stretchy="false">)</mo><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup></math> (finiteness is used in this affirmation).</p>
 <p>It is clear that if we take <math><mi>N</mi><mo>=</mo><mi>I</mi><mo>+</mo><mi>R</mi><mo>+</mo><msup><mi>R</mi><mn>2</mn></msup><mo>+</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo></math>, then <math><msub><mi>N</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math> represents the mean number of
@@ -5379,74 +5382,75 @@ steps the chain hits <math><mi>j</mi></math> if it starts at <math><mi>i</mi></m
 
 <p>Therefore:</p>
 <math display="block"><msup><mi>f</mi><mo>∗</mo></msup><mo>=</mo><msup><mi>F</mi><mo>∗</mo></msup><mn>1</mn><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>Q</mi><mn>1</mn><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><mo stretchy="false">)</mo><msub><mn>1</mn><mrow><mi>S</mi><mo lspace="0" rspace="0">−</mo><msup><mi>S</mi><mo>∗</mo></msup></mrow></msub><mo>=</mo><msub><mn>1</mn><mrow><mi>S</mi><mo lspace="0" rspace="0">−</mo><msup><mi>S</mi><mo>∗</mo></msup></mrow></msub></math>
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h3 id="ergodicity">Ergodicity</h3>
 <p>Let us remember the definition of irreducibility, which has arisen before:</p>
-<div class="definition">
-<p>We say that a Markov chain is ergodic (or irreducible) iff all states communicate with each other</p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 44</span>.</span> We say that a Markov chain is ergodic (or irreducible) iff all states communicate with each other</p>
 </div>
-<div class="definition">
-<p>We say that a Markov chain is regular iff there exists some power of its transition matrix with
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 45</span>.</span> We say that a Markov chain is regular iff there exists some power of its transition matrix with
 all positive elements</p>
 </div>
-<div class="proposition">
-<p>Every regular Markov chain is also ergodic. The opposite does not hold.</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 46</span>.</span> Every regular Markov chain is also ergodic. The opposite does not hold.</p>
 </div>
 <div class="proof">
-<p>If the Markov chain is regular, then there exists  such that for every <math><mi>i</mi><mo>,</mo><mi>j</mi><mo>∈</mo><mi>S</mi></math>, then
+<p><span class="proof-head">Proof.</span> If the Markov chain is regular, then there exists  such that for every <math><mi>i</mi><mo>,</mo><mi>j</mi><mo>∈</mo><mi>S</mi></math>, then
 <math><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>&gt;</mo><mn>0</mn></math> and therefore , with <math><mi>i</mi><mo>,</mo><mi>j</mi></math> arbitrary states.</p>
-<p>For the counterexample, it suffices to take the Markov chain given by <math><mi>P</mi><mo>=</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd><mn>0</mn></mtd><mtd><mn>1</mn></mtd></mtr><mtr><mtd><mn>1</mn></mtd><mtd><mn>0</mn></mtd></mtr></mtable><mo>)</mo></mrow></math>.</p>
+<p>For the counterexample, it suffices to take the Markov chain given by <math><mi>P</mi><mo>=</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd><mn>0</mn></mtd><mtd><mn>1</mn></mtd></mtr><mtr><mtd><mn>1</mn></mtd><mtd><mn>0</mn></mtd></mtr></mtable><mo>)</mo></mrow></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="lemma">
-<p>If <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is an ergodic transition matrix for a Markov chain with states <math><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">}</mo></math>, then
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 47</span>.</span> If <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is an ergodic transition matrix for a Markov chain with states <math><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">}</mo></math>, then
 it is possible to reach each state <math><mi>j</mi></math> from <math><mi>i</mi></math> in <math><mi>m</mi><mo>−</mo><mn>1</mn></math> steps at most.</p>
 <p></p>
 </div>
 <div class="proof">
-<p>The proof is based on graphs. Given a path of positive transition probabilities from
+<p><span class="proof-head">Proof.</span> The proof is based on graphs. Given a path of positive transition probabilities from
 <math><mi>i</mi></math> to <math><mi>j</mi></math>, <math><mi>i</mi><mo>,</mo><msub><mi>k</mi><mn>1</mn></msub><mo>,</mo><msub><mi>k</mi><mn>2</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>k</mi><mi>n</mi></msub><mo>=</mo><mi>j</mi><mo>∈</mo><mi>S</mi></math>, since <math><mi>S</mi></math> is finite, if there were two states repeated,
 <math><msub><mi>k</mi><mi>l</mi></msub><mo>,</mo><msub><mi>k</mi><mi>p</mi></msub></math> with <math><mi>p</mi><mo>&gt;</mo><mi>l</mi></math>, we could delete the subpath <math><msub><mi>k</mi><mi>l</mi></msub><mo>,</mo><msub><mi>k</mi><mrow><mi>l</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>k</mi><mrow><mi>p</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub></math> and we would still
 have a path of states that would take us to <math><mi>j</mi></math>. Therefore we cannot have repeated elements in that path,
-and <math><mi>n</mi></math> can be at most <math><mi>m</mi><mo>−</mo><mn>1</mn></math>.</p>
+and <math><mi>n</mi></math> can be at most <math><mi>m</mi><mo>−</mo><mn>1</mn></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="lemma">
-<p>Given <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> regular, then <math><msup><mi>P</mi><mi>n</mi></msup></math> is regular for every 
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 48</span>.</span> Given <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> regular, then <math><msup><mi>P</mi><mi>n</mi></msup></math> is regular for every 
 </p>
 </div>
 <div class="proof">
-<p><math><mi>P</mi></math> is regular, so all of its entries are positive. Therefore <math><mi>P</mi><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>P</mi></math> gives a matrix of positive entries,
-and we can do induction on the number of products.</p>
+<p><span class="proof-head">Proof.</span> <math><mi>P</mi></math> is regular, so all of its entries are positive. Therefore <math><mi>P</mi><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>P</mi></math> gives a matrix of positive entries,
+and we can do induction on the number of products. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <p>Lemma <a href="#lemma:power-regular">()</a> makes possible to define:</p>
-<div class="definition">
-<p>Given <math><mi>P</mi></math> a regular matrix, we will call </p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 49</span>.</span> Given <math><mi>P</mi></math> a regular matrix, we will call </p>
 </div>
-<div class="definition">
-<p>If <math><mi>L</mi><mo>=</mo><mo stretchy="false">{</mo><msub><mi>l</mi><mn>1</mn></msub><mo>,</mo><msub><mi>l</mi><mn>2</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo><mo stretchy="false">}</mo></math> is a numerable set, we can define <math><mi>g</mi><mi>c</mi><mi>d</mi><mo stretchy="false">(</mo><mi>L</mi><mo stretchy="false">)</mo><mo lspace="0.2778em" rspace="0">:</mo><mo lspace="0">=</mo><mrow><msub><mrow><mspace/><mi>lim</mi></mrow><mi>n</mi></msub><mo lspace="0.1667em">&ApplyFunction;</mo><msub><mi>g</mi><mi>n</mi></msub></mrow></math>, where
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 50</span>.</span> If <math><mi>L</mi><mo>=</mo><mo stretchy="false">{</mo><msub><mi>l</mi><mn>1</mn></msub><mo>,</mo><msub><mi>l</mi><mn>2</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo><mo stretchy="false">}</mo></math> is a numerable set, we can define <math><mi>g</mi><mi>c</mi><mi>d</mi><mo stretchy="false">(</mo><mi>L</mi><mo stretchy="false">)</mo><mo lspace="0.2778em" rspace="0">:</mo><mo lspace="0">=</mo><mrow><msub><mrow><mspace/><mi>lim</mi></mrow><mi>n</mi></msub><mo lspace="0.1667em">&ApplyFunction;</mo><msub><mi>g</mi><mi>n</mi></msub></mrow></math>, where
 </p>
 <p>It can be proven this quantity does not depend on the order of the set.</p>
 </div>
-<div class="theorem">
-<p>Let <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> be a regular matrix. Let <math><msub><mi>L</mi><mi>i</mi></msub><mo>=</mo><mo stretchy="false">{</mo><msubsup><mi>k</mi><mn>1</mn><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>,</mo><msubsup><mi>k</mi><mn>2</mn><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo><mo stretchy="false">}</mo></math> the set of lengths
+<div class="theorem" data-kind="theorem">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 51</span>.</span> Let <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> be a regular matrix. Let <math><msub><mi>L</mi><mi>i</mi></msub><mo>=</mo><mo stretchy="false">{</mo><msubsup><mi>k</mi><mn>1</mn><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>,</mo><msubsup><mi>k</mi><mn>2</mn><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo><mo stretchy="false">}</mo></math> the set of lengths
 of all directed paths of <math><mi>G</mi><mo stretchy="false">(</mo><mi>P</mi><mo stretchy="false">)</mo></math> which start and end at the node <math><mi>i</mi></math>, with <math><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>n</mi></math>. Let
 <math><msub><mi>g</mi><mi>i</mi></msub><mo>=</mo><mi>g</mi><mi>c</mi><mi>d</mi><mo stretchy="false">(</mo><msub><mi>L</mi><mi>i</mi></msub><mo stretchy="false">)</mo></math>. Then <math><mi>P</mi></math> is regular iff <math><msub><mi>g</mi><mi>i</mi></msub><mo>=</mo><mn>1</mn><mo>,</mo><mo>∀</mo><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>n</mi></math>.</p>
 <p></p>
 </div>
 <div class="proof">
-<p>We are going to prove only that if <math><mi>P</mi></math> is regular, then <math><msub><mi>g</mi><mi>i</mi></msub><mo>=</mo><mn>1</mn><mo>,</mo><mo>∀</mo><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>n</mi></math>, since this part
+<p><span class="proof-head">Proof.</span> We are going to prove only that if <math><mi>P</mi></math> is regular, then <math><msub><mi>g</mi><mi>i</mi></msub><mo>=</mo><mn>1</mn><mo>,</mo><mo>∀</mo><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>n</mi></math>, since this part
 will be used by another result later on. The counterpart is also true, although it lies out of the
 scope of this work.</p>
 <p>Since <math><mi>A</mi></math> is regular, there exists  such that <math><msup><mi>A</mi><mi>n</mi></msup><mo>&gt;</mo><mn>0</mn></math>. Because of Lemma
 <a href="#lemma:power-regular">()</a> we have <math><msup><mi>A</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">+</mo><mi>p</mi></mrow></msup><mo>&gt;</mo><mn>0</mn></math> for all <math><mi>p</mi><mo>≥</mo><mn>0</mn></math>. Therefore there exists a path of
-(large enough) prime length in each <math><msub><mi>L</mi><mi>i</mi></msub></math> and <math><msub><mi>g</mi><mi>i</mi></msub><mo>=</mo><mn>1</mn></math>.</p>
+(large enough) prime length in each <math><msub><mi>L</mi><mi>i</mi></msub></math> and <math><msub><mi>g</mi><mi>i</mi></msub><mo>=</mo><mn>1</mn></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="theorem">
-<p>If <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is regular and the shortest cycle in <math><mi>G</mi><mo stretchy="false">(</mo><mi>P</mi><mo stretchy="false">)</mo></math> has length <math><mi>s</mi></math>, then
+<div class="theorem" data-kind="theorem">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 52</span>.</span> If <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is regular and the shortest cycle in <math><mi>G</mi><mo stretchy="false">(</mo><mi>P</mi><mo stretchy="false">)</mo></math> has length <math><mi>s</mi></math>, then
 <math><mi>γ</mi><mo stretchy="false">(</mo><mi>P</mi><mo stretchy="false">)</mo><mo>≤</mo><mi>m</mi><mo>+</mo><mi>s</mi><mo stretchy="false">(</mo><mi>m</mi><mo>−</mo><mn>2</mn><mo stretchy="false">)</mo></math>, and <math><msup><mi>A</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">+</mo><mi>s</mi><mo stretchy="false">(</mo><mi>m</mi><mo lspace="0" rspace="0">−</mo><mn>2</mn><mo stretchy="false">)</mo></mrow></msup><mo>&gt;</mo><mn>0</mn></math>.</p>
 <p></p>
 </div>
 <div class="proof">
-<p>We may assume, w.l.o.g. that we have a shortest cycle formed by the sequence with no repeated elements
+<p><span class="proof-head">Proof.</span> We may assume, w.l.o.g. that we have a shortest cycle formed by the sequence with no repeated elements
 given by <math><mo stretchy="false">[</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>s</mi><mo stretchy="false">]</mo></math>.</p>
 <p><math><mi>P</mi></math> is ergodic (regular <math><mi>i</mi><mi>m</mi><mi>p</mi><mi>l</mi><mi>i</mi><mi>e</mi><mi>s</mi></math> ergodic) and therefore there exists a path from every node <math><mi>i</mi></math> to every other node
 <math><mi>j</mi></math>, and that path has at most length <math><mi>m</mi><mo>−</mo><mn>1</mn></math> by Lemma <a href="#lemma:reachability">()</a>.</p>
@@ -5464,28 +5468,29 @@ looping enough steps in the cycle <math><mo stretchy="false">[</mo><mi>i</mi><mo
 <p>To end the proof, it suffices to write:</p>
 <math display="block"><msup><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">−</mo><mi>s</mi></mrow></msup><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mo stretchy="false">(</mo><msup><mi>P</mi><mi>s</mi></msup><msup><mo stretchy="false">)</mo><mrow><mi>m</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><mo>=</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd style="border-right: 0.05em solid currentcolor;"><msub><mi>X</mi><mn>11</mn></msub></mtd><mtd><msub><mi>X</mi><mn>12</mn></msub></mtd></mtr><mtr><mtd style="border-top: 0.05em solid currentcolor;border-right: 0.05em solid currentcolor;"><msub><mi>X</mi><mn>21</mn></msub></mtd><mtd style="border-top: 0.05em solid currentcolor;"><msub><mi>X</mi><mn>22</mn></msub></mtd></mtr></mtable><mo>)</mo></mrow><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd style="border-right: 0.05em solid currentcolor;"><msub><mi>Y</mi><mn>11</mn></msub></mtd><mtd><msub><mi>Y</mi><mn>12</mn></msub></mtd></mtr><mtr><mtd style="border-top: 0.05em solid currentcolor;border-right: 0.05em solid currentcolor;"><msub><mi>Y</mi><mn>21</mn></msub></mtd><mtd style="border-top: 0.05em solid currentcolor;"><msub><mi>Y</mi><mn>22</mn></msub></mtd></mtr></mtable><mo>)</mo></mrow><mo>≥</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd style="border-right: 0.05em solid currentcolor;"><msub><mi>X</mi><mn>11</mn></msub><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msub><mi>Y</mi><mn>11</mn></msub></mtd><mtd><msub><mi>X</mi><mn>11</mn></msub><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msub><mi>Y</mi><mn>12</mn></msub></mtd></mtr><mtr><mtd style="border-top: 0.05em solid currentcolor;border-right: 0.05em solid currentcolor;"><msub><mi>X</mi><mn>21</mn></msub><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msub><mi>Y</mi><mn>11</mn></msub></mtd><mtd style="border-top: 0.05em solid currentcolor;"><msub><mi>X</mi><mn>21</mn></msub><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msub><mi>Y</mi><mn>12</mn></msub></mtd></mtr></mtable><mo>)</mo></mrow></math>
 <p>and using the fact that if we have a matrix <math><mi>A</mi><mo>&gt;</mo><mn>0</mn><mo>,</mo><mi>x</mi><mo>≥</mo><mn>0</mn><mo>,</mo><mi>x</mi><mo>≠</mo><mn>0</mn></math>, then <math><mi>A</mi><mi>x</mi><mo>&gt;</mo><mn>0</mn></math> (and analogously for
-row-wise products), we have shown <math><msup><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">+</mo><mi>s</mi><mo stretchy="false">(</mo><mi>m</mi><mo lspace="0" rspace="0">−</mo><mn>2</mn><mo stretchy="false">)</mo></mrow></msup><mo>&gt;</mo><mn>0</mn></math>.</p>
+row-wise products), we have shown <math><msup><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">+</mo><mi>s</mi><mo stretchy="false">(</mo><mi>m</mi><mo lspace="0" rspace="0">−</mo><mn>2</mn><mo stretchy="false">)</mo></mrow></msup><mo>&gt;</mo><mn>0</mn></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="corollary">
-<p><math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is regular iff <math><msup><mi>P</mi><mrow><msup><mi>m</mi><mn>2</mn></msup><mo lspace="0" rspace="0">−</mo><mn>2</mn><mi>m</mi><mo lspace="0" rspace="0">+</mo><mn>2</mn></mrow></msup><mo>&gt;</mo><mn>0</mn></math>
+<div class="theorem" data-kind="corollary">
+<p><span class="theorem-head"><span class="theorem-name">Corollary 53</span>.</span> <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is regular iff <math><msup><mi>P</mi><mrow><msup><mi>m</mi><mn>2</mn></msup><mo lspace="0" rspace="0">−</mo><mn>2</mn><mi>m</mi><mo lspace="0" rspace="0">+</mo><mn>2</mn></mrow></msup><mo>&gt;</mo><mn>0</mn></math>
 </p>
 </div>
 <div class="proof">
-<p>One implication is clear by the definition of regular.</p>
+<p><span class="proof-head">Proof.</span> One implication is clear by the definition of regular.</p>
 <p>The counterpart: if <math><mi>P</mi></math> is regular, then there are cycles. If the shortest one had length <math><mi>m</mi></math>
 (all have length lower or equal than <math><mi>m</mi></math> because we need at most <math><mi>m</mi><mo>−</mo><mn>1</mn></math> steps to go from one state to
 anoher), then by Theorem <a href="#th:regular-characterization">()</a> <math><msub><mi>g</mi><mi>i</mi></msub><mo>=</mo><mi>m</mi></math> for all <math><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi></math>
 and matrix could not be regular. Then the shortest cycle must have length <math><mi>s</mi><mo>≤</mo><mi>m</mi><mo>−</mo><mn>1</mn></math>, and by
 Theorem <a href="#th:regular-gamma-bound">()</a> we would have:</p>
 <math display="block"><mi>γ</mi><mo stretchy="false">(</mo><mi>P</mi><mo stretchy="false">)</mo><mo>≤</mo><mi>m</mi><mo>+</mo><mi>s</mi><mo stretchy="false">(</mo><mi>m</mi><mo>−</mo><mn>2</mn><mo stretchy="false">)</mo><mo>≤</mo><mi>m</mi><mo>+</mo><mo stretchy="false">(</mo><mi>m</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo><mo stretchy="false">(</mo><mi>m</mi><mo>−</mo><mn>2</mn><mo stretchy="false">)</mo><mo>=</mo><msup><mi>m</mi><mn>2</mn></msup><mo>−</mo><mn>2</mn><mi>m</mi><mo>+</mo><mn>2</mn></math>
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="lemma">
-<p>If <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is ergodic and has some <math><mn>1</mn><mo>≤</mo><mi>d</mi><mo>≤</mo><mi>m</mi></math> diagonal entries strictly positive, then
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 54</span>.</span> If <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is ergodic and has some <math><mn>1</mn><mo>≤</mo><mi>d</mi><mo>≤</mo><mi>m</mi></math> diagonal entries strictly positive, then
 <math><mi>P</mi></math> is regular and <math><mi>γ</mi><mo stretchy="false">(</mo><mi>P</mi><mo stretchy="false">)</mo><mo>≤</mo><mn>2</mn><mi>m</mi><mo>−</mo><mi>d</mi><mo>−</mo><mn>1</mn></math>
 </p>
 </div>
 <div class="proof">
-<p><math><mi>A</mi></math> must be regular, since there would exist at least one cycle <math><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo></math>, and the matrix is ergodic, so we
+<p><span class="proof-head">Proof.</span> <math><mi>A</mi></math> must be regular, since there would exist at least one cycle <math><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo></math>, and the matrix is ergodic, so we
 can have as many loops as necessary and then a path <math><mo stretchy="false">[</mo><mi>i</mi><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mi>j</mi><mo stretchy="false">]</mo></math> (of length lower or equal than $m$) or
 <math><mo stretchy="false">[</mo><mi>j</mi><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mi>i</mi><mo stretchy="false">]</mo></math> and appropriate number of loops in <math><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo></math>, or junction of paths <math><mo stretchy="false">[</mo><mi>j</mi><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>i</mi><mo stretchy="false">]</mo></math> plus
 enough loops in <math><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo></math>, plus the path <math><mo stretchy="false">[</mo><mi>i</mi><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>k</mi><mo stretchy="false">]</mo></math>. To sum up, we can prove <math><msup><mi>A</mi><mrow><mn>2</mn><mi>m</mi></mrow></msup><mo>&gt;</mo><mn>0</mn></math>.</p>
@@ -5496,18 +5501,18 @@ enough loops in <math><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">
 can show that <math><msub><mi>X</mi><mn>11</mn></msub></math> and <math><msub><mi>X</mi><mn>21</mn></msub></math> contain at least one positive entry per row and that <math><msub><mi>Y</mi><mn>11</mn></msub><mo>&gt;</mo><mn>0</mn></math> and
 <math><msub><mi>Y</mi><mn>12</mn></msub><mo>&gt;</mo><mn>0</mn></math>. For this last part it suffices to use the argument that we can loop in <math><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo></math> for <math><mi>n</mi><mo>−</mo><mn>1</mn><mo>−</mo><msub><mi>r</mi><mi>i</mi></msub></math>
 times and then in <math><msub><mi>r</mi><mi>i</mi></msub><mo>≤</mo><mi>n</mi><mo>−</mo><mn>1</mn></math> steps we can go from <math><mi>i</mi><mo>∈</mo><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>d</mi><mo stretchy="false">}</mo></math> to
-<math><mi>j</mi><mo>∈</mo><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">}</mo></math>.</p>
+<math><mi>j</mi><mo>∈</mo><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">}</mo></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="definition">
-<p>Given a matrix <math><mi>P</mi></math>, a row vector <math><mi>r</mi><mo>=</mo><mrow><mo>(</mo><msub><mi>r</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>r</mi><mi>n</mi></msub><mo>)</mo></mrow></math> is called a fixed row vector
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 55</span>.</span> Given a matrix <math><mi>P</mi></math>, a row vector <math><mi>r</mi><mo>=</mo><mrow><mo>(</mo><msub><mi>r</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>r</mi><mi>n</mi></msub><mo>)</mo></mrow></math> is called a fixed row vector
 iff <math><mi>r</mi><mi>P</mi><mo>=</mo><mi>r</mi></math> (it is a left eigenvector for the matrix). Analogously, a column vector <math><mi>c</mi><mo>=</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd><msub><mi>r</mi><mn>1</mn></msub></mtd></mtr><mtr><mtd><mo lspace="0" rspace="0">⋮</mo></mtd></mtr><mtr><mtd><msub><mi>r</mi><mi>n</mi></msub></mtd></mtr></mtable><mo>)</mo></mrow></math>
 is called a fixed column vector iff <math><mi>P</mi><mi>c</mi><mo>=</mo><mi>c</mi></math> (it is a right eigenvector for the matrix).</p>
 </div>
-<div class="definition">
-<p>We call steady state to a probability row vector <math><mi>v</mi></math> such that <math><mi>v</mi><mi>P</mi><mo>=</mo><mi>v</mi></math></p>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 56</span>.</span> We call steady state to a probability row vector <math><mi>v</mi></math> such that <math><mi>v</mi><mi>P</mi><mo>=</mo><mi>v</mi></math></p>
 </div>
-<div class="lemma">
-<p>Let <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> be a transition matrix with all its entries positve. Let us fix a probability column
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 57</span>.</span> Let <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> be a transition matrix with all its entries positve. Let us fix a probability column
 vector <math><mi>y</mi></math> and name <math><msub><mi>M</mi><mn>0</mn></msub><mo>=</mo><mrow><mrow><mspace/><mi>max</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><msub><mi>y</mi><mi>i</mi></msub></mrow></math>, <math><msub><mi>m</mi><mn>0</mn></msub><mo>=</mo><mrow><mrow><mspace/><mi>min</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><msub><mi>y</mi><mi>i</mi></msub></mrow></math>,
 <math><msub><mi>M</mi><mn>1</mn></msub><mo>=</mo><mrow><mrow><mspace/><mi>max</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mi>P</mi><mi>y</mi><msub><mo stretchy="false">)</mo><mi>i</mi></msub></mrow></mrow></math> and <math><msub><mi>m</mi><mn>1</mn></msub><mo>=</mo><mrow><mrow><mspace/><mi>min</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mi>P</mi><mi>y</mi><msub><mo stretchy="false">)</mo><mi>i</mi></msub></mrow></mrow></math>. Hence, there exists
 <math><mi>k</mi><mo>∈</mo><mo stretchy="false">[</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false">[</mo></math> such that:</p>
@@ -5515,7 +5520,7 @@ vector <math><mi>y</mi></math> and name <math><msub><mi>M</mi><mn>0</mn></msub><
 <p></p>
 </div>
 <div class="proof">
-<p>Let us call <math><mi>d</mi><mo>=</mo><mrow><mrow><mspace/><mi>min</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">{</mo><msub><mi>p</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo lspace="0.2778em" rspace="0.2778em">:</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>∈</mo><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">}</mo><mo stretchy="false">}</mo></mrow></mrow></math>. If <math><mi>m</mi><mo>=</mo><mn>1</mn></math>, it suffices to
+<p><span class="proof-head">Proof.</span> Let us call <math><mi>d</mi><mo>=</mo><mrow><mrow><mspace/><mi>min</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">{</mo><msub><mi>p</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo lspace="0.2778em" rspace="0.2778em">:</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>∈</mo><mo stretchy="false">{</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">}</mo><mo stretchy="false">}</mo></mrow></mrow></math>. If <math><mi>m</mi><mo>=</mo><mn>1</mn></math>, it suffices to
 take <math><mi>k</mi><mo>=</mo><mn>0</mn></math>. If <math><mi>m</mi><mo>&gt;</mo><mn>1</mn></math>, then <math><mi>d</mi><mo>≤</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></math> (no entry is null). Since <math><mi>P</mi><mi>y</mi></math> can be
 thought as a weighted average of the entries in <math><mi>y</mi></math>, the maximum value we can reach is bounded:</p>
 <math display="block"><msub><mi>M</mi><mn>1</mn></msub><mo>≤</mo><mi>d</mi><msub><mi>m</mi><mn>0</mn></msub><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>d</mi><mo stretchy="false">)</mo><msub><mi>M</mi><mn>0</mn></msub></math>
@@ -5523,10 +5528,10 @@ thought as a weighted average of the entries in <math><mi>y</mi></math>, the max
 <math display="block"><msub><mi>m</mi><mn>1</mn></msub><mo>≥</mo><mi>d</mi><msub><mi>M</mi><mn>0</mn></msub><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>d</mi><mo stretchy="false">)</mo><msub><mi>m</mi><mn>0</mn></msub></math>
 <p>Hence:</p>
 <math display="block"><msub><mi>M</mi><mn>1</mn></msub><mo>−</mo><msub><mi>m</mi><mn>1</mn></msub><mo>≤</mo><mi>d</mi><msub><mi>m</mi><mn>0</mn></msub><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>d</mi><mo stretchy="false">)</mo><msub><mi>M</mi><mn>0</mn></msub><mo>−</mo><mi>d</mi><msub><mi>M</mi><mn>0</mn></msub><mo>−</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>d</mi><mo stretchy="false">)</mo><msub><mi>m</mi><mn>0</mn></msub><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mn>2</mn><mi>d</mi><mo stretchy="false">)</mo><mo stretchy="false">(</mo><msub><mi>M</mi><mn>0</mn></msub><mo>−</mo><msub><mi>m</mi><mn>0</mn></msub><mo stretchy="false">)</mo></math>
-<p>and we can take <math><mi>k</mi><mo>=</mo><mn>1</mn><mo>−</mo><mn>2</mn><mi>d</mi></math>. Note this minimum only depends on <math><mi>P</mi></math>.</p>
+<p>and we can take <math><mi>k</mi><mo>=</mo><mn>1</mn><mo>−</mo><mn>2</mn><mi>d</mi></math>. Note this minimum only depends on <math><mi>P</mi></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="theorem">
-<p><strong><strong>Fundamental limit theorem for regular Markov chains</strong></strong></p>
+<div class="theorem" data-kind="theorem">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 58</span>.</span> <strong><strong>Fundamental limit theorem for regular Markov chains</strong></strong></p>
 <p>Let <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> be a regular transition matrix. Then <math><mo stretchy="false">{</mo><msup><mi>P</mi><mi>n</mi></msup><mo stretchy="false">}</mo><mo stretchy="false">→</mo><mi>W</mi></math> where
  is a probability vector and
 <math><mi>W</mi><mo>=</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd><mi>w</mi></mtd></mtr><mtr><mtd><mo lspace="0" rspace="0">⋮</mo></mtd></mtr><mtr><mtd><mi>w</mi></mtd></mtr></mtable><mo>)</mo></mrow></math>. Moreover, it holds:</p>
@@ -5538,7 +5543,7 @@ thought as a weighted average of the entries in <math><mi>y</mi></math>, the max
 </p>
 </div>
 <div class="proof">
-<p><em>First part</em></p>
+<p><span class="proof-head">Proof.</span> <em>First part</em></p>
 <p>Firstly, let us prove the theorem for a matrix <math><mi>P</mi></math> with all its elements strictly positive. Given <math><mi>y</mi></math> a
 probability column vector, let us call:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><msub><mi>M</mi><mi>n</mi></msub><mo>=</mo><mo lspace="0" rspace="0">max</mo><mo stretchy="false">(</mo><msup><mi>P</mi><mi>n</mi></msup><mi>y</mi><msub><mo stretchy="false">)</mo><mi>i</mi></msub><mo>≥</mo><mo stretchy="false">(</mo><msup><mi>P</mi><mi>n</mi></msup><mi>y</mi><msub><mo stretchy="false">)</mo><mi>i</mi></msub><mo>≥</mo><msub><mi>m</mi><mi>n</mi></msub><mo>=</mo><mo lspace="0" rspace="0">min</mo><mo stretchy="false">(</mo><msup><mi>P</mi><mi>n</mi></msup><mi>y</mi><msub><mo stretchy="false">)</mo><mi>i</mi></msub></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="eq:mns-sandwich"><mtext>(7)</mtext></mtd></mtr></mtable></math>
@@ -5573,18 +5578,19 @@ limits in <math><mi>n</mi></math>, <math><munderover><mo lspace="0">∑</mo><mro
 <li>Since <math><mi>c</mi><mo>=</mo><mi>P</mi><mi>c</mi><mo>=</mo><msup><mi>P</mi><mn>2</mn></msup><mi>c</mi><mo>=</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><msup><mi>P</mi><mi>n</mi></msup><mi>c</mi></math>, taking limits <math><mi>c</mi><mo>=</mo><mi>W</mi><mi>c</mi></math>, and therefore</li>
 </ol>
 
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <p>As consequence of this theorem, since each element <math><mo stretchy="false">(</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="false">)</mo></math> of <math><msup><mi>P</mi><mi>n</mi></msup></math> is <math><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup></math> and each row tends
 to the same value <math><mi>w</mi></math>, the probability of starting at state <math><mi>i</mi></math> and being in <math><mi>j</mi></math> after <math><mi>n</mi></math> steps is
 independent of the starting state <math><mi>i</mi></math>. Theorem <a href="#th:steady-regular">()</a> has an analogous theorem for ergodic
 Markov chains. We will need some previous lemma to show that.</p>
-<div class="lemma">
-<p>Given <math><mi>P</mi></math> an ergodic stochastic matrix, then <math><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>P</mi><mo stretchy="false">)</mo></math> is regular and they have the same
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 59</span>.</span> Given <math><mi>P</mi></math> an ergodic stochastic matrix, then <math><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>P</mi><mo stretchy="false">)</mo></math> is regular and they have the same
 eigenvectors.
 </p>
 </div>
 <div class="proof">
-<p><math><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>P</mi><mo stretchy="false">)</mo></math> is stochastic: all the elements are non negative and the sum for the <math><mi>i</mi></math> -th row is:</p>
+<p><span class="proof-head">Proof.</span> <math><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>P</mi><mo stretchy="false">)</mo></math> is stochastic: all the elements are non negative and the sum for the <math><mi>i</mi></math> -th row is:</p>
 <math display="block"><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><munderover><mo>∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>m</mi></munderover><msub><mi>p</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>=</mo><mn>1</mn></math>
 <p>To show that it is ergodic, fixed <math><mi>i</mi><mo>,</mo><mi>j</mi></math>, we must show that there exists a power matrix
 <math><munder><munder accentunder="true"><msup><mrow><mo>{</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>P</mi><mo stretchy="false">)</mo><mo>}</mo></mrow><mi>m</mi></msup><mo>⏟</mo></munder><mi>A</mi></munder></math> such that
@@ -5593,51 +5599,51 @@ eigenvectors.
 diagonal is strictly positive Lemma <a href="#lemma:ergodic-pos-diagonal">()</a> ends our proof.</p>
 <p>Given <math><mi>v</mi><mo lspace="0.2778em" rspace="0.2778em">:</mo><mi>v</mi><mi>P</mi><mo>=</mo><mi>v</mi></math>, then <math><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>P</mi><mo stretchy="false">)</mo><mi>v</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">(</mo><mi>v</mi><mo>+</mo><mi>v</mi><mo stretchy="false">)</mo><mo>=</mo><mi>v</mi></math>. To prove the other implication:
 let <math><mi>v</mi><mo lspace="0.2778em" rspace="0.2778em">:</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo stretchy="false">(</mo><mi>I</mi><mo>+</mo><mi>P</mi><mo stretchy="false">)</mo><mi>v</mi><mo>=</mo><mi>v</mi><mspace width="0.2777778em"/><mo stretchy="false">⟹</mo><mspace width="0.2777778em"/><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>v</mi><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>P</mi><mi>v</mi><mo>=</mo><mi>v</mi></math>, and therefore
-<math><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>P</mi><mi>v</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>v</mi></math>. Analogously for right eigenvectors.</p>
+<math><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>P</mi><mi>v</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>v</mi></math>. Analogously for right eigenvectors. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="theorem">
-<p><strong><strong>Fundamental theorem for ergodic Markov chains</strong></strong></p>
+<div class="theorem" data-kind="theorem">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 60</span>.</span> <strong><strong>Fundamental theorem for ergodic Markov chains</strong></strong></p>
 <p>If <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is an ergodic transition matrix, then there exists a unique steady state <math><mi>w</mi></math> with all its
 elements strictly positive. Moreover, every left eigenvector <math><mi>r</mi><mo lspace="0.2778em" rspace="0.2778em">:</mo><mi>r</mi><mi>P</mi><mo>=</mo><mi>r</mi></math> is linearly dependent of <math><mi>w</mi></math>, and
 every right eigenvector <math><mi>c</mi><mo lspace="0.2778em" rspace="0.2778em">:</mo><mi>P</mi><mi>c</mi><mo>=</mo><mi>c</mi></math> is a multiple of .</p>
 <p></p>
 </div>
 <div class="proof">
-<p>Lemma <a href="#lemma:ergodic-regular-rel">()</a> and Theorem <a href="#th:steady-regular">()</a> suffice to reach the result.</p>
+<p><span class="proof-head">Proof.</span> Lemma <a href="#lemma:ergodic-regular-rel">()</a> and Theorem <a href="#th:steady-regular">()</a> suffice to reach the result. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="lemma">
-<p>An ergodic stochastic matrix <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> has a unique steady state <math><mi>w</mi></math> that can be computed as the
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 61</span>.</span> An ergodic stochastic matrix <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> has a unique steady state <math><mi>w</mi></math> that can be computed as the
 only solution of the system:</p>
 <p>
 </p>
 </div>
 <div class="proof">
-<p>By means of Theorem <a href="#th:steady-ergodic">()</a> we have unicity and that the system</p>
+<p><span class="proof-head">Proof.</span> By means of Theorem <a href="#th:steady-ergodic">()</a> we have unicity and that the system</p>
 <math display="block"><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd style="text-align: right;justify-items: end;"><mn>1</mn></mtd><mtd><mn>1</mn><mo>.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo></mtd><mtd style="text-align: left;justify-items: start;"><mn>1</mn></mtd></mtr><mtr><mtd style="border-top: 0.05em solid currentcolor;text-align: right;justify-items: end;"></mtd><mtd style="border-top: 0.05em solid currentcolor;"><mi>I</mi><mo>−</mo><msup><mi>P</mi><mi>t</mi></msup></mtd><mtd style="border-top: 0.05em solid currentcolor;text-align: left;justify-items: start;"></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;"></mtd></mtr></mtable><mo>)</mo></mrow><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>w</mi><mo>=</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd><mn>1</mn></mtd></mtr><mtr><mtd><mn>0</mn></mtd></mtr><mtr><mtd><mo lspace="0" rspace="0">⋮</mo></mtd></mtr><mtr><mtd><mn>0</mn></mtd></mtr></mtable><mo>)</mo></mrow></math>
-<p>must have a unique solution.</p>
+<p>must have a unique solution. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h3 id="steady-states">Steady states</h3>
 <p>We are now in appropriate conditions for depicting how steady states of a general stochastic matrix can be computed.</p>
-<div class="proposition">
-<p>Given <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> a stochastic matrix, then every steady state <math><mi>v</mi></math> assigns <math><mn>0</mn></math> to the transient states, i.e. if
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 62</span>.</span> Given <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> a stochastic matrix, then every steady state <math><mi>v</mi></math> assigns <math><mn>0</mn></math> to the transient states, i.e. if
 <math><mi>i</mi></math> -th state is transient, then <math><mo stretchy="false">(</mo><mi>v</mi><mi>P</mi><msub><mo stretchy="false">)</mo><mi>i</mi></msub><mo>=</mo><mn>0</mn></math></p>
 <p></p>
 </div>
 <div class="proof">
-<p>Looking at the canonic matrix from Equation <a href="#eq:canonic-form">()</a>, if <math><mo stretchy="false">[</mo><mi>l</mi><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">]</mo></math> are transient
+<p><span class="proof-head">Proof.</span> Looking at the canonic matrix from Equation <a href="#eq:canonic-form">()</a>, if <math><mo stretchy="false">[</mo><mi>l</mi><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi><mo stretchy="false">]</mo></math> are transient
 states (we can suppose w.l.o.g. they are ordered as in the canonic form), we would have:</p>
 <math display="block"><mo stretchy="false">(</mo><msub><mi>v</mi><mi>l</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>v</mi><mi>m</mi></msub><mo stretchy="false">)</mo><mi>R</mi><mo>=</mo><mo stretchy="false">(</mo><msub><mi>v</mi><mi>l</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>v</mi><mi>m</mi></msub><mo stretchy="false">)</mo><mo stretchy="false">⇔</mo><mo stretchy="false">(</mo><msub><mi>v</mi><mi>l</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>v</mi><mi>m</mi></msub><mo stretchy="false">)</mo><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><mo stretchy="false">)</mo><mo>=</mo><mn>0</mn></math>
-<p><math><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><mo stretchy="false">)</mo></math> is invertible by Proposition <a href="#prop:i-r-invertible">()</a>. Hence, <math><mo stretchy="false">(</mo><msub><mi>v</mi><mi>l</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>v</mi><mi>m</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mn>0</mn></math></p>
+<p><math><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>R</mi><mo stretchy="false">)</mo></math> is invertible by Proposition <a href="#prop:i-r-invertible">()</a>. Hence, <math><mo stretchy="false">(</mo><msub><mi>v</mi><mi>l</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>v</mi><mi>m</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mn>0</mn></math> <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <p>Each matrix <math><msub><mi>P</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>P</mi><mi>r</mi></msub></math> from <a href="#eq:canonic-form">()</a> is irreducible. Therefore, by the fundamental Theorem <a href="#th:steady-ergodic">()</a>,
 each <math><msub><mi>P</mi><mi>i</mi></msub></math> has a unique steady vector <math><msup><mi>v</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math>. If <math><msub><mi>P</mi><mi>i</mi></msub></math> corresponds to the states <math><mo stretchy="false">[</mo><msub><mi>l</mi><mi>i</mi></msub><mo>,</mo><msub><mi>l</mi><mi>i</mi></msub><mo>+</mo><mn>1</mn><mo>.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>u</mi><mi>i</mi></msub><mo stretchy="false">]</mo></math> We are going
 to call .</p>
-<div class="proposition">
-<p>Given a stochastic matrix <math><mi>P</mi></math> written in its canonic form, then its space of steady states is a convex hull given by:</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 63</span>.</span> Given a stochastic matrix <math><mi>P</mi></math> written in its canonic form, then its space of steady states is a convex hull given by:</p>
 
 </div>
 <div class="proof">
-<p>Since ,
+<p><span class="proof-head">Proof.</span> Since ,
 and 
 then it is clear that every convex combination of  with
 <math><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>r</mi></math>, is a steady state for the matrix.</p>
@@ -5646,41 +5652,41 @@ of each one do not overlap by construction.</p>
 <p>Given a steady state , by the Proposition <a href="#prop:ss-transient-zero">()</a> we know  for
 <math><mi>j</mi><mo>=</mo><mi>l</mi><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>m</mi></math> (the transient states). And by the shape of the matrix,  for each <math><mi>j</mi><mo>=</mo><msub><mi>l</mi><mi>i</mi></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>u</mi><mi>i</mi></msub></math>, where
 . Using Theorem <a href="#th:steady-ergodic">()</a>,
-then <math><msup><mi>w</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>=</mo><msub><mi>α</mi><mi>i</mi></msub><msup><mi>v</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math> must hold. We deduce </p>
+then <math><msup><mi>w</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>=</mo><msub><mi>α</mi><mi>i</mi></msub><msup><mi>v</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math> must hold. We deduce  <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h3 id="mean-first-passage-time">Mean first passage time</h3>
-<div class="definition">
-<p>Given an ergodic Markov chain, we call the expected number of steps to reach a state <math><mi>j</mi></math> from initial state <math><mi>i</mi></math>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 64</span>.</span> Given an ergodic Markov chain, we call the expected number of steps to reach a state <math><mi>j</mi></math> from initial state <math><mi>i</mi></math>
 as mean first passage time from <math><mi>i</mi></math> to <math><mi>j</mi></math>. We note it <math><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math>. Formally:</p>
 
 <p>Formally, the only condition we should ask to be able to define <math><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math> with <math><mi>i</mi><mo>≠</mo><mi>j</mi></math> would be that
 <math><msub><mi>f</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math>. Obviously by the definition <math><msub><mi>m</mi><mrow><mi>i</mi><mi>i</mi></mrow></msub><mo>=</mo><mn>0</mn></math></p>
 </div>
-<div class="proposition">
-<p>It holds</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 65</span>.</span> It holds</p>
 
 <p></p>
 </div>
 <div class="proof">
-<p>It holds: </p>
+<p><span class="proof-head">Proof.</span> It holds: </p>
 <p>On the one hand: <math><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub></math> and <math><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><msubsup><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msubsup></math>. Therefore, and having in mind that <math><msub><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>=</mo><mn>1</mn></math>:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>m</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><mi>n</mi><msubsup><mi>f</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>+</mo><munderover><mo lspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>2</mn></mrow><mi>∞</mi></munderover><mi>n</mi><munder><mo>∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><msubsup><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msubsup></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><munderover><mo>∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>2</mn></mrow><mi>∞</mi></munderover><mi>n</mi><msubsup><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msubsup></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><mo minsize="2.047em" maxsize="2.047em">{</mo><munderover><mo>∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>2</mn></mrow><mi>∞</mi></munderover><msubsup><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msubsup><mo>+</mo><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>n</mi><mo lspace="0" rspace="0">=</mo><mn>2</mn></mrow><mi>∞</mi></munderover><mo stretchy="false">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo><msubsup><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msubsup><mo minsize="2.047em" maxsize="2.047em">}</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><msub><mi>f</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><msub><mi>m</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><munder><mo>=</mo><mtext><a href="#eq:fij-recurrence">(??)</a></mtext></munder><mn>1</mn><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">≠</mo><mi>j</mi></mrow></munder><msub><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>k</mi></mrow></msub><msub><mi>m</mi><mrow><mi>k</mi><mo rspace="0">,</mo><mi>j</mi></mrow></msub></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
-<p>Analogously for <math><msub><mi>r</mi><mi>i</mi></msub></math>.</p>
+<p>Analogously for <math><msub><mi>r</mi><mi>i</mi></msub></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <p>Matricially, we can define <math><mi>M</mi><mo>=</mo><mo stretchy="false">(</mo><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="false">)</mo></math>, <math><mi>D</mi><mo>=</mo><mo stretchy="false">(</mo><msub><mi>δ</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><msub><mi>r</mi><mi>i</mi></msub><mo stretchy="false">)</mo></math>,
 <math><mi>C</mi><mo>=</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd><mn>1</mn></mtd><mtd><mn>1</mn></mtd><mtd><mo>.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo></mtd><mtd><mn>1</mn></mtd></mtr><mtr><mtd><mn>1</mn></mtd><mtd><mn>1</mn></mtd><mtd><mo>.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo></mtd><mtd><mn>1</mn></mtd></mtr><mtr><mtd><mo lspace="0" rspace="0">⋮</mo></mtd><mtd><mo rspace="0">⋮</mo></mtd><mtd><mo rspace="0">⋱</mo></mtd><mtd><mo rspace="0">⋮</mo></mtd></mtr><mtr><mtd><mn>1</mn></mtd><mtd><mn>1</mn></mtd><mtd><mo>.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0" rspace="0">.</mo></mtd><mtd><mn>1</mn></mtd></mtr></mtable><mo>)</mo></mrow></math></p>
 <p>And for the recurrence in Proposition <a href="#prop:mfpt-rec">()</a> we have:</p>
 <math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mi>M</mi><mo>=</mo><mi>P</mi><mi>M</mi><mo>+</mo><mi>C</mi><mo>−</mo><mi>D</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="prop:mfpt-rec-mat"><mtext>(9)</mtext></mtd></mtr></mtable></math>
-<div class="proposition">
-<p>Given an ergodic Markov chain, then <math><msub><mi>r</mi><mi>i</mi></msub><mo>=</mo><msubsup><mi>w</mi><mi>i</mi><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup></math> where <math><mi>w</mi></math> is its unique steady state.</p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 66</span>.</span> Given an ergodic Markov chain, then <math><msub><mi>r</mi><mi>i</mi></msub><mo>=</mo><msubsup><mi>w</mi><mi>i</mi><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup></math> where <math><mi>w</mi></math> is its unique steady state.</p>
 <p></p>
 </div>
 <div class="proof">
-<p>By Equation <a href="#prop:mfpt-rec-mat">(9)</a> we have <math><mi>w</mi><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo stretchy="false">)</mo><mi>M</mi><mo>=</mo><mn>0</mn><mo>=</mo><mi>w</mi><mo stretchy="false">(</mo><mi>C</mi><mo>−</mo><mi>D</mi><mo stretchy="false">)</mo></math>.</p>
-<p>Therefore , and <math><msub><mi>r</mi><mi>i</mi></msub><mo>=</mo><msubsup><mi>w</mi><mi>i</mi><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup></math></p>
+<p><span class="proof-head">Proof.</span> By Equation <a href="#prop:mfpt-rec-mat">(9)</a> we have <math><mi>w</mi><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo stretchy="false">)</mo><mi>M</mi><mo>=</mo><mn>0</mn><mo>=</mo><mi>w</mi><mo stretchy="false">(</mo><mi>C</mi><mo>−</mo><mi>D</mi><mo stretchy="false">)</mo></math>.</p>
+<p>Therefore , and <math><msub><mi>r</mi><mi>i</mi></msub><mo>=</mo><msubsup><mi>w</mi><mi>i</mi><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup></math> <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="lemma">
-<p>Let <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> an ergodic matrix, <math><mi>w</mi></math> its steady state and <math><mi>W</mi></math> the matrix formed by <math><mi>w</mi></math> as rows.
+<div class="theorem" data-kind="lemma">
+<p><span class="theorem-head"><span class="theorem-name">Lemma 67</span>.</span> Let <math><msub><mi>P</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> an ergodic matrix, <math><mi>w</mi></math> its steady state and <math><mi>W</mi></math> the matrix formed by <math><mi>w</mi></math> as rows.
 Then <math><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi></math> is invertible and <math><mi>Z</mi><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup></math> verifies:</p>
 <ol>
 <li>, <math><mi>w</mi><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mi>Z</mi><mo>=</mo><mi>w</mi></math></li>
@@ -5689,7 +5695,7 @@ Then <math><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi></math> is invert
 <p></p>
 </div>
 <div class="proof">
-<p></p>
+<p><span class="proof-head">Proof.</span> </p>
 <p>Let <math><mi>x</mi></math> such that <math><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi><mo stretchy="false">)</mo><mi>x</mi><mo>=</mo><mn>0</mn></math>. Since <math><mi>w</mi><mi>P</mi><mo>=</mo><mi>w</mi></math> then <math><mo stretchy="false">{</mo><mi>w</mi><msup><mi>P</mi><mi>n</mi></msup><mo stretchy="false">}</mo><mo stretchy="false">→</mo><mi>w</mi><mi>W</mi><mo>=</mo><mi>w</mi></math> and similarly
 . Therefore <math><mi>w</mi><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi><mo stretchy="false">)</mo><mi>x</mi><mo>=</mo><mi>w</mi><mi>x</mi><mo>=</mo><mn>0</mn><mspace width="0.2777778em"/><mo stretchy="false">⟹</mo><mspace width="0.2777778em"/><mi>W</mi><mi>x</mi><mo>=</mo><mn>0</mn><mspace width="0.2777778em"/><mo stretchy="false">⟹</mo><mspace width="0.2777778em"/><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo stretchy="false">)</mo><mi>x</mi><mo>=</mo><mn>0</mn></math>. Hence,
 this means <math><mi>P</mi><mi>x</mi><mo>=</mo><mi>x</mi></math>. By Theorem <a href="#th:steady-ergodic">()</a> this implies
@@ -5697,21 +5703,22 @@ this means <math><mi>P</mi><mi>x</mi><mo>=</mo><mi>x</mi></math>. By Theorem <a 
 <math><msub><mi>A</mi><mrow><mi>m</mi><mo lspace="0" rspace="0">×</mo><mi>m</mi></mrow></msub></math> is invertible iff <math><mo>∀</mo><mi>x</mi><mo>∈</mo><msup><mi>ℝ</mi><mi>m</mi></msup><mo>,</mo><mi>A</mi><mi>x</mi><mo>=</mo><mn>0</mn><mspace width="0.2777778em"/><mo stretchy="false">⟹</mo><mspace width="0.2777778em"/><mi>x</mi><mo>=</mo><mn>0</mn></math>.</p>
 <p> and multiplying by <math><mi>Z</mi></math> in both sides: .
 Similarly, we can show <math><mi>w</mi><mi>Z</mi><mo>=</mo><mi>w</mi></math>.</p>
-<p>Since . Then <math><mi>Z</mi><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo stretchy="false">)</mo><mo>=</mo><mi>Z</mi><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi><mo>−</mo><mi>W</mi><mo stretchy="false">)</mo><mo>=</mo><mi>I</mi><mo>−</mo><mi>Z</mi><mi>W</mi><mo>=</mo><mi>I</mi><mo>−</mo><mi>W</mi></math>.</p>
+<p>Since . Then <math><mi>Z</mi><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo stretchy="false">)</mo><mo>=</mo><mi>Z</mi><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi><mo>−</mo><mi>W</mi><mo stretchy="false">)</mo><mo>=</mo><mi>I</mi><mo>−</mo><mi>Z</mi><mi>W</mi><mo>=</mo><mi>I</mi><mo>−</mo><mi>W</mi></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
-<div class="theorem">
-<p>Given <math><mi>P</mi></math> an ergodic matrix, <math><mi>w</mi></math> its steady state, <math><mi>Z</mi><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><mo>=</mo><mo stretchy="false">(</mo><msub><mi>z</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="false">)</mo></math> and <math><mi>M</mi><mo>=</mo><mo stretchy="false">(</mo><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="false">)</mo></math>,
+<div class="theorem" data-kind="theorem">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 68</span>.</span> Given <math><mi>P</mi></math> an ergodic matrix, <math><mi>w</mi></math> its steady state, <math><mi>Z</mi><mo>=</mo><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo>+</mo><mi>W</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><mo>=</mo><mo stretchy="false">(</mo><msub><mi>z</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="false">)</mo></math> and <math><mi>M</mi><mo>=</mo><mo stretchy="false">(</mo><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo stretchy="false">)</mo></math>,
 it holds:</p>
 <math display="block"><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mrow><msub><mi>z</mi><mrow><mi>j</mi><mi>j</mi></mrow></msub><mo>−</mo><msub><mi>z</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><msub><mi>w</mi><mi>j</mi></msub></mfrac></math>
 <p></p>
 </div>
 <div class="proof">
-<p>From Equation <a href="#prop:mfpt-rec-mat">(9)</a> we have <math><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo stretchy="false">)</mo><mi>M</mi><mo>=</mo><mi>C</mi><mo>−</mo><mi>D</mi></math> and:</p>
+<p><span class="proof-head">Proof.</span> From Equation <a href="#prop:mfpt-rec-mat">(9)</a> we have <math><mo stretchy="false">(</mo><mi>I</mi><mo>−</mo><mi>P</mi><mo stretchy="false">)</mo><mi>M</mi><mo>=</mo><mi>C</mi><mo>−</mo><mi>D</mi></math> and:</p>
 
 <p>and from that equation an <math><msub><mi>m</mi><mrow><mi>j</mi><mi>j</mi></mrow></msub><mo>=</mo><mn>0</mn></math>, we deduce:</p>
 
 <p>and therefore, subtracting and using Proposition <a href="#prop:ss-and-recurrence-prob">()</a>:</p>
 <math display="block"><msub><mi>m</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mrow><msub><mi>z</mi><mrow><mi>j</mi><mi>j</mi></mrow></msub><mo>−</mo><msub><mi>z</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><msub><mi>w</mi><mi>j</mi></msub></mfrac></math>
+<p class="qed"><span class="qed" role="img" aria-label="End of proof">∎</span></p>
 </div>
 <h2 id="r-package">R package</h2>
 <p>This chapter describes the work carried out in <a href="https://github.com/spedygiorgio/markovchain">markovchain</a> package putting into practice the theoretical
@@ -5730,14 +5737,14 @@ describes the algorithms, and does not contain listings of code.</p>
 <h3 id="communicating-classes-based-algorithms">Communicating classes based algorithms</h3>
 <p>We can propose an alternative definition of communicating property, taking <math><mi>n</mi><mo>≥</mo><mn>0</mn></math> instead of <math><mi>n</mi><mo>&gt;</mo><mn>0</mn></math>,
 which has been the one used in the software from the start:</p>
-<div class="definition">
-<p>The state <math><mi>i</mi><mo>∈</mo><mi>E</mi></math> communicates with <math><mi>j</mi><mo>∈</mo><mi>S</mi></math>, and we will write it like <math><mi>i</mi><mo stretchy="false">→</mo><mi>j</mi></math>
+<div class="theorem" data-kind="definition">
+<p><span class="theorem-head"><span class="theorem-name">Definition 69</span>.</span> The state <math><mi>i</mi><mo>∈</mo><mi>E</mi></math> communicates with <math><mi>j</mi><mo>∈</mo><mi>S</mi></math>, and we will write it like <math><mi>i</mi><mo stretchy="false">→</mo><mi>j</mi></math>
 iff <math><msubsup><mi>p</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>&gt;</mo><mn>0</mn></math> for some <math><mi>n</mi><mo>≥</mo><mn>0</mn></math>, where <math><msubsup><mi>p</mi><mrow><mi>i</mi><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mn>0</mn><mo stretchy="false">)</mo></mrow></msubsup><mo lspace="0.2778em" rspace="0">:</mo><mo lspace="0">=</mo><msub><mi>δ</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></math></p>
 </div>
 <p>Proposition <a href="#prop:equiv-classes">()</a> was not valid in <math><mi>S</mi></math> because of lack of reflexivity,
 which has been added with this new definition. Therefore, we can reformulate it as:</p>
-<div class="proposition">
-<p> is an equivalence relationship in <math><mi>S</mi></math></p>
+<div class="theorem" data-kind="proposition">
+<p><span class="theorem-head"><span class="theorem-name">Proposition 70</span>.</span>  is an equivalence relationship in <math><mi>S</mi></math></p>
 </div>
 <p>This modification does not affect further results.</p>
 <p><code>commClassesKernel</code> (<code>.commClassesKernelRcpp</code> in the code) constitutes a core algorithm in the package,

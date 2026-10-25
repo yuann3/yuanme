@@ -1,0 +1,39 @@
+#+NAME: thm:fermat
+#+begin_theorem Fermat's little theorem
+If \(p\) is prime, then \(a^p \equiv a \pmod p\).
+#+end_theorem
+
+#+BEGIN_PROOF
+By induction on \(a\):
+
+\[
+(a + 1)^p \equiv a^p + 1
+\]
+#+END_PROOF
+
+#+NAME: lem:zorn
+#+ATTR_HTML: :class key
+#+begin_lemma Zorn, for \(\omega\)
+\[
+x
+\]
+
+Every chain has an upper bound.
+#+end_lemma
+
+#+begin_proof Proof of the lemma
+- one
+- two
+#+end_proof
+
+#+begin_remark
+A remark.
+#+end_remark
+
+#+begin_proof
+Short.
+#+end_proof
+
+#+begin_aside
+Not a kind.
+#+end_aside

@@ -8,9 +8,9 @@ Centered.
 #+END_CENTER
 
 #+ATTR_HTML: :class wide :data-x 1
-#+BEGIN_note
-A note.
-#+END_note
+#+BEGIN_aside
+An aside.
+#+END_aside
 
 - Org :: a mode
 - Emacs :: an editor

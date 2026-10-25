@@ -5,6 +5,7 @@ use std::collections::BTreeSet;
 use std::fmt::Write;
 
 use yuanme_content::config;
+use yuanme_content::document::{Document, Kind};
 use yuanme_content::fields::{Image, Value};
 use yuanme_content::site::{self, Project, RouteKind, Site};
 use yuanme_diag::{Diagnostic, Files, codes};
@@ -859,11 +860,49 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "content/posts/a.org",
         "tbl",
     ),
+    // A Theorem block's Label is in the same namespace, in both formats.
+    (
+        "math/duplicate-label",
+        "---\ntitle: A\n---\n## Main {#thm:main}\n\n:::theorem[Main]{#thm:main}\nx\n:::\n",
+        "content/posts/a.md",
+        "thm:main",
+    ),
+    (
+        "math/duplicate-label",
+        "=== content/posts/a.org\n#+TITLE: A\n\n#+NAME: thm:a\n#+begin_theorem\nx\n#+end_theorem\n\n\\begin{equation}\nE \\label{thm:a}\n\\end{equation}\n",
+        "content/posts/a.org",
+        "thm:a",
+    ),
     (
         "math/invalid-label",
         "---\ntitle: A\n---\n$$\\begin{equation} E \\label{eq/e} \\end{equation}$$\n",
         "content/posts/a.md",
         "eq/e",
+    ),
+    (
+        "math/invalid-label",
+        "---\ntitle: A\n---\n:::lemma[thm/a]{#thm/a}\nx\n:::\n",
+        "content/posts/a.md",
+        "thm/a",
+    ),
+    (
+        "math/invalid-label",
+        "=== content/posts/a.org\n#+TITLE: A\n\n#+NAME: thm a\n#+begin_theorem\nx\n#+end_theorem\n",
+        "content/posts/a.org",
+        "thm a",
+    ),
+    // An empty-text link to a Label nothing has.
+    (
+        "link/unresolved",
+        "---\ntitle: A\n---\n:::theorem{#thm:a}\nx\n:::\n\nBy [](#thm:b).\n",
+        "content/posts/a.md",
+        "[](#thm:b)",
+    ),
+    (
+        "link/unresolved",
+        "=== content/posts/a.org\n#+TITLE: A\n\n#+NAME: thm:a\n#+begin_theorem\nx\n#+end_theorem\n\nBy [[#thm:b]].\n",
+        "content/posts/a.org",
+        "[[#thm:b]]",
     ),
     (
         "math/named-environment",
@@ -1000,19 +1039,60 @@ fn latex_delimiters_in_markdown_warn_and_the_entry_still_builds() {
 
 #[test]
 fn a_title_on_a_plain_directive_warns_and_the_entry_still_builds() {
-    let files = "---\ntitle: A\n---\n::::note[Heads up]\nx\n::::\n";
-    let (sources, site, diagnostics) = resolve(&fixture(files), false);
-    assert!(site.is_some());
-    let [d] = diagnostics.as_slice() else {
-        panic!("{diagnostics:#?}")
-    };
+    for (files, code, under) in [
+        (
+            "---\ntitle: A\n---\n::::tip[Heads up]\nx\n::::\n",
+            "markdown/no-effect",
+            "::::",
+        ),
+        (
+            "=== content/posts/a.org\n#+TITLE: A\n\n#+begin_tip Heads up\nx\n#+end_tip\n",
+            "org/no-effect",
+            "Heads up",
+        ),
+        // What a directive's opening line has that yuanme doesn't read.
+        (
+            "---\ntitle: A\n---\n:::theorem[Main]{#thm:a} more\nx\n:::\n",
+            "markdown/no-effect",
+            "more",
+        ),
+        (
+            "---\ntitle: A\n---\n:::theorem[Main\nx\n:::\n",
+            "markdown/no-effect",
+            "[Main",
+        ),
+    ] {
+        let (sources, site, diagnostics) = resolve(&fixture(files), false);
+        assert!(site.is_some(), "{diagnostics:#?}");
+        let [d] = diagnostics.as_slice() else {
+            panic!("{diagnostics:#?}")
+        };
+        assert_eq!((d.code.name, d.level), (code, yuanme_diag::Level::Warning));
+        assert_eq!(
+            &sources.text(d.primary().file)[d.primary().range.clone()],
+            under
+        );
+    }
+}
+
+/// Kinds of the Site's own, each numbered on the counter it names.
+#[test]
+fn a_site_numbers_its_own_theorem_kinds() {
+    let files = "=== yuanme.toml\n[site]\nurl = \"https://e.com\"\n[collections.posts]\nroute = \"/{slug}/\"\n[math.theorems.claim]\ncounter = \"claim\"\n[math.theorems.lemma]\nlabel = \"Lemmata\"\n[math.theorems.theorem]\ncounter = false\n=== content/posts/a.md\n---\ntitle: A\n---\n:::claim\nx\n:::\n\n:::theorem\nx\n:::\n\n:::lemma\nx\n:::\n\n:::claim\nx\n:::\n\n:::definition\nx\n:::\n";
+    let (_, site, diagnostics) = resolve(files, false);
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    let doc = &site.expect("no errors").entries[0].document;
+    let names: Vec<_> = doc
+        .descendants(Document::ROOT)
+        .into_iter()
+        .filter_map(|id| match &doc.node(id).kind {
+            Kind::Theorem { name, .. } => Some(name.as_str()),
+            _ => None,
+        })
+        .collect();
     assert_eq!(
-        (d.code.name, d.level),
-        ("markdown/no-effect", yuanme_diag::Level::Warning)
-    );
-    assert_eq!(
-        &sources.text(d.primary().file)[d.primary().range.clone()],
-        "::::"
+        names,
+        ["Claim 1", "Theorem", "Lemmata 1", "Claim 2", "Definition 2"]
     );
 }
 

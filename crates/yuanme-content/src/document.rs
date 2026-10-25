@@ -23,13 +23,14 @@ pub struct Document {
 
 /// What a link can name in a Document besides a heading's id (#16),
 /// each with the id it leads to, which is empty for the top of the page. A
-/// Markdown Document names only its numbered equations here.
+/// Markdown Document names only its numbered equations and directives with
+/// an `{#id}` here.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) struct Names {
     /// `:ID:` properties, and where each is written.
     pub ids: Vec<(String, String, Range<usize>)>,
-    /// `<<target>>`s, `#+NAME`s and numbered equations' Labels, which a
-    /// fuzzy link finds before a headline.
+    /// `<<target>>`s, `#+NAME`s, directives' `{#id}`s and numbered
+    /// equations' Labels, which a fuzzy link finds before a headline.
     pub targets: BTreeMap<String, String>,
     /// Headline titles as written, which `*Title` and fuzzy links find.
     pub titles: BTreeMap<String, String>,
@@ -94,14 +95,22 @@ pub enum Kind {
     FootnoteDefinition {
         label: String,
     },
-    /// A block directive whose name is not a Theorem kind, or an Org
-    /// special or center block.
+    /// A block directive or Org special block whose name is not a Theorem
+    /// kind, or an Org center block.
     Directive {
+        name: String,
+    },
+    /// A Theorem block (#17): `kind` as Site config names it, such as
+    /// `lemma`, and `name` as the Page shows it, such as `Lemma 2` or
+    /// `Proof`. A title is its first child, a Caption.
+    Theorem {
+        kind: String,
         name: String,
     },
     /// An image or source block with its caption, from Org's `#+CAPTION`.
     Figure,
-    /// The caption of a figure or a table, which is a table's first child.
+    /// The caption of a figure or a table, which is a table's first child,
+    /// or a Theorem block's title.
     Caption,
     Text(String),
     Code(String),
