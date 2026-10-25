@@ -223,10 +223,14 @@ fn a_generated_heading_id_never_takes_a_label() {
 
 #[test]
 fn the_characters_math_shows_are_recorded() {
-    let (doc, _) = markdown("$a < \\alpha$ and $$\\begin{equation} b \\end{equation}$$\n");
+    let (doc, _) = markdown(
+        "$a < \\alpha$, $\\sqrt{\\mathrm{d}} \\sin \\text{é}$ and $$\\begin{equation} b \\end{equation}$$\n",
+    );
     let chars: String = doc.math_chars().into_iter().collect();
-    // The equation number is shown in the math font too.
-    assert_eq!(chars, "()1<abα");
+    // The equation number is shown in the math font too; a one-letter <mi>
+    // is drawn as its mathematical italic, a root with U+221A, and é may be
+    // drawn as e and U+0301.
+    assert_eq!(chars, "()1<abdeinsé\u{301}α√𝑎𝑏𝛼");
 }
 
 /// Each Theorem block as `kind: name (title) #label`, and each other

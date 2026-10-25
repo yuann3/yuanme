@@ -9,6 +9,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
+use unicode_normalization::UnicodeNormalization;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NodeId(pub u32);
 
@@ -329,14 +331,17 @@ impl Document {
     }
 
     /// Every character the Entry's math shows, for the math font's subset
-    /// (#17, #52).
+    /// (#17, #52). Each one's canonical decomposition too: a browser draws
+    /// a precomposed character the font lacks from its parts.
     pub fn math_chars(&self) -> BTreeSet<char> {
         let mut out = BTreeSet::new();
         for id in self.descendants(Self::ROOT) {
             if let Kind::Math { mathml, .. } = &self.node(id).kind {
-                out.extend(crate::math::text_chars(mathml));
+                crate::math::drawn_chars(mathml, &mut out);
             }
         }
+        let parts: Vec<char> = out.iter().flat_map(|c| c.nfd()).collect();
+        out.extend(parts);
         out
     }
 

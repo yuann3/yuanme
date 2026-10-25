@@ -5523,6 +5523,7 @@ dependencies = [
  "serde_json",
  "strsim",
  "toml",
+ "unicode-normalization",
  "yuanme-comrak",
  "yuanme-diag",
  "yuanme-math-core",

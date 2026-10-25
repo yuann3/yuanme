@@ -308,15 +308,31 @@ fn help(e: &LatexError, snippet: &str) -> Option<String> {
     None
 }
 
-/// The characters of MathML's text: everything outside its tags, with
-/// math-core's escapes read back.
-pub(crate) fn text_chars(mathml: &str) -> impl Iterator<Item = char> + '_ {
+/// The characters a browser draws for MathML (#29): its text, with
+/// math-core's escapes read back; for a one-character `<mi>` with no
+/// `mathvariant`, the mathematical italic MathML Core's `math-auto` draws
+/// instead; and U+221A for a root, which no text names. A port of
+/// math-core's `extract_math_chars.py`.
+pub(crate) fn drawn_chars(mathml: &str, out: &mut BTreeSet<char>) {
     let mut rest = mathml;
-    let mut out = Vec::new();
+    // The text of the `<mi>` being read, when `math-auto` applies to it.
+    let mut mi: Option<String> = None;
     while let Some(c) = rest.chars().next() {
         match c {
             '<' => {
-                rest = rest.find('>').map_or("", |i| &rest[i + 1..]);
+                let end = rest.find('>').unwrap_or(rest.len() - 1);
+                let tag = &rest[1..end];
+                if tag == "mi" {
+                    mi = Some(String::new());
+                } else if tag == "/mi"
+                    && let Some(text) = mi.take()
+                    && let [c] = text.chars().collect::<Vec<_>>()[..]
+                {
+                    out.extend(italic(c));
+                } else if ["msqrt", "mroot"].contains(&tag.split(' ').next().unwrap_or(tag)) {
+                    out.insert('√');
+                }
+                rest = &rest[end + 1..];
             }
             '&' => {
                 let end = rest.find(';').unwrap_or(rest.len() - 1);
@@ -332,13 +348,41 @@ pub(crate) fn text_chars(mathml: &str) -> impl Iterator<Item = char> + '_ {
                         .and_then(char::from_u32),
                 };
                 out.extend(decoded);
+                mi.iter_mut().for_each(|t| t.extend(decoded));
                 rest = &rest[end + 1..];
             }
             c => {
-                out.push(c);
+                out.insert(c);
+                mi.iter_mut().for_each(|t| t.push(c));
                 rest = &rest[c.len_utf8()..];
             }
         }
     }
-    out.into_iter()
+}
+
+/// The mathematical italic `math-auto` draws for `c`: MathML Core's
+/// appendix C.1, 112 pairs.
+fn italic(c: char) -> Option<char> {
+    let offset = |from: char, to: u32| char::from_u32(to + (c as u32 - from as u32));
+    match c {
+        // Italic h was encoded first, as the Planck constant.
+        'h' => Some('\u{210E}'),
+        'A'..='Z' => offset('A', 0x1D434),
+        'a'..='z' => offset('a', 0x1D44E),
+        // U+03A2 is unassigned, and U+1D6F3 in its place is ϴ's italic.
+        '\u{391}'..='\u{3A9}' if c != '\u{3A2}' => offset('\u{391}', 0x1D6E2),
+        '\u{3B1}'..='\u{3C9}' => offset('\u{3B1}', 0x1D6FC),
+        'ϴ' => Some('\u{1D6F3}'),
+        '∇' => Some('\u{1D6FB}'),
+        '∂' => Some('\u{1D715}'),
+        'ϵ' => Some('\u{1D716}'),
+        'ϑ' => Some('\u{1D717}'),
+        'ϰ' => Some('\u{1D718}'),
+        'ϕ' => Some('\u{1D719}'),
+        'ϱ' => Some('\u{1D71A}'),
+        'ϖ' => Some('\u{1D71B}'),
+        'ı' => Some('\u{1D6A4}'),
+        'ȷ' => Some('\u{1D6A5}'),
+        _ => None,
+    }
 }
