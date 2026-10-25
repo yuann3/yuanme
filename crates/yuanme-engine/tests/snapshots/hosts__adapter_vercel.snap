@@ -1,0 +1,28 @@
+---
+source: crates/yuanme-engine/tests/hosts.rs
+expression: "show(&build, &plain)"
+---
+=== config.json
+{
+  "version": 3,
+  "routes": [
+    { "src": "^/.*$", "headers": { "Cache-Control": "public, max-age=0, must-revalidate", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY" }, "continue": true },
+    { "src": "^/assets/.*$", "headers": { "Cache-Control": "public, max-age=31536000, immutable" }, "continue": true },
+    { "src": "^/resume\\.pdf$", "headers": { "Cache-Control": "public, max-age=3600" }, "continue": true },
+    { "src": "^/old-post/$", "headers": { "Location": "/blog/pew/" }, "status": 308 },
+    { "src": "^/talk$", "headers": { "Location": "https://example.com/talk" }, "status": 302 },
+    { "src": "^/\\.well-known(?:/.*)?$" },
+    { "src": "^/((?:[^/]+/)*[^/\\.]+)$", "headers": { "Location": "/$1/" }, "status": 308 },
+    { "src": "^/((?:[^/]+/)*[^/]+\\.\\w+)/$", "headers": { "Location": "/$1" }, "status": 308 },
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/404.html", "status": 404 }
+  ]
+}
+===
+static/404.html
+static/assets/site-84f6e9bacfe776e5.css
+static/blog/pew/index.html
+static/index.html
+static/resume.pdf
+static/sitemap-0.xml
+static/sitemap-index.xml

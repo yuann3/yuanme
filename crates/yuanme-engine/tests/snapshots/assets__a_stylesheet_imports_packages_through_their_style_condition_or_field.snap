@@ -2,6 +2,15 @@
 source: crates/yuanme-engine/tests/assets.rs
 expression: show(&hoisted)
 ---
+=== _headers
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+
 === assets/geist-latin-400-a5b2cacbf565eeeb.woff2
 <10 bytes>
 === assets/site-012cfbca5ce4797f.css

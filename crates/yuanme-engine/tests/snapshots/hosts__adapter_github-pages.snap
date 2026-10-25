@@ -1,0 +1,34 @@
+---
+source: crates/yuanme-engine/tests/hosts.rs
+expression: "show(&build, &plain)"
+---
+=== .nojekyll
+===
+404.html
+=== CNAME
+e.com
+===
+assets/site-84f6e9bacfe776e5.css
+blog/pew/index.html
+index.html
+=== old-post/index.html
+<!doctype html>
+<meta charset="utf-8">
+<title>Redirecting</title>
+<link rel="canonical" href="https://e.com/blog/pew/">
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url=/blog/pew/">
+<p><a href="/blog/pew/">/blog/pew/</a></p>
+===
+resume.pdf
+sitemap-0.xml
+sitemap-index.xml
+=== talk.html
+<!doctype html>
+<meta charset="utf-8">
+<title>Redirecting</title>
+<link rel="canonical" href="https://example.com/talk">
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url=https://example.com/talk">
+<p><a href="https://example.com/talk">https://example.com/talk</a></p>
+===

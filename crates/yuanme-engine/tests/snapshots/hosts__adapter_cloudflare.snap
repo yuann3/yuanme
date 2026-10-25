@@ -1,0 +1,29 @@
+---
+source: crates/yuanme-engine/tests/hosts.rs
+expression: "show(&build, &plain)"
+---
+404.html
+=== _headers
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+
+/resume.pdf
+  ! Cache-Control
+  Cache-Control: public, max-age=3600
+===
+=== _redirects
+/old-post/ /blog/pew/ 308
+/talk https://example.com/talk 302
+===
+assets/site-84f6e9bacfe776e5.css
+blog/pew/index.html
+index.html
+resume.pdf
+sitemap-0.xml
+sitemap-index.xml

@@ -117,7 +117,8 @@ fn sync_writes_only_what_changed_in_ten_thousand_files() {
     write(&root.join("static/cat.png"), "png bytes");
 
     let report = sync_build(root, &build(root)).unwrap();
-    assert_eq!(report.written.len(), 10_002);
+    // And the default adapter's `_headers`.
+    assert_eq!(report.written.len(), 10_003);
     assert_eq!(fs::read(out.join("cat.png")).unwrap(), b"png bytes");
     assert_eq!(fs::read(out.join(file(7))).unwrap(), b"file 7");
 

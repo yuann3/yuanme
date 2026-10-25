@@ -34,7 +34,11 @@ fn static_files_are_copied_to_the_same_path_and_nothing_else_is() {
 
     assert!(!build.failed());
     let paths: Vec<_> = build.files.keys().map(String::as_str).collect();
-    assert_eq!(paths, ["img/cat.jpg", "robots.txt", "static/x.css"]);
+    // `_headers` is the default adapter's.
+    assert_eq!(
+        paths,
+        ["_headers", "img/cat.jpg", "robots.txt", "static/x.css"]
+    );
     assert_eq!(text(&build.files["robots.txt"].body), "User-agent: *");
     assert_eq!(
         build.files["robots.txt"].hash,
@@ -304,6 +308,7 @@ fn templates_render_each_route_and_the_sitemap_and_sidecars_are_not_templates() 
     assert_eq!(
         paths,
         [
+            "_headers",
             sidecars.as_str(),
             "blog/pew/index.html",
             "robots.txt",

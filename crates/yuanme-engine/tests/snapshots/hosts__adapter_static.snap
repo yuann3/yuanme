@@ -1,0 +1,11 @@
+---
+source: crates/yuanme-engine/tests/hosts.rs
+expression: "show(&build, &plain)"
+---
+404.html
+assets/site-84f6e9bacfe776e5.css
+blog/pew/index.html
+index.html
+resume.pdf
+sitemap-0.xml
+sitemap-index.xml

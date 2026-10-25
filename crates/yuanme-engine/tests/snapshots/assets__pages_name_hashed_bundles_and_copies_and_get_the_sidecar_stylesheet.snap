@@ -4,6 +4,15 @@ expression: "show(&run(&load(&fixture(\"assets\"))))"
 ---
 === 404.html
 <p>Not found.</p>
+=== _headers
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+
 === assets/arrow-99fb5b4d72fb002d.svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>
 

@@ -242,7 +242,8 @@ fn build_writes_the_site_and_its_yuanme_files() {
         .collect();
     assert_eq!(pages.len(), 6, "{pages:?}");
     assert!(pages.contains(&"/blog/first/"));
-    assert_eq!(report["written"], 9);
+    // And the default adapter's `_headers`.
+    assert_eq!(report["written"], 10);
     let md = fs::read_to_string(root.join(".yuanme/report.md")).unwrap();
     assert!(md.contains("| `/blog/first/` |"), "{md}");
 

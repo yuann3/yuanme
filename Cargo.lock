@@ -5053,6 +5053,7 @@ dependencies = [
  "image",
  "insta",
  "rayon",
+ "regex",
  "serde_json",
  "tempfile",
  "yuanme-assets",

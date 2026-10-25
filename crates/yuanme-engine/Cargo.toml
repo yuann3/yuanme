@@ -25,3 +25,4 @@ asm = ["yuanme-assets/asm"]
 tempfile = "3.27.0"
 insta = "1.49.0"
 image = { version = "=0.25.10", default-features = false, features = ["jpeg", "png"] }
+regex = "1.13.1"
