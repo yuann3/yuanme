@@ -30,7 +30,9 @@ const TOPICS: &[(&str, &str)] = &[
     ("styles", include_str!("docs/styles.md")),
     ("scripts", include_str!("docs/scripts.md")),
     ("images", include_str!("docs/images.md")),
+    ("deploying", include_str!("docs/deploying.md")),
     ("cli", include_str!("docs/cli.md")),
+    ("budgets", include_str!("docs/budgets.md")),
 ];
 
 pub struct Page {
