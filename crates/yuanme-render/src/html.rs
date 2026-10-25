@@ -547,7 +547,7 @@ fn alt(doc: &Document, id: NodeId) -> String {
 
 /// hast-util-to-html's text: `<` and `&` as hexadecimal references. A NUL,
 /// which micromark replaces, is U+FFFD here and in attributes.
-fn text(s: &str) -> String {
+pub(crate) fn text(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
         match c {
