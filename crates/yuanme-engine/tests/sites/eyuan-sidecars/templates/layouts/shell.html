@@ -1,0 +1,64 @@
+{# vars: title: string, description?: string, section?: enum(about|projects|writing|resume), og_image?: string, article_date?: date #}
+{% from "components/base_head.html" import base_head %}
+{% from "components/wordmark.html" import wordmark %}
+<!doctype html>
+<html lang="{{ site.language }}" data-state="{{ 'expanded' if section is defined else 'idle' }}"{{ {"data-section": section}|attrs }}>
+  <head>
+    {{ base_head(title=title, description=description|default(site.description), og_image=og_image, article_date=article_date) }}
+    {% include "partials/film_css.html" %}
+  </head>
+  <body>
+    {% raw %}
+    <script>
+      // Cold load: hide the panel and rail items until shell.ts runs the first reveal.
+      document.body.setAttribute('data-boot', '');
+      setTimeout(function () { document.body.removeAttribute('data-boot'); }, 3000);
+    </script>
+    {% endraw %}
+    <div class="shell" data-shell>
+      <div class="rail">
+        <div class="rail-top">
+          {{ wordmark(attrs={"data-reveal": true}) }}
+        </div>
+        <div class="rail-space"></div>
+        <div class="intro">
+          <h1 class="headline">
+            <span class="headline-line headline-serif" data-reveal><em>Yoo wasupp</em></span>
+            <span class="headline-line" data-reveal><em>{{ site.extra.greeting }}</em></span>
+          </h1>
+          <p class="sub" data-reveal>{{ site.extra.sub }}</p>
+        </div>
+        <div class="rail-space"></div>
+        <nav class="nav" aria-label="Main">
+          {% for s in data.nav %}
+          {% set current = ('page' if page.url == s.path else 'true') if section is defined and s.id == section else none %}
+          <a href="{{ s.path }}" class="nav-link" data-nav-link data-section="{{ s.id }}"{{ {"aria-current": current}|attrs }} data-reveal>
+            <span class="nav-label">{{ s.title }}</span>
+          </a>
+          {% endfor %}
+          <span class="droplet nav-droplet" aria-hidden="true"></span>
+          <div class="esc-hint" data-esc-hint aria-hidden="true"><kbd>esc</kbd><span>to close</span></div>
+        </nav>
+        <ul class="links">
+          {% for l in data.footer_links %}
+          <li data-reveal><a href="{{ l.link }}" class="label-mono">{{ l.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="well">
+        <div class="panel" data-panel>
+          <div class="film" data-film-layer aria-hidden="true">
+            <div class="film-fallback"><i></i><i></i><i></i><i></i></div>
+            <canvas class="film-canvas" data-film-canvas></canvas>
+            <div class="film-grain"></div>
+          </div>
+          <main class="panel-content" data-panel-content>
+            {% block content %}{% endblock %}
+          </main>
+          <div class="panel-edge" data-panel-edge aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/scripts/shell.ts"></script>
+  </body>
+</html>

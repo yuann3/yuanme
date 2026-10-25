@@ -1,0 +1,13 @@
+{% extends "layouts/shell.html" %}
+{% from "components/panel_header.html" import panel_header %}
+{% from "components/list_row.html" import list_row %}
+{% set title = "Series" %}
+{% set section = "writing" %}
+{% block content %}
+  {{ panel_header(title="Series") }}
+  <ul>
+  {% for t in terms %}
+    {{ list_row(href=t.url, title=t.name, meta=t.count ~ " " ~ t.count|pluralize("post", "posts")) }}
+  {% endfor %}
+  </ul>
+{% endblock %}

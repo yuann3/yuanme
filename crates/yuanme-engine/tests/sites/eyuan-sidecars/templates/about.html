@@ -1,0 +1,18 @@
+{% extends "layouts/shell.html" %}
+{% from "components/panel_header.html" import panel_header %}
+{% from "components/photo_pile.html" import photo_pile %}
+{% set title = "About" %}
+{% set description = "About Yiyuan Li" %}
+{% set section = "about" %}
+{% block content %}
+  {{ panel_header(title="About") }}
+  {% call photo_pile(photos=data.photos) %}
+    <div class="flex max-w-[620px] flex-col gap-10 pt-6 text-[20px] leading-[30px] tracking-[-0.01em] text-ink" data-reveal-group>
+      <div class="flex max-w-[540px] flex-col gap-5" data-reveal>
+        <p>i like working on the fundamentals of software engineering, mostly in rust and c.</p>
+        <p>i'm currently at <a href="https://voltade.com" class="ulink">Voltade</a>.</p>
+      </div>
+      <p data-reveal>say hi → <a href="mailto:yy@eyuan.me" class="ulink">yy@eyuan.me</a></p>
+    </div>
+  {% endcall %}
+{% endblock %}

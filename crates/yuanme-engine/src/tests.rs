@@ -303,7 +303,7 @@ fn templates_render_each_route_and_the_sitemap_and_sidecars_are_not_templates() 
     let paths: Vec<_> = build.files.keys().map(String::as_str).collect();
     let sidecars = format!(
         "assets/sidecars-{}.css",
-        &blake3::hash(b"a #x{color:red}").to_hex()[..16]
+        &blake3::hash(b"a[data-y-ihxwj1] #x[data-y-ihxwj1]{color:red}").to_hex()[..16]
     );
     assert_eq!(
         paths,

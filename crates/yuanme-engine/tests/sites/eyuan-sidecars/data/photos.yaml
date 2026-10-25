@@ -1,0 +1,4 @@
+- { src: /_assets/sentosa, w: 1200, h: 1600, caption: sentosa, alt: Palm trees, fx: 0.02, fy: 0.01, r: -4, t: -2 }
+- { src: /_assets/market, w: 1600, h: 1200, caption: beach market, alt: Shade sails, fx: 0.9, fy: 0.25, r: 5, t: 1.5 }
+- { src: /_assets/hornbills, w: 900, h: 1600, caption: hornbills, alt: Two hornbills, fx: 0.08, fy: 0.84, r: 3, t: -1.5 }
+- { src: /_assets/phuket, w: 1200, h: 1600, caption: phuket old town, alt: Old town, fx: 0.92, fy: 0.97, r: -6, t: 2.5 }

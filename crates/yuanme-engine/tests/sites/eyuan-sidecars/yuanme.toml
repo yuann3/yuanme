@@ -1,0 +1,61 @@
+[site]
+url = "https://eyuan.me"
+title = "Eyuan"
+description = "YY's Cave"
+language = "en"
+author = "Yiyuan Li"
+timezone = "Asia/Singapore"
+
+[site.extra]
+greeting = "Yiyuan's here, welcome!"
+sub = "i'm a software engineer based in singapore"
+
+[collections.posts]
+dir = "content/posts"
+route = "/blog/{slug}/"
+list_route = "/blog/"
+paginate = 10
+sort = ["order", "-modified"]
+
+[collections.posts.fields]
+date = { type = "date" }
+description = { type = "string", max = 250 }
+order = { type = "int", min = 1, max = 5, optional = true }
+og_image = { type = "string", optional = true }
+hero = { type = "object", optional = true, fields = { src = { type = "string" }, alt = { type = "string", optional = true } } }
+
+[collections.projects]
+route = "/projects/{slug}/"
+list_route = "/projects/"
+sort = ["order", "-modified"]
+
+[collections.projects.fields]
+date = { type = "date" }
+description = { type = "string" }
+summary = { type = "string", optional = true }
+summary_short = { type = "string", optional = true }
+stack = { type = "list", items = { type = "string" } }
+website = { type = "url", optional = true }
+github = { type = "url", optional = true }
+order = { type = "int", min = 1, max = 13, optional = true }
+hero = { type = "object", optional = true, fields = { url = { type = "string" }, alt = { type = "string", optional = true } } }
+
+[taxonomies.tags]
+collections = ["posts"]
+route = "/tags/{term}/"
+lowercase = true
+
+[taxonomies.series]
+collections = ["posts"]
+route = "/series/{term}/"
+single = true
+sort = ["modified"]
+
+[routes.about]
+path = "/about/"
+template = "about.html"
+
+# A Post loads more files than the default budget allows; budgets aren't
+# what this fixture is for.
+[budgets]
+requests = 6

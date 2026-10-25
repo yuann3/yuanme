@@ -1,6 +1,7 @@
 //! Stylesheets (#20): each one a Template links is one bundle, with its
 //! `@import`s inlined and its `url()`s left for the Engine to name.
 
+mod scope;
 #[cfg(test)]
 mod tests;
 
@@ -15,6 +16,8 @@ use lightningcss::printer::PrinterOptions;
 use lightningcss::stylesheet::{MinifyOptions, ParserOptions};
 use lightningcss::targets::{Browsers, Targets};
 use oxc_resolver::{ResolveOptions, Resolver};
+
+pub use scope::Compound;
 
 /// The project a bundle reads, with files named by their path from the
 /// project root, such as `styles/site.css`.
@@ -41,6 +44,8 @@ pub struct Bundle {
     /// Each `url()` and each `@import` of an External URL, in the order of
     /// the code.
     pub urls: Vec<Url>,
+    /// Each compound selector of a scoped stylesheet's rules.
+    pub compounds: Vec<Compound>,
 }
 
 pub struct Url {
@@ -69,7 +74,7 @@ pub enum ErrorKind<E> {
     Css(String),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Location {
     pub file: String,
     /// Lines from 1, columns from 1 in UTF-16 units.
@@ -79,10 +84,13 @@ pub struct Location {
 
 /// Bundles the stylesheet at `entry` for `targets`: the oldest version of
 /// each browser, as `[major, minor, patch]` by Site config's key for it.
+/// `scopes` gives the attribute that scopes each Sidecar it imports (ADR
+/// 0006); with any, `:global()` parses.
 pub fn bundle<P: Project>(
     project: &P,
     entry: &str,
     targets: &BTreeMap<String, [u32; 3]>,
+    scopes: &BTreeMap<String, String>,
 ) -> Result<Bundle, Box<Error<P::Error>>> {
     let provider = Provider {
         project,
@@ -90,6 +98,7 @@ pub fn bundle<P: Project>(
     };
     let options = ParserOptions {
         error_recovery: false,
+        css_modules: (!scopes.is_empty()).then(scope::modules),
         ..ParserOptions::default()
     };
     let mut bundler = Bundler::new(&provider, None, options);
@@ -101,6 +110,17 @@ pub fn bundle<P: Project>(
         };
         Error { kind, at }
     })?;
+    let mut compounds = Vec::new();
+    if !scopes.is_empty() {
+        scope::scope(&mut sheet.rules, &sheet.sources, scopes, &mut compounds).map_err(
+            |(message, at)| {
+                Box::new(Error {
+                    kind: ErrorKind::Css(message),
+                    at: Some(at),
+                })
+            },
+        )?;
+    }
     let targets = self::targets(targets);
     sheet
         .minify(MinifyOptions {
@@ -139,6 +159,7 @@ pub fn bundle<P: Project>(
     Ok(Bundle {
         code: printed.code,
         urls,
+        compounds,
     })
 }
 

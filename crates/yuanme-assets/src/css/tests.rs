@@ -46,7 +46,7 @@ fn targets(list: &[(&str, [u32; 3])]) -> BTreeMap<String, [u32; 3]> {
 }
 
 fn code(files: &'static [(&'static str, &'static str)], list: &[(&str, [u32; 3])]) -> String {
-    match bundle(&Files(files), files[0].0, &targets(list)) {
+    match bundle(&Files(files), files[0].0, &targets(list), &BTreeMap::new()) {
         Ok(b) => b.code,
         Err(e) => panic!("{e:?}"),
     }
@@ -64,7 +64,13 @@ fn imports_are_inlined_and_each_url_names_the_file_it_is_written_in() {
             "@font-face {\n  font-family: G;\n  src: url(\"../../fonts/g.woff2\");\n}\nh1 { color: red }\n",
         ),
     ];
-    let bundle = bundle(&Files(files), "styles/site.css", &targets(&[])).unwrap();
+    let bundle = bundle(
+        &Files(files),
+        "styles/site.css",
+        &targets(&[]),
+        &BTreeMap::new(),
+    )
+    .unwrap();
 
     let urls: Vec<_> = bundle
         .urls
@@ -117,12 +123,16 @@ fn an_error_is_located_in_the_file_it_is_in() {
         ("a.css", "@import \"b.css\";\n"),
         ("b.css", "p { color: red }\n\n  a$b { color: red }\n"),
     ];
-    let e = bundle(&Files(files), "a.css", &targets(&[])).err().unwrap();
+    let e = bundle(&Files(files), "a.css", &targets(&[]), &BTreeMap::new())
+        .err()
+        .unwrap();
     assert!(matches!(e.kind, ErrorKind::Css(_)), "{e:?}");
     assert_eq!(e.at.map(|at| (at.file, at.line)), Some(("b.css".into(), 3)));
 
     let files: &[(&str, &str)] = &[("a.css", "\n@import \"c.css\";\n")];
-    let e = bundle(&Files(files), "a.css", &targets(&[])).err().unwrap();
+    let e = bundle(&Files(files), "a.css", &targets(&[]), &BTreeMap::new())
+        .err()
+        .unwrap();
     let ErrorKind::Project(missing) = e.kind else {
         panic!("{e:?}")
     };

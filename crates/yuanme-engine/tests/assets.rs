@@ -1,6 +1,7 @@
 //! Stylesheets, Scripts, files and Static files that Pages name (#56, #58),
 //! built from fixture projects through the Engine's one seam.
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
 
@@ -66,6 +67,20 @@ fn diagnostics(build: &Build) -> String {
         .map(|d| d.render(&build.sources, false))
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+/// The output file whose path starts with `assets/<name>-`, as text.
+fn bundle(build: &Build, name: &str) -> String {
+    let prefix = format!("assets/{name}-");
+    let (_, output) = build
+        .files
+        .iter()
+        .find(|(path, _)| path.starts_with(&prefix))
+        .unwrap_or_else(|| panic!("no {name} bundle"));
+    let Body::Bytes(bytes) = &output.body else {
+        panic!("a bundle is in memory")
+    };
+    String::from_utf8(bytes.to_vec()).unwrap()
 }
 
 #[test]
@@ -230,8 +245,7 @@ fn scripts_are_one_build_with_shared_chunks_and_transitive_preloads() {
         for script in &scripts {
             want.remove(&script[1..]);
         }
-        let got: std::collections::BTreeSet<String> =
-            preloads.iter().map(|p| p[1..].to_string()).collect();
+        let got: BTreeSet<String> = preloads.iter().map(|p| p[1..].to_string()).collect();
         assert!(!want.is_empty(), "{page} preloads nothing");
         assert_eq!(got, want, "{page}");
         assert_eq!(got.len(), preloads.len(), "{page} preloads a chunk twice");
@@ -509,6 +523,18 @@ const ERRORS: &[(&str, Over, &str, &str)] = &[
         "",
     ),
     (
+        "asset/invalid-css",
+        &[("templates/components/row.css", b".row {}\n\n.row :local(.a) { color: red }\n")],
+        "templates/components/row.css",
+        "",
+    ),
+    (
+        "asset/invalid-css",
+        &[("templates/components/row.css", b".row :global() { color: red }\n")],
+        "templates/components/row.css",
+        "",
+    ),
+    (
         "asset/not-found",
         &[("scripts/site.ts", b"import { x } from \"./nope\";\nconsole.log(x);\n")],
         "scripts/site.ts",
@@ -579,8 +605,8 @@ const ERRORS: &[(&str, Over, &str, &str)] = &[
 
 #[test]
 fn each_mistake_is_one_diagnostic_on_the_url_it_is_about() {
-    let tested: std::collections::BTreeSet<&str> = ERRORS.iter().map(|(code, ..)| *code).collect();
-    let all: std::collections::BTreeSet<&str> = yuanme_diag::codes::ALL
+    let tested: BTreeSet<&str> = ERRORS.iter().map(|(code, ..)| *code).collect();
+    let all: BTreeSet<&str> = yuanme_diag::codes::ALL
         .iter()
         .map(|c| c.name)
         .filter(|n| n.starts_with("asset/"))
@@ -696,18 +722,6 @@ fn the_reference_sites_css_keeps_what_the_parity_inventory_lists() {
     let root = fixture("reference-css");
     let build = run(&load(&root));
     assert!(!build.failed(), "{}", diagnostics(&build));
-    let bundle = |name: &str| {
-        let prefix = format!("assets/{name}-");
-        let (_, output) = build
-            .files
-            .iter()
-            .find(|(path, _)| path.starts_with(&prefix))
-            .unwrap_or_else(|| panic!("no {name} bundle"));
-        let Body::Bytes(bytes) = &output.body else {
-            panic!("a bundle is in memory")
-        };
-        String::from_utf8(bytes.to_vec()).unwrap()
-    };
     // Minifying drops whitespace, so both sides are compared without it.
     let squeeze = |css: &str| css.split_whitespace().collect::<String>();
     let count = |css: &str, what: &str| css.matches(&squeeze(what)).count();
@@ -757,7 +771,7 @@ fn the_reference_sites_css_keeps_what_the_parity_inventory_lists() {
     for (name, features) in kept {
         let source =
             squeeze(&std::fs::read_to_string(root.join(format!("styles/{name}.css"))).unwrap());
-        let built = squeeze(&bundle(name));
+        let built = squeeze(&bundle(&build, name));
         for feature in *features {
             let (before, after) = (count(&source, feature), count(&built, feature));
             if before == 0 || before != after {
@@ -768,7 +782,145 @@ fn the_reference_sites_css_keeps_what_the_parity_inventory_lists() {
     assert!(wrong.is_empty(), "{}", wrong.join("\n"));
 
     // `css-targets`: every target supports dvh, svh and `::selection`.
-    let global = squeeze(&bundle("global"));
+    let global = squeeze(&bundle(&build, "global"));
     assert_eq!(count(&global, "100vh"), 0);
     assert_eq!(count(&global, "::-moz-selection"), 0);
+}
+
+/// Every selector of `css` that names an attribute starting with `prefix`,
+/// grouped by that attribute: each one with the at-rules it is in, the
+/// attribute written `[S]`, and each compound's simple selectors sorted,
+/// so that two builds' spellings of the same selector compare equal.
+fn scoped_selectors(css: &str, prefix: &str) -> BTreeSet<BTreeSet<String>> {
+    use lightningcss::rules::CssRule;
+    use lightningcss::stylesheet::{ParserOptions, PrinterOptions, StyleSheet};
+    use lightningcss::traits::ToCss;
+
+    fn walk(
+        rules: &[CssRule<'_>],
+        context: &str,
+        attribute: &regex::Regex,
+        groups: &mut BTreeMap<String, BTreeSet<String>>,
+    ) {
+        for rule in rules {
+            let printed = rule.to_css_string(PrinterOptions::default()).unwrap();
+            let prelude = printed.split('{').next().unwrap().trim();
+            let inner = match rule {
+                CssRule::Style(style) => {
+                    for selector in &style.selectors.0 {
+                        let text = selector.to_css_string(PrinterOptions::default()).unwrap();
+                        let Some(found) = attribute.captures(&text) else {
+                            continue;
+                        };
+                        let text = attribute.replace_all(&text, "[S]");
+                        groups
+                            .entry(found[1].to_string())
+                            .or_default()
+                            .insert(format!("{context}{}", canonical(&text)));
+                    }
+                    continue;
+                }
+                CssRule::Media(r) => &r.rules,
+                CssRule::Container(r) => &r.rules,
+                CssRule::Supports(r) => &r.rules,
+                _ => continue,
+            };
+            walk(&inner.0, &format!("{context}{prelude} "), attribute, groups);
+        }
+    }
+
+    /// `a.b:hover[S] > c` and `a[S].b:hover > c` are one selector.
+    fn canonical(selector: &str) -> String {
+        let mut out = String::new();
+        let mut depth = 0;
+        let mut compound = String::new();
+        let flush = |compound: &mut String, out: &mut String| {
+            let mut parts: Vec<String> = Vec::new();
+            let mut d = 0;
+            for (i, c) in compound.char_indices() {
+                let starts = d == 0
+                    && ".[:#".contains(c)
+                    && !(c == ':' && compound[..i].ends_with(':'))
+                    && i > 0;
+                if starts {
+                    parts.push(String::new());
+                }
+                if parts.is_empty() {
+                    parts.push(String::new());
+                }
+                match c {
+                    '(' | '[' => d += 1,
+                    ')' | ']' => d -= 1,
+                    _ => {}
+                }
+                parts.last_mut().unwrap().push(c);
+            }
+            let (mut pseudo, mut rest): (Vec<String>, Vec<String>) =
+                parts.into_iter().partition(|p| p.starts_with("::"));
+            // The type selector first, then the rest.
+            rest.sort_by_key(|p| (p.starts_with(['.', '[', ':', '#']), p.clone()));
+            rest.append(&mut pseudo);
+            out.push_str(&rest.concat());
+            compound.clear();
+        };
+        for c in selector.chars() {
+            match c {
+                '(' | '[' => depth += 1,
+                ')' | ']' => depth -= 1,
+                _ => {}
+            }
+            if depth == 0 && " >+~".contains(c) {
+                flush(&mut compound, &mut out);
+                out.push(c);
+            } else {
+                compound.push(c);
+            }
+        }
+        flush(&mut compound, &mut out);
+        out
+    }
+
+    let sheet = StyleSheet::parse(css, ParserOptions::default()).unwrap();
+    let attribute = regex::Regex::new(&format!(r"\[({prefix}[a-z0-9]+)\]")).unwrap();
+    let mut groups = BTreeMap::new();
+    walk(&sheet.rules.0, "", &attribute, &mut groups);
+    groups.into_values().collect()
+}
+
+/// The Reference site's six Sidecars, scoped by the Engine, are scoped as
+/// Astro scoped them: the same selectors, once the attribute's name and
+/// the order within each compound are set aside, in the same at-rules and
+/// grouped by Template the same way (ADR 0006: the spike's 68 of 68).
+#[test]
+fn the_reference_sidecars_are_scoped_as_astro_scoped_them() {
+    let root = fixture("eyuan-sidecars");
+    let build = run(&load(&root));
+    // The fixture has no images and leaves out Pages its links name.
+    let codes: Vec<&str> = build.diagnostics.iter().map(|d| d.code.name).collect();
+    assert!(
+        codes.iter().all(|c| *c == "link/broken"),
+        "{}",
+        diagnostics(&build)
+    );
+    let ours = scoped_selectors(&bundle(&build, "sidecars"), "data-y-");
+    let astro = std::fs::read_to_string(root.join("astro.css")).unwrap()
+        + &std::fs::read_to_string(fixture("reference-css").join("styles/about.css")).unwrap();
+    let theirs = scoped_selectors(&astro, "data-astro-cid-");
+    assert_eq!(theirs.len(), 6);
+    assert_eq!(theirs.iter().map(BTreeSet::len).sum::<usize>(), 68);
+    let only = |a: &BTreeSet<BTreeSet<String>>, b: &BTreeSet<BTreeSet<String>>| {
+        let b: BTreeSet<&String> = b.iter().flatten().collect();
+        a.iter()
+            .flatten()
+            .filter(|s| !b.contains(s))
+            .cloned()
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        ours,
+        theirs,
+        "only ours: {:#?}\nonly Astro's: {:#?}",
+        only(&ours, &theirs),
+        only(&theirs, &ours)
+    );
 }

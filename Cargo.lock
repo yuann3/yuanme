@@ -5549,6 +5549,7 @@ dependencies = [
  "image",
  "insta",
  "json-strip-comments",
+ "lightningcss",
  "rayon",
  "regex",
  "serde_json",

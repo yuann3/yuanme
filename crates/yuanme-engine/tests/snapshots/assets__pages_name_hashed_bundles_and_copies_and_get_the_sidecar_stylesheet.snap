@@ -22,8 +22,8 @@ expression: "show(&run(&load(&fixture(\"assets\"))))"
 <copied from img/grain.png>
 === assets/post-3cc3f4bb7f2cf9db.css
 article{color:#333}
-=== assets/sidecars-3aaa90badd8a9573.css
-.row{background:url("/assets/arrow-99fb5b4d72fb002d.svg") no-repeat}.row:hover{color:red}
+=== assets/sidecars-f753656353c8a1cf.css
+.row[data-y-v2sp31]{background:url("/assets/arrow-99fb5b4d72fb002d.svg") no-repeat}.row[data-y-v2sp31]:hover{color:red}
 === assets/site-b59390dcf64b2144.js
 
 === assets/site-d2105a12062f54c6.css
@@ -41,7 +41,7 @@ article{color:#333}
 <script type="module" src="/assets/site-b59390dcf64b2144.js"></script>
 <script type="application/ld+json">{"name": "e"}</script>
 <style>body { margin: 0 }</style>
-<link rel="stylesheet" href="/assets/post-3cc3f4bb7f2cf9db.css?v=2"><link rel="stylesheet" href="/assets/sidecars-3aaa90badd8a9573.css"></head>
+<link rel="stylesheet" href="/assets/post-3cc3f4bb7f2cf9db.css?v=2"><link rel="stylesheet" href="/assets/sidecars-f753656353c8a1cf.css"></head>
 <body><article><p>Hi.</p></article></body>
 </html>
 === favicon.svg
@@ -53,7 +53,7 @@ article{color:#333}
 <head>
 <title>Home</title>
 <link rel="preload" as="font" type="font/woff2" href="/assets/geist-0445ae2734ee3381.woff2" crossorigin>
-<link rel="stylesheet" href="/assets/site-d2105a12062f54c6.css"><link rel="stylesheet" href="/assets/sidecars-3aaa90badd8a9573.css">
+<link rel="stylesheet" href="/assets/site-d2105a12062f54c6.css"><link rel="stylesheet" href="/assets/sidecars-f753656353c8a1cf.css">
 <link rel="icon" href="/favicon.svg">
 <link rel="alternate" type="application/rss+xml" href="/rss.xml">
 <link rel="preconnect" href="https://fonts.example">

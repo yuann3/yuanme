@@ -17,7 +17,7 @@ use yuanme_assets::js;
 use yuanme_content::config::{self, Config, RouterMode};
 use yuanme_content::fields::Value;
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Level, Span, codes};
-use yuanme_render::template::Page;
+use yuanme_render::template::{Page, scope};
 
 use crate::link::Asset;
 use crate::{Body, Bundle, Inputs};
@@ -63,23 +63,19 @@ pub(crate) fn assets(
             site.insert(format!("/{dir}"));
         }
     }
-    let sidecars: BTreeSet<String> = pages
+    // Each used Sidecar stylesheet, and the attribute that scopes it.
+    let scopes: BTreeMap<String, String> = pages
         .iter()
         .flat_map(|p| &p.templates)
-        .map(|t| {
-            format!(
-                "templates/{}.css",
-                t.rsplit_once('.').map_or(&**t, |(s, _)| s)
-            )
-        })
-        .filter(|path| inputs.files.contains_key(path))
+        .map(|t| (scope::sidecar(t), scope::attribute(t)))
+        .filter(|(path, _)| inputs.files.contains_key(path))
         .collect();
     let project = Project {
         inputs,
         site: &site,
         packages: inputs.root.as_deref().map(Packages::new),
-        sidecars: sidecars
-            .iter()
+        sidecars: scopes
+            .keys()
             .map(|p| format!("@import {};\n", css_string(&format!("/{p}"))))
             .collect(),
     };
@@ -208,12 +204,20 @@ pub(crate) fn assets(
         .iter()
         .map(|e| (file_name(e).to_string(), e.as_str()))
         .collect();
-    if !sidecars.is_empty() {
+    if !scopes.is_empty() {
         bundles.push((SIDECARS.to_string(), SIDECARS_ENTRY));
     }
+    let unscoped = BTreeMap::new();
     let bundled: Vec<_> = bundles
         .par_iter()
-        .map(|(_, entry)| css::bundle(&project, entry, &config.build.targets))
+        .map(|(_, entry)| {
+            let scopes = if *entry == SIDECARS_ENTRY {
+                &scopes
+            } else {
+                &unscoped
+            };
+            css::bundle(&project, entry, &config.build.targets, scopes)
+        })
         .collect();
     let mut files = SourceFiles::default();
     // Each bundle's code, and where its `url()`s go.
@@ -315,7 +319,7 @@ pub(crate) fn assets(
         });
     }
     assets.extend(scripts.assets);
-    let sidecars_link = (!sidecars.is_empty()).then(|| {
+    let sidecars_link = (!scopes.is_empty()).then(|| {
         format!(
             "<link rel=\"stylesheet\" href=\"{}\">",
             placeholder_of(copies.len() + entries.len())

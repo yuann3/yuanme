@@ -1,0 +1,13 @@
+/* blog/extending-c-stdlib/index.html */
+.meta-link[data-astro-cid-bvzihdzo]{transition:color var(--dur-hover) var(--ease-out)}.meta-link[data-astro-cid-bvzihdzo]:hover{color:var(--ink)}article[data-astro-cid-bvzihdzo] em,article[data-astro-cid-bvzihdzo] i{font-synthesis:style}
+
+/* blog/index.html */
+.page-link[data-astro-cid-d776pwuy]{transition:color var(--dur-hover) var(--ease-out)}.page-link[data-astro-cid-d776pwuy]:hover{color:var(--ink)}
+.list-row[data-astro-cid-jqm7f7gd]{position:relative}.list-row-arrow[data-astro-cid-jqm7f7gd]{position:absolute;top:0;right:0;bottom:0;display:flex;align-items:center;color:var(--ink-2);font-size:18px}
+
+/* projects/emaclaude/index.html */
+.meta-link[data-astro-cid-uogrpsp5]{transition:color var(--dur-hover) var(--ease-out)}.meta-arrow[data-astro-cid-uogrpsp5]{display:inline-block;transition:transform var(--dur-hover) var(--ease-out)}@media(hover:hover){.meta-link[data-astro-cid-uogrpsp5]:hover{color:var(--ink)}.meta-link[data-astro-cid-uogrpsp5]:hover .meta-arrow[data-astro-cid-uogrpsp5]{transform:translate(2px,-2px)}}@media(prefers-reduced-motion:reduce){.meta-link[data-astro-cid-uogrpsp5]:hover .meta-arrow[data-astro-cid-uogrpsp5]{transform:none}}.project-body[data-astro-cid-uogrpsp5]>h1:first-of-type{display:none}
+
+/* projects/index.html */
+.project[data-astro-cid-2hwget37]{position:relative;align-items:flex-start;gap:12px;padding:14px 0 15px}.project-name[data-astro-cid-2hwget37]{color:var(--ink);font-size:18px;font-weight:500;letter-spacing:-.015em;line-height:24px}.project-summary[data-astro-cid-2hwget37]{color:var(--ink-2);font-size:14px;line-height:20px}.project-year[data-astro-cid-2hwget37]{flex-shrink:0;width:40px;color:var(--muted);font-family:var(--font-mono);font-size:12px;line-height:24px;text-align:right}.project-arrow[data-astro-cid-2hwget37]{position:absolute;top:0;right:0;bottom:0;display:flex;align-items:center;color:var(--ink-2);font-size:15px}@media(hover:hover){.project-year[data-astro-cid-2hwget37]{transition:transform var(--dur-hover) var(--ease-out)}.project[data-astro-cid-2hwget37]:hover .project-year[data-astro-cid-2hwget37],.project[data-astro-cid-2hwget37]:focus-visible .project-year[data-astro-cid-2hwget37]{transform:translate(-22px)}}@media(min-width:768px){.project[data-astro-cid-2hwget37]{align-items:center;gap:0;padding:10px 0}.project-name[data-astro-cid-2hwget37]{flex-shrink:0;width:220px;font-size:20px}.project-summary[data-astro-cid-2hwget37]{min-width:0;font-size:15px;line-height:22px}.project-year[data-astro-cid-2hwget37]{width:48px;font-size:13px;line-height:18px}}
+
