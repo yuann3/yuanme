@@ -15,6 +15,8 @@ expression: "show(&run(&load(&fixture(\"assets\"))))"
 article{color:#333}
 === assets/sidecars-3aaa90badd8a9573.css
 .row{background:url("/assets/arrow-99fb5b4d72fb002d.svg") no-repeat}.row:hover{color:red}
+=== assets/site-b59390dcf64b2144.js
+
 === assets/site-d2105a12062f54c6.css
 @font-face{font-family:Geist;src:url("/assets/geist-0445ae2734ee3381.woff2")format("woff2");font-display:swap}body{background:url("/assets/grain-4d90aca33920c263.png");min-height:100dvh}.logo{background-image:url("/logo.svg")}.noise{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E")}.glow{filter:url("#glow")}
 === blog/pew/index.html
@@ -27,7 +29,7 @@ article{color:#333}
 <link rel="icon" href="/favicon.svg">
 <link rel="alternate" type="application/rss+xml" href="/rss.xml">
 <link rel="preconnect" href="https://fonts.example">
-<script type="module" src="/scripts/site.ts"></script>
+<script type="module" src="/assets/site-b59390dcf64b2144.js"></script>
 <script type="application/ld+json">{"name": "e"}</script>
 <style>body { margin: 0 }</style>
 <link rel="stylesheet" href="/assets/post-3cc3f4bb7f2cf9db.css?v=2"><link rel="stylesheet" href="/assets/sidecars-3aaa90badd8a9573.css"></head>
@@ -46,7 +48,7 @@ article{color:#333}
 <link rel="icon" href="/favicon.svg">
 <link rel="alternate" type="application/rss+xml" href="/rss.xml">
 <link rel="preconnect" href="https://fonts.example">
-<script type="module" src="/scripts/site.ts"></script>
+<script type="module" src="/assets/site-b59390dcf64b2144.js"></script>
 <script type="application/ld+json">{"name": "e"}</script>
 <style>body { margin: 0 }</style>
 </head>

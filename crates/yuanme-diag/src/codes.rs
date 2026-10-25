@@ -297,7 +297,7 @@ codes! {
         fix: "Use a path the Site has, such as the one the help suggests. Every URL of a Site is declared in Site config.",
     }
     ASSET_NOT_FOUND = "asset/not-found" {
-        meaning: "A `<link href>` or `<script src>` in a Page, or an `@import` or `url()` in a stylesheet, names a path that is no file of the project, no Static file and no URL of the Site. A path from `/` names a file from the project's root, such as `/styles/site.css` for `styles/site.css`, or a Static file without its `static/`; any other path is relative to the Page or the stylesheet. `@import \"pkg/x.css\"` also looks in `node_modules`.",
+        meaning: "A `<link href>` or `<script src>` in a Page, an `@import` or `url()` in a stylesheet, or an `import` in a Script names a path that is no file of the project, no Static file and no URL of the Site. A path from `/` names a file from the project's root, such as `/styles/site.css` for `styles/site.css`, or a Static file without its `static/`; any other path is relative to the Page, the stylesheet or the Script. `@import \"pkg/x.css\"` also looks in `node_modules`, and so does an `import` of a bare name such as `nanoid`. A Script's `import \"./x\"` may leave out `.ts` or `.js`, and `./x.js` also finds `x.ts`.",
         example: "<link rel=\"stylesheet\" href=\"/styles/sit.css\">\n(with styles/site.css)",
         fix: "Correct the path, here `/styles/site.css`, or create the file. A Static file is named without `static/`. For a package, install it with `bun install`.",
     }
@@ -317,9 +317,29 @@ codes! {
         fix: "Fix the CSS at the reported place. Here `$` is not part of a selector.",
     }
     ASSET_DEPENDENCIES_NOT_INSTALLED = "asset/dependencies-not-installed" {
-        meaning: "A stylesheet imports a package, and the project has a `package.json` but no `node_modules`. yuanme reads packages from `node_modules` and never runs a package manager itself.",
-        example: "@import \"@fontsource/geist\";\n(with package.json and no node_modules)",
+        meaning: "A Script or stylesheet imports a package, and the project has a `package.json` but no `node_modules`. yuanme reads packages from `node_modules` and never runs a package manager itself.",
+        example: "import { nanoid } from \"nanoid\";\n(with package.json and no node_modules)",
         fix: "Run `bun install` in the project's folder, then build again.",
+    }
+    ASSET_CSS_IN_SCRIPT = "asset/css-in-script" {
+        meaning: "A Script imports a stylesheet. yuanme bundles the stylesheets that Pages link with `<link rel=\"stylesheet\">`, not those a Script imports, so the CSS would never reach a Page. This includes a package whose own JS imports CSS, which can't be used yet.",
+        example: "import \"./photo.css\";",
+        fix: "Delete the import, and import the stylesheet from one that a Page links instead, as the help shows: `@import \"/scripts/photo.css\";`, or for a package, its CSS file, such as `@import \"nprogress/nprogress.css\";`. The suggested edit deletes the import.",
+    }
+    ASSET_JSX = "asset/jsx" {
+        meaning: "A Script is a `.jsx` or `.tsx` file, or has JSX in it. yuanme doesn't compile JSX.",
+        example: "const el = <div>Hi</div>;",
+        fix: "Build the element with the DOM, `document.createElement(\"div\")`, or write it in a Template, and rename the file to `.ts` or `.js`.",
+    }
+    ASSET_INVALID_SCRIPT = "asset/invalid-script" {
+        meaning: "A Script can't be bundled: it isn't valid JavaScript or TypeScript, or isn't UTF-8, or it imports a name the other module doesn't export, or a `<script type=\"module\">` names a file that is no Script. A Script is a `.ts`, `.js`, `.mts` or `.mjs` file.",
+        example: "let x = ;",
+        fix: "Fix the code at the reported place. Here the variable needs a value.",
+    }
+    ASSET_SCRIPT_WARNING = "asset/script-warning" {
+        meaning: "The bundler warns about a Script, or a package it imports, that works but is likely a mistake, such as calling `eval` or importing a name that is always `undefined`. The message is the bundler's.",
+        example: "eval(\"1 + 1\");",
+        fix: "Change the code as the message says. A warning in a package can only be fixed in the package.",
     }
     INTERNAL_PANIC = "internal/panic" {
         meaning: "yuanme crashed while processing a file. This is a bug in yuanme, not in the project.",

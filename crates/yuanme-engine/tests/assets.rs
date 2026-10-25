@@ -1,5 +1,5 @@
-//! Stylesheets, files and Static files that Pages name (#56), built from
-//! fixture projects through the Engine's one seam.
+//! Stylesheets, Scripts, files and Static files that Pages name (#56, #58),
+//! built from fixture projects through the Engine's one seam.
 
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
@@ -97,32 +97,200 @@ fn a_stylesheet_imports_packages_through_their_style_condition_or_field() {
     #[cfg(unix)]
     {
         let dir = tempfile::tempdir().unwrap();
-        let root = dir.path();
-        copy_dir(&fixture("packages"), root);
-        let modules = root.join("node_modules");
-        for (name, store) in [
-            ("@fontsource/geist", "@fontsource+geist@5.0.0"),
-            ("plain", "plain@1.0.0"),
-        ] {
-            let real = modules
-                .join(".bun")
-                .join(store)
+        isolated(
+            &fixture("packages"),
+            dir.path(),
+            &[
+                ("@fontsource/geist", "@fontsource+geist@5.0.0", &[]),
+                ("plain", "plain@1.0.0", &[]),
+            ],
+        );
+        assert_eq!(show(&run(&load(dir.path()))), show(&hoisted));
+    }
+}
+
+/// The project `from` copied to `to`, with its packages laid out as Bun's
+/// isolated linker does: each one in `node_modules/.bun/<store>`, beside
+/// links to its own dependencies, and only the project's dependencies
+/// linked from `node_modules`. (name, store, dependencies)
+#[cfg(unix)]
+fn isolated(from: &Path, to: &Path, packages: &[(&str, &str, &[&str])]) {
+    copy_dir(from, to);
+    let modules = to.join("node_modules");
+    let store = |store: &str, name: &str| {
+        Path::new(".bun")
+            .join(store)
+            .join("node_modules")
+            .join(name)
+    };
+    for (name, at, _) in packages {
+        let real = modules.join(store(at, name));
+        std::fs::create_dir_all(real.parent().unwrap()).unwrap();
+        std::fs::rename(modules.join(name), &real).unwrap();
+    }
+    let up = |name: &str| if name.contains('/') { "../" } else { "" };
+    for (name, at, dependencies) in packages {
+        for dependency in *dependencies {
+            let (_, dependency_at, _) = packages.iter().find(|(n, ..)| n == dependency).unwrap();
+            // From `.bun/<at>/node_modules/<dependency>` to its store.
+            let target = Path::new("../..")
+                .join(up(dependency))
+                .join(dependency_at)
                 .join("node_modules")
-                .join(name);
-            std::fs::create_dir_all(real.parent().unwrap()).unwrap();
-            std::fs::rename(modules.join(name), &real).unwrap();
-            let link = modules.join(name);
-            let up = if name.contains('/') {
-                "../.bun"
-            } else {
-                ".bun"
-            };
-            let target = Path::new(up).join(store).join("node_modules").join(name);
+                .join(dependency);
+            let link = modules
+                .join(".bun")
+                .join(at)
+                .join("node_modules")
+                .join(dependency);
+            std::fs::create_dir_all(link.parent().unwrap()).unwrap();
             std::os::unix::fs::symlink(target, link).unwrap();
         }
-        let isolated = run(&load(root));
-        assert_eq!(show(&isolated), show(&hoisted));
+        let direct = packages.iter().all(|(_, _, deps)| !deps.contains(name));
+        if direct {
+            let target = Path::new(up(name)).join(store(at, name));
+            std::os::unix::fs::symlink(target, modules.join(name)).unwrap();
+        }
     }
+}
+
+/// Every Script a Page loads, then every chunk it preloads.
+fn script_urls(page: &str) -> (Vec<&str>, Vec<&str>) {
+    let attribute = |tag: &str, name: &str| -> Vec<&str> {
+        page.split(tag)
+            .skip(1)
+            .filter_map(|rest| {
+                let rest = &rest[..rest.find('>').unwrap()];
+                let value = rest.split(&format!("{name}=\"")).nth(1)?;
+                // Without the `?query` the Template wrote.
+                Some(&value[..value.find(['"', '?']).unwrap()])
+            })
+            .collect()
+    };
+    (
+        attribute("<script type=\"module\"", "src"),
+        attribute("<link rel=\"modulepreload\"", "href"),
+    )
+}
+
+/// The chunks a chunk's code imports: statically, then with `import()`.
+fn chunk_imports(code: &str) -> (Vec<String>, Vec<String>) {
+    let mut statics = Vec::new();
+    let mut dynamics = Vec::new();
+    for (i, _) in code.match_indices("./") {
+        let quote = code.as_bytes()[i - 1];
+        if !b"\"'`".contains(&quote) {
+            continue;
+        }
+        let end = code[i..].find(quote as char).unwrap();
+        let file = format!("assets/{}", &code[i + 2..i + end]);
+        if code[..i - 1].ends_with("import(") {
+            dynamics.push(file);
+        } else {
+            statics.push(file);
+        }
+    }
+    (statics, dynamics)
+}
+
+#[test]
+fn scripts_are_one_build_with_shared_chunks_and_transitive_preloads() {
+    let build = run(&load(&fixture("scripts")));
+    insta::assert_snapshot!(show(&build));
+
+    let text = |path: &str| match &build.files[path].body {
+        Body::Bytes(bytes) => std::str::from_utf8(bytes).unwrap().to_string(),
+        other => panic!("{path} is {other:?}"),
+    };
+    // Every chunk a chunk imports is a file of the Site.
+    let js: Vec<&String> = build.files.keys().filter(|p| p.ends_with(".js")).collect();
+    for path in &js {
+        let (statics, dynamics) = chunk_imports(&text(path));
+        for file in statics.iter().chain(&dynamics) {
+            assert!(
+                build.files.contains_key(file),
+                "{path} imports {file}, which isn't written"
+            );
+        }
+    }
+    // A Page preloads exactly the chunks its Scripts import statically,
+    // through every chunk between, and no chunk it loads as a Script.
+    for page in ["index.html", "about/index.html"] {
+        let html = text(page);
+        let (scripts, preloads) = script_urls(&html);
+        let mut want = std::collections::BTreeSet::new();
+        let mut stack: Vec<String> = scripts.iter().map(|s| s[1..].to_string()).collect();
+        while let Some(path) = stack.pop() {
+            for file in chunk_imports(&text(&path)).0 {
+                if want.insert(file.clone()) {
+                    stack.push(file);
+                }
+            }
+        }
+        for script in &scripts {
+            want.remove(&script[1..]);
+        }
+        let got: std::collections::BTreeSet<String> =
+            preloads.iter().map(|p| p[1..].to_string()).collect();
+        assert!(!want.is_empty(), "{page} preloads nothing");
+        assert_eq!(got, want, "{page}");
+        assert_eq!(got.len(), preloads.len(), "{page} preloads a chunk twice");
+    }
+    // The home Page renders the photo Template, so it loads its Sidecar
+    // script, whose `mount` survives bundling (ADR 0013).
+    let (home, about) = (text("index.html"), text("about/index.html"));
+    let ((home, _), (about, _)) = (script_urls(&home), script_urls(&about));
+    let photo: Vec<_> = home
+        .iter()
+        .filter(|s| s.starts_with("/assets/photo-"))
+        .collect();
+    let [photo] = photo.as_slice() else {
+        panic!("{home:?}")
+    };
+    assert!(!about.contains(photo));
+    assert!(
+        text(&photo[1..]).contains(" as mount}"),
+        "{}",
+        text(&photo[1..])
+    );
+
+    // What went into each bundle, for the build report.
+    let site = build
+        .scripts
+        .iter()
+        .find(|b| b.modules.iter().any(|(m, _)| m == "scripts/site.ts"))
+        .expect("a bundle of site.ts");
+    assert_eq!(site.size, text(&site.file).len());
+    let modules: Vec<&str> = site.modules.iter().map(|(m, _)| m.as_str()).collect();
+    assert_eq!(
+        modules,
+        [
+            "yuanme:router",
+            "node_modules/tiny-alphabet/index.js",
+            "node_modules/tiny-id/index.browser.js",
+            "data/film.toml",
+            "scripts/site.ts",
+        ]
+    );
+    assert!(site.modules.iter().all(|(_, size)| *size > 0));
+}
+
+#[test]
+#[cfg(unix)]
+fn bun_layouts_give_the_same_bundles() {
+    let hoisted = show(&run(&load(&fixture("scripts"))));
+    let dir = tempfile::tempdir().unwrap();
+    isolated(
+        &fixture("scripts"),
+        dir.path(),
+        &[
+            ("tiny-id", "tiny-id@1.0.0", &["tiny-alphabet"]),
+            ("tiny-alphabet", "tiny-alphabet@1.0.0", &[]),
+        ],
+    );
+    // Only the project's own dependency is at the top.
+    assert!(!dir.path().join("node_modules/tiny-alphabet").exists());
+    assert_eq!(show(&run(&load(dir.path()))), hoisted);
 }
 
 /// Files by path, over a fixture's.
@@ -204,6 +372,73 @@ const ERRORS: &[(&str, Over, &str, &str)] = &[
         "templates/components/row.css",
         "",
     ),
+    (
+        "asset/not-found",
+        &[("scripts/site.ts", b"import { x } from \"./nope\";\nconsole.log(x);\n")],
+        "scripts/site.ts",
+        "./nope",
+    ),
+    (
+        "asset/not-found",
+        &[("scripts/site.ts", b"// left-pad\nimport pad from 'left-pad';\npad();\n")],
+        "scripts/site.ts",
+        "left-pad",
+    ),
+    (
+        "asset/dependencies-not-installed",
+        &[
+            ("package.json", b"{}"),
+            ("scripts/site.ts", b"import pad from \"left-pad\";\npad();\n"),
+        ],
+        "scripts/site.ts",
+        "left-pad",
+    ),
+    (
+        "asset/css-in-script",
+        &[("scripts/site.ts", b"import \"../styles/site.css\";\n")],
+        "scripts/site.ts",
+        "../styles/site.css",
+    ),
+    (
+        "asset/jsx",
+        &[
+            ("scripts/site.ts", b"import \"./el.js\";\n"),
+            ("scripts/el.js", b"export const el = <div />;\n"),
+        ],
+        "scripts/el.js",
+        "",
+    ),
+    (
+        "asset/jsx",
+        &[
+            ("scripts/app.tsx", b"export {};\n"),
+            (
+                "templates/home.html",
+                b"{% extends \"layouts/base.html\" %}{% block body %}<script type=\"module\" src=\"/scripts/app.tsx\"></script>{% endblock %}",
+            ),
+        ],
+        "templates/home.html",
+        "/scripts/app.tsx",
+    ),
+    (
+        "asset/invalid-script",
+        &[("scripts/site.ts", b"export {};\nlet x = ;\n")],
+        "scripts/site.ts",
+        "",
+    ),
+    (
+        "asset/invalid-script",
+        &[("scripts/site.ts", b"import { nope } from \"./other.ts\";\nnope();\n"), ("scripts/other.ts", b"export const yes = 1;\n")],
+        "scripts/site.ts",
+        "",
+    ),
+    // A warning: the build goes on.
+    (
+        "asset/script-warning",
+        &[("scripts/site.ts", b"export const two = eval(\"1 + 1\");\n")],
+        "scripts/site.ts",
+        "",
+    ),
 ];
 
 #[test]
@@ -238,7 +473,10 @@ fn each_mistake_is_one_diagnostic_on_the_url_it_is_about() {
                     )
                 })
                 .collect();
-            let ok = build.failed() && build.files.is_empty() && got == [(*code, *file, *under)];
+            let fails = *code != "asset/script-warning";
+            let ok = build.failed() == fails
+                && build.files.is_empty() == fails
+                && got == [(*code, *file, *under)];
             (!ok).then(|| {
                 format!(
                     "want {code} in {file} on {under:?}\n  got {got:?}\n{}",
@@ -274,6 +512,42 @@ fn rendered_asset_diagnostics() {
     text.replace_range(edit.span.range.clone(), &edit.replacement);
     let text = text.replace("/styles/sit.css", "/styles/site.css");
     inputs.insert("templates/home.html", text.into_bytes());
+    let build = run(&inputs);
+    assert!(!build.failed(), "{}", diagnostics(&build));
+}
+
+#[test]
+fn rendered_script_diagnostics() {
+    let mut inputs = load(&fixture("assets"));
+    inputs.insert(
+        "scripts/site.ts",
+        b"import { greet } from \"./greet\";\nimport \"../styles/site.css\";\n\ngreet();\n"
+            .as_slice(),
+    );
+    inputs.insert(
+        "scripts/greet.ts",
+        b"export const greet = () => {};\n".as_slice(),
+    );
+    let build = run(&inputs);
+    insta::assert_snapshot!(diagnostics(&build));
+
+    // The suggested edit deletes the import, which then builds.
+    let [d] = build.diagnostics.as_slice() else {
+        panic!("{}", diagnostics(&build))
+    };
+    let fix = d
+        .children
+        .iter()
+        .flat_map(|c| &c.suggestions)
+        .next()
+        .expect("a fix");
+    let [edit] = fix.edits.as_slice() else {
+        panic!("one edit")
+    };
+    let mut text = build.sources.text(edit.span.file).to_string();
+    text.replace_range(edit.span.range.clone(), &edit.replacement);
+    assert_eq!(text, "import { greet } from \"./greet\";\n\ngreet();\n");
+    inputs.insert("scripts/site.ts", text.into_bytes());
     let build = run(&inputs);
     assert!(!build.failed(), "{}", diagnostics(&build));
 }

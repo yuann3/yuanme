@@ -1,0 +1,17 @@
+---
+source: crates/yuanme-engine/tests/assets.rs
+expression: diagnostics(&build)
+---
+error[asset/css-in-script]: a Script imports the stylesheet `styles/site.css`
+ --> scripts/site.ts:2:9
+  |
+2 | import "../styles/site.css";
+  |         ^^^^^^^^^^^^^^^^^^
+  |
+  = help: import it from a stylesheet that a Page links: `@import "/styles/site.css";`
+  = note: run `yuanme docs asset/css-in-script` for more
+help: delete the import
+  |
+2 - import "../styles/site.css";
+3 - 
+  |

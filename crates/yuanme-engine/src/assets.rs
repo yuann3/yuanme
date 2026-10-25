@@ -1,6 +1,9 @@
-//! The assets stage (#20): the stylesheets and files that Pages name,
-//! found in their rendered HTML, and the Site-wide Sidecar stylesheet.
-//! Each becomes an [`Asset`] that the link pass names by its hash.
+//! The assets stage (#20): the stylesheets, Scripts and files that Pages
+//! name, found in their rendered HTML, the Site-wide Sidecar stylesheet and
+//! each Page's Sidecar scripts. Each becomes an [`Asset`] that the link pass
+//! names by its hash.
+
+mod scripts;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
@@ -11,11 +14,12 @@ use rayon::prelude::*;
 use yuanme_assets::css::{self, Import, Packages};
 use yuanme_assets::html::{self, Kind};
 use yuanme_content::config::{self, Config};
-use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Span, codes};
+use yuanme_content::fields::Value;
+use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Level, Span, codes};
 use yuanme_render::template::Page;
 
 use crate::link::Asset;
-use crate::{Body, Inputs};
+use crate::{Body, Bundle, Inputs};
 
 /// The stylesheet holding every used Template's Sidecar CSS.
 const SIDECARS: &str = "sidecars.css";
@@ -27,6 +31,8 @@ pub(crate) struct Stage {
     /// Each Page's bytes, with placeholders for the assets it names.
     pub pages: Vec<(String, Vec<u8>)>,
     pub assets: Vec<Asset>,
+    /// What went into each Script bundle.
+    pub scripts: Vec<Bundle>,
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -35,6 +41,7 @@ impl Stage {
         Stage {
             pages: Vec::new(),
             assets: Vec::new(),
+            scripts: Vec::new(),
             diagnostics: diagnostics.0,
         }
     }
@@ -43,6 +50,7 @@ impl Stage {
 pub(crate) fn assets(
     inputs: &Inputs,
     config: &Config,
+    data: &BTreeMap<String, Value>,
     pages: Vec<Page>,
     templates: &BTreeMap<String, FileId>,
     sources: &mut Files,
@@ -65,6 +73,22 @@ pub(crate) fn assets(
         })
         .filter(|path| inputs.files.contains_key(path))
         .collect();
+    // Each Page's Sidecar scripts, in the order of its Templates.
+    let sidecar_scripts: Vec<Vec<String>> = pages
+        .iter()
+        .map(|page| {
+            page.templates
+                .iter()
+                .flat_map(|t| {
+                    let stem = t.rsplit_once('.').map_or(&**t, |(s, _)| s);
+                    scripts::EXTENSIONS
+                        .iter()
+                        .map(move |e| format!("templates/{stem}{e}"))
+                })
+                .filter(|path| inputs.files.contains_key(path))
+                .collect()
+        })
+        .collect();
     let project = Project {
         inputs,
         site: &site,
@@ -82,6 +106,7 @@ pub(crate) fn assets(
         .map(|p| p.output.ends_with(".html").then(|| html::scan(&p.text)))
         .collect();
     let mut entries: Vec<String> = Vec::new();
+    let mut script_entries: Vec<String> = Vec::new();
     let mut copies: BTreeSet<String> = BTreeSet::new();
     // Per Page: (where, what goes there, keeping the URL's `?` and `#`).
     let mut edits: Vec<Vec<(Range<usize>, Use)>> = vec![Vec::new(); pages.len()];
@@ -118,8 +143,25 @@ pub(crate) fn assets(
                     diagnostics.push(d.note(note(page)));
                     continue;
                 }
-                // #58 bundles it.
-                Kind::Module => continue,
+                Kind::Module => {
+                    let problem = if path.ends_with(".jsx") || path.ends_with(".tsx") {
+                        Some((&codes::ASSET_JSX, "is JSX, which yuanme doesn't compile"))
+                    } else if !scripts::EXTENSIONS.iter().any(|e| path.ends_with(e)) {
+                        Some((
+                            &codes::ASSET_INVALID_SCRIPT,
+                            "is no Script: a Script is a `.ts`, `.js`, `.mts` or `.mjs` file",
+                        ))
+                    } else {
+                        None
+                    };
+                    if let Some((code, why)) = problem {
+                        let (span, _) = at_template();
+                        let message = format!("`{}` {why}", r.url.trim());
+                        diagnostics.push(Diagnostic::error(code, message, span).note(note(page)));
+                        continue;
+                    }
+                    Use::Script(path)
+                }
                 Kind::Stylesheet => Use::Bundle(path),
                 // A preload of a stylesheet must fetch the bundle that
                 // `<link rel=stylesheet>` gets.
@@ -134,7 +176,17 @@ pub(crate) fn assets(
             {
                 entries.push(path.clone());
             }
+            if let Use::Script(path) = &use_
+                && !script_entries.contains(path)
+            {
+                script_entries.push(path.clone());
+            }
             edits[i].push((r.at.clone(), use_));
+        }
+    }
+    for path in sidecar_scripts.iter().flatten() {
+        if !script_entries.contains(path) {
+            script_entries.push(path.clone());
         }
     }
 
@@ -150,14 +202,14 @@ pub(crate) fn assets(
         .par_iter()
         .map(|(_, entry)| css::bundle(&project, entry, &config.build.targets))
         .collect();
-    let mut css_files = CssFiles::default();
+    let mut files = SourceFiles::default();
     // Each bundle's code, and where its `url()`s go.
     let mut codes: Vec<(String, Vec<(String, Use)>)> = Vec::new();
     for ((_, entry), result) in bundles.iter().zip(bundled) {
         let bundle = match result {
             Ok(bundle) => bundle,
             Err(e) => {
-                diagnostics.push(css_files.error(*e, entry, &project, sources));
+                diagnostics.push(files.error(*e, entry, &project, sources));
                 continue;
             }
         };
@@ -173,8 +225,8 @@ pub(crate) fn assets(
                     Use::Copy(path)
                 }
                 Err(problem) => {
-                    let span = css_files
-                        .span(&project, sources, &url.file, url.line, url.column, &url.url);
+                    let span =
+                        files.span(&project, sources, &url.file, url.line, url.column, &url.url);
                     diagnostics.push(problem.diagnostic(span));
                     continue;
                 }
@@ -183,18 +235,37 @@ pub(crate) fn assets(
         }
         codes.push((bundle.code, urls));
     }
-    if diagnostics.failed() {
+    let scripts = scripts::bundle(
+        &project,
+        config,
+        data,
+        &script_entries,
+        sources,
+        &mut files,
+        &mut diagnostics,
+    );
+    let Some(scripts) = scripts.filter(|_| !diagnostics.failed()) else {
         return Stage::failed(diagnostics);
-    }
+    };
 
-    // The link pass needs the copies first: bundles name them.
+    // The link pass needs the copies first: bundles name them. Script
+    // chunks name only each other, so they come last.
     let copies: Vec<String> = copies.into_iter().collect();
+    let chunks_at = copies.len() + bundles.len();
+    let script = |path: &str| {
+        let entry = script_entries
+            .iter()
+            .position(|e| e == path)
+            .expect("listed");
+        scripts.entries[entry]
+    };
     let index = |use_: &Use| -> usize {
         match use_ {
             Use::Copy(path) => copies.binary_search(path).expect("listed"),
             Use::Bundle(path) => {
                 copies.len() + entries.iter().position(|e| e == path).expect("listed")
             }
+            Use::Script(path) => chunks_at + script(path),
             Use::Url(_) => unreachable!("a URL is no asset"),
         }
     };
@@ -225,6 +296,7 @@ pub(crate) fn assets(
             bytes: code.into_bytes(),
         });
     }
+    assets.extend(scripts.assets);
     let sidecars_link = (!sidecars.is_empty()).then(|| {
         format!(
             "<link rel=\"stylesheet\" href=\"{}\">",
@@ -236,7 +308,36 @@ pub(crate) fn assets(
         .into_iter()
         .zip(scans)
         .zip(edits)
-        .map(|((page, scan), edits)| {
+        .zip(&sidecar_scripts)
+        .map(|(((page, scan), edits), sidecar_scripts)| {
+            // Its Sidecar stylesheet and scripts go after its own
+            // stylesheets, and then a preload of every chunk its Scripts
+            // import, so the browser fetches them all at once.
+            let loaded: Vec<usize> = edits
+                .iter()
+                .filter_map(|(_, use_)| match use_ {
+                    Use::Script(path) => Some(script(path)),
+                    _ => None,
+                })
+                .chain(sidecar_scripts.iter().map(|p| script(p)))
+                .collect();
+            let mut preloads: Vec<usize> = Vec::new();
+            for &chunk in &loaded {
+                for &c in &scripts.preloads[chunk] {
+                    if !loaded.contains(&c) && !preloads.contains(&c) {
+                        preloads.push(c);
+                    }
+                }
+            }
+            let mut tags = sidecars_link.clone().unwrap_or_default();
+            for path in sidecar_scripts {
+                let src = placeholder_of(chunks_at + script(path));
+                tags += &format!("<script type=\"module\" src=\"{src}\"></script>");
+            }
+            for chunk in preloads {
+                let href = placeholder_of(chunks_at + chunk);
+                tags += &format!("<link rel=\"modulepreload\" href=\"{href}\">");
+            }
             let mut edits: Vec<(Range<usize>, String)> = edits
                 .into_iter()
                 .map(|(at, use_)| {
@@ -244,8 +345,8 @@ pub(crate) fn assets(
                     (at, with)
                 })
                 .collect();
-            if let (Some(link), Some(at)) = (&sidecars_link, scan.and_then(|s| s.stylesheet_at)) {
-                edits.push((at..at, link.clone()));
+            if let (false, Some(at)) = (tags.is_empty(), scan.and_then(|s| s.stylesheet_at)) {
+                edits.push((at..at, tags));
                 edits.sort_by_key(|(at, _)| at.start);
             }
             (page.output, splice(&page.text, &edits))
@@ -254,6 +355,7 @@ pub(crate) fn assets(
     Stage {
         pages,
         assets,
+        scripts: scripts.report,
         diagnostics: diagnostics.0,
     }
 }
@@ -274,6 +376,8 @@ fn splice(text: &str, edits: &[(Range<usize>, String)]) -> Vec<u8> {
 #[derive(Clone)]
 enum Use {
     Bundle(String),
+    /// A Script, by the project file it starts from.
+    Script(String),
     Copy(String),
     /// Written as is.
     Url(String),
@@ -563,7 +667,7 @@ impl Diagnostics {
     }
 
     fn failed(&self) -> bool {
-        !self.0.is_empty()
+        self.0.iter().any(|d| d.level == Level::Error)
     }
 }
 
@@ -607,11 +711,11 @@ fn module_type(span: &Span, sources: &Files) -> Option<Edit> {
     })
 }
 
-/// Stylesheets added to the Files, for Diagnostics in them.
+/// Stylesheets and Scripts added to the Files, for Diagnostics in them.
 #[derive(Default)]
-struct CssFiles(BTreeMap<String, FileId>);
+struct SourceFiles(BTreeMap<String, FileId>);
 
-impl CssFiles {
+impl SourceFiles {
     /// A bundle's error, in the stylesheet it is in.
     fn error(
         &mut self,
@@ -650,8 +754,8 @@ impl CssFiles {
     }
 
     /// `line` from 1 and `column` from 1 in UTF-16 units, as lightningcss
-    /// reports them; `needle`, when found on the line from there, is what
-    /// the span covers.
+    /// reports them (rolldown's columns are from 0); `needle`, when found on
+    /// the line from there, is what the span covers.
     fn span(
         &mut self,
         project: &Project<'_>,

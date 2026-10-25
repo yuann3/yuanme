@@ -1,0 +1,10 @@
+[site]
+url = "https://e.com"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.about]
+path = "/about/"
+template = "about.html"

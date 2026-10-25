@@ -1,0 +1,54 @@
+---
+source: crates/yuanme-engine/tests/assets.rs
+expression: show(&build)
+---
+=== about/index.html
+<!doctype html>
+<html>
+<head>
+<title>About</title>
+<link rel="stylesheet" href="/assets/site-dfde4704d3fb14ac.css"><link rel="modulepreload" href="/assets/site-4c4935fd71841245.js"><link rel="modulepreload" href="/assets/greeting-300b65b0486446c6.js"><link rel="modulepreload" href="/assets/shared-314d7d6a5180420a.js">
+<script type="module" src="/assets/site-3efc0d3b1d9fc240.js"></script>
+<script type="module" src="/assets/about-a25a5c503644fd60.js?v=1"></script></head>
+<body><p>About.</p></body>
+</html>
+=== assets/about-a25a5c503644fd60.js
+import{t as e}from"./greeting-300b65b0486446c6.js";e(`about`);
+=== assets/greeting-300b65b0486446c6.js
+import{t as e}from"./shared-314d7d6a5180420a.js";function t(t){e(`the ${t} page`)}export{t};
+=== assets/home-76b3c0a822153fa4.js
+import{t as e}from"./greeting-300b65b0486446c6.js";e(`home`);
+=== assets/lazy-7778b55870ffd6e5.js
+import{t as e}from"./site-4c4935fd71841245.js";import{t}from"./shared-314d7d6a5180420a.js";var n=()=>t(e[0]);export{n as default};
+=== assets/photo-c771b586186fd4a8.js
+import{t as e}from"./shared-314d7d6a5180420a.js";function t(t){for(let n of document.querySelectorAll(`.photo`))n.addEventListener(`click`,()=>e(t.url.pathname),{signal:t.signal});return()=>e(`bye`)}export{t as mount};
+=== assets/shared-314d7d6a5180420a.js
+function e(e){console.log(`hi ${e}`)}export{e as t};
+=== assets/site-3efc0d3b1d9fc240.js
+export{t as palette}from"./site-4c4935fd71841245.js";
+=== assets/site-4c4935fd71841245.js
+function e(e,{history:t=`auto`}={}){t===`replace`?location.replace(e):location.assign(e)}function t(){return`abcdefghijklmnopqrstuvwxyz`[crypto.getRandomValues(new Uint8Array(1))[0]%26]}const n=[`#f27baa`,`#5b8def`];document.addEventListener(`click`,()=>e(`/about/`,{history:`push`})),console.log(t());const r=()=>import(`./lazy-7778b55870ffd6e5.js`);document.addEventListener(`dblclick`,async()=>(await r()).default());export{n as t};
+=== assets/site-dfde4704d3fb14ac.css
+body{margin:0}
+=== index.html
+<!doctype html>
+<html>
+<head>
+<title>Home</title>
+<link rel="stylesheet" href="/assets/site-dfde4704d3fb14ac.css"><script type="module" src="/assets/photo-c771b586186fd4a8.js"></script><link rel="modulepreload" href="/assets/site-4c4935fd71841245.js"><link rel="modulepreload" href="/assets/greeting-300b65b0486446c6.js"><link rel="modulepreload" href="/assets/shared-314d7d6a5180420a.js">
+<script type="module" src="/assets/site-3efc0d3b1d9fc240.js"></script>
+<script type="module" src="/assets/home-76b3c0a822153fa4.js"></script></head>
+<body><figure class="photo"></figure></body>
+</html>
+=== sitemap-0.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://e.com/</loc></url>
+<url><loc>https://e.com/about/</loc></url>
+</urlset>
+
+=== sitemap-index.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemap><loc>https://e.com/sitemap-0.xml</loc></sitemap>
+</sitemapindex>

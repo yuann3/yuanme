@@ -202,7 +202,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
     }
-    let stage = assets::assets(inputs, &config, pages, &templates, &mut sources);
+    let stage = assets::assets(inputs, &config, &site.data, pages, &templates, &mut sources);
     diagnostics.extend(stage.diagnostics);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
@@ -218,8 +218,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         sources,
         config: Some(config),
         site: Some(site),
-        // #58 fills it in.
-        scripts: Vec::new(),
+        scripts: stage.scripts,
     };
     if !build.failed() {
         cache.sweep();
