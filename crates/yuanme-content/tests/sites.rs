@@ -950,6 +950,8 @@ fn every_entry_code_has_a_case_here() {
                 .iter()
                 .any(|a| n.starts_with(a))
         })
+        // The Engine checks the built Site's links (#15), and tests them.
+        .filter(|n| !["link/broken", "link/redirected"].contains(n))
         .collect();
     assert_eq!(tested, all);
 }

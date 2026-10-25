@@ -371,6 +371,41 @@ codes! {
         example: "eval(\"1 + 1\");",
         fix: "Change the code as the message says. A warning in a package can only be fixed in the package.",
     }
+    LINK_REDIRECTED = "link/redirected" {
+        meaning: "A Page links to a URL of the Site that hosts answer with a redirect, which costs the visitor a round trip: a Page's URL without its trailing `/` or with `index.html` on the end, a `.html` file, a `[[host.redirects]]` rule's `from`, or the Site's address with or without `www.`. Every internal link should be the URL a Page is served at, such as `/about/`.",
+        example: "<a href=\"/about\">About</a>\n(with a Page at /about/)",
+        fix: "Link to the URL the help names, here `/about/`.",
+    }
+    LINK_BROKEN = "link/broken" {
+        meaning: "A Page links to, or loads, a URL of the Site where nothing is: no Page, Static file or asset of the build. Links to other origins aren't checked.",
+        example: "<img src=\"/img/cat.png\">\n(with no static/img/cat.png)",
+        fix: "Correct the URL, here perhaps to the Static file's, or create the file.",
+    }
+    HOST_OVER_LIMIT = "host/over-limit" {
+        meaning: "Site config has more header rules or redirects, or a longer line, than a host yuanme supports accepts. The limits are the strictest host's, Cloudflare's, whatever the adapter, so a Site can move hosts: 100 header rules, of which yuanme's cache rules take 2, 2,000 redirects, and 2,000 characters on a line of `_headers` or `_redirects`.",
+        example: "101 [[host.headers]] rules",
+        fix: "Merge rules: one rule with a `*` in its path, such as `/fonts/*`, covers many files.",
+    }
+    HOST_REDIRECT_CONFLICT = "host/redirect-conflict" {
+        meaning: "A `[[host.redirects]]` rule redirects a URL the Site serves: a Page, a Static file, or a Page's URL without its trailing `/`, which hosts already redirect. Hosts disagree about which wins: Cloudflare follows the rule, and Netlify serves the file.",
+        example: "[[host.redirects]]\nfrom = \"/blog/\"\nto = \"/writing/\"\n(with a Page at /blog/)",
+        fix: "Remove the rule, or the Page or file it hides.",
+    }
+    HOST_OUTPUT_COLLISION = "host/output-collision" {
+        meaning: "A Static file has the name of a file the Host adapter writes, such as `static/_headers` with the cloudflare or netlify adapter.",
+        example: "static/_headers, with `[host] adapter = \"cloudflare\"`",
+        fix: "Delete the Static file, and write its rules in Site config as `[[host.headers]]` and `[[host.redirects]]`, which every adapter renders.",
+    }
+    HOST_UNSUPPORTED = "host/unsupported" {
+        meaning: "The Site's host can't do what the Site needs. GitHub Pages can't send custom headers, immutable caching for hashed assets, brotli or HTTP/3, and redirects only by a page that refreshes. The `static` adapter writes no host configuration, so headers and redirects are the server's to send.",
+        example: "[host]\nadapter = \"github-pages\"",
+        fix: "Choose a host that can, such as `adapter = \"cloudflare\"`, the default. With the `static` adapter, configure the server as yuanme's deploying docs show.",
+    }
+    HOST_CACHE_RULE = "host/cache-rule" {
+        meaning: "A `[[host.headers]]` rule changes `Cache-Control` where yuanme's cache policy has to hold: on a hashed file in `/assets/`, which must stay `immutable`, or on a Page, which must revalidate with `max-age=0, must-revalidate` so that a deploy shows at once.",
+        example: "[[host.headers]]\npath = \"/*\"\nheaders = { \"Cache-Control\" = \"public, max-age=3600\" }",
+        fix: "Narrow the rule's `path` to the files it is for, such as `/resume.pdf`.",
+    }
     INTERNAL_PANIC = "internal/panic" {
         meaning: "yuanme crashed while processing a file. This is a bug in yuanme, not in the project.",
         example: "Any file can trigger it, if it reaches a bug in a parser or a renderer.",
