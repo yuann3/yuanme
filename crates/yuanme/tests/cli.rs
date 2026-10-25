@@ -387,6 +387,21 @@ fn check_reports_what_build_would_and_writes_no_site() {
     assert_eq!(events[1]["code"], "org/no-effect");
     assert_eq!(yuanme(root, &["build", "--strict", "-q"]).code, 1);
     assert!(!root.join("dist").exists());
+
+    // `wrangler.jsonc` must serve the output directory.
+    write(
+        root,
+        "=== content/posts/org.org\n#+TITLE: Org\n#+DESCRIPTION: x\n#+KIND: note\n=== wrangler.jsonc\n{ \"assets\": { \"directory\": \"./public\" } }\n",
+    );
+    let (code, events) = json(root, &["check"]);
+    assert_eq!(code, 0);
+    assert_eq!(events[1]["code"], "host/wrangler-mismatch");
+    assert_eq!(events.len(), 3, "{}", show(&events));
+    write(
+        root,
+        "=== wrangler.jsonc\n// The Worker\n{ \"assets\": { \"directory\": \"./dist\" } }\n",
+    );
+    assert_eq!(json(root, &["check"]).1.len(), 2);
 }
 
 #[test]

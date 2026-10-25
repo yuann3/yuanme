@@ -275,6 +275,12 @@ fn engine_build(root: &Path, out: Option<&Path>, drafts: bool, strict: bool) -> 
         (None, Some(config)) => root.join(config.host.adapter.out_dir()),
         (None, None) => dist,
     };
+    // The Worker's configuration, which isn't an input.
+    if let Ok(text) = fs::read_to_string(root.join("wrangler.jsonc")) {
+        let dir = out.strip_prefix(root).unwrap_or(&out);
+        let dir = dir.to_string_lossy().replace('\\', "/");
+        yuanme_engine::wrangler(&mut build, &text, &dir);
+    }
     if strict {
         for d in &mut build.diagnostics {
             if d.level == Level::Warning {
