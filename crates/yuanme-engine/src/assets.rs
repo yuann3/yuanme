@@ -229,7 +229,7 @@ pub(crate) fn assets(
             } else {
                 &unscoped
             };
-            css::bundle(&project, entry, &config.build.targets, scopes)
+            css::bundle(&project, entry, &config.build.targets, scopes, false)
         })
         .collect();
     // Each bundle's code, and where its `url()`s go.

@@ -46,7 +46,13 @@ fn targets(list: &[(&str, [u32; 3])]) -> BTreeMap<String, [u32; 3]> {
 }
 
 fn code(files: &'static [(&'static str, &'static str)], list: &[(&str, [u32; 3])]) -> String {
-    match bundle(&Files(files), files[0].0, &targets(list), &BTreeMap::new()) {
+    match bundle(
+        &Files(files),
+        files[0].0,
+        &targets(list),
+        &BTreeMap::new(),
+        false,
+    ) {
         Ok(b) => b.code,
         Err(e) => panic!("{e:?}"),
     }
@@ -69,6 +75,7 @@ fn imports_are_inlined_and_each_url_names_the_file_it_is_written_in() {
         "styles/site.css",
         &targets(&[]),
         &BTreeMap::new(),
+        false,
     )
     .unwrap();
 
@@ -123,16 +130,28 @@ fn an_error_is_located_in_the_file_it_is_in() {
         ("a.css", "@import \"b.css\";\n"),
         ("b.css", "p { color: red }\n\n  a$b { color: red }\n"),
     ];
-    let e = bundle(&Files(files), "a.css", &targets(&[]), &BTreeMap::new())
-        .err()
-        .unwrap();
+    let e = bundle(
+        &Files(files),
+        "a.css",
+        &targets(&[]),
+        &BTreeMap::new(),
+        false,
+    )
+    .err()
+    .unwrap();
     assert!(matches!(e.kind, ErrorKind::Css(_)), "{e:?}");
     assert_eq!(e.at.map(|at| (at.file, at.line)), Some(("b.css".into(), 3)));
 
     let files: &[(&str, &str)] = &[("a.css", "\n@import \"c.css\";\n")];
-    let e = bundle(&Files(files), "a.css", &targets(&[]), &BTreeMap::new())
-        .err()
-        .unwrap();
+    let e = bundle(
+        &Files(files),
+        "a.css",
+        &targets(&[]),
+        &BTreeMap::new(),
+        false,
+    )
+    .err()
+    .unwrap();
     let ErrorKind::Project(missing) = e.kind else {
         panic!("{e:?}")
     };
@@ -144,5 +163,34 @@ fn an_error_is_located_in_the_file_it_is_in() {
             line: 2,
             column: 1
         })
+    );
+}
+
+/// Tailwind's own lightningcss options (#59), as `@tailwindcss/node`'s
+/// `optimize` sets them: nesting and media query ranges are always
+/// compiled, and logical properties, `:dir()` and `light-dark()` never
+/// are, whatever the targets. The expected code is what the Tailwind
+/// 4.3.3 CLI's `--minify` writes for the same stylesheet.
+#[test]
+fn tailwind_output_gets_tailwinds_own_options() {
+    let files = &[(
+        "site.css",
+        ".a { &:hover { color: red } }\n@media (width >= 40rem) { .b { color: red } }\n@media not (width >= 40rem) { .e { color: red } }\n.c { margin-inline: 1px }\n.d { color: light-dark(red, blue) }\n:dir(rtl) .f { color: red }\n",
+    )];
+    let old = targets(&[("chrome", [80, 0, 0]), ("safari", [12, 0, 0])]);
+    let tailwind = bundle(&Files(files), "site.css", &old, &BTreeMap::new(), true)
+        .unwrap()
+        .code;
+    assert_eq!(
+        tailwind,
+        ".a:hover{color:red}@media (min-width:40rem){.b{color:red}}@media not all and (min-width:40rem){.e{color:red}}.c{margin-inline:1px}.d{color:light-dark(red,#00f)}:dir(rtl) .f{color:red}"
+    );
+    // Plain CSS for the same targets compiles all of them.
+    let plain = bundle(&Files(files), "site.css", &old, &BTreeMap::new(), false)
+        .unwrap()
+        .code;
+    assert!(
+        !plain.contains("margin-inline") && !plain.contains("light-dark("),
+        "{plain}"
     );
 }

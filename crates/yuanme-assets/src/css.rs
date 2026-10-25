@@ -13,8 +13,8 @@ use lightningcss::bundler::{Bundler, ResolveResult, SourceProvider};
 use lightningcss::dependencies::{Dependency, DependencyOptions};
 use lightningcss::error::ErrorLocation;
 use lightningcss::printer::PrinterOptions;
-use lightningcss::stylesheet::{MinifyOptions, ParserOptions};
-use lightningcss::targets::{Browsers, Targets};
+use lightningcss::stylesheet::{MinifyOptions, ParserFlags, ParserOptions, StyleSheet};
+use lightningcss::targets::{Browsers, Features, Targets};
 use oxc_resolver::{ResolveOptions, Resolver};
 
 pub use scope::Compound;
@@ -85,20 +85,41 @@ pub struct Location {
 /// Bundles the stylesheet at `entry` for `targets`: the oldest version of
 /// each browser, as `[major, minor, patch]` by Site config's key for it.
 /// `scopes` gives the attribute that scopes each Sidecar it imports (ADR
-/// 0006); with any, `:global()` parses.
+/// 0006); with any, `:global()` parses. With `tailwind`, `entry` is the
+/// Tailwind CLI's unminified output, which gets Tailwind's own options, as
+/// its `--optimize` does.
 pub fn bundle<P: Project>(
     project: &P,
     entry: &str,
     targets: &BTreeMap<String, [u32; 3]>,
     scopes: &BTreeMap<String, String>,
+    tailwind: bool,
 ) -> Result<Bundle, Box<Error<P::Error>>> {
-    let provider = Provider {
-        project,
-        texts: FrozenMap::new(),
-    };
+    let mut targets = self::targets(targets);
+    if tailwind {
+        targets.include = Features::Nesting | Features::MediaQueries;
+        targets.exclude = Features::LogicalProperties | Features::DirSelector | Features::LightDark;
+    }
+    let texts = FrozenMap::new();
+    if tailwind {
+        let output = project.read(entry).map_err(|e| {
+            Box::new(Error {
+                kind: ErrorKind::Project(e),
+                at: None,
+            })
+        })?;
+        let optimized =
+            tailwind_optimize(&output, entry, targets).map_err(|e| css_error(e, None))?;
+        texts.insert(PathBuf::from(entry), optimized);
+    }
+    let provider = Provider { project, texts };
     let options = ParserOptions {
         error_recovery: false,
         css_modules: (!scopes.is_empty()).then(scope::modules),
+        flags: match tailwind {
+            true => TAILWIND_FLAGS,
+            false => ParserFlags::empty(),
+        },
         ..ParserOptions::default()
     };
     let mut bundler = Bundler::new(&provider, None, options);
@@ -121,7 +142,6 @@ pub fn bundle<P: Project>(
             },
         )?;
     }
-    let targets = self::targets(targets);
     sheet
         .minify(MinifyOptions {
             targets,
@@ -161,6 +181,44 @@ pub fn bundle<P: Project>(
         urls,
         compounds,
     })
+}
+
+/// The drafts `@tailwindcss/node`'s `optimize` parses: custom media, and
+/// the `>>>` combinator.
+const TAILWIND_FLAGS: ParserFlags =
+    ParserFlags::CUSTOM_MEDIA.union(ParserFlags::DEEP_SELECTOR_COMBINATOR);
+
+/// The first of the two passes `optimize` in `@tailwindcss/node` 4.3.3
+/// makes over the CLI's output, with error recovery, as Tailwind keeps CSS
+/// lightningcss doesn't know; the bundle is the second, which merges the
+/// rules nesting split apart. A third would change the CSS again:
+/// lightningcss adds another `-webkit-text-decoration` to preflight's
+/// `a` rule on each pass.
+fn tailwind_optimize(css: &str, file: &str, targets: Targets) -> Result<String, String> {
+    let options = ParserOptions {
+        filename: file.to_string(),
+        error_recovery: true,
+        flags: TAILWIND_FLAGS,
+        ..ParserOptions::default()
+    };
+    let mut sheet = StyleSheet::parse(css, options).map_err(|e| e.to_string())?;
+    sheet
+        .minify(MinifyOptions {
+            targets,
+            ..MinifyOptions::default()
+        })
+        .map_err(|e| e.to_string())?;
+    let css = sheet
+        .to_css(PrinterOptions {
+            targets,
+            ..PrinterOptions::default()
+        })
+        .map_err(|e| e.to_string())?
+        .code;
+    // lightningcss writes a negated range as `@media not (…)`, which Media
+    // Queries Level 3 browsers drop. It prints Tailwind's rewrite back as
+    // it is.
+    Ok(css.replace("@media not (", "@media not all and ("))
 }
 
 fn css_error<E>(message: String, at: Option<ErrorLocation>) -> Box<Error<E>> {
