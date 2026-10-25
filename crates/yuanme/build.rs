@@ -27,7 +27,11 @@ fn main() {
     // checkout counts.
     let ours = git(&["rev-parse", "--show-toplevel"])
         .is_some_and(|top| Path::new(&top) == workspace.canonicalize().unwrap_or_default());
-    let engine = match git(&["rev-parse", "HEAD"]).filter(|_| ours) {
+    // The release workflow builds from a checkout too, and sets this
+    // (.github/build-setup.yml).
+    println!("cargo::rerun-if-env-changed=YUANME_RELEASE");
+    let release = std::env::var_os("YUANME_RELEASE").is_some();
+    let engine = match git(&["rev-parse", "HEAD"]).filter(|_| ours && !release) {
         Some(commit) => {
             let status = git(&["status", "--porcelain", "--untracked-files=no"]);
             let dirty = status.is_none_or(|s| !s.is_empty());

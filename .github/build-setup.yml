@@ -10,6 +10,11 @@
   run: cargo install --locked cargo-about@0.9.2 --features cli
 - name: Write THIRD_PARTY_NOTICES.md
   run: cargo xtask notices
+# A release reports its version alone, not the commit a checkout adds
+# (crates/yuanme/build.rs).
+- name: Build as a release
+  shell: bash
+  run: echo YUANME_RELEASE=1 >> "$GITHUB_ENV"
 # Pinned, where dist would `pip3 install` whatever is newest.
 - name: Install zig
   if: runner.os == 'Linux'

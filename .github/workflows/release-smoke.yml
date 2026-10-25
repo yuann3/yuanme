@@ -31,6 +31,7 @@ jobs:
         shell: bash
     env:
       ARCHIVE: yuanme-${{ matrix.target }}.${{ matrix.archive }}
+      PLAN: ${{ inputs.plan }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -71,7 +72,10 @@ jobs:
           file unpacked/yuanme | grep -Eq 'static(ally|-pie) linked'
       - name: Build a Site
         run: |
+          # A release reports its version alone.
+          [[ $PLAN =~ \"app_version\":\"([^\"]+)\" ]]
           unpacked/yuanme --version
+          test "$(unpacked/yuanme --version)" = "yuanme ${BASH_REMATCH[1]}"
           cp -R crates/yuanme-engine/tests/sites/assets smoke-site
           unpacked/yuanme build -C smoke-site --strict
           test -f smoke-site/dist/index.html
