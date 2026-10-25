@@ -1,0 +1,5 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: show(&events)
+---
+{"collection":"posts","path":"content/posts/hello-world-again.md","type":"entry-created","unfilled":[],"url":"/blog/hello-world-again/"}

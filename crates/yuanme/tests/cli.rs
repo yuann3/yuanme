@@ -346,6 +346,51 @@ fn routes_lists_every_route_and_what_produces_it() {
 }
 
 #[test]
+fn new_creates_an_entry_that_checks() {
+    let dir = project(SITE);
+    let root = dir.path();
+    let today = jiff::Zoned::now()
+        .with_time_zone(jiff::tz::TimeZone::get("Asia/Singapore").unwrap())
+        .date()
+        .to_string();
+    let (code, events) = json(root, &["new", "posts", "Hello: World, again"]);
+    assert_eq!(code, 0);
+    insta::assert_snapshot!(show(&events));
+    let text = fs::read_to_string(root.join("content/posts/hello-world-again.md")).unwrap();
+    insta::assert_snapshot!(text.replace(&today, "TODAY"));
+
+    let human = yuanme(root, &["new", "posts", "Notes on Org", "--format", "org"]);
+    assert_eq!(human.code, 0);
+    assert_eq!(
+        human.stdout,
+        "content/posts/notes-on-org.org\n/blog/notes-on-org/\n"
+    );
+    let org = fs::read_to_string(root.join("content/posts/notes-on-org.org")).unwrap();
+    assert!(org.starts_with("#+TITLE: Notes on Org\n#+DATE: ["), "{org}");
+
+    // Both are valid Entries, published at the URLs `new` printed.
+    let (code, _) = json(root, &["check"]);
+    assert_eq!(code, 0);
+    let (_, routes) = json(root, &["routes"]);
+    for url in ["/blog/hello-world-again/", "/blog/notes-on-org/"] {
+        assert!(routes.iter().any(|r| r["url"] == url), "{url}");
+    }
+
+    let again = yuanme(root, &["new", "posts", "Hello: World, again"]);
+    assert_eq!(again.code, 2);
+    assert_eq!(
+        again.stderr,
+        "error: content/posts/hello-world-again.md already exists\n"
+    );
+    let typo = yuanme(root, &["new", "post", "X"]);
+    assert_eq!(typo.code, 2);
+    assert_eq!(
+        typo.stderr,
+        "error: there is no Collection `post`; did you mean `posts`?\n"
+    );
+}
+
+#[test]
 fn schema_prints_each_schema() {
     let dir = project(SITE);
     let root = dir.path();

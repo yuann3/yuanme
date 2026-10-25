@@ -1,0 +1,10 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: "text.replace(&today, \"TODAY\")"
+---
+---
+title: "Hello: World, again"
+date: TODAY
+description: TODO
+kind: essay
+---

@@ -1,5 +1,6 @@
 mod events;
 mod load;
+mod new;
 mod report;
 mod schemas;
 mod sync;
@@ -81,6 +82,13 @@ enum Command {
     },
     /// Report every Diagnostic `build` would, rendering every Page in memory and writing none.
     Check(CheckArgs),
+    /// Create an Entry whose required fields are filled in, and print its path and Route.
+    New {
+        collection: String,
+        title: String,
+        #[arg(long, value_enum, default_value_t = new::Format::Md)]
+        format: new::Format,
+    },
     /// List every Route and what produces it.
     Routes {
         /// Include Drafts.
@@ -225,6 +233,11 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
             out: out_dir,
         } => build(&root, &root.join(out_dir), clean, &check, out),
         Command::Check(check) => self::check(&root, &check, out),
+        Command::New {
+            collection,
+            title,
+            format,
+        } => new(&root, &collection, &title, format, out),
         Command::Routes { drafts } => routes(&root, drafts, out),
         Command::Schema { which } => schema(&root, which, out),
     }
@@ -445,6 +458,50 @@ fn site_or_report<'b>(run: &'b Run, out: &Out) -> Option<(&'b Config, &'b Site)>
             None
         }
     }
+}
+
+fn new(
+    root: &Path,
+    collection: &str,
+    title: &str,
+    format: new::Format,
+    out: &Out,
+) -> Result<u8, Error> {
+    let run = engine_build(root, &root.join("dist"), false, false)?;
+    let Some(config) = config_or_report(&run, out) else {
+        return Ok(SITE_ERRORS);
+    };
+    let found = new::collection(config, collection).map_err(Error::BadCommand)?;
+    let zone =
+        jiff::tz::TimeZone::get(&config.site.timezone).expect("Site config checked the zone");
+    let today = jiff::Zoned::now().with_time_zone(zone).date();
+    let created = new::entry(&found, title, format, today).map_err(Error::BadCommand)?;
+    let path = root.join(&created.path);
+    if path.exists() {
+        return Err(Error::BadCommand(format!(
+            "{} already exists",
+            created.path
+        )));
+    }
+    fs::create_dir_all(path.parent().expect("in a Collection's folder"))?;
+    fs::write(&path, &created.text)?;
+    for field in &created.unfilled {
+        out.say(&format!(
+            "warning: fill in `{field}` in {}: it needs an image",
+            created.path
+        ));
+    }
+    if out.json {
+        out.event(Event::EntryCreated {
+            path: created.path,
+            url: created.url,
+            collection: collection.to_string(),
+            unfilled: created.unfilled,
+        });
+    } else {
+        stdout(&format!("{}\n{}", created.path, created.url));
+    }
+    Ok(0)
 }
 
 fn routes(root: &Path, drafts: bool, out: &Out) -> Result<u8, Error> {

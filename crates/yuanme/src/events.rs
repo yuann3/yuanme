@@ -21,6 +21,14 @@ pub enum Event<'a> {
         warnings: usize,
     },
     Route(Route),
+    EntryCreated {
+        path: String,
+        url: String,
+        collection: String,
+        /// Required fields `new` couldn't give a valid value, such as an
+        /// image, which needs a file.
+        unfilled: Vec<String>,
+    },
     Schema {
         name: String,
         schema: Value,
@@ -91,6 +99,18 @@ impl Event<'_> {
                 }
                 json
             }
+            Event::EntryCreated {
+                path,
+                url,
+                collection,
+                unfilled,
+            } => json!({
+                "type": "entry-created",
+                "path": path,
+                "url": url,
+                "collection": collection,
+                "unfilled": unfilled,
+            }),
             Event::Schema { name, schema } => {
                 json!({ "type": "schema", "name": name, "schema": schema })
             }
@@ -293,6 +313,20 @@ pub fn schema() -> Value {
                     json!({ "type": "string", "description": "The name Site config gives a Template's Route or a feed." }),
                 ),
             ],
+        ),
+        event(
+            Some("entry-created"),
+            "`yuanme new` wrote an Entry.",
+            &[
+                ("path", string.clone()),
+                ("url", string.clone()),
+                ("collection", string.clone()),
+                (
+                    "unfilled",
+                    json!({ "type": "array", "items": { "type": "string" }, "description": "Required fields left for the Author, such as an image, which needs a file." }),
+                ),
+            ],
+            &[],
         ),
         event(
             Some("schema"),
