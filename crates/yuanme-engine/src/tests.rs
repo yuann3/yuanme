@@ -318,7 +318,7 @@ fn templates_render_each_route_and_the_sitemap_and_sidecars_are_not_templates() 
     );
     assert_eq!(
         text(&build.files["blog/pew/index.html"].body),
-        "<h1>Pew</h1><p>Hi.</p>"
+        "<h1 data-y-ihxwj1>Pew</h1><p>Hi.</p>"
     );
 
     // The sitemap is the Engine's, so a Static file can't take its name.

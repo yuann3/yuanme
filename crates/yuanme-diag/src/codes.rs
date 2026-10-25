@@ -326,6 +326,11 @@ codes! {
         example: "<a href=\"{{ url('/abuot/') }}\">About</a>",
         fix: "Use a path the Site has, such as the one the help suggests. Every URL of a Site is declared in Site config.",
     }
+    TEMPLATE_UNSCOPED_TAG = "template/unscoped-tag" {
+        meaning: "A Template with a Sidecar stylesheet writes a tag that yuanme can't scope, or can't check, as written. A tag whose name is built with `{{ }}`, such as `<h{{ level }}>`, gets the scope attribute, but no type selector can be checked against it. A tag whose name `{% if %}` chooses gets none. A tag whose end yuanme never finds, because its quotes are unbalanced in each branch of an `{% if %}`, leaves every tag after it without one. `check` warns; the Page still builds.",
+        example: "<{% if entry.featured %}h1{% else %}h2{% endif %}>{{ entry.title }}</h1>\n(in a Template with a Sidecar)",
+        fix: "Write each tag whole once per branch, `{% if entry.featured %}<h1>…</h1>{% else %}<h2>…</h2>{% endif %}`, and close quotes in the branch that opens them. A `{{ }}` that prints attributes needs a space after the tag name: `<a {{ attrs | attrs }}>`.",
+    }
     ASSET_NOT_FOUND = "asset/not-found" {
         meaning: "A `<link href>` or `<script src>` in a Page, an `@import` or `url()` in a stylesheet, or an `import` in a Script names a path that is no file of the project, no Static file and no URL of the Site. A path from `/` names a file from the project's root, such as `/styles/site.css` for `styles/site.css`, or a Static file without its `static/`; any other path is relative to the Page, the stylesheet or the Script. `@import \"pkg/x.css\"` also looks in `node_modules`, and so does an `import` of a bare name such as `nanoid`. A Script's `import \"./x\"` may leave out `.ts` or `.js`, and `./x.js` also finds `x.ts`.",
         example: "<link rel=\"stylesheet\" href=\"/styles/sit.css\">\n(with styles/site.css)",

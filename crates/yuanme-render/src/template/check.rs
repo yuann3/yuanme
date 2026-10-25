@@ -5,8 +5,8 @@
 //! AST has no stability promise, so all that reads it is here (#24).
 //!
 //! It reads each Template as the Author wrote it, so its spans need no
-//! SourceMap; render errors go through one once scoped styles rewrite
-//! Templates (ADR 0006).
+//! map; render errors in a Template that scoped styles rewrite are mapped
+//! back to it (ADR 0006).
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;

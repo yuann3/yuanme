@@ -61,7 +61,7 @@ article{color:#333}
 <script type="application/ld+json">{"name": "e"}</script>
 <style>body { margin: 0 }</style>
 </head>
-<body><a class="row" href="/blog/pew/">Pew</a></body>
+<body><a data-y-v2sp31 class="row" href="/blog/pew/">Pew</a></body>
 </html>
 === logo.svg
 <svg xmlns="http://www.w3.org/2000/svg"/>

@@ -8,10 +8,10 @@ use std::sync::Arc;
 
 use yuanme_content::config::{self, Config};
 use yuanme_content::site::{self, Project, Site};
-use yuanme_diag::{Diagnostic, FileId, Files, codes};
+use yuanme_diag::{Diagnostic, FileId, Files, Level, codes};
 use yuanme_render::highlight;
 use yuanme_render::image::{self, Image, Images, Request};
-use yuanme_render::template::{self, Page};
+use yuanme_render::template::{self, Page, scope};
 
 /// Every file under `dir`, by its path from `dir`.
 fn read(dir: &Path) -> Vec<(String, String)> {
@@ -89,6 +89,7 @@ fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
         &project.site,
         &project.files,
         &project.templates,
+        &project.scoped,
         &project.statics,
         &project.code,
         &vec![Default::default(); project.site.entries.len()],
@@ -102,6 +103,8 @@ struct Resolved {
     config: Config,
     site: Site,
     templates: BTreeMap<String, FileId>,
+    /// The Templates with a Sidecar stylesheet.
+    scoped: BTreeSet<String>,
     statics: BTreeSet<String>,
     code: Vec<highlight::Code>,
 }
@@ -122,15 +125,21 @@ fn resolve(written: &[(String, String)]) -> Resolved {
         .into_iter()
         .map(|p| files.add(p, text(p).as_str()))
         .collect();
-    let templates = written
+    let templates: BTreeMap<String, FileId> = written
         .iter()
         .filter_map(|(p, t)| Some((p.strip_prefix("templates/")?.to_string(), t)))
+        .filter(|(name, _)| !name.ends_with(".css"))
         .map(|(name, t)| {
             (
                 name.clone(),
                 files.add(format!("templates/{name}"), t.as_str()),
             )
         })
+        .collect();
+    let scoped = templates
+        .keys()
+        .filter(|name| paths.contains(&scope::sidecar(name).as_str()))
+        .cloned()
         .collect();
     let statics: BTreeSet<String> = paths
         .iter()
@@ -160,6 +169,7 @@ fn resolve(written: &[(String, String)]) -> Resolved {
         config,
         site,
         templates,
+        scoped,
         statics,
         code,
     }
@@ -229,6 +239,7 @@ fn every_page_sees_what_its_context_schema_says() {
         &project.site,
         &project.files,
         &project.templates,
+        &project.scoped,
         &project.statics,
         &project.code,
         &vec![Default::default(); project.site.entries.len()],
@@ -278,6 +289,56 @@ fn each_page_records_the_templates_it_used() {
     );
     assert_eq!(page(&pages, "404.html").templates, ["404.html"]);
     assert_eq!(page(&pages, "rss.xml").templates, ["rss.xml"]);
+}
+
+/// A Template with a Sidecar stylesheet has its attribute in every start
+/// tag its own file writes (ADR 0006): slot content gets the attribute of
+/// the file it is written in, a Component's markup its own, and what Jinja
+/// prints none. `head` and what is in it never get one; `html` and `body`
+/// do.
+#[test]
+fn a_templates_own_tags_carry_its_scope_attribute() {
+    let files = r#"=== templates/components/card.html
+{# props: title: string #}
+{% macro card(title) %}<div class="card"><h2>{{ title }}</h2>{{ caller() }}</div>{% endmacro %}
+=== templates/components/card.css
+.card {}
+=== templates/home.html
+{% from "components/card.html" import card %}
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Home</title><style>p > a { color: red }</style></head>
+<body class="{{ 'a' }}">
+{% call card(title="T") %}<p>slot <a href="/">link</a></p>{% endcall %}
+<a {% if true %}class="x"{% endif %}>split</a><br/><img src="/i.png" alt="i">
+<svg viewBox="0 0 1 1"><path d="M0 0"/></svg>
+<textarea><b>not markup</b></textarea>
+<!-- <b>comment</b> -->{# <b>jinja</b> #}{% raw %}<b>raw</b>{% endraw %}.
+{{ "<i>string</i>"|safe }}<p title="a > b" data-x='{{ "<q>" }}'>q</p>
+</body>
+</html>
+=== templates/home.css
+p {}
+"#;
+    let (_, pages, diagnostics) = render(&fixture(BASE, files));
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    let want = r#"<!doctype html>
+<html H lang="en">
+<head><meta charset="utf-8"><title>Home</title><style>p > a { color: red }</style></head>
+<body H class="a">
+<div C class="card"><h2 C>T</h2><p H>slot <a H href="/">link</a></p></div><a H class="x">split</a><br H/><img H src="/i.png" alt="i">
+<svg H viewBox="0 0 1 1"><path H d="M0 0"/></svg>
+<textarea H><b>not markup</b></textarea>
+<!-- <b>comment</b> --><b>raw</b>.
+<i>string</i><p H title="a > b" data-x='&lt;q&gt;'>q</p>
+</body>
+</html>"#
+        .replace(" H", " data-y-nc1e2s")
+        .replace(" C", " data-y-lxqjer");
+    assert_eq!(page(&pages, "index.html").text.trim_end(), want);
+    // Sites' HTML holds the attribute, so how it is made is frozen.
+    assert_eq!(scope::attribute("home.html"), "data-y-nc1e2s");
+    assert_eq!(scope::attribute("components/row.html"), "data-y-v2sp31");
 }
 
 #[test]
@@ -614,6 +675,39 @@ const ERRORS: &[(&str, &str, &str, &str)] = &[
         "templates/home.html",
         "c()",
     ),
+    // In a Template with a Sidecar, which minijinja reads with the scope
+    // attribute added before the error, on the same line.
+    (
+        "template/render",
+        "=== templates/posts/entry.html\n<h2><b>{{ entry.headings[0].text }}</b></h2>\n=== templates/posts/entry.css\nh2 {}",
+        "templates/posts/entry.html",
+        "text",
+    ),
+    (
+        "template/syntax",
+        "=== templates/home.html\n<p><b>{{ site.url }</b></p>\n=== templates/home.css\np {}",
+        "templates/home.html",
+        "}",
+    ),
+    // Warnings: the Page renders.
+    (
+        "template/unscoped-tag",
+        "=== templates/home.html\n{% set n = 2 %}<h{{ n }}>x</h2>\n=== templates/home.css\nh2 {}",
+        "templates/home.html",
+        "<h{{ n }}",
+    ),
+    (
+        "template/unscoped-tag",
+        "=== templates/home.html\n<{% if site.url %}h1{% else %}h2{% endif %}>x</h1>\n=== templates/home.css\nh1 {}",
+        "templates/home.html",
+        "<",
+    ),
+    (
+        "template/unscoped-tag",
+        "=== templates/home.html\n<a {% if site.url %}title=\"x{% else %}title=\"y{% endif %}\">x</a>\n=== templates/home.css\na {}",
+        "templates/home.html",
+        "<",
+    ),
     // Org the Engine reports as an error fails its filter.
     (
         "template/render",
@@ -627,10 +721,14 @@ const ERRORS: &[(&str, &str, &str, &str)] = &[
 fn each_template_mistake_is_one_diagnostic_with_its_code_on_the_right_text() {
     for (code, files, file, covered) in ERRORS {
         let (sources, pages, diagnostics) = render(&fixture(BASE, files));
-        assert!(pages.is_empty(), "{code}: a failed render writes nothing");
         let [d] = diagnostics.as_slice() else {
             panic!("{code} in {files}: {diagnostics:#?}");
         };
+        assert_eq!(
+            pages.is_empty(),
+            d.level == Level::Error,
+            "{code}: a failed render writes nothing, and a warning fails none"
+        );
         assert_eq!(d.code.name, *code, "{d:#?}");
         let at = d.primary();
         assert_eq!(sources.path(at.file), *file, "{d:#?}");

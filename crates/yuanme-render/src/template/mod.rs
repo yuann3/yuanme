@@ -4,6 +4,7 @@
 mod check;
 mod context;
 mod filters;
+pub mod scope;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
@@ -17,7 +18,7 @@ use minijinja::{AutoEscape, Environment, Error, ErrorKind, UndefinedBehavior};
 use rayon::prelude::*;
 use yuanme_content::config::{Collection, Config};
 use yuanme_content::site::{self, RouteKind, Site};
-use yuanme_diag::{Code, Diagnostic, FileId, Files, Span, codes};
+use yuanme_diag::{Code, Diagnostic, FileId, Files, Level, Span, codes};
 
 use crate::image::Images;
 
@@ -52,11 +53,12 @@ pub struct Page {
 }
 
 /// Renders every Route, then the sitemap. `templates` is every file of
-/// `templates/` in `files`, by its path there; `statics` is the URL of
-/// every Static file, which `url()` accepts as well as Routes; `code` is
-/// each Entry's highlighted code blocks, and `pictures` its processed
-/// images; `images` makes what `image()` returns. Any error fails the whole render, after every Page has been
-/// tried.
+/// `templates/` in `files`, by its path there, and `scoped` the ones with
+/// a Sidecar stylesheet, whose tags get their scope attribute (ADR 0006);
+/// `statics` is the URL of every Static file, which `url()` accepts as
+/// well as Routes; `code` is each Entry's highlighted code blocks, and
+/// `pictures` its processed images; `images` makes what `image()` returns.
+/// Any error fails the whole render, after every Page has been tried.
 #[expect(
     clippy::too_many_arguments,
     reason = "each is one input of the build, which a struct would only rename"
@@ -66,6 +68,7 @@ pub fn render(
     site: &Site,
     files: &Files,
     templates: &BTreeMap<String, FileId>,
+    scoped: &BTreeSet<String>,
     statics: &BTreeSet<String>,
     code: &[crate::highlight::Code],
     pictures: &[crate::html::Pictures],
@@ -76,6 +79,17 @@ pub fn render(
     let mut urls: BTreeSet<String> = site.routes.iter().map(|r| r.url.clone()).collect();
     urls.extend(statics.iter().cloned());
     urls.extend(sitemap.iter().map(|p| format!("/{}", p.output)));
+
+    let mut diagnostics = Diagnostics::default();
+    let mut rewritten: BTreeMap<&str, scope::Scoped> = BTreeMap::new();
+    for name in scoped {
+        let file = templates[name];
+        let (text, unscoped) = scope::rewrite(files.text(file), &scope::attribute(name));
+        for (range, why) in unscoped {
+            diagnostics.push(unscoped_tag(why, Span { file, range }));
+        }
+        rewritten.insert(name, text);
+    }
 
     let mut env = Environment::new();
     env.set_undefined_behavior(UndefinedBehavior::SemiStrict);
@@ -118,15 +132,15 @@ pub fn render(
         images.clone(),
     );
 
-    let mut diagnostics = Diagnostics::default();
     let mut sources: BTreeMap<&str, &str> = templates
         .iter()
         .map(|(name, &file)| (name.as_str(), files.text(file)))
         .collect();
     sources.entry(RSS.0).or_insert(RSS.1);
     for (&name, &source) in &sources {
+        let source = rewritten.get(name).map_or(source, |r| r.text.as_str());
         if let Err(e) = env.add_template(name, source) {
-            diagnostics.push(diagnostic(&e, files, templates, None));
+            diagnostics.push(diagnostic(&e, files, templates, &rewritten, None));
         }
     }
 
@@ -153,7 +167,7 @@ pub fn render(
     for d in check::check(&env, config, site, files, templates, &chosen, &*images) {
         diagnostics.push(d);
     }
-    if !diagnostics.0.is_empty() {
+    if diagnostics.failed() {
         return (Vec::new(), diagnostics.0);
     }
 
@@ -190,7 +204,7 @@ pub fn render(
                             },
                         })
                     }
-                    Err(e) => Err(diagnostic(&e, files, templates, Some(at))
+                    Err(e) => Err(diagnostic(&e, files, templates, &rewritten, Some(at))
                         .note(format!("while rendering `{}`", route.url))),
                 }
             })
@@ -203,11 +217,34 @@ pub fn render(
             Err(d) => diagnostics.push(d),
         }
     }
-    if !diagnostics.0.is_empty() {
+    if diagnostics.failed() {
         return (Vec::new(), diagnostics.0);
     }
     pages.extend(sitemap);
-    (pages, Vec::new())
+    (pages, diagnostics.0)
+}
+
+fn unscoped_tag(why: scope::Unscoped, span: Span) -> Diagnostic {
+    let (message, label, help) = match why {
+        scope::Unscoped::DynamicName => (
+            "this tag's name is built with `{{ }}`, so `check` can't match the Sidecar's type selectors against it",
+            "the tag gets the scope attribute after the expression",
+            "write the tag once for each name, or a space after the name if `{{ }}` prints attributes",
+        ),
+        scope::Unscoped::BranchedName => (
+            "this tag's name is chosen by `{% %}`, so it gets no scope attribute",
+            "not scoped",
+            "write the whole tag in each branch",
+        ),
+        scope::Unscoped::Unterminated => (
+            "yuanme can't find where this tag ends, so it and the tags after it get no scope attribute",
+            "no `>` outside quotes after this",
+            "close each quote in the branch of `{% if %}` that opens it",
+        ),
+    };
+    Diagnostic::warning(&codes::TEMPLATE_UNSCOPED_TAG, message, span)
+        .label(label)
+        .help(help)
 }
 
 /// Where a preload goes: before `</head>`, or else after the doctype, since
@@ -243,6 +280,10 @@ impl Diagnostics {
         if !self.0.iter().any(|seen| key(seen) == key(&d)) {
             self.0.push(d);
         }
+    }
+
+    fn failed(&self) -> bool {
+        self.0.iter().any(|d| d.level == Level::Error)
     }
 }
 
@@ -293,13 +334,15 @@ fn template_of(
     }
 }
 
-/// A minijinja error as a Diagnostic in the Template it happened in.
+/// A minijinja error as a Diagnostic in the Template it happened in, as
+/// the Author wrote it: `rewritten` maps a scoped Template's places back.
 /// `route` is where Site config chose the Page's Template, for an error in
 /// the built-in one.
 fn diagnostic(
     e: &Error,
     files: &Files,
     templates: &BTreeMap<String, FileId>,
+    rewritten: &BTreeMap<&str, scope::Scoped>,
     route: Option<&Span>,
 ) -> Diagnostic {
     let code: &'static Code = std::iter::successors(std::error::Error::source(e), |s| s.source())
@@ -325,7 +368,12 @@ fn diagnostic(
     let span = match (file, route) {
         (Some(&file), _) => {
             let text = files.text(file);
-            let range = e.range().or_else(|| {
+            let scoped = e.name().and_then(|n| rewritten.get(n));
+            let range = e.range().map(|r| match scoped {
+                Some(s) => s.original(r.start)..s.original(r.end),
+                None => r,
+            });
+            let range = range.or_else(|| {
                 // A line, when minijinja has no finer place.
                 let line = e.line()?;
                 let start: usize = text

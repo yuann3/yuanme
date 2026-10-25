@@ -21,6 +21,7 @@ use std::sync::Arc;
 use yuanme_content::config::{self, Budget, Config};
 use yuanme_content::site::{self, Project, RouteKind, Site};
 use yuanme_diag::{Code, Diagnostic, FileId, Files, Level, Span, codes};
+use yuanme_render::template::scope;
 
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
@@ -223,11 +224,17 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let (pictures, more) = images.bodies(&site);
     diagnostics.extend(more);
     let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
+    let scoped = templates
+        .keys()
+        .filter(|t| inputs.files.contains_key(&scope::sidecar(t)))
+        .cloned()
+        .collect();
     let (pages, more) = yuanme_render::template::render(
         &config,
         &site,
         &sources,
         &templates,
+        &scoped,
         &static_urls,
         &code,
         &pictures,
