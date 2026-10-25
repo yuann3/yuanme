@@ -27,6 +27,9 @@ const TOPICS: &[(&str, &str)] = &[
     ("math", include_str!("docs/math.md")),
     ("templates", include_str!("docs/templates.md")),
     ("components", include_str!("docs/components.md")),
+    ("styles", include_str!("docs/styles.md")),
+    ("scripts", include_str!("docs/scripts.md")),
+    ("images", include_str!("docs/images.md")),
     ("cli", include_str!("docs/cli.md")),
 ];
 
