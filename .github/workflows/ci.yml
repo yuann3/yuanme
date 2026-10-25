@@ -146,6 +146,7 @@ jobs:
         with:
           tool: cargo-deny@0.20.2
       - run: cargo deny --locked check
+      - run: cargo xtask vendor-check
       - name: deny.toml rejects a GPL crate
         run: |
           if cargo deny --manifest-path ci/deny-fixture/Cargo.toml --locked --config deny.toml check licenses 2> deny.out; then
