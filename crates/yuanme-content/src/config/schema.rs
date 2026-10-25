@@ -54,6 +54,8 @@ impl Key {
 
 pub(crate) enum Shape {
     String,
+    /// One of these strings.
+    Choice(&'static [&'static str]),
     /// An absolute `http` or `https` URL.
     Url,
     /// A URL path from the Site root. It must hold this placeholder, and no other.
@@ -70,6 +72,8 @@ pub(crate) enum Shape {
     Bool,
     Strings,
     Table(&'static [Key]),
+    /// An array of tables, as `[[host.headers]]` writes one.
+    Tables(&'static [Key]),
     /// A table whose keys the Author names, such as Collections.
     Map(&'static Shape),
     /// A table that takes any keys: `[site.extra]`.
@@ -119,6 +123,72 @@ pub(crate) const ROOT: &[Key] = &[
         "build",
         Shape::Table(BUILD),
         "How yuanme builds the Site's stylesheets and Scripts.",
+    ),
+    Key::optional(
+        "host",
+        Shape::Table(HOST),
+        "The static host the Site is deployed to, and the headers and redirects it sends.",
+    ),
+];
+
+const HOST: &[Key] = &[
+    Key::optional(
+        "adapter",
+        Shape::Choice(&[
+            "cloudflare",
+            "netlify",
+            "vercel",
+            "github-pages",
+            "cloudflare-pages",
+            "static",
+        ]),
+        "The host whose configuration the build writes: \"cloudflare\" (Workers static assets, the default), \"netlify\", \"vercel\", \"github-pages\", \"cloudflare-pages\" or \"static\".",
+    ),
+    Key::optional(
+        "precompress",
+        Shape::Bool,
+        "Write a brotli `.br` and a gzip `.gz` beside each text file, for Caddy or nginx. Only with the `static` adapter: no other host serves them.",
+    ),
+    Key::optional(
+        "headers",
+        Shape::Tables(HEADER_RULE),
+        "Response headers for the URLs a path matches, after yuanme's own cache rules. Where two rules set one header, the later one wins.",
+    ),
+    Key::optional(
+        "redirects",
+        Shape::Tables(REDIRECT),
+        "URLs the host redirects, such as a Page's old address.",
+    ),
+];
+
+const HEADER_RULE: &[Key] = &[
+    Key::required(
+        "path",
+        Shape::Route(None),
+        "The URL path the headers are for, such as \"/resume.pdf\". One `*` matches any characters: \"/fonts/*\".",
+    ),
+    Key::required(
+        "headers",
+        Shape::Map(&Shape::String),
+        "The headers, by name: { \"Cache-Control\" = \"public, max-age=3600\" }.",
+    ),
+];
+
+const REDIRECT: &[Key] = &[
+    Key::required(
+        "from",
+        Shape::Route(None),
+        "The URL path that redirects, such as \"/old-post/\".",
+    ),
+    Key::required(
+        "to",
+        Shape::String,
+        "Where it goes: a URL path such as \"/blog/new-post/\", or an absolute URL.",
+    ),
+    Key::optional(
+        "status",
+        Shape::Int { min: 301 },
+        "301, 302, 307 or 308. Defaults to 308, a permanent redirect that keeps the method.",
     ),
 ];
 
@@ -444,6 +514,7 @@ fn table<'a>(keys: impl IntoIterator<Item = &'a Key>) -> Value {
 fn shape(shape: &Shape) -> Value {
     match shape {
         Shape::String => json!({ "type": "string" }),
+        Shape::Choice(choices) => json!({ "enum": choices }),
         Shape::Url => json!({ "type": "string", "format": "uri", "pattern": "^https?://[^/\\s]+" }),
         Shape::Route(Some(placeholder)) => {
             let placeholder = placeholder.replace('{', "\\{").replace('}', "\\}");
@@ -460,6 +531,7 @@ fn shape(shape: &Shape) -> Value {
         Shape::Bool => json!({ "type": "boolean" }),
         Shape::Strings => json!({ "type": "array", "items": { "type": "string" } }),
         Shape::Table(keys) => table(keys.iter()),
+        Shape::Tables(keys) => json!({ "type": "array", "items": table(keys.iter()) }),
         Shape::Map(value) => {
             json!({ "type": "object", "additionalProperties": self::shape(value) })
         }

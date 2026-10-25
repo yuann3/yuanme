@@ -100,6 +100,22 @@ items = { type = "object", fields = { label = { type = "string" }, href = { type
 
 [build]
 targets = { chrome = "120", safari = "16.4.1" }
+
+[host]
+adapter = "netlify"
+
+[[host.headers]]
+path = "/fonts/*"
+headers = { "Cache-Control" = "public, max-age=3600", "Access-Control-Allow-Origin" = "*" }
+
+[[host.redirects]]
+from = "/old-post/"
+to = "/blog/new-post/"
+
+[[host.redirects]]
+from = "/talk"
+to = "https://example.com/talk?id=1"
+status = 302
 "##;
     let (config, diagnostics) = check(text);
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
@@ -216,8 +232,44 @@ targets = { chrome = "120", safari = "16.4.1" }
             (&"safari".to_string(), &[16, 4, 1])
         ]
     );
+
+    let host = &config.host;
+    assert_eq!(host.adapter, Adapter::Netlify);
+    assert_eq!(&text[host.adapter_at.clone()], "\"netlify\"");
+    let [fonts] = host.headers.as_slice() else {
+        panic!("{:?}", host.headers)
+    };
+    assert_eq!(fonts.path, "/fonts/*");
+    assert_eq!(&text[fonts.path_at.clone()], "\"/fonts/*\"");
+    let mut headers = fonts.headers.clone();
+    headers.sort();
+    assert_eq!(
+        headers,
+        [
+            ("Access-Control-Allow-Origin".into(), "*".into()),
+            ("Cache-Control".into(), "public, max-age=3600".into())
+        ]
+    );
+    let redirects: Vec<_> = host
+        .redirects
+        .iter()
+        .map(|r| (r.from.as_str(), r.to.as_str(), r.status))
+        .collect();
+    // A redirect is permanent and keeps its method unless it says otherwise.
+    assert_eq!(
+        redirects,
+        [
+            ("/old-post/", "/blog/new-post/", 308),
+            ("/talk", "https://example.com/talk?id=1", 302)
+        ]
+    );
+
     let (config, _) = check(MINIMAL);
-    let targets: Vec<_> = config.unwrap().build.targets.into_iter().collect();
+    let config = config.unwrap();
+    // Workers static assets is the default host (#25).
+    assert_eq!(config.host.adapter, Adapter::Cloudflare);
+    assert!(config.host.headers.is_empty() && config.host.redirects.is_empty());
+    let targets: Vec<_> = config.build.targets.into_iter().collect();
     assert_eq!(
         targets,
         [
@@ -460,6 +512,83 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "[site]\nurl = \"https://e.com\"\n[taxonomies.tags]\ncollections = []\nroute = \"/tags/{term}/\"\nslugs = { \"C++\" = \"C Plus Plus\" }\n",
         "\"C Plus Plus\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[host]\nadapter = \"netlfy\"\n",
+        "\"netlfy\"",
+    ),
+    (
+        "config/wrong-type",
+        "[site]\nurl = \"https://e.com\"\n[host]\nheaders = { path = \"/\" }\n",
+        "{ path = \"/\" }",
+    ),
+    (
+        "config/missing-key",
+        "[site]\nurl = \"https://e.com\"\n[[host.redirects]]\nto = \"/b/\"\n",
+        "redirects",
+    ),
+    (
+        "config/unknown-key",
+        "[site]\nurl = \"https://e.com\"\n[[host.redirects]]\nfrom = \"/a/\"\nto = \"/b/\"\ncode = 301\n",
+        "code",
+    ),
+    // No host serves the files but Caddy and nginx.
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[host]\nprecompress = true\n",
+        "true",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.headers]]\npath = \"/*/a/*\"\nheaders = { X-A = \"1\" }\n",
+        "\"/*/a/*\"",
+    ),
+    // `:name` is a placeholder on Cloudflare and Netlify, and text on Vercel.
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.headers]]\npath = \"/:lang/\"\nheaders = { X-A = \"1\" }\n",
+        "\"/:lang/\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.headers]]\npath = \"/\"\nheaders = { \"X A\" = \"1\" }\n",
+        "\"X A\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.headers]]\npath = \"/\"\nheaders = { X-A = \"1\\nX-B: 2\" }\n",
+        "\"1\\nX-B: 2\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.headers]]\npath = \"/\"\nheaders = {}\n",
+        "{}",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.redirects]]\nfrom = \"/old/*\"\nto = \"/new/\"\n",
+        "\"/old/*\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.redirects]]\nfrom = \"/a/\"\nto = \"b/\"\n",
+        "\"b/\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.redirects]]\nfrom = \"/a/\"\nto = \"/a/\"\n",
+        "\"/a/\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.redirects]]\nfrom = \"/a/\"\nto = \"/b/\"\n[[host.redirects]]\nfrom = \"/a/\"\nto = \"/c/\"\n",
+        "\"/a/\"",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[[host.redirects]]\nfrom = \"/a/\"\nto = \"/b/\"\nstatus = 303\n",
+        "303",
     ),
 ];
 

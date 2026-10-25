@@ -209,6 +209,18 @@ impl Checker {
             | (Shape::Bool, DeValue::Boolean(_))
             | (Shape::Number, DeValue::Float(_)) => {}
             (Shape::Url, DeValue::String(s)) => self.url(s, at, path),
+            (Shape::Choice(choices), DeValue::String(s)) => {
+                if !choices.contains(&&**s) {
+                    let list: Vec<_> = choices.iter().map(|c| format!("\"{c}\"")).collect();
+                    self.invalid(
+                        format!("`{path}` must be one of {}", list.join(", ")),
+                        at.clone(),
+                    );
+                    if let Some(near) = similar(s, choices.iter().copied()) {
+                        self.suggest(format!("did you mean `{near}`?"), at, format!("\"{near}\""));
+                    }
+                }
+            }
             (Shape::Route(placeholder), DeValue::String(s)) => {
                 self.route(s, *placeholder, at, path)
             }
@@ -238,12 +250,13 @@ impl Checker {
                     Err(_) => self.too_large(path, at),
                 }
             }
-            (Shape::Strings, DeValue::Array(_))
+            (Shape::Strings | Shape::Tables(_), DeValue::Array(_))
             | (Shape::Table(_) | Shape::Map(_) | Shape::Field { .. }, DeValue::Table(_)) => {
                 self.nested(shape, value.get_mut(), key_span, path);
             }
             (
                 Shape::String
+                | Shape::Choice(_)
                 | Shape::Url
                 | Shape::Route(_)
                 | Shape::Version
@@ -254,6 +267,7 @@ impl Checker {
             (Shape::Number, _) => wrong(self, "a number"),
             (Shape::Bool, _) => wrong(self, "a boolean"),
             (Shape::Strings, _) => wrong(self, "an array of strings"),
+            (Shape::Tables(_), _) => wrong(self, "an array of tables"),
             (Shape::Table(_) | Shape::Map(_) | Shape::Free | Shape::Field { .. }, _) => {
                 wrong(self, "a table")
             }
@@ -276,6 +290,16 @@ impl Checker {
             (Shape::Table(keys), DeValue::Table(table)) => {
                 let keys: Vec<&Key> = keys.iter().collect();
                 self.table(&keys, table, key_span, path);
+            }
+            (Shape::Tables(keys), DeValue::Array(items)) => {
+                for item in items.iter_mut() {
+                    self.value(
+                        &Shape::Table(keys),
+                        item,
+                        key_span.clone(),
+                        &format!("{path}[]"),
+                    );
+                }
             }
             (Shape::Map(shape), DeValue::Table(table)) => {
                 for (name, value) in table.iter_mut() {

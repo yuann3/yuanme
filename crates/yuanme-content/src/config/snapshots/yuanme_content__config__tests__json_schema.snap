@@ -723,6 +723,82 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
       "description": "Feeds of published, listed Entries, newest first.",
       "type": "object"
     },
+    "host": {
+      "additionalProperties": false,
+      "description": "The static host the Site is deployed to, and the headers and redirects it sends.",
+      "properties": {
+        "adapter": {
+          "description": "The host whose configuration the build writes: \"cloudflare\" (Workers static assets, the default), \"netlify\", \"vercel\", \"github-pages\", \"cloudflare-pages\" or \"static\".",
+          "enum": [
+            "cloudflare",
+            "netlify",
+            "vercel",
+            "github-pages",
+            "cloudflare-pages",
+            "static"
+          ]
+        },
+        "headers": {
+          "description": "Response headers for the URLs a path matches, after yuanme's own cache rules. Where two rules set one header, the later one wins.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "headers": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "The headers, by name: { \"Cache-Control\" = \"public, max-age=3600\" }.",
+                "type": "object"
+              },
+              "path": {
+                "description": "The URL path the headers are for, such as \"/resume.pdf\". One `*` matches any characters: \"/fonts/*\".",
+                "pattern": "^/[^{}]*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "headers"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "precompress": {
+          "description": "Write a brotli `.br` and a gzip `.gz` beside each text file, for Caddy or nginx. Only with the `static` adapter: no other host serves them.",
+          "type": "boolean"
+        },
+        "redirects": {
+          "description": "URLs the host redirects, such as a Page's old address.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "from": {
+                "description": "The URL path that redirects, such as \"/old-post/\".",
+                "pattern": "^/[^{}]*$",
+                "type": "string"
+              },
+              "status": {
+                "description": "301, 302, 307 or 308. Defaults to 308, a permanent redirect that keeps the method.",
+                "minimum": 301,
+                "type": "integer"
+              },
+              "to": {
+                "description": "Where it goes: a URL path such as \"/blog/new-post/\", or an absolute URL.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "from",
+              "to"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "routes": {
       "additionalProperties": {
         "additionalProperties": false,
