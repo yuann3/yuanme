@@ -127,6 +127,10 @@ pub fn run(
         stop: Notify::new(),
         out,
     });
+    let stop = {
+        let _runtime = runtime.enter();
+        stopped(shared.clone())?
+    };
     out.say(&format!("serving {url}"));
     out.event(Event::ServerReady {
         url: url.clone(),
@@ -142,10 +146,9 @@ pub fn run(
     }
     let builder = shared.clone();
     std::thread::spawn(move || rebuild(session, &batches, &builder, &checks, write.as_deref()));
-    let stopping = shared.clone();
     runtime.block_on(async {
         axum::serve(listener, serve::router(shared.clone()))
-            .with_graceful_shutdown(async move { stopped(&stopping).await })
+            .with_graceful_shutdown(stop)
             .await
     })?;
     drop(watcher);
@@ -162,22 +165,32 @@ pub fn run(
     Ok(0)
 }
 
-/// Ctrl-C, a SIGTERM such as `kill` sends, or `yuanme dev stop`.
-async fn stopped(shared: &serve::Shared) {
+/// Ctrl-C, a SIGTERM such as `kill` sends, or `yuanme dev stop`. Its
+/// signal handlers are set up here, before `server-ready`: until then, a
+/// SIGTERM ends the process without saving its cache.
+fn stopped(shared: Arc<serve::Shared>) -> io::Result<impl Future<Output = ()> + Send + 'static> {
     #[cfg(unix)]
     {
         use tokio::signal::unix::{SignalKind, signal};
-        let mut term = signal(SignalKind::terminate()).expect("a SIGTERM handler");
-        tokio::select! {
-            _ = tokio::signal::ctrl_c() => {}
-            _ = term.recv() => {}
-            _ = shared.stop.notified() => {}
-        }
+        let mut interrupt = signal(SignalKind::interrupt())?;
+        let mut term = signal(SignalKind::terminate())?;
+        Ok(async move {
+            tokio::select! {
+                _ = interrupt.recv() => {}
+                _ = term.recv() => {}
+                _ = shared.stop.notified() => {}
+            }
+        })
     }
     #[cfg(not(unix))]
-    tokio::select! {
-        _ = tokio::signal::ctrl_c() => {}
-        _ = shared.stop.notified() => {}
+    {
+        let mut ctrl_c = tokio::signal::windows::ctrl_c()?;
+        Ok(async move {
+            tokio::select! {
+                _ = ctrl_c.recv() => {}
+                _ = shared.stop.notified() => {}
+            }
+        })
     }
 }
 
