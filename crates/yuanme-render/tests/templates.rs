@@ -539,3 +539,151 @@ fn rendered_check_error() {
     let (sources, _, diagnostics) = render(&fixture(BASE, files));
     insta::assert_snapshot!(diagnostics[0].render(&sources, false));
 }
+
+/// The 48 mistakes spike/template-check seeded into the Reference
+/// Templates (#19), each one edit: (file, find, replace, the code, and
+/// the text its primary span covers in the file it names). `§§` separates
+/// two edits in one file. The spike's seed 30 called `assets()`; with
+/// `asset()` withdrawn, it misspells `absolute_url` instead.
+#[rustfmt::skip]
+const SEEDS: &[(&str, &str, &str, &str, &str, &str)] = &[
+    ("layouts/post.html", "{% set title = entry.title %}", "{% set title = entry.titel %}", "template/unknown-field", "layouts/post.html", "titel"),
+    ("layouts/post.html", "entry.hero.src", "entry.hero.scr", "template/unknown-field", "layouts/post.html", "scr"),
+    ("layouts/post.html", "entry.hero.alt|default('')", "entry.hero.atl|default('')", "template/unknown-field", "layouts/post.html", "atl"),
+    ("layouts/shell.html", "{{ s.title }}", "{{ s.titel }}", "template/unknown-field", "layouts/shell.html", "titel"),
+    ("layouts/shell.html", "site.extra.greeting", "site.extra.greting", "template/unknown-field", "layouts/shell.html", "greting"),
+    ("layouts/post.html", "entry.modified", "entry.modifed", "template/unknown-field", "layouts/post.html", "modifed"),
+    ("partials/post_meta.html", "entry.reading_time", "entry.reading_tim", "template/unknown-field", "partials/post_meta.html", "reading_tim"),
+    ("posts/list.html", "prev=paginator.prev", "prev=paginator.previous", "template/unknown-field", "posts/list.html", "previous"),
+    ("projects/entry.html", "{{ entry.content }}\n    {% endcall", "{{ entry.contents }}\n    {% endcall", "template/unknown-field", "projects/entry.html", "contents"),
+    ("projects/entry.html", "hero.url", "hero.src", "template/unknown-field", "projects/entry.html", "src"),
+    ("partials/post_meta.html", "{% if entry.draft %}", "{% if entry.draft and entry.sereis %}", "template/unknown-field", "partials/post_meta.html", "sereis"),
+    ("components/list_row.html", "data-row-name>{{ title }}", "data-row-name>{{ titel }}", "template/undeclared-input", "components/list_row.html", "titel"),
+    ("components/post_list.html", "{% if posts %}", "{% if entries %}", "template/undeclared-input", "components/post_list.html", "entries"),
+    ("components/post_list.html", "post.description", "post.descripton", "template/unknown-field", "components/post_list.html", "descripton"),
+    // `object` is unchecked by design (#19), so this one is missed.
+    ("components/post_list.html", "list<entry<posts>>§§post.description", "list<object>§§post.descripton", "", "", ""),
+    ("posts/list.html", "panel_header(title=\"Writing\")", "panel_header(titel=\"Writing\")", "template/bad-prop", "posts/list.html", "titel"),
+    ("tags/index.html", "list_row(href=t.url, title=", "list_row(title=", "template/bad-prop", "tags/index.html", "list_row"),
+    ("posts/list.html", "prev=paginator.prev", "prev=paginator.number", "template/bad-prop", "posts/list.html", "paginator.number"),
+    ("series/term.html", "panel_header(title=term.name)", "panel_header(title=entries)", "template/bad-prop", "series/term.html", "entries"),
+    ("partials/post_meta.html", "formatted_date(date=entry.date)", "formatted_date(date=\"yesterday\")", "template/bad-prop", "partials/post_meta.html", "\"yesterday\""),
+    ("partials/post_meta.html", "formatted_date(date=entry.date)", "formatted_date(date=entry.updated)", "template/bad-prop", "partials/post_meta.html", "entry.updated"),
+    ("components/prose.html", "  {{ caller() }}\n", "  \n", "template/bad-prop", "projects/entry.html", "ui.prose"),
+    ("components/list_row.html", "meta?: string #}", "metta?: string #}", "template/bad-header", "components/list_row.html", "metta"),
+    ("components/pagination.html", "prev?: url", "prev?: uri", "template/bad-header", "components/pagination.html", "uri"),
+    ("components/wordmark.html", "#}\n{% macro wordmark", "#}\n<!-- wordmark -->\n{% macro wordmark", "template/bad-header", "components/wordmark.html", "props:"),
+    ("posts/list.html", "import pagination %}", "import paginator_nav %}", "template/unknown-filter", "posts/list.html", "paginator_nav"),
+    ("projects/entry.html", "ui.prose(", "ui.prosa(", "template/unknown-filter", "projects/entry.html", "prosa"),
+    ("projects/entry.html", "entry.title|lower", "entry.title|lowercase", "template/unknown-filter", "projects/entry.html", "lowercase"),
+    ("layouts/shell.html", "section is defined else 'idle'", "section is definded else 'idle'", "template/unknown-filter", "layouts/shell.html", "definded"),
+    ("components/base_head.html", "{{ absolute_url(image) }}", "{{ absolute_uri(image) }}", "template/unknown-filter", "components/base_head.html", "absolute_uri"),
+    ("projects/entry.html", "entry.title|lower", "entry.title.lower()", "template/unknown-filter", "projects/entry.html", "lower"),
+    ("components/formatted_date.html", "<time datetime=\"{{ date|dateformat(format=", "<time datetime=\"{{ date|dateformat(fromat=", "template/bad-filter-argument", "components/formatted_date.html", "fromat"),
+    ("components/base_head.html", "dateformat(format=\"%Y-%m-%d\")", "dateformat(format=\"iso\")", "template/bad-filter-argument", "components/base_head.html", "\"iso\""),
+    ("layouts/post.html", "{% include \"partials/post_meta.html\" %}", "{% include \"partials/\" ~ page.kind ~ \"_meta.html\" %}", "template/non-constant-name", "layouts/post.html", "\"partials/\" ~ page.kind"),
+    ("tags/index.html", "{% extends \"layouts/shell.html\" %}", "{% extends \"layouts/\" ~ page.kind ~ \".html\" %}", "template/non-constant-name", "tags/index.html", "\"layouts/\" ~ page.kind"),
+    ("posts/entry.html", "partials/copy_btn.html", "partials/copy_button.html", "template/not-found", "posts/entry.html", "copy_button"),
+    ("posts/entry.html", "{% block after_article %}", "{% block after_artcle %}", "template/unknown-block", "posts/entry.html", "after_artcle"),
+    ("tags/index.html", "{% set title = \"Tags\" %}\n", "", "template/bad-var", "tags/index.html", "\"layouts/shell.html\""),
+    ("posts/list.html", "{% set section = \"writing\" %}", "{% set section = \"writting\" %}", "template/bad-var", "posts/list.html", "\"writting\""),
+    ("partials/post_meta.html", "<span>{{ entry.reading_time }} min read</span>", "<span>{{ entry.series }}</span>", "template/unguarded-optional", "partials/post_meta.html", "entry.series"),
+    ("layouts/post.html", "{% if entry.hero %}<img", "{% if entry.title %}<img", "template/unguarded-optional", "layouts/post.html", "entry.hero"),
+    ("projects/entry.html", "entry.github|default(\"\") %}", "entry.github %}", "template/compare-optional", "projects/entry.html", "entry.github"),
+    ("partials/post_meta.html", "for tag in entry.tags", "for tag in entry.title", "template/wrong-type", "partials/post_meta.html", "entry.title"),
+    ("components/base_head.html", "<meta name=\"author\" content=\"{{ site.author }}\"", "<meta name=\"author\" content=\"{{ site.author.name }}\"", "template/unknown-field", "components/base_head.html", "name"),
+    ("tags/index.html", "{% if terms %}", "{% if entries %}", "template/unknown-field", "tags/index.html", "entries"),
+    ("tags/index.html", "terms|sort_by([\"-count\"])", "terms|sort(attribute=\"-count\")", "template/bad-filter-argument", "tags/index.html", "\"-count\""),
+    ("series/term.html", "sort_by([\"date\"])", "sort_by([\"dat\"])", "template/unknown-field", "series/term.html", "\"dat\""),
+    ("components/pagination.html", "{% endif %}\n{% endmacro %}", "{% endmacro %}", "template/syntax", "components/pagination.html", ""),
+];
+
+#[test]
+fn the_spikes_seeded_mistakes_are_caught_where_they_are() {
+    let base = site("eyuan");
+    let mut missed = Vec::new();
+    for (n, &(file, find, replace, code, at, covered)) in SEEDS.iter().enumerate() {
+        let seed = n + 1;
+        let mut written = base.clone();
+        let (_, text) = written
+            .iter_mut()
+            .find(|(p, _)| *p == format!("templates/{file}"))
+            .unwrap_or_else(|| panic!("seed {seed}: no {file}"));
+        for (f, r) in find.split("§§").zip(replace.split("§§")) {
+            assert!(text.contains(f), "seed {seed}: {f:?} isn't in {file}");
+            *text = text.replacen(f, r, 1);
+        }
+        let (sources, _, diagnostics) = render(&written);
+        if code.is_empty() {
+            assert!(diagnostics.is_empty(), "seed {seed}: {diagnostics:#?}");
+            missed.push(seed);
+            continue;
+        }
+        // Before any Page renders: rendering alone caught 29 (#19).
+        let found = diagnostics.iter().any(|d| {
+            let span = d.primary();
+            let rendered = d
+                .children
+                .iter()
+                .any(|c| c.message.starts_with("while rendering"));
+            !rendered
+                && d.code.name == code
+                && sources.path(span.file) == format!("templates/{at}")
+                && sources.text(span.file)[span.range.clone()].contains(covered)
+        });
+        assert!(
+            found,
+            "seed {seed}: no {code} on {covered:?} in {at}: {diagnostics:#?}"
+        );
+    }
+    // #55 is done at 45 of 48.
+    assert_eq!(missed, [15]);
+}
+
+#[test]
+fn check_accepts_the_idioms_the_spike_found_legitimate() {
+    // Spike #19's 30 idioms, as the Template of a Post, but its 12th: an
+    // early `{% continue %}` is no guard to `check`.
+    #[rustfmt::skip]
+    let idioms = [
+        "{% if not entry.hero %}none{% else %}{{ entry.hero.src }}{% endif %}",
+        "{% if entry.hero is undefined %}none{% else %}{{ entry.hero.src }}{% endif %}",
+        "{{ entry.hero.src if entry.hero is defined else \"\" }}",
+        "{% if entry.hero and entry.hero.alt %}{{ entry.hero.alt }}{% endif %}",
+        "{% if entry.hero %}{% set h = entry.hero %}{{ h.src }}{% endif %}",
+        "{% set h = entry.hero|default(none) %}{% if h %}{{ h.src }}{% endif %}",
+        "{{ entry.updated or entry.date }}",
+        "{{ entry.series|default(\"none\")|upper }}",
+        "{% if entry.updated is defined and entry.updated != entry.date %}u{% endif %}",
+        "{% if entry.series is defined %}{% set sname = entry.series %}{% else %}{% set sname = \"none\" %}{% endif %}{{ sname }}",
+        "{% for p in collections.posts if p.series is defined %}{{ p.series }}{% endfor %}",
+        "{% for p in collections.posts %}{{ loop.index }}{{ loop.previtem.title if loop.previtem else \"\" }}{% endfor %}",
+        "{% set ns = namespace(n=0) %}{% for t in entry.tags %}{% set ns.n = ns.n + 1 %}{% endfor %}{{ ns.n }}",
+        "{{ entry.tags|map(\"upper\")|join(\",\") }}",
+        "{% for k, v in data.nav[0]|items %}{{ k }}={{ v }}{% endfor %}",
+        "{{ entry[\"title\"] }} {{ collections[\"posts\"]|length }}",
+        "{% set key = \"title\" %}{{ entry[key] }}",
+        "{% for g in collections.posts|groupby(\"date\") %}{{ g.grouper }}:{{ g.list|length }} {% endfor %}",
+        "{{ (collections.posts|first).title }}",
+        "{{ entry.tags[0] if entry.tags else \"\" }}",
+        "{% macro local(x) %}{{ x }}{% endmacro %}{{ local(entry.title) }}",
+        "{{ entry.title ~ \" \" ~ entry.reading_time }}",
+        "{% filter upper %}{{ entry.title }}{% endfilter %}",
+        "{{ taxonomies.tags.terms|selectattr(\"count\", \"gt\", 1)|map(attribute=\"name\")|join(\" \") }}",
+        "{% for i in range(entry.tags|length) %}{{ entry.tags[i] }}{% endfor %}",
+        "{{ entry.word_count // 200 }} {{ entry.title|length > 3 }}",
+        "{% with d = entry.updated|default(entry.date) %}{{ d|dateformat(format=\"%Y\") }}{% endwith %}",
+        "{% for p in collections.posts|sort_by([\"-date\"]) %}{{ p.title }}{% break %}{% endfor %}",
+        "{% set cls = [\"a\", \"b\" if entry.draft else \"\"]|select|join(\" \") %}{{ cls }}",
+    ];
+    for idiom in idioms {
+        let mut written = site("eyuan");
+        let (_, text) = written
+            .iter_mut()
+            .find(|(p, _)| p == "templates/posts/entry.html")
+            .unwrap();
+        *text = idiom.to_string();
+        let (_, _, diagnostics) = render(&written);
+        assert!(diagnostics.is_empty(), "{idiom}: {diagnostics:#?}");
+    }
+}
