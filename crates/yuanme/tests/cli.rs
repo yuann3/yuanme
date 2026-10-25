@@ -211,7 +211,7 @@ fn build_writes_the_site_and_its_yuanme_files() {
         "a Draft isn't published"
     );
 
-    // Every schema the Site makes.
+    // Every schema the Site makes, and the docs for this Engine.
     assert_eq!(
         files_under(&root.join(".yuanme/schemas")),
         [
@@ -227,6 +227,9 @@ fn build_writes_the_site_and_its_yuanme_files() {
             "yuanme.toml.json",
         ]
     );
+    let docs = files_under(&root.join(".yuanme/docs"));
+    assert!(docs.contains(&"config/syntax.md".to_string()));
+    assert!(docs.contains(&"VERSION".to_string()));
 
     let report: Value =
         serde_json::from_str(&fs::read_to_string(root.join(".yuanme/report.json")).unwrap())
@@ -439,6 +442,28 @@ fn schema_prints_each_schema() {
             (2, format!("error: {error}").as_str())
         );
     }
+}
+
+#[test]
+fn docs_prints_pages_by_code() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let index = yuanme(root, &["docs"]);
+    assert_eq!(index.code, 0);
+    assert!(
+        index.stdout.contains("- `template/unknown-field`: "),
+        "{}",
+        index.stdout
+    );
+    let (code, events) = json(root, &["docs", "config/syntax"]);
+    assert_eq!(code, 0);
+    insta::assert_snapshot!(events[0]["markdown"].as_str().unwrap());
+    let typo = yuanme(root, &["docs", "config/syntx"]);
+    assert_eq!(typo.code, 2);
+    assert_eq!(
+        typo.stderr,
+        "error: there is no docs page `config/syntx`; did you mean `config/syntax`?\n"
+    );
 }
 
 #[test]

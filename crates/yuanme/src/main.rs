@@ -1,3 +1,4 @@
+mod docs;
 mod events;
 mod load;
 mod new;
@@ -100,6 +101,8 @@ enum Command {
         #[command(subcommand)]
         which: Which,
     },
+    /// Print a docs page by topic or Diagnostic code; with none, the index.
+    Docs { topic: Option<String> },
 }
 
 #[derive(Args)]
@@ -211,6 +214,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     let cwd = std::env::current_dir()?;
     let dir = cli.dir.map_or(cwd.clone(), |d| cwd.join(d));
     match cli.command {
+        Command::Docs { topic } => return docs(topic.as_deref().unwrap_or("index"), out),
         Command::Schema {
             which: Which::Config,
         } => return Ok(print_schema(out, "config", config::json_schema())),
@@ -226,6 +230,8 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
         )));
     }
     let root = dir;
+    // The docs always match the binary that runs in the project (#21).
+    docs::write(&root.join(".yuanme/docs"), ENGINE_VERSION)?;
     match cli.command {
         Command::Build {
             check,
@@ -240,6 +246,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
         } => new(&root, &collection, &title, format, out),
         Command::Routes { drafts } => routes(&root, drafts, out),
         Command::Schema { which } => schema(&root, which, out),
+        Command::Docs { .. } => unreachable!("answered without a project"),
     }
 }
 
@@ -685,4 +692,21 @@ fn schema(root: &Path, which: Which, out: &Out) -> Result<u8, Error> {
         return Err(unknown(what, item, &choices, otherwise));
     };
     Ok(print_schema(out, &name, schema))
+}
+
+fn docs(name: &str, out: &Out) -> Result<u8, Error> {
+    let Some(markdown) = docs::page(name) else {
+        let names: Vec<&str> = docs::names().collect();
+        let otherwise = "`yuanme docs` lists every page".to_string();
+        return Err(unknown("docs page", name, &names, otherwise));
+    };
+    if out.json {
+        out.event(Event::Docs {
+            page: name.to_string(),
+            markdown,
+        });
+    } else {
+        stdout(markdown.trim_end());
+    }
+    Ok(0)
 }

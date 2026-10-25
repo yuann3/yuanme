@@ -33,6 +33,10 @@ pub enum Event<'a> {
         name: String,
         schema: Value,
     },
+    Docs {
+        page: String,
+        markdown: String,
+    },
 }
 
 /// One Route and what produces it, for `yuanme routes`.
@@ -113,6 +117,9 @@ impl Event<'_> {
             }),
             Event::Schema { name, schema } => {
                 json!({ "type": "schema", "name": name, "schema": schema })
+            }
+            Event::Docs { page, markdown } => {
+                json!({ "type": "docs", "page": page, "markdown": markdown })
             }
         };
         json.sort_all_objects();
@@ -338,6 +345,12 @@ pub fn schema() -> Value {
                 ),
                 ("schema", json!({ "type": "object" })),
             ],
+            &[],
+        ),
+        event(
+            Some("docs"),
+            "A docs page, from `yuanme docs`.",
+            &[("page", string.clone()), ("markdown", string)],
             &[],
         ),
     ];

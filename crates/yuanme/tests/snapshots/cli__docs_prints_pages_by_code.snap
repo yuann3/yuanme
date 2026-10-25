@@ -1,0 +1,18 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: "events[0][\"markdown\"].as_str().unwrap()"
+---
+# config/syntax
+
+`yuanme.toml` is not valid TOML, so nothing else in it can be read.
+
+## Example
+
+```
+[site]
+url = https://example.com
+```
+
+## Fix
+
+Fix the TOML at the reported place. Here the string needs quotes: `url = "https://example.com"`.
