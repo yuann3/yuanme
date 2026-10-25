@@ -55,6 +55,9 @@ pub fn watch(
 /// Groups `events` into batches, each ended by [`QUIET`] or [`CAP`].
 fn coalesce(events: Receiver<Raw>, batches: Sender<Batch>) {
     while let Ok(first) = events.recv() {
+        if !changes(&first) {
+            continue;
+        }
         let started = Instant::now();
         let mut batch = Batch::default();
         add(&mut batch, first);
@@ -62,6 +65,7 @@ fn coalesce(events: Receiver<Raw>, batches: Sender<Batch>) {
         loop {
             let deadline = (last + QUIET).min(started + CAP);
             match events.recv_timeout(deadline.saturating_duration_since(Instant::now())) {
+                Ok(event) if !changes(&event) => {}
                 Ok(event) => {
                     add(&mut batch, event);
                     last = Instant::now();
@@ -76,6 +80,21 @@ fn coalesce(events: Receiver<Raw>, batches: Sender<Batch>) {
         if batches.send(batch).is_err() {
             return;
         }
+    }
+}
+
+/// Whether an event can mean a change. inotify reports every file and
+/// folder opened, and reading one to see what changed opens it again.
+fn changes(event: &Raw) -> bool {
+    use notify::EventKind;
+    use notify::event::{AccessKind, AccessMode};
+    match event {
+        Ok(event) => match event.kind {
+            EventKind::Access(AccessKind::Close(AccessMode::Write)) => true,
+            EventKind::Access(_) => false,
+            _ => true,
+        },
+        Err(_) => true,
     }
 }
 
@@ -112,6 +131,12 @@ mod tests {
         for path in ["/p/a.md", "/p/.a.md.swp", "/p/a.md"] {
             send.send(event(path)).unwrap();
         }
+        // An open, as reading a file to hash it makes, is no change.
+        let open = notify::EventKind::Access(notify::event::AccessKind::Open(
+            notify::event::AccessMode::Read,
+        ));
+        send.send(Ok(notify::Event::new(open).add_path("/p/b.md".into())))
+            .unwrap();
         let batch = received.recv().unwrap();
         assert_eq!(
             batch.paths,
