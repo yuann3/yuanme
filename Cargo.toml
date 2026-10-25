@@ -1,6 +1,8 @@
 [workspace]
 resolver = "3"
 members = ["crates/*", "vendor/*", "xtask"]
+# Checkouts of other repositories made for tickets (AGENTS.md).
+exclude = [".worktrees"]
 
 [workspace.package]
 version = "0.0.0"
