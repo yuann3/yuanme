@@ -269,14 +269,14 @@ struct Run {
 }
 
 /// One build in memory. `out` is `--out`, which the walk leaves out; the
-/// adapter's output directory is `dist` or hidden.
-fn engine_build(root: &Path, out: Option<&Path>, drafts: bool, strict: bool) -> io::Result<Run> {
+/// adapter's output directory is `dist` or hidden. Only `yuanme build`
+/// encodes images: every other command builds as `check` does.
+fn engine_build(root: &Path, out: Option<&Path>, mode: Mode, strict: bool) -> io::Result<Run> {
     let started = Instant::now();
     let dist = root.join("dist");
     let inputs = load::load(root, out.unwrap_or(&dist))?;
     let load = started.elapsed();
     let mut cache = Cache::open(root.join(".yuanme/cache"), ENGINE_VERSION)?;
-    let mode = if drafts { Mode::Drafts } else { Mode::Build };
     let mut build = yuanme_engine::build(&inputs, &mut cache, mode);
     cache.save()?;
     let out = match (out, &build.config) {
@@ -357,12 +357,17 @@ fn build(
     }
     let started = Instant::now();
     out.event(Event::BuildStarted { command: "build" });
+    let mode = if args.drafts {
+        Mode::Drafts
+    } else {
+        Mode::Build
+    };
     let Run {
         build,
         out: out_dir,
         load,
         took,
-    } = engine_build(root, out_dir.as_deref(), args.drafts, args.strict)?;
+    } = engine_build(root, out_dir.as_deref(), mode, args.strict)?;
     let out_dir = out_dir.as_path();
     schemas::write(
         &root.join(".yuanme/schemas"),
@@ -462,7 +467,10 @@ fn url_of(output: &str) -> String {
 fn check(root: &Path, args: &CheckArgs, out: &Out) -> Result<u8, Error> {
     let started = Instant::now();
     out.event(Event::BuildStarted { command: "check" });
-    let Run { build, .. } = engine_build(root, None, args.drafts, args.strict)?;
+    let mode = Mode::Check {
+        drafts: args.drafts,
+    };
+    let Run { build, .. } = engine_build(root, None, mode, args.strict)?;
     schemas::write(
         &root.join(".yuanme/schemas"),
         build.config.as_ref(),
@@ -513,7 +521,7 @@ fn new(
     format: new::Format,
     out: &Out,
 ) -> Result<u8, Error> {
-    let run = engine_build(root, None, false, false)?;
+    let run = engine_build(root, None, Mode::Check { drafts: false }, false)?;
     let Some(config) = config_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };
@@ -551,7 +559,7 @@ fn new(
 }
 
 fn routes(root: &Path, drafts: bool, out: &Out) -> Result<u8, Error> {
-    let run = engine_build(root, None, drafts, false)?;
+    let run = engine_build(root, None, Mode::Check { drafts }, false)?;
     let Some((config, site)) = site_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };
@@ -688,7 +696,7 @@ fn unknown(what: &str, name: &str, choices: &[&str], otherwise: String) -> Error
 }
 
 fn schema(root: &Path, which: Which, out: &Out) -> Result<u8, Error> {
-    let run = engine_build(root, None, false, false)?;
+    let run = engine_build(root, None, Mode::Check { drafts: false }, false)?;
     let (name, mut schemas) = match which {
         Which::Entry { collection } => {
             let Some(config) = config_or_report(&run, out) else {

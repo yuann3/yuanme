@@ -569,3 +569,49 @@ fn exit_codes_and_the_project_folder() {
     assert_eq!((code, events.len()), (0, 2));
     assert_eq!(yuanme(root, &["build", "--out", "."]).code, 2);
 }
+
+/// `check`, and the commands that build only to read the Site, encode no
+/// image: that is `build`'s work, and the slowest part of it.
+#[test]
+fn only_build_encodes_images() {
+    let dir = project(
+        "=== yuanme.toml
+[site]
+url = \"https://example.com\"
+
+[collections.posts]
+route = \"/blog/{slug}/\"
+
+[images]
+widths = [32]
+=== templates/posts/entry.html
+{{ entry.content }}
+=== content/posts/sea/index.md
+---
+title: Sea
+---
+![A beach](beach.jpg)
+",
+    );
+    let root = dir.path();
+    let photo = concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../yuanme-assets/fixtures/images/beach.jpg"
+    );
+    fs::copy(photo, root.join("content/posts/sea/beach.jpg")).unwrap();
+    let encoded = || match fs::read_dir(root.join(".yuanme/cache/large")) {
+        Ok(entries) => entries.count(),
+        Err(_) => 0,
+    };
+
+    for command in [&["check"][..], &["routes"], &["schema", "entry", "posts"]] {
+        let run = yuanme(root, command);
+        assert_eq!(run.code, 0, "{command:?}: {}", run.stderr);
+        assert_eq!(encoded(), 0, "{command:?} encoded an image");
+    }
+    assert_eq!(yuanme(root, &["build", "-q"]).code, 0);
+    // An AVIF and a JPEG, 32 wide.
+    assert_eq!(encoded(), 2);
+    let page = fs::read_to_string(root.join("dist/blog/sea/index.html")).unwrap();
+    assert!(page.contains("<picture>"), "{page}");
+}
