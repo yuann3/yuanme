@@ -909,13 +909,20 @@ struct Dev {
 
 impl Dev {
     fn start(root: &Path) -> Dev {
+        Dev::start_with(root, &[], &[])
+    }
+
+    /// With `args` after `dev`, and the Managed tool overrides in `env`.
+    fn start_with(root: &Path, args: &[&str], env: &[(&str, &Path)]) -> Dev {
         let mut schema = serde_json::from_str(&yuanme(root, &["schema", "events"]).stdout).unwrap();
         strict(&mut schema);
         let mut child = Command::new(env!("CARGO_BIN_EXE_yuanme"))
             .args(["dev", "--json", "--port", "0"])
+            .args(args)
             .current_dir(root)
             .env_remove("YUANME_TAILWIND_BIN")
             .env_remove("YUANME_TSC_BIN")
+            .envs(env.iter().copied())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .spawn()
@@ -979,6 +986,14 @@ impl Dev {
         (status, head, String::from_utf8(body).unwrap())
     }
 
+    /// `/__yuanme/status`: the last build.
+    fn status(&self) -> Value {
+        let (status, head, body) = self.get("/__yuanme/status");
+        assert_eq!(status, 200);
+        assert!(head.contains("content-type: application/json"), "{head}");
+        serde_json::from_str(&body).unwrap()
+    }
+
     fn get_bytes(&self, path: &str) -> (u16, String, Vec<u8>) {
         use std::io::{Read, Write};
         let mut stream = std::net::TcpStream::connect(&self.address).unwrap();
@@ -1024,6 +1039,19 @@ fn dev_serves_the_site_and_reloads_what_a_save_changed() {
     assert!(head.contains("content-type: text/html"), "{head}");
     assert!(head.contains("cache-control: no-store"), "{head}");
     assert!(body.contains("Hello."), "{body}");
+    // The dev client, on every HTML file it serves.
+    let tag = "<script type=\"module\" src=\"/assets/client-";
+    let at = body
+        .find(tag)
+        .unwrap_or_else(|| panic!("no dev client: {body}"));
+    let src = &body[at + tag.len() - "/assets/client-".len()..];
+    let src = &src[..src.find('"').unwrap()];
+    let (status, head, client) = dev.get(src);
+    assert_eq!(status, 200);
+    assert!(head.contains("content-type: text/javascript"), "{head}");
+    assert!(client.contains("/__yuanme/ws"));
+    assert!(dev.get("/").2.contains(src), "on every Page");
+    assert_eq!(dev.status()["ok"], true);
     assert_eq!(dev.get("/blog/wip/").0, 200, "a Draft is served");
     let (status, head, _) = dev.get("/blog/first?x=1");
     assert_eq!(status, 308);
@@ -1066,14 +1094,43 @@ fn dev_serves_the_site_and_reloads_what_a_save_changed() {
     );
     assert!(dev.get("/blog/first/").2.contains("Hello, again."));
 
-    // An error is reported, and the last good build stays served.
+    // An error is reported, the last good build stays served, and the
+    // overlay shows it to every client, one that connects later too.
     fs::write(&post, text.replace("kind: essay", "kind: poem")).unwrap();
     let events = dev.events_until("build-finished");
     assert_eq!(events.last().unwrap()["ok"], false);
-    assert!(events.iter().any(|e| e["type"] == "diagnostic"));
+    let diagnostic = events.iter().find(|e| e["type"] == "diagnostic").unwrap();
     assert!(dev.get("/blog/first/").2.contains("Hello, again."));
+    let next = |socket: &mut tungstenite::WebSocket<_>| -> Value {
+        let Message::Text(message) = socket.read().unwrap() else {
+            panic!("a message is text")
+        };
+        serde_json::from_str(&message).unwrap()
+    };
+    let shown = serde_json::json!({
+        "type": "overlay",
+        "failed": true,
+        "diagnostics": [diagnostic["rendered"]],
+    });
+    assert_eq!(next(&mut socket), shown);
+    let (mut late, _) = tungstenite::connect(format!("ws://{}/__yuanme/ws", dev.address)).unwrap();
+    assert_eq!(next(&mut late), shown);
+    let status = dev.status();
+    assert_eq!(status["ok"], false);
+    assert_eq!(status["errors"], 1);
+    assert_eq!(status["diagnostics"], serde_json::json!([diagnostic]));
+    // The fix, back to the first text, reloads the Page, and then hides
+    // the overlay.
     fs::write(&post, &text).unwrap();
     assert_eq!(dev.until("build-finished")["ok"], true);
+    let cleared = serde_json::json!({ "type": "overlay", "failed": false, "diagnostics": [] });
+    for socket in [&mut socket, &mut late] {
+        assert_eq!(next(socket)["type"], "reload");
+        assert_eq!(next(socket), cleared);
+    }
+    let status = dev.status();
+    assert_eq!(status["ok"], true);
+    assert_eq!(status["diagnostics"], serde_json::json!([]));
 
     // Site config deleted and written again, as some editors save it.
     let config = root.join("yuanme.toml");
@@ -1087,6 +1144,56 @@ fn dev_serves_the_site_and_reloads_what_a_save_changed() {
     .unwrap();
     assert_eq!(dev.until("build-finished")["ok"], true);
     assert!(dev.get("/").2.contains("Examples"));
+}
+
+/// Until a first build succeeds there is no Site to serve, so every
+/// request gets its errors, on a page that loads again once a save fixes
+/// them.
+#[test]
+fn dev_serves_the_errors_until_a_build_succeeds() {
+    let dir = project(SITE);
+    let root = dir.path();
+    let post = root.join("content/posts/first.md");
+    let text = fs::read_to_string(&post).unwrap();
+    fs::write(&post, text.replace("kind: essay", "kind: poem")).unwrap();
+    let dev = Dev::start(root);
+    let (status, head, body) = dev.get("/blog/first/");
+    assert_eq!(status, 500);
+    assert!(head.contains("content-type: text/html"), "{head}");
+    assert!(body.contains("error[entry/"), "{body}");
+    assert!(body.contains("/__yuanme/ws"), "{body}");
+    fs::write(&post, &text).unwrap();
+    assert_eq!(dev.until("build-finished")["ok"], true);
+    assert!(dev.get("/blog/first/").2.contains("Hello."));
+}
+
+/// `yuanme dev` checks types after each build that succeeds, on a thread
+/// of its own (#60), and the overlay and `/__yuanme/status` show what the
+/// check finds, here that there is no `tsc` to run.
+#[test]
+fn dev_shows_what_the_type_check_finds() {
+    let dir = project(TYPESCRIPT_SITE);
+    let root = dir.path();
+    let missing = root.join("no-such-tsc");
+    let dev = Dev::start_with(root, &[], &[("YUANME_TSC_BIN", &missing)]);
+    let found = dev.until("diagnostic");
+    assert_eq!(found["code"], "asset/tool-unavailable");
+    assert!(
+        dev.get("/").2.contains("<h1>Home</h1>"),
+        "the build is served"
+    );
+    let (mut socket, _) =
+        tungstenite::connect(format!("ws://{}/__yuanme/ws", dev.address)).unwrap();
+    let tungstenite::Message::Text(message) = socket.read().unwrap() else {
+        panic!("an overlay is text")
+    };
+    assert_eq!(
+        serde_json::from_str::<Value>(&message).unwrap(),
+        serde_json::json!({ "type": "overlay", "failed": false, "diagnostics": [found["rendered"]] })
+    );
+    let status = dev.status();
+    assert_eq!(status["ok"], false);
+    assert_eq!(status["diagnostics"], serde_json::json!([found]));
 }
 
 /// Interrupted, `yuanme dev` saves its cache and exits 0.

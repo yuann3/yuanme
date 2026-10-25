@@ -1,5 +1,6 @@
-//! The dev server's HTTP side (#11): every file of the snapshot, and a
-//! WebSocket that tells the dev client which Pages to reload.
+//! The dev server's HTTP side (#11, #68): every file of the snapshot,
+//! with the dev client on each HTML file, a WebSocket that tells the dev
+//! client what to reload and show, and the last build's status.
 
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -10,31 +11,123 @@ use axum::extract::{Request, State};
 use axum::http::{StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
+use serde_json::{Value, json};
 use tokio::sync::broadcast;
-use yuanme_engine::{Body, Cache, image};
+use yuanme_diag::{Diagnostic, Files, Level};
+use yuanme_engine::{Body, Build, Cache, image};
 
 use super::Snapshot;
 use crate::events::{Console, Event};
 use crate::{ENGINE_VERSION, Out};
 
 /// Where the dev client connects. Messages to it are `{"type": "reload",
-/// "urls": [...]}`, the `reload` event's; it sends `browser-console`
-/// events' shape back.
+/// "urls": [...]}`, the `reload` event's, and `{"type": "overlay",
+/// "failed": bool, "diagnostics": [...]}`, the rendered errors to show,
+/// none to hide it; it sends `browser-console` events' shape back.
 pub const SOCKET: &str = "/__yuanme/ws";
+/// The last build, as [`Status::json`].
+pub const STATUS: &str = "/__yuanme/status";
 
 pub struct Shared {
     pub snapshot: RwLock<Arc<Snapshot>>,
     pub cache: Arc<Mutex<Cache>>,
-    /// Each `reload` message, as JSON.
-    pub reloads: broadcast::Sender<String>,
+    /// Each message to dev clients, as JSON.
+    pub messages: broadcast::Sender<String>,
+    pub status: RwLock<Status>,
     pub out: Out,
+}
+
+/// The last build, and once they are checked, the type errors of the
+/// last good one (#60).
+pub struct Status {
+    /// `build-finished`'s fields, and its Diagnostics as `--json` prints
+    /// them.
+    pub json: Value,
+    /// The overlay message.
+    pub overlay: String,
+    /// Which build of the server's it is, from 0.
+    pub build: usize,
+}
+
+impl Status {
+    /// `diagnostics` are the build's, rendered from `files`, and the type
+    /// errors when they are checked.
+    pub fn new(
+        build: &Build,
+        diagnostics: &[Diagnostic],
+        files: &Files,
+        duration_ms: u128,
+        changed_urls: Vec<String>,
+    ) -> Status {
+        let count = |level| diagnostics.iter().filter(|d| d.level == level).count();
+        let errors = count(Level::Error);
+        let pages = match (&build.site, build.failed()) {
+            (Some(site), false) => site.routes.len(),
+            _ => 0,
+        };
+        let shown: Vec<String> = diagnostics
+            .iter()
+            .filter(|d| d.level == Level::Error)
+            .map(|d| d.render(files, false))
+            .collect();
+        let overlay = json!({ "type": "overlay", "failed": build.failed(), "diagnostics": shown });
+        let diagnostics: Vec<Value> = diagnostics.iter().map(|d| d.to_json(files)).collect();
+        Status {
+            json: json!({
+                "ok": errors == 0,
+                "duration_ms": duration_ms,
+                "pages": pages,
+                "changed_urls": changed_urls,
+                "errors": errors,
+                "warnings": count(Level::Warning),
+                "diagnostics": diagnostics,
+            }),
+            overlay: overlay.to_string(),
+            build: 0,
+        }
+    }
+
+    /// Adds the type errors of the build that succeeded, which the overlay
+    /// then shows.
+    pub fn add_type_errors(&mut self, errors: &[Diagnostic], files: &Files) {
+        let json = &mut self.json;
+        let all = json["diagnostics"].as_array_mut().expect("a list");
+        all.extend(errors.iter().map(|d| d.to_json(files)));
+        json["errors"] = json!(json["errors"].as_u64().expect("a count") + errors.len() as u64);
+        json["ok"] = json!(false);
+        let shown: Vec<String> = errors.iter().map(|d| d.render(files, false)).collect();
+        let overlay = json!({ "type": "overlay", "failed": false, "diagnostics": shown });
+        self.overlay = overlay.to_string();
+    }
+
+    pub fn shows_errors(&self) -> bool {
+        self.json["errors"] != 0
+    }
 }
 
 pub fn router(shared: Arc<Shared>) -> Router {
     Router::new()
         .route(SOCKET, get(socket))
+        .route(STATUS, get(status))
         .fallback(file)
         .with_state(shared)
+}
+
+async fn status(State(shared): State<Arc<Shared>>) -> Response {
+    let json = shared
+        .status
+        .read()
+        .expect("never poisoned")
+        .json
+        .to_string();
+    (
+        [
+            (header::CONTENT_TYPE, "application/json"),
+            (header::CACHE_CONTROL, "no-store"),
+        ],
+        json,
+    )
+        .into_response()
 }
 
 async fn file(State(shared): State<Arc<Shared>>, request: Request) -> Response {
@@ -55,6 +148,24 @@ async fn file(State(shared): State<Arc<Shared>>, request: Request) -> Response {
     };
     if let Some((path, output)) = found {
         return send(&snapshot, path, &output.body, StatusCode::OK);
+    }
+    // The first build failed, so there is no Site to serve yet.
+    if snapshot.build.failed() {
+        let overlay = shared
+            .status
+            .read()
+            .expect("never poisoned")
+            .overlay
+            .clone();
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            [
+                (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+            ],
+            failed_page(&overlay),
+        )
+            .into_response();
     }
     if let Some((variant, settings)) = snapshot.build.images.get(path) {
         let (variant, settings) = (variant.clone(), settings.clone());
@@ -82,8 +193,26 @@ async fn file(State(shared): State<Arc<Shared>>, request: Request) -> Response {
     }
 }
 
+/// What a browser is served while no build has succeeded: the errors,
+/// and a script that loads the Page again once one does.
+fn failed_page(overlay: &str) -> String {
+    let errors: Value = serde_json::from_str(overlay).expect("JSON");
+    let mut text = String::new();
+    for d in errors["diagnostics"].as_array().into_iter().flatten() {
+        text.push_str(d.as_str().unwrap_or_default());
+        text.push_str("\n\n");
+    }
+    let text = text
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;");
+    format!(
+        "<!doctype html>\n<html lang=\"en\"><meta charset=\"utf-8\"><title>The build failed</title>\n<h1>The build failed</h1>\n<p>yuanme serves the Site once a save fixes these errors.</p>\n<pre>{text}</pre>\n<script>new WebSocket(`ws://${{location.host}}{SOCKET}`).onmessage = (e) => JSON.parse(e.data).type == \"reload\" && location.reload();</script>\n"
+    )
+}
+
 /// The file at `path` of the snapshot, never cached by the browser: the
-/// next save may change it.
+/// next save may change it. An HTML file gets the dev client.
 fn send(snapshot: &Snapshot, path: &str, body: &Body, status: StatusCode) -> Response {
     let bytes = match body {
         Body::Bytes(bytes) => Ok(bytes.to_vec()),
@@ -92,6 +221,10 @@ fn send(snapshot: &Snapshot, path: &str, body: &Body, status: StatusCode) -> Res
             std::fs::read(root.join(input))
         }
         Body::Cached(file) => std::fs::read(file),
+    };
+    let bytes = match (&snapshot.build.client, bytes) {
+        (Some(client), Ok(bytes)) if path.ends_with(".html") => Ok(with_client(bytes, client)),
+        (_, bytes) => bytes,
     };
     match bytes {
         Ok(bytes) => (
@@ -108,6 +241,21 @@ fn send(snapshot: &Snapshot, path: &str, body: &Body, status: StatusCode) -> Res
             (StatusCode::INTERNAL_SERVER_ERROR, message).into_response()
         }
     }
+}
+
+/// `html` with a `<script>` of the dev client at `src` before its
+/// `</head>`, or else before its `<body>` or at its end.
+fn with_client(mut html: Vec<u8>, src: &str) -> Vec<u8> {
+    let tag = format!("<script type=\"module\" src=\"/{src}\" data-yuanme-client></script>");
+    let find = |needle: &[u8]| {
+        html.windows(needle.len())
+            .position(|w| w.eq_ignore_ascii_case(needle))
+    };
+    let at = find(b"</head")
+        .or_else(|| find(b"<body"))
+        .unwrap_or(html.len());
+    html.splice(at..at, tag.into_bytes());
+    html
 }
 
 /// An image variant the snapshot's Pages name, from the cache or encoded
@@ -148,9 +296,19 @@ async fn socket(State(shared): State<Arc<Shared>>, upgrade: WebSocketUpgrade) ->
     upgrade.on_upgrade(move |socket| client(shared, socket))
 }
 
-/// One dev client: reloads go out, console output comes in.
+/// One dev client: reloads and the overlay go out, console output comes
+/// in.
 async fn client(shared: Arc<Shared>, mut socket: WebSocket) {
-    let mut reloads = shared.reloads.subscribe();
+    let mut messages = shared.messages.subscribe();
+    let shown = {
+        let status = shared.status.read().expect("never poisoned");
+        status.shows_errors().then(|| status.overlay.clone())
+    };
+    if let Some(overlay) = shown
+        && socket.send(Message::Text(overlay.into())).await.is_err()
+    {
+        return;
+    }
     loop {
         enum Next {
             In(Option<Result<Message, axum::Error>>),
@@ -158,7 +316,7 @@ async fn client(shared: Arc<Shared>, mut socket: WebSocket) {
         }
         let next = tokio::select! {
             message = socket.recv() => Next::In(message),
-            reload = reloads.recv() => Next::Out(reload),
+            message = messages.recv() => Next::Out(message),
         };
         match next {
             Next::In(Some(Ok(Message::Text(text)))) => {

@@ -12,7 +12,7 @@ pub struct Span {
 }
 
 /// The project's files, by path relative to the project root.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Files {
     files: Vec<(String, String)>,
 }
