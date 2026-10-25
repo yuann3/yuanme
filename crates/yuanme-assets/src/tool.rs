@@ -26,9 +26,15 @@ pub struct Tool {
     pub version: String,
     /// The environment variable that names a local binary to run instead.
     pub env: &'static str,
-    /// Where this platform's binary is downloaded from.
-    pub url: String,
+    /// Where this platform's download is, in the order they are tried:
+    /// each after the first serves the same file, for when those before
+    /// it fail.
+    pub urls: Vec<String>,
     pub sha256: Sha256,
+    /// For a download that is a `.tgz`, the folder in it holding the
+    /// binary and the files it needs beside it, such as `package/lib`,
+    /// which is what the cache keeps. `None` for one that is the binary.
+    pub archive: Option<&'static str>,
 }
 
 /// What the download must hash to.
@@ -90,7 +96,8 @@ impl Tool {
                     ))
                 })?;
                 let list = String::from_utf8_lossy(&list);
-                let asset = self.url.rsplit('/').next().unwrap_or(&self.url);
+                let first = &self.urls[0];
+                let asset = first.rsplit('/').next().unwrap_or(first);
                 listed(&list, asset).ok_or_else(|| Error {
                     message: format!("{url} lists no checksum for `{asset}`"),
                     help: format!(
@@ -100,23 +107,48 @@ impl Tool {
                 })?
             }
         };
-        let bytes = fetch(&self.url).map_err(|e| {
-            offline(format!(
-                "can't download {} {} from {}: {e}",
-                self.name, self.version, self.url
-            ))
-        })?;
+        let mut failures = Vec::new();
+        let (url, bytes) = loop {
+            let Some(url) = self.urls.get(failures.len()) else {
+                return Err(offline(format!(
+                    "can't download {} {} {}",
+                    self.name,
+                    self.version,
+                    failures.join(", or ")
+                )));
+            };
+            match fetch(url) {
+                Ok(bytes) => break (url, bytes),
+                Err(e) => {
+                    if let Some(next) = self.urls.get(failures.len() + 1) {
+                        eprintln!(
+                            "warning: can't download {} {} from {url}: {e}; trying {next}",
+                            self.name, self.version
+                        );
+                    }
+                    failures.push(format!("from {url}: {e}"));
+                }
+            }
+        };
         let have = hex(&Hasher::digest(&bytes));
         if !have.eq_ignore_ascii_case(&want) {
             return Err(Error {
-                message: format!(
-                    "the download of {} has SHA-256 {have}, not {want}",
-                    self.url
-                ),
+                message: format!("the download of {url} has SHA-256 {have}, not {want}"),
                 help: "the file was changed or cut short on the way; build again, and report it if it persists".into(),
             });
         }
-        install(&bytes, &binary).map_err(|e| Error {
+        let installed = match self.archive {
+            Some(folder) => unpack(&bytes, folder, &dir).and_then(|()| {
+                if binary.is_file() {
+                    Ok(())
+                } else {
+                    let message = format!("{url} has no `{folder}/{}`", self.file);
+                    Err(io::Error::new(io::ErrorKind::NotFound, message))
+                }
+            }),
+            None => install(&bytes, &binary),
+        };
+        installed.map_err(|e| Error {
             message: format!("can't write {} to {}: {e}", self.name, binary.display()),
             help: format!(
                 "make the folder writable, or set `{}` to a local binary",
@@ -183,6 +215,45 @@ fn install(bytes: &[u8], to: &Path) -> io::Result<()> {
         fs::set_permissions(&tmp, fs::Permissions::from_mode(0o755))?;
     }
     fs::rename(&tmp, to)
+}
+
+/// The folder `folder` of the `.tgz` `bytes`, unpacked with `tar` beside
+/// `to` and renamed to it, for the same reason as [`install`]. `tar`
+/// ships with macOS, Linux and Windows 10 and later, as curl does.
+fn unpack(bytes: &[u8], folder: &str, to: &Path) -> io::Result<()> {
+    let parent = to.parent().expect("in the cache folder");
+    let tmp = parent.join(format!(".unpack-{}", std::process::id()));
+    fs::create_dir_all(&tmp)?;
+    let archive = tmp.join("download.tgz");
+    let unpacked = fs::write(&archive, bytes).and_then(|()| {
+        let output = Command::new("tar")
+            .arg("-xzf")
+            .arg(&archive)
+            .arg("-C")
+            .arg(&tmp)
+            .arg(folder)
+            .output();
+        match output {
+            Ok(output) if output.status.success() => match fs::rename(tmp.join(folder), to) {
+                // Another build unpacked it first.
+                Err(_) if to.is_dir() => Ok(()),
+                renamed => renamed,
+            },
+            Ok(output) => Err(io::Error::other(format!(
+                "`tar` can't unpack it: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            ))),
+            Err(e) if e.kind() == io::ErrorKind::NotFound => Err(io::Error::other(
+                "`tar` isn't installed, and yuanme unpacks with it",
+            )),
+            Err(e) => Err(e),
+        }
+    });
+    if let Err(e) = fs::remove_dir_all(&tmp) {
+        // Left behind, it costs the download's size in the cache folder.
+        eprintln!("warning: could not delete {}: {e}", tmp.display());
+    }
+    unpacked
 }
 
 fn hex(bytes: &[u8]) -> String {

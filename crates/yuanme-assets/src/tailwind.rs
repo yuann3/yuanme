@@ -84,8 +84,9 @@ pub fn tool(version: &str) -> Option<Tool> {
         file: format!("tailwindcss{}", std::env::consts::EXE_SUFFIX),
         version: version.to_string(),
         env: ENV,
-        url: format!("{release}/{asset}"),
+        urls: vec![format!("{release}/{asset}")],
         sha256,
+        archive: None,
     })
 }
 

@@ -70,7 +70,7 @@ fn the_pinned_release_has_its_checksum_embedded() {
     let Sha256::Known(hex) = pinned.sha256 else {
         panic!("{VERSION} isn't pinned")
     };
-    let asset = pinned.url.rsplit('/').next().unwrap();
+    let asset = pinned.urls[0].rsplit('/').next().unwrap();
     assert!(SHA256S.contains(&(asset, hex.as_str())));
     let Some(Sha256::Listed(list)) = tool("4.0.0").map(|t| t.sha256) else {
         panic!("4.0.0 has a checksum embedded")
