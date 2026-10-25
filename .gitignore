@@ -3,3 +3,4 @@
 /THIRD_PARTY_NOTICES.md
 /parity/browser/node_modules
 /crates/yuanme-engine/tests/router/node_modules
+/crates/yuanme/tests/client/node_modules

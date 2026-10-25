@@ -151,6 +151,31 @@ jobs:
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: node feel.ts --yuanme ../../../../target/debug/yuanme
 
+  # The dev client's checks (#68) in Chromium against yuanme dev, and
+  # #15's Gate: a save to a long post of a Site the size of the Reference
+  # site paints within 100 ms at p95. Headless here, which paints on the
+  # CPU; on an M4 Max it is the slower of the two at p95 (80 ms against 72
+  # headed). It times the Engine too, so yuanme is a release build.
+  dev-client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crates/yuanme/tests/client
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - run: sudo apt-get install -y nasm
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: crates/yuanme/tests/client/package-lock.json
+      - run: cargo build --release --locked -p yuanme
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: node client.ts --yuanme ../../../../target/release/yuanme
+
   # The Org parser's guarantees (#15): no input panics or fails except by
   # running out of fuel or nesting too deep, and none parses slower than
   # 1 ms/KB + 1 ms, scaled to the runner's speed. libFuzzer's
