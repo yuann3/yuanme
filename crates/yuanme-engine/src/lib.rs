@@ -85,6 +85,9 @@ impl Inputs {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mode {
     Build,
+    /// A build with Drafts, as `yuanme build --drafts` makes: only `Dev`
+    /// adds what a browser asks the dev server for.
+    Drafts,
     Dev,
 }
 
@@ -136,7 +139,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     // Entries are parsed afresh each build until #47 caches them. `mode` is
     // also for images on request, through `image::encode` (#63), and the
     // unsubset font (#52).
-    let (site, more) = resolve(inputs, &config, mode == Mode::Dev, &mut sources);
+    let (site, more) = resolve(inputs, &config, mode != Mode::Build, &mut sources);
     diagnostics.extend(more);
     let Some(site) = site else {
         return failed(diagnostics, sources);
