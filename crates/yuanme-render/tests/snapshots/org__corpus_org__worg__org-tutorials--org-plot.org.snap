@@ -1,0 +1,948 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="introduction">Introduction</h2>
+<p>This tutorial provides instructions for installing and using org-plot
+as well as a complete overview of the org-plot options and
+demonstrations of some of the many types of graphs which can be
+generated automatically from tables in your org-mode files using
+org-plot.</p>
+<p>While graphs will be included in the html version of this tutorial, if
+you would like to play along at home you can download the original org
+file here <a href="https://git.sr.ht/~bzg/worg/tree/master/item/org-tutorials/org-plot.org">org-plot.org</a>.</p>
+<h2 id="getting-set-up">Getting Set up</h2>
+<h3 id="requirements">Requirements</h3>
+<p>Org-plot uses Gnuplot as well as the Emacs Gnuplot-mode to power its
+graphing.  To download and install these two requirements see the
+following</p>
+<dl>
+<dt>Gnuplot</dt>
+<dd><a href="http://www.gnuplot.info/">http://www.gnuplot.info/</a></dd>
+<dt>Gnuplot-Mode</dt>
+<dd><a href="http://cars9.uchicago.edu/~ravel/software/gnuplot-mode.html">http://cars9.uchicago.edu/~ravel/software/gnuplot-mode.html</a></dd>
+</dl>
+<h3 id="installation">Installation</h3>
+<p>First we need to make sure that org-plot is on your system and
+available to emacs.  If you have a recent version of org-mode (version
+6.07 or later) then org-plot is already included.  Otherwise you can
+grab the latest <code>org-plot.el</code> from the <a href="https://git.savannah.nongnu.org/cgit/org-mode.git/tree/lisp/org-plot.el">Org repository</a>.</p>
+<h3 id="key-binding">Key binding</h3>
+<p>The main plotting command, <code>org-plot/gnuplot</code>, is bound to <code>C-c " g</code>.
+This is the only org-plot command used in this tutorial.</p>
+<h2 id="examples">Examples</h2>
+<h3 id="2d-plots-lines-and-histograms">2d plots (lines and histograms)</h3>
+<h4 id="lines">Lines</h4>
+<p>To plot <a href="#org-plot-example-1">Table 1</a>, execute the <code>org-plot/gnuplot</code> command.  This command
+finds and plots the nearest table.  The result, saved as a <code>png</code> file,
+is displayed in <a href="#org-plot-example-1-plot">Figure 1</a>.</p>
+<figure id="org-plot-example-1-plot">
+<img src="../images/org-plot/example-1.png" alt="example-1.png">
+<figcaption>Plot of Table 1.</figcaption>
+</figure>
+<p>The options specified in any <code>#+PLOT</code> lines above the table are read
+and applied to the plot.  Notice that the second <code>#+PLOT</code> line
+specifies labels for each column; if this line is removed the labels
+will default to the column headers in the table. Here are the <code>#+PLOT</code>
+lines used to create Figure 1.</p>
+<pre id="org-plot-example-1-plot-options"><code>#+PLOT: title:"example table" ind:1 type:2d with:lines
+#+PLOT: labels:("first new label" "second column" "last column")
+</code></pre>
+<p>For a complete list of all of the options and their meanings see the
+<a href="#options">options</a> section at the end of this file.  For more information on
+Gnuplot options see <a href="http://gnuplot.sourceforge.net/documentation.html">the gnuplot documentation</a>, nearly all Gnuplot
+options should be accessible through org-plot.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="org-plot-example-1"><caption>Data used to plot Figure 1.</caption><thead><tr><th>independent var</th><th>first dependent var</th><th>second dependent var</th></tr></thead><tbody><tr><td>0.1</td><td>0.425</td><td>0.375</td></tr><tr><td>0.2</td><td>0.3125</td><td>0.3375</td></tr><tr><td>0.3</td><td>0.24999993</td><td>0.28333338</td></tr><tr><td>0.4</td><td>0.275</td><td>0.28125</td></tr><tr><td>0.5</td><td>0.26</td><td>0.27</td></tr><tr><td>0.6</td><td>0.25833338</td><td>0.24999993</td></tr><tr><td>0.7</td><td>0.24642845</td><td>0.23928553</td></tr><tr><td>0.8</td><td>0.23125</td><td>0.2375</td></tr><tr><td>0.9</td><td>0.23333323</td><td>0.2333332</td></tr><tr><td>1</td><td>0.2225</td><td>0.22</td></tr><tr><td>1.1</td><td>0.20909075</td><td>0.22272708</td></tr><tr><td>1.2</td><td>0.19999998</td><td>0.21458333</td></tr><tr><td>1.3</td><td>0.19615368</td><td>0.21730748</td></tr><tr><td>1.4</td><td>0.18571433</td><td>0.21071435</td></tr><tr><td>1.5</td><td>0.19000008</td><td>0.2150001</td></tr><tr><td>1.6</td><td>0.1828125</td><td>0.2046875</td></tr><tr><td>1.7</td><td>0.18088253</td><td>0.1985296</td></tr><tr><td>1.8</td><td>0.17916675</td><td>0.18888898</td></tr><tr><td>1.9</td><td>0.19342103</td><td>0.21315783</td></tr><tr><td>2</td><td>0.19</td><td>0.21625</td></tr><tr><td>2.1</td><td>0.18214268</td><td>0.20714265</td></tr><tr><td>2.2</td><td>0.17727275</td><td>0.2022727</td></tr><tr><td>2.3</td><td>0.1739131</td><td>0.1989131</td></tr><tr><td>2.4</td><td>0.16770833</td><td>0.1916667</td></tr><tr><td>2.5</td><td>0.164</td><td>0.188</td></tr><tr><td>2.6</td><td>0.15769238</td><td>0.18076923</td></tr><tr><td>2.7</td><td>0.1592591</td><td>0.1888887</td></tr><tr><td>2.8</td><td>0.1598214</td><td>0.18928565</td></tr><tr><td>2.9</td><td>0.15603453</td><td>0.1844828</td></tr></tbody></table>
+<h4 id="historgrams">Historgrams</h4>
+<p>Org-plot can also produce histograms from 2d data.  <a href="#org-plot-example-2-plot">Figure 2</a> is
+created with the following options:</p>
+<pre><code>#+PLOT: title:"Citas" ind:1 deps:(3) type:2d with:histograms set:"yrange [0:]"
+</code></pre>
+<p>Notice that the column specified as <code>ind</code> contains textual non-numeric
+data; when this is the case org-plot will use the data as labels for
+the x-axis using the gnuplot <code>xticlabels()</code> function.</p>
+<figure id="org-plot-example-2-plot">
+<img src="../images/org-plot/example-2.png" alt="example-2.png">
+<figcaption>H-index of selected cities.</figcaption>
+</figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="org-plot-example-2"><caption>Example 2.</caption><thead><tr><th>Sede</th><th>Max cites</th><th>H-index</th></tr></thead><tbody><tr><td>Chile</td><td>257.72</td><td>21.39</td></tr><tr><td>Leeds</td><td>165.77</td><td>19.68</td></tr><tr><td>São Paolo</td><td>71.00</td><td>11.50</td></tr><tr><td>Stockholm</td><td>134.19</td><td>14.33</td></tr><tr><td>Morelia</td><td>257.56</td><td>17.67</td></tr></tbody></table>
+<h3 id="3d-grid-plots">3d grid plots</h3>
+<p>There are also some functions for plotting 3d or grid data.  To see an
+example of a grid plot call org-plot/gnuplot <code>C-M-g</code> which will plot
+the following table as a grid.</p>
+<p><img src="../images/org-plot/example-4.png" alt="example-4.png"></p>
+<p>To see the effect of <code>map</code> try setting it to <code>t</code>, and then
+re-plotting.</p>
+<p><img src="../images/org-plot/example-5.png" alt="example-5.png"></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td></tr><tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td></tr><tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td></tr><tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr></tbody></table>
+<p>Plotting grids also respects the independent variable (<code>ind:</code>) option,
+and uses the values of the independent row to label the resulting
+graph.  The following example borrows a short description of org-mode
+from Bernt Hansen on the mailing list (a more practical usage would
+label every single row with something informative).</p>
+<p><img src="../images/org-plot/example-6.png" alt="example-6.png"></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td>text</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>plain</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td></tr><tr><td></td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td>in</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td></td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td></tr><tr><td>everything</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td></td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>track</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td></td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr><tr><td>and</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0</td></tr><tr><td></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Organize</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr></tbody></table>
+<h3 id="3d-plots">3d plots</h3>
+<p>Finally the last type of graphing currently supported is 3d graphs of
+data in a table.  This will probably require some more knowledge of
+gnuplot to make full use of the many options available.</p>
+<p><img src="../images/org-plot/example-7.png" alt="example-7.png"></p>
+<p>For some simple demonstrations try the following graph using some
+different <code>with:</code> options <code>with:points</code>, <code>with:lines</code>, and
+<code>with:pm3d</code>.</p>
+<p><img src="../images/org-plot/example-8.png" alt="example-8.png"></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>0</td></tr><tr><td>0</td><td>2</td><td>3</td><td>3</td><td>3</td><td>2</td><td>0</td></tr><tr><td>0</td><td>2</td><td>3</td><td>4</td><td>3</td><td>2</td><td>0</td></tr><tr><td>0</td><td>2</td><td>3</td><td>3</td><td>3</td><td>2</td><td>0</td></tr><tr><td>0</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>0</td></tr><tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr></tbody></table>
+<h3 id="setting-axis-titles">Setting Axis Titles</h3>
+<p>The question of the proper syntax for setting axis labels via org-plot
+has occurred on the mailing list.<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup> The answer is to use this:</p>
+<pre><code>#+PLOT: set:"xlabel 'Name'" set:"ylabel 'Name'"
+</code></pre>
+<h2 id="reference">Reference</h2>
+<h3 id="plotting-options">Plotting Options</h3>
+<p>#<a id="options"></a></p>
+<p>Gnuplot options (see <a href="http://gnuplot.sourceforge.net/documentation.html">the gnuplot documentation</a>) accessible through
+<code>org-plot</code>, common gnuplot options are specifically supported, while
+all other options are accessible through specification of generic set
+commands, script lines, or specification of custom script files.
+Possible options are…</p>
+<dl>
+<dt>set</dt>
+<dd>specify any gnuplot option to be set when graphing</dd>
+<dt>title</dt>
+<dd>specify the title of the plot</dd>
+<dt>ind</dt>
+<dd>specify which column of the table to use as the x axis</dd>
+<dt>deps</dt>
+<dd>specify the columns to graph as a lisp style list,
+surrounded by parenthesis and separated by spaces for
+example <code>dep:(3 4)</code> to graph the third and fourth columns
+(defaults to graphing all other columns aside from the ind
+column).</dd>
+<dt>type</dt>
+<dd>specify whether the plot will be ‘2d’ ‘3d or ‘grid’</dd>
+<dt>with</dt>
+<dd>specify a with option to be inserted for every col being
+plotted (e.g. lines, points, boxes, impulses, etc…)
+defaults to ‘lines’</dd>
+<dt>file</dt>
+<dd>if you want to plot to a file specify the path to the
+desired output file</dd>
+<dt>labels</dt>
+<dd>list of labels to be used for the deps (defaults to column
+headers if they exist)</dd>
+<dt>line</dt>
+<dd>specify an entire line to be inserted in the gnuplot script</dd>
+<dt>map</dt>
+<dd>when plotting 3d or grid types, set this to true to graph a
+flat mapping rather than a 3d slope</dd>
+<dt>script</dt>
+<dd>if you want total control you can specify a script file
+(place the file name inside quotes) which will be used to
+plot, before plotting every instance of $datafile in the
+specified script will be replaced with the path to the
+generated data file.  Note even if you set this option you
+may still want to specify the plot type, as that can
+impact the content of the data file.</dd>
+<dt>timefmt</dt>
+<dd>if there is time and/or date data to be plotted, set the
+format.  For example, <code>timefmt:%Y-%m-%d</code> if the data look
+like <code>2008-03-25</code>.</dd>
+</dl>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p><a href="http://www.mail-archive.com/emacs-orgmode@gnu.org/msg08669.html">http://www.mail-archive.com/emacs-orgmode@gnu.org/msg08669.html</a> <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

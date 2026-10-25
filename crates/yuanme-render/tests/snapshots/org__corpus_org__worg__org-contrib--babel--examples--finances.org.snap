@@ -1,0 +1,55 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>I like to track my expenses in Org tables.  For example:</p>
+<pre><code class="language-org">#+tblname: daily-expenses
+| Expense | Category |
+|---------+----------|
+|       2 | Food     |
+|       1 | House    |
+|      10 | Clothes  |
+|       3 | Food     |
+|       5 | House    |
+</code></pre>
+<p>At the of the month, I want to see how much was spent in each
+category.  I wrote the following Babel function to calculate this:</p>
+<pre><code class="language-org">#+name: group-categories
+#+begin_src emacs-lisp :var table=daily-expenses :colnames nil
+  (defun category-sums (catcol valcol)
+    "Sum each of the categories in an Org table.
+  
+  \(fn CATEGORYCOLUMN VALUECOLUMN)"
+    (let (gcats
+          result)
+      (dolist (row table)
+        (let ((cat (nth (1- catcol) row)))
+          (when (not (member cat gcats))
+            (push cat gcats))))
+      (dolist (gcat gcats)
+        (let ((sum 0))
+          (dolist (row table)
+            (let ((val (nth (1- valcol) row))
+                  (cat (nth (1- catcol) row)))
+              (when (equal gcat cat)
+                (cl-incf sum val))))
+          (push (list gcat sum) result)))
+      result))
+  (category-sums 2 1)
+#+end_src
+</code></pre>
+<p>Here is an example of the output:</p>
+<pre><code class="language-org">#+results: group-categories
+| Category | Expense |
+|----------+---------|
+| Food     |       5 |
+| House    |       6 |
+| Clothes  |      10 |
+</code></pre>
+<p>Dan Davison provided an alternate way of doing this using an R
+function:</p>
+<pre><code class="language-org">#+begin_src R :var tab=daily-expenses :colnames yes
+  attach(tab)
+  aggregate(Expense ~ Category, FUN=sum)
+#+end_src
+</code></pre>

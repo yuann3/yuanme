@@ -1,0 +1,946 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="introduction">Introduction</h2>
+<p>Org-mode has many powerful built-in search functions. These tools
+transform hierarchical org files into robust plain text “databases”
+that can be queried in sophisticated ways. Outline headings in
+Org-mode not only function as document sections or todo items; each
+heading can also store an unlimited amount of text and various types
+of metadata. And, of course, since Org-mode files are plain text, any
+number of tools (grep, awk, perl, etc.) can be used to filter and
+manipulate the data they contain.</p>
+<p>The goal of this tutorial is to offer an introduction to the built-in
+commands and syntax for querying Org-mode outlines. While these are
+explained in various places in the Org-mode manual, this tutorial
+attempts to provide an overview in one place. It is particularly aimed
+at those who would like to use Org-mode as a note-taking and reference
+management tool. Nonetheless, it should prove useful to anyone who
+needs to locate specific information buried in an ever-growing
+collection of Org-mode data.</p>
+<h2 id="outline-nodes-as-data-containers">Outline nodes as “data containers”</h2>
+<p>Before discussing specific search commands, it is worth taking a few
+moments to consider the basic structure of an Org-mode entry.</p>
+<p>Though outline entries can be nested within one another
+hierarchically, each node is also a discrete container of data.
+Indeed, a large variety of metadata—a todo keyword, tags,
+timestamps, logging information, and properties (i.e., arbitrary data
+pairs)—can be attached to each heading. Similarly each outline entry
+can store an unlimited amount of text.</p>
+<p>Here is an example:</p>
+<pre><code class="language-org">* TODO Buy clothes for wedding                    :wedding:important:errands:
+,  SCHEDULED: &#x3C;2010-12-01 Wed>
+,  :PROPERTIES:
+,  :estimated-cost: 100
+,  :END:
+,  [2010-11-17 Wed 12:22]
+
+,  I need to look spiffy for the big day!
+
+,   - [ ] Suit
+,   - [ ] Tie
+,   - [ ] Shoes
+,   - [ ] Hat
+
+,  Possible stores to visit:
+,  
+,  | Store           | Location               | Miles away |
+,  |-----------------+------------------------+------------|
+,  | The Suit King   | 1000 E. Washington St. |        5.1 |
+,  | Mr. Haberdasher | 259 Western Rd.        |        7.2 |
+
+</code></pre>
+<p>The sample entry above has the following metadata:</p>
+<dl>
+<dt>todo keyword</dt>
+<dd>TODO</dd>
+<dt>scheduled timestamp</dt>
+<dd>2010-12-01 Wed</dd>
+<dt>inactive timestamp</dt>
+<dd>2010-11-17 Wed 12:22</dd>
+<dt>property</dt>
+<dd>estimated-cost ⇒ 100</dd>
+<dt>tags</dt>
+<dd>“wedding”, “important”, and “errands”</dd>
+</dl>
+<p>The entry also contains some text, including a checklist and a table.</p>
+<p>Normally, an Org-mode file/outline contains several entries such as
+the one above, nested hierarchically. Moreover, Org users typically
+make their most important files available for easy searching by adding
+them to their list of <a href="https://orgmode.org/manual/Agenda-files.html#Agenda-files">agenda files</a>, either selecting them one-by-one
+with <code>C-c [</code> or by setting the variable <code>org-agenda-files</code>.</p>
+<h2 id="agenda-as-search-engine">The agenda as a search engine</h2>
+<p>For querying a collection of org files, Org-mode includes a powerful
+built-in search-engine, <a href="https://orgmode.org/manual/Agenda-views.html#Agenda-views">the agenda</a> (<code>C-c a</code>). As its name suggests,
+the most common use of <a href="https://orgmode.org/manual/Agenda-views.html#Agenda-views">the agenda</a> is to pull together, from all the
+agenda files, a daily or weekly schedule or a list of todos. But the
+agenda is also a powerful search engine that offers various ways tools
+for querying both the metadata and the text of org-mode entries. In
+fact, Org-mode’s default agenda view (<code>C-c a a</code> or <code>org-agenda-list</code>)
+is simply a search tool that gathers and displays all org-mode entries
+with certain types of metadata—timestamps that fall within a given
+range of dates.</p>
+<p>Typing <code>C-c a</code> or <code>M-x org-agenda</code> brings up the agenda dispatcher, an
+overview of Org-mode’s various search tools:</p>
+<pre><code>Press key for an agenda command:        &#x3C;   Buffer, subtree/region restriction
+--------------------------------        >   Remove restriction
+a   Agenda for current week or day      e   Export agenda views
+t   List of all TODO entries            T   Entries with special TODO kwd
+m   Match a TAGS/PROP/TODO query        M   Like m, but only TODO entries
+L   Timeline for current buffer         #   List stuck projects (!=configure)
+s   Search for keywords                 C   Configure custom agenda commands
+/   Multi-occur                         ?   Find :FLAGGED: entries
+</code></pre>
+<p>A quick perusal of <a href="https://orgmode.org/manual/Built_002din-Agenda-Views.html">the commands</a> here reveals that one can query for a
+wide variety of data. This tutorial will focus on three searches in
+particular:</p>
+<dl>
+<dt><code>C-c a T</code></dt>
+<dd>for todo keywords</dd>
+<dt><code>C-c a m</code></dt>
+<dd>for tags and properties</dd>
+<dt><code>C-c a s</code></dt>
+<dd>for full text searches</dd>
+</dl>
+<p>Now, let’s look at the syntax for each of these search tools.</p>
+<h2 id="searching-metadata">Searching metadata (todos, tags, and properties)</h2>
+<h3 id="todo-keyword-searches">Todo keyword searches</h3>
+<p>The simplest type of metadata query in org-mode is <a href="https://orgmode.org/manual/Global-TODO-list.html#Global-TODO-list"><code>org-todo-list</code></a>
+(invoked with <code>C-c a T</code>). This function prompts the user for a search
+string and then retrieves a list of outline headings containing the
+TODOs specified in the search string.<sup><a href="#user-content-fn-lowercase-t" id="user-content-fnref-lowercase-t" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup></p>
+<p>Since each outline heading can contain only one TODO keyword, the
+search syntax is quite simple, consisting either of a single keyword
+or two or more keywords bound together by the boolean operator <code>|</code>
+(“or”).</p>
+<p>For instance, the following query…</p>
+<pre><code>TODO
+</code></pre>
+<p>…retrieves all entries marked with a TODO keyword, whereas…</p>
+<pre><code>TODO|PROJECT|MAYBE
+</code></pre>
+<p>…displays a list of all headlines containing either TODO or PROJECT
+or MAYBE.</p>
+<h3 id="tag-searches">Tag searches</h3>
+<p>Though the org-todo-list serves its purpose well, it is limited to
+only one type of metadata. If you would like to search for other types
+of metadata, or mix and match a search for todo keywords with, say, a
+search for tags, org-mode offers a more powerful tool,
+<a href="https://orgmode.org/manual/Matching-tags-and-properties.html#Matching-tags-and-properties"><code>org-tags-view</code></a>, which is called with the following keys:</p>
+<dl>
+<dt><code>C-c a m</code></dt>
+<dd>searches all headlines</dd>
+<dt><code>C-c a M</code></dt>
+<dd>searches only headlines with active todos</dd>
+</dl>
+<p>At its simplest, org-tags-view does exactly what it says: it queries
+for headlines marked with particular combinations of tags. The syntax
+for such searches follows a simple boolean logic:</p>
+<dl>
+<dt><code>|</code></dt>
+<dd>or</dd>
+<dt><code>&#x26;</code></dt>
+<dd>and</dd>
+<dt><code>+</code></dt>
+<dd>include matches</dd>
+<dt><code>-</code></dt>
+<dd>exclude matches</dd>
+</dl>
+<p>Here are a few examples:</p>
+<ol>
+<li>
+<p><code>+computer&#x26;+urgent</code></p>
+<p>…will result in all items tagged both computer <strong>and</strong> urgent,
+while the search…</p>
+</li>
+<li>
+<p><code>+computer|+urgent</code></p>
+<p>…will result in all items tagged <strong>either</strong> computer <strong>or</strong> urgent.
+Meanwhile, the query…</p>
+</li>
+<li>
+<p><code>+computer&#x26;-urgent</code></p>
+<p>…will display all items tagged computer <strong>and not</strong> urgent.</p>
+</li>
+</ol>
+<p>As you may have noticed, the syntax above can be a little verbose, so
+org-mode offers convenient ways of shortening it. First, <code>-</code> and <code>+</code>
+imply “and” if no boolean operator is stated, so example three above
+could be rewritten simply as:</p>
+<pre><code>+computer-urgent
+</code></pre>
+<p>Second, inclusion of matches is implied if no <code>+</code> or <code>-</code> is present,
+so example three could be further shortened to:</p>
+<pre><code>computer-urgent
+</code></pre>
+<p>Example number two, meanwhile, could be shortened to:</p>
+<pre><code>computer|urgent
+</code></pre>
+<h4 id="grouping-tags">Grouping tags</h4>
+<p>There is no way (as yet) to express search grouping with parentheses.
+The “and” operators (<code>&#x26;</code>, <code>+</code>, and <code>-</code>) always bind terms together
+more strongly than “or” (<code>|</code>). For instance, the following search…</p>
+<pre><code>computer|work+email
+</code></pre>
+<p>…results in all headlines tagged either with “computer” or both
+“work” and “email”. An expression such as <code>(computer|work)&#x26;email</code> is
+<strong>not</strong> supported at the moment.</p>
+<p>There, are, however several other ways to achieve the grouping effect
+of parentheses:</p>
+<ol>
+<li>
+<p>Use a regular expression</p>
+<p>To invoke the “grouping” logic of parentheses, you can construct a
+regular expression:</p>
+<pre><code>+{computer\|work}+email
+</code></pre>
+<p>Note: you can also use the special property <code>ALLTAGS</code> (which
+queries the same data as a normal tags search) together with a
+regular expression:</p>
+<pre><code>ALLTAGS={computer\|work}+email
+</code></pre>
+<p>(In the next section we’ll learn more about how property searches
+and regular expressions are constructed.)</p>
+</li>
+<li>
+<p>Use a slightly more verbose query as a substitute for the logic of
+parentheses. E.g.,</p>
+<pre><code>computer&#x26;email|work&#x26;email
+</code></pre>
+<p>This search will match all headlines tagged either with “computer”
+and “email” or with “work” and “email.”</p>
+</li>
+<li>
+<p>If you are combining a tags search with a TODO search, you can use
+the following:</p>
+<pre><code>computer|email/!NOW
+</code></pre>
+</li>
+<li>
+<p>Use <a href="https://orgmode.org/manual/Agenda-commands.html#Agenda-commands">agenda filtering</a>.</p>
+<p>Simply search for all headlines tagged with “computer” or “work”
+and then use the agenda’s tag filtering capabilities (<code>/</code>) to see
+only those headlines among the results that have the tag “email.”</p>
+</li>
+</ol>
+<h3 id="property-searches">Property searches</h3>
+<p>Org-mode allows outline entries to contain any number of <a href="https://orgmode.org/manual/Properties-and-columns.html#Properties-and-columns">arbitrary
+data pairs</a>, which are conveniently hidden within a folding PROPERTIES
+drawer, e.g.:</p>
+<pre><code class="language-org">* TODO Evensong's magisterial work on the Amazon           :science:read:BIB:
+  SCHEDULED: &#x3C;2010-11-20 Sat>
+  [2010-11-16 Tue 23:11]
+  :PROPERTIES:
+  :BIB_AUTHOR: Walter Evensong
+  :BIB_TITLE: Mysteries of the Amazon
+  :BIB_PAGES: 1234
+  :BIB_PUBLISHER: Humbug University Press
+  :END:
+  
+  Lots of good stuff on Brazil.
+</code></pre>
+<p>Let’s imagine a free software aficionado named Mr. Gnu has added a
+number of similar bibliographical outline nodes to his org files and
+that he would like to find all entries that contain “Walter Evensong”
+in their <code>BIB_AUTHOR</code> field. He can construct such a search so by
+calling <code>org-tags-view</code> and entering the desired key/value match:</p>
+<pre><code>C-c a m 
+Match: BIB_AUTHOR="Walter Evensong"
+</code></pre>
+<p>Property searches can be mixed and matched with tag searches. If Mr.
+Gnu would like to see all books by “Walter Evensong” with the tag
+“read”, he can simply join the two desired matches together with the
+<code>+</code> sign:</p>
+<pre><code>BIB_AUTHOR="Walter Evensong"+read
+</code></pre>
+<p>Properties with numeric values can be queried with inequalities. If
+Mr. Gnu would like to retrieve all books by the prolific Walter
+Evensong that span over 1000 pages, he could enter the following:</p>
+<pre><code>BIB_AUTHOR="Walter Evensong"+BIB_PAGES>1000
+</code></pre>
+<p>The comparison operators for searches are as follows:</p>
+<pre><code>= (equal), > (greater than), &#x3C;= (greater than or equal to), 
+&#x3C; (less than), &#x3C;= (less than or equal to), &#x3C;> (not equal)
+</code></pre>
+<p>What if Mr. Gnus would to like of find all books by Walter Evensong
+<strong>or</strong> any books over 1000 pages?</p>
+<pre><code>BIB_AUTHOR="Walter Evensong"|BIB_PAGES>1000
+</code></pre>
+<p>For his own clarity, Mr. Gnu can always insert ”+” signs, though they
+are not required:</p>
+<pre><code>+BIB_AUTHOR="Walter Evensong"|+BIB_PAGES>1000
+</code></pre>
+<p>It is important to note that the equal sign in the searches above
+implies an exact match. If Mr. Gnu is searching for a string, such as
+“Mysteries of the Amazon”, the entire search query must match. Thus,
+the search…</p>
+<pre><code>BIB_TITLE="Amazon"
+</code></pre>
+<p>…will not match the entry above.</p>
+<p>How then can you search for partial matches? The answer is regular
+expressions. Instead of surrounding your query with quotation marks
+(which will necessitate a precise and complete match), you can instead
+enfold it in brackets, which instructs Org-mode to treat the query as
+a regular expression. Thus, the search…</p>
+<pre><code>BIB_TITLE={Amazon}
+</code></pre>
+<p>…will locate all entries that match contain the sequence “Amazon”
+and pull them up in the agenda:</p>
+<pre><code>Headlines with TAGS match: BIB_TITLE={Amazon}
+Press `C-u r' to search again with new search string
+ org:        TODO Evensong's magisterial work on the Amazon  :science:read:BIB:
+</code></pre>
+<p>Mr. Gnu jots down the following rule in his growing org file collection:</p>
+<pre><code class="language-org">* Tags/property search matching
+ - For exact matches, use quotation marks.
+ - For partial matches, use curly brackets.
+</code></pre>
+<p><a href="http://www.gnu.org/s/emacs/manual/html_node/elisp/Regular-Expressions.html#Regular-Expressions">Regular expressions</a> allow for more flexible searches. Let’s say that
+for some strange reason Mr. Gnu would like to find all books
+containing either “Amazon” or “Amazing” in their titles. The following
+regular expression search should do the trick:</p>
+<pre><code>BIB_TITLE={Amaz\(on\|ing\)}
+</code></pre>
+<p>Let’s break this expression down:</p>
+<dl>
+<dt><code>Amaz</code></dt>
+<dd>This is the string shared by both words.</dd>
+<dt><code>\(...\)</code></dt>
+<dd>These parentheses create a grouping to set off the
+alternative matches that follow “Amaz”.</dd>
+<dt><code>on\|ing</code></dt>
+<dd><code>\|</code> is the “or” expression. Since it is placed within
+the parentheses, it means that a match must begin with
+“Amaz” but can end <strong>either</strong> in “on” <strong>or</strong> “ing”.</dd>
+</dl>
+<p>You may be wondering why the search query contains so many
+backslashes. It is because Emacs’ regular expression engine gives the
+characters <code>(</code>, <code>)</code>, and <code>|</code> a special meaning only when they are
+“escaped” (i.e., preceded by a backslash). Thus, Mr. Gnu had simply
+typed <code>BIB_TITLE={Amaz(on|ing)}</code>, he would have instructed Org-mode to
+match entries with the exact sequence <code>Amaz(on|ing)</code> (an unlikely
+match, unless he has a large collection of literary theory from the
+1990s).</p>
+<p>Here’s a simpler example. If Mr. Gnu would like to find all entries
+with either “Walter” or “Evensong” in the author field, he could type:</p>
+<pre><code>BIB_TITLE={Walter\|Evensong}
+</code></pre>
+<p>If he would like to pull up all entries that have defined value for
+the <code>BIB_TITLE</code> property, he can simply use a single dot to match any
+character:</p>
+<pre><code>BIB_TITLE={.}
+</code></pre>
+<h3 id="special-properties">Special Properties</h3>
+<p>In addition to any explicitly declared key/value property pairs, each
+Org-mode entry also has a number of <a href="https://orgmode.org/manual/Special-properties.html#Special-properties">special (i.e., implicit)
+properties</a> that can be queried with <code>org-tags-view</code> (<code>C-c a m</code>). These
+include, among other things, the entry’s TODO state, tags (local and
+inherited), category, priority, and timestamps (DEADLINE, SCHEDULED,
+active, and inactive). See the <a href="#outline-nodes-as-data-containers">sample entry</a> above for an illustration
+of where these properties are typically found in an outline node.</p>
+<p>To see all of the properties (both explicit and implicit) defined for
+an Org-mode entry, place the following text in an org-mode entry and
+evaluate it by typing C-x C-e after the closing parenthesis:</p>
+<pre><code>(org-entry-properties nil)
+</code></pre>
+<p>Here’s an example of how such “special properties” can be put to good
+use in a search:</p>
+<pre><code>C-c a m
+Match: Effort>1+PRIORITY="A"+SCHEDULED&#x3C;"&#x3C;tomorrow>"+ALLTAGS={computer\|email}
+</code></pre>
+<p>This query finds all items with:</p>
+<ol>
+<li>An estimated effort greater than one hour</li>
+<li>A priority of “A”</li>
+<li>A scheduled date “less than” tomorrow (i.e., today or earlier).</li>
+<li>Either the tag “computer” or the tag “email”
+<ul>
+<li>Note: the ALLTAGS property includes inherited tags, while the
+TAGS property includes only local tags.</li>
+<li>This search is also a good example of how to achieve a <a href="#grouping-tags">grouping
+logic without parentheses</a> while querying tags.</li>
+</ul>
+</li>
+</ol>
+<p>Please <a href="https://orgmode.org/manual/Matching-tags-and-properties.html">consult the manual</a> for a fuller explanation of the syntax of
+such searches.</p>
+<h4 id="querying-timestamps">Querying timestamps</h4>
+<p>A few words should be said here about querying timestamps contained in
+the following properties: <code>DEADLINE</code>, <code>SCHEDULED</code>, <code>TIMESTAMP</code> (the
+first active timestamp in an entry), and <code>TIMESTAMP_IA</code> (the first
+inactive timestamp in an entry).</p>
+<p>The basic syntax for querying timestamps is a time string enclosed in
+double quotes and angular brackets. E.g., the search…</p>
+<pre><code>C-c a m
+Match: +SCHEDULED="&#x3C;2010-08-20 Sat>"
+</code></pre>
+<p>…will find all items scheduled for Saturday, August 20, 2010
+<strong>without</strong> a time of day specification. This last caveat is important
+to note: if you have a timestamp with time of day information, such
+as…</p>
+<pre><code class="language-org">* Some task
+  SCHEDULED: &#x3C;2010-08-20-Sat 10:30>
+</code></pre>
+<p>…the search above will not retrieve it. (This is not normally a
+problem, since the daily/weekly agenda view provides a far superior
+mechanism for viewing all timestamps that fall on a particular day.)</p>
+<p>The true value of timestamp property queries lies in the use of
+inequalities to capture a range of dates. To assist with this task,
+Org-mode provides a number of convenient shortcuts:</p>
+<dl>
+<dt><code>&#x3C;today></code> and <code>&#x3C;tomorrow></code></dt>
+<dd>timestamps for today and tomorrow
+(without a time of day specification)</dd>
+<dt><code>&#x3C;now></code></dt>
+<dd>right now, including time of day
+<ul>
+<li>e.g., <code>2010-11-20 Sat 12:42</code></li>
+</ul>
+</dd>
+<dt><code>&#x3C;-5d></code>, <code>&#x3C;-10w></code>, <code>&#x3C;+3m></code>, <code>&#x3C;+1y></code></dt>
+<dd>relative date indicators
+<ul>
+<li>the shortcuts above indicate five days ago, ten weeks ago, three
+months from now, and one year from now</li>
+</ul>
+</dd>
+</dl>
+<p>To see all items SCHEDULED far in the future, say, more than a year
+from now, you could type:</p>
+<pre><code>C-c a m
+Match: SCHEDULED>"&#x3C;+1y>"
+</code></pre>
+<p>Here’s another scenario. Imagine you use org-capture to take all your
+notes and that you automatically stamp each notes with an inactive
+timestamp. To find all notes you took in the past two weeks with the
+tag “chimpanzees”, you could perform the following search:</p>
+<pre><code>C-c a m
+Match: chimpanzees+TIMESTAMP_IA>="&#x3C;-2w>"
+</code></pre>
+<h4 id="limiting-searches-to-todos">Limit tags and properties searches by TODO state</h4>
+<p>You can limit any of these tags/property searches to active todo
+states simply by using <code>C-c a M</code> instead of <code>C-c a m</code>.</p>
+<p>You can also, of course, limit the searches to a particular todo
+keyword (say, NEXT) by adding…</p>
+<pre><code>+TODO="NEXT"
+</code></pre>
+<p>…to any of the searches above. But Org-mode also provides a
+convenient (and more efficient) syntax for limiting searches to
+particular TODO keywords. Simply add a <code>/</code> followed by a TODO search
+in the form <a href="#todo-keyword-searches">we’ve already discussed</a>. For instance, to limit the
+chimpanzee search above to items marked DONE, you could type:</p>
+<pre><code>C-c a m
+Match: chimpanzees+TIMESTAMP_IA>="&#x3C;-2w>"/DONE
+</code></pre>
+<p>As with normal todo searches, you can use or (<code>|</code>) to expand the
+allowed matches. For instance, the query…</p>
+<pre><code>chimpanzees+TIMESTAMP_IA>="&#x3C;-2w>"/TODO|NEXT
+</code></pre>
+<p>…will match against items marked either TODO or NEXT.</p>
+<p>If you are matching only against active todos (i.e., things not marked
+done), you can make your search more efficient by adding an exclamation
+point. E.g., the following search…</p>
+<pre><code>computer/!TODO|NEXT
+</code></pre>
+<p>…will result in all items tagged “computer” and either a TODO or
+NEXT keyword. The exclamation mark will speed up the search, because
+org-mode will only query items that have an active todo keyword (as
+defined either in the variable <code>org-todo-keywords</code> or in <code>#+TODO</code>
+declarations at the top of an org file). For instance, if you had
+placed the following line at the top of your org files…</p>
+<pre><code>#+TODO: TODO NEXT STARTED WAITING | DONE CANCELED
+</code></pre>
+<p>…an exclamation point limit the possible matches items marked TODO,
+NEXT, STARTED, or WAITING.</p>
+<p>You can use a a negative (<code>-</code>) to exclude TODO states. The search…</p>
+<pre><code>computer/!-WAITING
+</code></pre>
+<p>…will result only in items marked TODO, NEXT, or STARTED.</p>
+<p>Be careful to avoid using “and” logic when you query TODOs, since each
+item, by definition can have only one TODO state. Take a look at the
+following two searches:</p>
+<pre><code>computer/!WAITING+TODO
+</code></pre>
+<pre><code>chimpanzees+TODO="TODO"+SCHEDULED&#x3C;="&#x3C;+1w>"+TODO="WAITING"
+</code></pre>
+<p>These searches will <strong>never</strong> return any positive results, since an org
+entry cannot have both a TODO <strong>and</strong> a WAITING keyword.</p>
+<h2 id="searching-entry-text">Searching the full text of entries</h2>
+<h3 id="keyword-searches">Keyword searches</h3>
+<p>Thus far, we have explored different ways to query the various types
+of metadata attached to an org entry. But what if you would like to
+search the entire text of your org entries?</p>
+<p>The answer: call <a href="https://orgmode.org/manual/Search-view.html#Search-view"><code>org-search-view</code></a> with <code>C-c a s</code>. In the agenda
+dispatcher, this appears as…</p>
+<pre><code>s  Search for keywords
+</code></pre>
+<p>Don’t be fooled by the word “keywords,” which some programs use as a
+synonym for tags. Here, a keyword search scours the full text of org
+entries.</p>
+<p>Let’s start with an example:</p>
+<p>Desperately in need of typing practice (as if Emacs does not provide
+enough keyboarding practice), our friend Mr. Gnu would like to locate
+the following entry, which is buried somewhere in his agenda files:</p>
+<pre><code class="language-org">* A sentence to test my keyboarding skills
+  
+The quick brown fox jumped over the lazy dog.
+</code></pre>
+<p>Mr. Gnu vaguely remembers that the entry contains the word “fox”, so
+he pecks at the keyboard to enter…</p>
+<pre><code>C-c a s 
+</code></pre>
+<p>He is confronted with the prompt…</p>
+<pre><code>[+-]Word/{Regexp} ...: 
+</code></pre>
+<p>…so he enters…</p>
+<pre><code>fox
+</code></pre>
+<p>…and receives an agenda buffer with the correct results:</p>
+<pre><code>Search words: fox
+Press `[', `]' to add/sub word, `{', `}' to add/sub regexp, `C-u r' to edit
+ typing:        A sentence to test my keyboarding skills
+</code></pre>
+<p>Here, we should note that Org-mode’s keyword searches are
+<strong>case-insensitive</strong>, so “fox” will match any of the following: “fox”,
+“Fox”, “FOX”, etc.</p>
+<p>Let’s say, however, that Mr. Gnu’s day job involves studying the
+behavior of foxes, so he knows ahead of time that a simple search will
+bring up hundreds of results. In addition, he recalls that the desired
+entry also contains the word “dog”. Thus, he enters the following:</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: fox dog
+</code></pre>
+<p>Somewhat puzzlingly, Mr. Gnu’s search yields no results. What went
+wrong?</p>
+<p>Mr. Gnu consults <a href="https://orgmode.org/manual/Search-view.html#Search-view">the manual</a> and finds that the default behavior of
+<code>org-search-view</code> is to treat the entered query as a single string, so
+when he typed <code>fox dog</code>, Org-mode looked quite literally for
+<code>fox[whitespace]dog</code>.</p>
+<p>Mr. Gnu further finds that to treat “dog” and “fox” as boolean
+keywords that can be located anywhere in the entry, he needs to
+precede each term with a <code>+</code>. (Technically, he only needs to precede
+the first search term with <code>+</code> to initiate a boolean search, but he
+decides to put <code>+</code> in front of both for the sake of clarity.) So he
+types…</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: +fox +dog
+</code></pre>
+<p>…and is overjoyed to retrieve the expected results.</p>
+<p>Mr. Gnu makes a mental note: unless the first character of the search
+query is a <code>+</code>, Org-mode will treat the entire query as a single
+string. Thus, the query…</p>
+<pre><code>fox +dog
+</code></pre>
+<p>…will prompt Org-mode to search for the single string “fox +dog”.
+(To change this behavior, please read the
+<a href="#boolean-searches-by-default">section for “Google addicts” below</a>.)</p>
+<p>Later, while at work, Mr. Gnu  wants to find all entries on foxes that
+do not contain the word dog, so he types…</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: +fox -dog
+</code></pre>
+<p>If Mr. Gnu wants to incorporate a substring/phrase into a boolean
+search (i.e., a query with a <code>+</code> at the beginning), he can use
+quotation marks:</p>
+<pre><code>+fox +"lazy dog"
+</code></pre>
+<p>At home again, while practicing typing, Mr. Gnu wants to find all
+entries that contain either the word “keyboarding” or the word
+“typing”. Remember his lessons on tag searches, he tries the following
+search query:</p>
+<pre><code>+keyboarding|+typing
+</code></pre>
+<p>Alas, the search returns no results, because Mr. Gnu just instructed
+Org-mode to look for the entire string “keyboarding|+typing.” Reading
+the manual, Mr. Gnu discovers that, unlike todo and tag searches,
+keyword searches require separate terms to be separated by whitespace
+(e.g., <code>+fox +dog</code>). In addition, Mr. Gnus realizes that keyword
+searches have only two simple boolean expressions: <code>+</code> (“and”) and <code>-</code>
+(“and not”). There is no “or” symbol, such as <code>|</code>. What then should
+Mr. Gnu do to find entries containing keyboarding <strong>or</strong> typing?</p>
+<h3 id="regexps-in-org-search-view">Full text search using regular expressions</h3>
+<p>The solution to Mr. Gnu’s puzzle is found in regular expressions.
+Indeed, Mr. Gnu deduced as much by glancing at the org-search-view
+prompt:</p>
+<pre><code>[+-]Word/{Regexp} ...:
+</code></pre>
+<p>As the prompt suggests, Mr. Gnu can search org-entries using Emacs’
+powerful regular expression engine. To do so, he simply needs to
+enclose the regular expression in brackets. So he types…</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: +{keyboarding\|typing}
+</code></pre>
+<p>…to find all entries that contain either “keyboarding” or “typing”.
+(Mr. Gnu could also have used parentheses to create a more compact
+search query, such as <code>+{\(keyboard\|typ\)ing}</code>. Also, it is good to
+recall here that <code>(</code>, <code>|</code>, and <code>)</code> only become special characters only
+when escaped with a <code>\</code>.)</p>
+<p>Regular expressions, Mr. Gnu finds, can be combined with words. The
+query…</p>
+<pre><code>+{keyboarding\|typing} +fox
+</code></pre>
+<p>…finds the “quick brown fox” entry above, while…</p>
+<pre><code>+{keyboarding\|typing} -fox
+</code></pre>
+<p>…excludes it, finding only those entries that contain either the
+word “keyboarding” or “typing” and <strong>not</strong> the word dog.</p>
+<p>Again, Org-mode’s default behavior is to treat the entire query as a
+single string unless it sees a <code>+</code> or a <code>{</code> at the beginning of the
+line. So if Mr. Gnus types…</p>
+<pre><code>dog +{keyboarding\|typing} 
+</code></pre>
+<p>…Org-mode will search for the entire substring “dog
++{keyboarding\|typing}”. (If you don’t like this behavior, please read
+<a href="#boolean-searches-by-default">the section for “Google addicts” below</a>.)</p>
+<h4 id="regular-expression-syntax">Regular expression syntax</h4>
+<p>The possibilities afforded by regular expressions are myriad. The
+examples discussed here are relatively basic. For a thorough
+introduction to regular expression syntax, please consult the <a href="http://www.gnu.org/s/emacs/manual/html_node/elisp/Syntax-of-Regexps.html#Syntax-of-Regexps">emacs
+lisp manual</a>.</p>
+<p>Let’s look at a couple of examples:</p>
+<p>Imagine you’ve entered a lot of contact entries with phone numbers in
+the conventional U.S. format: 123-456-6789. To find all Org-mode
+entries with such numbers, you could type:</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: +{[0-9]\{3\}-[0-9]\{3\}-[0-9]\{4\}}
+</code></pre>
+<p>The square brackets here are special characters; they match any of
+characters they enclose. For instance, <code>[abc]</code> matches either a or b
+or c. In this particular case, the <code>[0-9]</code> matches any digit between 0
+and 9. In addition, the escaped curly brackets (<code>\{...\}</code>) that
+immediate follow the square brackets indicate how many times in a row
+the character should occur. In this case, Org-mode will search for
+the following sequence:</p>
+<ul>
+<li>exactly three digits</li>
+<li>a hyphen</li>
+<li>exactly three digits</li>
+<li>a hyphen</li>
+<li>exactly four digits</li>
+</ul>
+<p>Instead of specifying the precise number of times a match such as
+<code>[0-9]</code> must repeat, you can also use the following special
+characters:</p>
+<dl>
+<dt><code>*</code></dt>
+<dd>match any number of times (including none)</dd>
+<dt><code>+</code></dt>
+<dd>match at least once and possibly more</dd>
+<dt><code>?</code></dt>
+<dd>match either once or not at all</dd>
+</dl>
+<p>Now, imagine our friend Mr. Gnu is a new fan of Org-mode and has
+jotted down a lot of notes on his favorite PIM. However, he have
+entered the name Org-mode inconsistently, sometimes as “orgmode”,
+other times as “Org mode”, and still other times as “Org-mode”. He’d
+like to find all his references to Org-mode, taking into account the
+various spellings. Here’s a simple query that will accomplish this:</p>
+<pre><code>+{org[-\s]?mode}
+</code></pre>
+<p>Mr. Gnu just instructed Org-mode to search for any entry that contains
+the character sequence “org”, followed by a hyphen, a space, or no
+character, followed by “mode”. Since the search is case-insensitive,
+it will match “org-mode”, “org mode”, or “orgmode”.</p>
+<h3 id="limiting-full-text-searches">Limiting full text searches</h3>
+<p>There are several convenient ways to refine and limit full text
+searches.</p>
+<p>First, if you find that a search produces too many results, you can
+easily add a new word or regexp by typing any of the following in the
+agenda buffer:</p>
+<dl>
+<dt><code>[</code></dt>
+<dd>add a word (i.e., <code>+</code>)</dd>
+<dt><code>]</code></dt>
+<dd>exclude a word (i.e., <code>-</code>)</dd>
+<dt><code>{</code></dt>
+<dd>add a regexp (i.e., <code>+{}</code>)</dd>
+<dt><code>}</code></dt>
+<dd>exclude a regexp (i.e., <code>-{}</code>)</dd>
+</dl>
+<p>Let’s say Mr. Gnu searches for the words Carsten <strong>and</strong> Dominik:</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: +Carsten +Dominik
+</code></pre>
+<p>Since Mr. Gnu is an avid reader of the Org-mode mailing list and a
+heavy user of org-capture, he discovers that he has hundreds of
+entries that include Carsten’s name. He wants to limit the search only
+to entries with an inactive timestamp from November of 2010. So he
+types <code>[</code> in the agenda buffer to add a new search term and receives the
+following prompt…</p>
+<pre><code>[+-]Word/{Regexp} ...: +Carsten +Dominik +
+</code></pre>
+<p>…with the cursor conveniently located after the plus sign. He
+completes the query to find inactive timestamps from November…</p>
+<pre><code>[+-]Word/{Regexp} ...: +Carsten +Dominik +[2010-11-
+</code></pre>
+<p>…and voilà, he retrieves a smaller subset of results.</p>
+<p>If Mr. Gnu wants to find both active and inactive timestamps, he could
+instead type <code>{</code> to add a regular expression:</p>
+<pre><code>[+-]Word/{Regexp} ...: +Carsten +Dominik +{[\[&#x3C;]2010-11-}
+</code></pre>
+<p>Similarly, if Mr. Gnu wants to guarantee the precision of his match,
+he could use a detailed regular expression…</p>
+<pre><code>+{\[2010-11-[0-9]\{2\}\s-[A-Za-z]\{3\}\(\s-[0-9]\{2\}:[0-9]\{2\}\)?\]}
+</code></pre>
+<p>But Mr. Gnu quickly decides that searching for the string “[2010-11-”
+good enough for his purposes.</p>
+<p>Org-mode also provides convenient syntax for limiting full text
+searches.</p>
+<ol>
+<li>
+<p>If you place an asterisk at the beginning of your search, Org-mode
+will search only headlines (and not entry text). E.g., to find all
+entries with “emacs” in the headline, you could type:</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: *+emacs
+</code></pre>
+</li>
+<li>
+<p>If you place an exclamation mark at the beginning of the query,
+Org-mode will only pull up entries that are active todos:</p>
+<pre><code>!+emacs
+</code></pre>
+<p>(You can also limit your search to active todos by using a prefix
+argument: <code>C-u C-c a s</code>.)</p>
+</li>
+<li>
+<p>Finally, if you place a colon at the beginning of a query, the
+boolean words you provide will only match entire words. Thus the
+following search…</p>
+<pre><code>:+emacs
+</code></pre>
+<p>…will match “emacs” but not “emacswiki”.</p>
+</li>
+</ol>
+<p>You can mix and match these three limiting symbols, but they will only
+work if they appear in the correct order: i.e., <code>*</code> -> <code>!</code> -> <code>:</code>. If
+you type <code>:!+emacs</code>, your search will not retrieve any results.</p>
+<h3 id="combining-metadata-and-full-text-queries">Combining metadata and full text queries</h3>
+<p>As an expert on tag and property searches, you might ask: is it
+possible to combine metadata and full text searches? For instance, how
+could Mr. Gnu find all entries with “Walter Evensong” in the
+<code>BIB_AUTHOR</code> field, the todo keyword “DONE”, and the word “Brazil” in
+the full text of the entry?</p>
+<ul>
+<li>It is not possible to simply combine the syntax of metadata and
+full text searches. Org-mode parses each query in fundamentally
+different ways.</li>
+<li>You can, however, easily accomplish “mixed” queries by using regular
+expressions and <code>org-search-view</code>. In some instances,
+<code>org-search-view</code> offers an easier and more efficient way of
+querying metadata than the tags and property search.</li>
+</ul>
+<p>The simplest way to think about Org-mode metadata is as different
+types of markup patterns. Tags are enclosed in colons, todo keywords
+directly follow the asterisks that mark outline headings, timestamps
+are contained in brackets and have the pattern <code>YYYY-MM-DD DOW HH:MM</code>,
+and so on. Thus, to query for particular types of metadata, one simply
+has to construct regular expressions that match these patterns.</p>
+<p>Back to Mr. Gnu, our mediocre typist and reader of very long books.
+Today, he would like to find all entries in which:</p>
+<ul>
+<li>the <code>BIB_AUTHOR</code> is “Walter Evensong”</li>
+<li>the todo keyword is “DONE”</li>
+<li>the word “Brazil” appears in the full text.</li>
+</ul>
+<p>First, he invokes <code>org-search-view</code>:</p>
+<pre><code>C-c a s
+</code></pre>
+<p>At the prompt, he adds a plus sign and the word “brazil”:</p>
+<pre><code>[+-]Word/{Regexp} ...: +brazil
+</code></pre>
+<p>He remembers that he must add the plus sign to instruct Org-mode to
+treat this search as a boolean search. Otherwise it will simply look
+for the entire string entered at the prompt.</p>
+<p>Next he needs to search for the todo keyword “DONE”. Since todo
+keywords immediately follow the markup for outline headings, he can
+simply add a regexp that matches an outline heading immediately
+followed by the word DONE:</p>
+<pre><code>[+-]Word/{Regexp} ...: +brazil +{^\*+\s-+DONE\s-}
+</code></pre>
+<p>This regexp begins with <code>^</code>, which forces a match at the beginning of
+the line. It is followed by an asterisk, which needs to be escaped,
+since an asterisk a special character in regular expressions. the <code>+</code>
+after the asterisk instructs Org-mode to look for one or more
+asterisks, while the <code>\s-+</code> indicates that at least one space follows
+the asterisk(s). So Mr. Gnu is searching for at least one asterisk at
+the beginning of the line followed by a space—the very definition of
+an outline heading in Org-mode. And the keyword DONE followed by
+whitespace completes the match. If Mr. Gnu would like to match more
+than one todo keyword, say DONE or WAITING, he could use grouping:
+<code>+{^\*+\s-+\(DONE\|WAITING\)\s-}</code></p>
+<p>Finally, Mr. Gnu finishes his query by searching for the property
+<code>BIB_AUTHOR</code>. He recalls that a property line looks like this:</p>
+<pre><code>:BIB_AUTHOR: Walter Evensong
+</code></pre>
+<p>With this in mind, he can easily construct a regexp to search for the
+string <code>:BIB_AUTHOR:</code> followed by an arbitrary amount of whitespace
+followed in turn by the string “Walter Evensong”.</p>
+<pre><code>[+-]Word/{Regexp} ...: +brazil +{^\*+\s-+DONE\s-} +{:BIB_AUTHOR:\s-+Walter Evensong}
+</code></pre>
+<p>Mr. Gnu is surprised at the speed with which Org-mode returns his
+results. Indeed, he finds that regexp searches (especially those
+querying properties) usually return their results more quickly than
+property and tag searches. And he deduces the reason: whereas property
+searches have to query each headline to determine whether a given
+property contains a value, keyword searches simply scan each file for
+matches and then return the appropriate headlines.</p>
+<p>In many instances, of course, the DONE regexp above may be overkill.
+Searching for the string ”* DONE” will often do the trick. E.g.,</p>
+<pre><code>[+-]Word/{Regexp} ...: +brazil +"* DONE"
+</code></pre>
+<p>Indeed, Mr. Gnu could probably also dispense with the <code>:BIB_AUTHOR:</code>
+regexp above, simply typing…</p>
+<pre><code>[+-]Word/{Regexp} ...: +brazil +"* DONE" +":BIB_AUTHOR: Walter Evensong"
+</code></pre>
+<p>Here’s another example. Let’s say Mr. Gnu would like to find all
+active todos directly tagged “urgent” (i.e., not inherited) with the
+word “wedding” somewhere in the entry text. The following keyword
+search does the trick:</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: !+wedding :urgent:
+</code></pre>
+<p>If Mr. Gnu wants to see either the tag “urgent” or the tag
+“important”, he could use a regular expression:</p>
+<pre><code>!+wedding +{:\(urgent\|important\):}
+</code></pre>
+<p>The main limitation of such searches is that keyword searches know
+nothing of outline tree inheritance. Thus, if Mr. Gnu is interested in
+all entries that inherit the tag “urgent”, he should always use
+<code>org-tags-view</code>.</p>
+<h3 id="searching-additional-files">Searching additional files</h3>
+<p>Often, the set of files one would like to search by keyword is larger
+than one’s set of active agenda files. For instance, one might archive
+old projects in separate files so that they no longer contribute to
+the agenda. Yet one would still like to search the reference material
+in these projects by keyword/regexp.</p>
+<p>The solution lies in the variable
+<code>org-agenda-text-search-extra-files</code>. Adding a list of files to this
+variable instructs <code>org-search-view</code> to query those files in addition
+to the agenda files. Note that setting
+<code>org-agenda-text-search-extra-files</code> has no effect on other types of
+agenda commands, such as todo and tags/property searches.</p>
+<h3 id="boolean-searches-by-default">Keyword searches for Google addicts</h3>
+<p>As noted before, <code>org-search-view</code> will treat a search query as a
+boolean expression only if it begins with either a <code>+</code> or a <code>{</code> (i.e.,
+a regular expression). Without these characters, Org-mode will treat
+the query as a single substring.</p>
+<p>This default syntax of <code>org-search-view</code> is thus different than the
+behavior of search engines such as Google, which treat searches as
+lazy boolean queries by default. If you type “emacs org-mode” into
+Google, it will not search for the literal string “emacs org-mode”,
+but rather assume the space implies a boolean expression: “emacs and
+org-mode”.</p>
+<p>If you find yourself often forgetting to add an initial <code>+</code> to your
+<code>org-search-view</code> queries, you can make “lazy booleans” the default
+behavior by adding the following to your .emacs:</p>
+<pre><code class="language-elisp">(setq org-agenda-search-view-always-boolean t)
+</code></pre>
+<p>Then you can happily type your lazy searches:</p>
+<pre><code>C-c a s
+[+-]Word/{Regexp} ...: org mode Carsten :email:
+</code></pre>
+<p>If you would like to include a substring or phrase in your search, you
+can do so by enclosing it in quotation marks. And if you want to
+exclude items or use regular expressions, you will, of course, still
+have to use a minus sign and curly brackets, respectively.</p>
+<h2 id="line-by-line-search">Searching org files line-by-line</h2>
+<p>All the searches we have discussed thus far return their results as a
+list of org headlines in the agenda buffer. Sometimes, however, you
+might prefer to see each line in which a word or regular expression
+occurs. There are different ways to do this:</p>
+<h3 id="multi-occur">Multi-occur</h3>
+<p>Org-mode uses Emacs’ multi-occur command to search for any lines in
+the agenda files containing a regular expression. Simply type <code>C-c a
+/</code> followed by a word or regular expression and you will be presented
+a buffer with all lines that match the query, with each line
+conveniently linked to its original location.</p>
+<h3 id="grep-etc">External commands and scripts</h3>
+<p>Emacs provides convenient interfaces to common Unix search commands,
+such as grep. Simply type <code>M-x grep</code> and complete the query (the
+working directory is usually that of the current buffer in Emacs).
+Using grep is especially convenient when you want quickly to search
+org files that are not in <code>org-agenda-files</code> or
+<code>org-agenda-text-search-extra-files</code>. And, of course, grep can be used
+outside of Emacs.</p>
+<p>Since org-mode files are plain text, you can use your favorite
+scripting language (perl, awk, python, etc.) to develop new and ever
+more creative ways to search and analyze them.</p>
+<h2 id="sparse-tree-view">Sparse trees</h2>
+<p>The commands we have examined so far typically search multiple files
+and display the resulting heading in a separate agenda buffer. But
+sometimes, you might want to search for various types of data within a
+single file, so as to see all the matching headlines and entries in
+context.</p>
+<p>The way to accomplish this is via a <a href="https://orgmode.org/manual/Sparse-trees.html#Sparse-trees">sparse tree view</a> (<code>C-c /</code>), which
+collapses the outline in the current file, showing only the portions
+that match a query.</p>
+<p>Calling <code>org-sparse-tree</code> with <code>C-c /</code> brings up a prompt with several
+search options:</p>
+<pre><code>Sparse tree: [r]egexp [/]regexp [t]odo [T]odo-kwd [m]atch [p]roperty
+             [d]eadlines [b]efore-date [a]fter-date
+</code></pre>
+<p>Some of these search, such as “todo” (<code>t</code>) and “deadlines” (<code>d</code>) are
+quite simple, showing all headlines in a buffer that contain an active
+todo keyword or a deadline, respectively. Others, such as “property”
+(<code>p</code>), prompt for a single key/value pair.</p>
+<p>One search that may be of particular interest is “match” (<code>m</code>). This
+query uses exactly the same syntax as <code>org-tags-view</code>, allowing us to
+use complex metadata searches to create sparse trees</p>
+<p>For instance, to highlight all active todos <strong>without</strong> a timestamp in
+the current buffer, you could type:</p>
+<pre><code>C-c / m 
+Match: -SCHEDULED={.}/!
+</code></pre>
+<p>This instructs Org-mode to look for any active todo (<code>/!</code>) without a
+SCHEDULED timestamp.</p>
+<h2 id="custom-agenda-commands">Custom agenda commands</h2>
+<p>If there are searches you perform again and again, you can easily save
+them by adding them to your <a href="https://orgmode.org/manual/Custom-Agenda-Views.html">custom agenda commands</a>.</p>
+<p>As we know, Mr. Gnu is an avid collector of very large books (which,
+of course, he manages in very long org files). Moreover, he often
+likes to peruse your inventory of books over 1,000 pages, querying his
+custom <code>BIB_PAGES</code> field. To save time and energy, Mr. Gnu could add a
+custom command such as the following to his <code>.emacs</code>:</p>
+<pre><code class="language-emacs-lisp">(add-to-list 'org-agenda-custom-commands
+             '("b" "Big books" tags "+BIB_PAGES>1000"))
+</code></pre>
+<p>Note that “tags” here indicates <code>org-tags-view</code>. Thus, the query uses
+the tags/property search syntax.</p>
+<p>Mr. Gnu realizes he can save an even faster version of the search
+above:</p>
+<pre><code class="language-emacs-lisp">(add-to-list 'org-agenda-custom-commands
+             '("B" "Big books (fast)" search "{:BIB_PAGES:\\s-+[0-9]\\{4\\}}"))
+</code></pre>
+<p>The symbol “search”, as you might have guessed, instructs Org-mode to
+use <code>org-search-view</code>. And the saved search finds all items with
+<code>BIB_PAGES</code> property that contain four digits (i.e., > 1000 pages).</p>
+<p>You might notice that the search query here, compared with the one
+above, contains extra backslashes. That is because the backslash is a
+special character in emacs-lisp and thus needs to be escaped when
+placed in an <code>.emacs</code> file.</p>
+<p>If Mr. Gnu frequently need to perform the “urgent wedding tasks”
+search above, he could add a command such as the following:</p>
+<pre><code class="language-emacs-lisp">(add-to-list 'org-agenda-custom-commands
+             '("w" "Getting married next week!" 
+               search "!+wedding +{:\\(urgent\\|important\\):}"))
+</code></pre>
+<p>Finally, one can use custom commands to run searches with different
+local settings. For instance, one can set up a custom agenda command
+to run a tags/property search on files other than the agenda files:</p>
+<pre><code class="language-emacs-lisp">(add-to-list 'org-agenda-custom-commands
+             '("r" "Reference material" tags ""
+               ((org-agenda-files (file-expand-wildcards "~/ref/*.org")))))
+</code></pre>
+<p>For a full introduction to custom agenda commands, please see <a href="org-custom-agenda-commands.org">this
+tutorial</a>.</p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-lowercase-t">
+<p>Note that the lowercase variant of the command (<code>C-c
+a t</code>) does not provide a search prompt, but simply pulls up all active
+TODOs. <a href="#user-content-fnref-lowercase-t" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

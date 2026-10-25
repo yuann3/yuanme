@@ -1,0 +1,365 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="introduction">Introduction</h2>
+<p><a href="http://wiki.github.com/mojombo/jekyll">Jekyll</a> is a static web site generator written in Ruby. It can
+transform various text markups, using a templating language, into
+static html. The resulting site can be served by almost any web server
+without requiring additional components such as php. Jekyll is the
+tool used to produce Github’s pages.</p>
+<p>This article discusses how to produce both a static site and a blog
+using Jekyll and org. Rather than writing a markup processor for org
+files, I have relied on org’s html export features to generate files
+that can be processed by Jekyll.</p>
+<p>Org already has an excellent html export engine. However, it lacks
+built in support for blogging. Using Jekyll also gives more control
+over the final appearance of your site.</p>
+<p>Publishing your site with org and Jekyll involves three steps:</p>
+<ol>
+<li>write your page content using org.</li>
+<li>use org to export your pages to html in the Jekyll project directory.</li>
+<li>run Jekyll to convert your html pages exported from org into your
+final site.</li>
+</ol>
+<p>By default Jekyll produces its output in the <code>_site</code> directory of
+Jekyll’s working directory. This is a self contained version of your
+site, which can be deployed to your web server. The files in <code>_site</code> are
+completely self contained, so all you need to do is to copy them to
+your web server. Methods include using ftp, rsync or a git post commit
+hook. You can configure where Jekyll puts its published files in
+<code>_config.yml</code>.</p>
+<p>Essentially, I am using org to produce everything between the <code>&#x3C;body></code>
+tags on the page and Jekyll to produce the rest. Note that you can
+easily embed html content in your org pages using the <code>+BEGIN_EXPORT html</code> tag.</p>
+<h2 id="install-jekyll">Install Jekyll</h2>
+<p>Installation is described at the <a href="http://github.com/mojombo/jekyll">Jekyll</a> web site.</p>
+<h2 id="project-directory-structure">Project Directory Structure</h2>
+<p>Jekyll expects a certain directory structure. In the example below my
+Jekyll project is in a directory called <code>jekyll</code>. Blog posts are in
+<code>_posts</code> and the layout templates in <code>_layouts</code>. The <code>_includes</code>
+directory is for files containing code you want to include in other
+pages e.g. a header or sidebar.</p>
+<p>The file <code>_config.yml</code> is a YAML file that contains Jekyll’s
+configuration for the site.</p>
+<p>In addition to the <code>_posts</code> directory you can create other directories
+to hold different non blog parts of your site.</p>
+<pre><code>'|myproject
+'|   |org
+'|      |_posts
+'|      |-- 2009-11-26-my-first-post.org
+'|   |index.org
+'|   |jekyll
+'|   -- _config.yml
+'|   -- _layouts
+'|      |-- default.html
+'|      `-- post.html
+'|   -- _posts
+'|      |-- 2009-11-26-my-first-post.html
+'|
+'|   -- |_site
+'|   -- |_includes
+`    -- index.html
+</code></pre>
+<p>You should setup the directory structure of your org files to mirror
+that of the Jekyll project. Then when you export your org files as
+html the files will end up in the correct place in your Jekyll
+project. I usually place the directory containing my org files in the
+directory about the Jekyll project directory to make sure that Jekyll
+doesn’t consider .org files to be part of its project.</p>
+<h2 id="configuring-org-html-export">Configuring org html Export</h2>
+<p>The fundamentals of publishing html are described in the
+<a href="https://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html">HTML publishing tutorial</a> on worg. I am
+assuming that you have a basic working org publishing setup. By
+default org produces complete web pages. However, as I am using Jekyll
+I am only really interested in the section of the page between the
+<code>&#x3C;body></code> tags, as Jekyll produces the rest. Most things in org are
+configurable and it’s possible to tell org to export only the bits of
+the page between the <code>&#x3C;body></code> tags. Here is the relevant section of my
+<code>.emacs</code> file:</p>
+<pre><code class="language-emacs-lisp">(setq org-publish-project-alist
+      '(
+
+  ("org-ianbarton"
+          ;; Path to your org files.
+          :base-directory "~/devel/ianbarton/org/"
+          :base-extension "org"
+
+          ;; Path to your Jekyll project.
+          :publishing-directory "~/devel/ianbarton/jekyll/"
+          :recursive t
+          :publishing-function org-publish-org-to-html
+          :headline-levels 4
+          :html-extension "html"
+          :body-only t ;; Only export section between &#x3C;body> &#x3C;/body>
+    )
+
+
+    ("org-static-ian"
+          :base-directory "~/devel/ianbarton/org/"
+          :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|php"
+          :publishing-directory "~/devel/ianbarton/"
+          :recursive t
+          :publishing-function org-publish-attachment)
+
+    ("ian" :components ("org-ianbarton" "org-static-ian"))
+
+))
+</code></pre>
+<p>To export my site I just run <code>C-c e X ian</code>.</p>
+<p>You need to set the destination of your exported files to your Jekyll
+project directory. Assuming you have set up your org directory
+structure to mirror that of your Jekyll project everything should end
+up in the correct place.</p>
+<h2 id="creating-an-org-file-to-be-published-with-jekyll">Creating an org File to be Published with Jekyll</h2>
+<p>When you run Jekyll it processes the source files for your site and
+any files with YAML Front Matter are subject to special processing. The
+Front Matter is used to tell Jekyll how to format your page.</p>
+<p>Bear in mind that Jekyll doesn’t process your <code>.org</code> files, but the
+<code>.html</code> files produced by exporting. So when writing an org file it
+should be formatted in such a way that when exported it produces html
+suitable for processing by Jekyll.</p>
+<p>YAML Front Matter must be the first thing in the file, with
+no blank lines above the Front Matter Section. A typical Front Matter
+Section would look like:</p>
+<pre><code>---
+layout: default
+title: My Page Title.
+---
+</code></pre>
+<p>So you should ensure that any Front Matter directives come first in
+your org file.</p>
+<p>Note that the three hyphens <code>---</code> are part of the markup and are
+required. The layout tag tells Jekyll which layout from its <code>_layouts</code>
+directory should be used to format your page. You can include any
+other keys in the Front Matter section (e.g. <code>title:</code>), which you can use
+in your page. See the Jekyll <a href="http://wiki.github.com/mojombo/jekyll/yaml-front-matter">wiki</a> for more details on Front Matter.</p>
+<p>Below is a short extract from one of my org files showing my setup:</p>
+<pre><code>#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+BEGIN_EXPORT html
+---
+layout: default
+title: Benighted on the Ben.
+excerpt: An unplanned bivouac on Ben Nevis.
+---
+#+END_EXPORT
+It was early January when six of us travelled up to ....
+</code></pre>
+<p>The Front Matter section is wrapped in <code>#+BEGIN_EXPORT html</code> so it is exported
+literally to the final html file. You may need to upgrade your org
+version as older versions produced two blank lines before the Front
+Matter section when exported. You can define your own Front Matter keys and use
+them within your generated page. In the above example I use the
+“excerpt” key to display “teasers” for a blog post.</p>
+<p>Note that the current git version of org removes the first <code>---</code> if the
+directory containing the file start with an underscore. The workaround
+is to start your file with <code>---</code> in both the first two lines.</p>
+<p>Carsten has also provided two hooks that are run after exporting is
+complete, which can also be used to tidy up the output:</p>
+<pre><code class="language-emacs-lisp">org-export-html-final-hook      (always)
+org-publish-after-export-hook   (when going through org-publish)
+</code></pre>
+<p>Once you have exported your org project to html it’s simply a matter
+of running jekyll to produce the final output. By default Jekyll puts
+its output in the <code>_site</code> directory of your project, but you can
+customize this in your <code>_config.yml</code> file.</p>
+<h2 id="blogging-with-jekyll-and-org">Blogging with Jekyll and Org</h2>
+<p>Jekyll has built-in support for blogging. Anything you place in the
+<code>_posts</code> directory of your Jekyll project is considered as a blog
+post. However, the file names of your posts must adhere to the
+following format:</p>
+<pre><code>yyyy-mm-dd-post_name.html
+</code></pre>
+<p>To write a post just create a new file with the correct filename in
+your <code>org/_posts</code> directory. You may find that Yasnippet is useful for
+inserting Front Matter and other directives in your org file. When you
+have finished just run <code>C-c e X</code> project_name to export your org project
+as html and then run jekyll to generate your site.</p>
+<p>You can use Jekyll’s <a href="http://wiki.github.com/mojombo/jekyll/template-data">template</a> markup to decide how your blog posts are
+displayed. On the Jekyll <a href="http://wiki.github.com/mojombo/jekyll/sites">sites</a> page there are many sites with source
+listed, so you can study how other people use the markup to create
+their blog. You can also view my site <a href="http://www.ian-barton.com">http://www.ian-barton.com</a> and
+see a snapshot of the source at
+<a href="http://github.com/geekinthesticks/ianbarton">http://github.com/geekinthesticks/ianbarton</a>.</p>
+<p>You can assign categories to your posts either by placing posts inside
+folders like:</p>
+<pre><code>_posts/org/jekyll/howto.html
+</code></pre>
+<p>This would assign your post to the <em>org</em> and <em>jekyll</em> categories.</p>
+<p>or by using YAML markup in your org file:</p>
+<pre><code>categories:
+    - org
+    - linux
+</code></pre>
+<h3 id="showing-blog-posts-on-the-front-page">Showing Blog Posts on the Front Page</h3>
+<p>Most blogs show the latest posts on their front page. The example
+below shows the title and an excerpt for the five latest posts:</p>
+<pre><code>&#x3C;ul class="posts">
+{% for post in site.posts limit: 5 %}
+  &#x3C;div class="post_info">
+    &#x3C;li>
+	    &#x3C;a href="{{ post.url }}">{{ post.title }}&#x3C;/a>
+	    &#x3C;span>({{ post.date | date:"%Y-%m-%d" }})&#x3C;/span>
+    &#x3C;/li>
+    &#x3C;/br> &#x3C;em>{{ post.excerpt }} &#x3C;/em>
+    &#x3C;/div>
+  {% endfor %}
+&#x3C;/ul>
+</code></pre>
+<h3 id="creating-archive-pages">Creating Archive Pages</h3>
+<p>You will probably only want to display a limited number of blog posts
+on your front page. However, you will also want to make older pages
+available. You can create a simple list of all blog posts using the
+following markup:</p>
+<pre><code>&#x3C;ul>
+  {% for post in site.posts %}
+  &#x3C;li>
+    &#x3C;a href="{{ post.url }}" title="{{ post.title }}">
+      &#x3C;span class="date">
+        &#x3C;span class="day">{{ post.date | date: '%d' }}&#x3C;/span>
+        &#x3C;span class="month">&#x3C;abbr>{{ post.date | date: '%b' }}&#x3C;/abbr>&#x3C;/span>
+        &#x3C;span class="year">{{ post.date | date: '%Y' }}&#x3C;/span>
+      &#x3C;/span>
+      &#x3C;span class="title">{{ post.title }}&#x3C;/span>
+    &#x3C;/a>
+  &#x3C;/li>
+  {% endfor %}
+&#x3C;/ul>
+</code></pre>
+<h2 id="inserting-image">Inserting Image</h2>
+<p>You will probably want to insert some images into your blog posts. I
+use the following method:</p>
+<pre><code>&#x3C;img src ="/images/skiddaw.jpg"
+alt="John and Ella on Skiddaw" align="left" width="300" height="250"
+title="John and Ella on Skiddaw" class="img"&#x3C;/img>
+</code></pre>
+<p>Note that the class attribute refers to the class used to style the
+image tag in your css. My css contains:</p>
+<pre><code>img {
+    margin: 15px;
+    border: 1px solid blue;
+}
+</code></pre>
+<p>Note that if you wish to have some space between your image and the
+text, using padding in your css doesn’t seem to work. I use margin,
+which gives the same effect.</p>
+<p>Whilst this works, it won’t display captions for your
+images. Unfortunately, after years of development xhtml doesn’t seem
+to provide an easy way to display image captions. I decided to use the
+method described <a href="http://www.w3.org/Style/Examples/007/figures">here</a>. An example from of floating a picture to the
+right of the text is shown below.</p>
+<p>In your <code>.org</code> file use the following html to embed the picture:</p>
+<pre><code>&#x3C;div class="photofloatr">
+  &#x3C;p>&#x3C;img src="myphoto.jpg" width="300"
+    height="150" alt="My Mug Shot">&#x3C;/p>
+  &#x3C;p>A photo of me&#x3C;/p>
+&#x3C;/div>
+</code></pre>
+<p>Now you need to add some information to your style sheet:</p>
+<pre><code>div.photofloatr {
+    float: right;
+    border: thin silver solid;
+    margin: 0.5em;
+    padding: 0.5em;
+}
+
+div.photofloatr p {
+  text-align: center;
+  font-style: italic;
+  font-size: smaller;
+  text-indent: 0;
+}
+</code></pre>
+<p>A third method, which I haven’t tried myself, is to use the <em>jQuery EXIF</em>
+plugin to extract the caption from the image EXIF data and use
+Javascript to display it. See <a href="http://www.nihilogic.dk/labs/exif/">here</a> for more details.</p>
+<h2 id="using-text-markup-in-front-matte">Using Text Markup in Front Matte</h2>
+<p>By default text in the Front Matter part of your file isn’t processed
+by Jekyll’s markup engine. However, you can use the Textilize filter
+to convert your Front Matter string into HTML, formatted using textile
+markup.</p>
+<p>I use this to format my page excerpts, which I include in my org files
+Front Matter markup. So in my sites index.html I have:</p>
+<pre><code>&#x3C;li>
+  &#x3C;a href="{{ post.url }}">{{ post.title }}&#x3C;/a>
+  &#x3C;span>({{ post.date | date:"%Y-%m-%d" }})&#x3C;/span>
+&#x3C;/li>
+&#x3C;/br>
+&#x3C;em>{{ post.excerpt | textilize}}&#x3C;/em>
+</code></pre>
+<p>This lets me use textile markup in my page excerpts, which are defined
+in my page’s YAML Front Matter section.</p>
+<h2 id="version-control-with-jekyll">Version Control with Jekyll</h2>
+<p>Jekyll is amenable to using version control systems. If you follow my
+suggested directory structure you can create a git repo to your top
+level directory. You can then create a post-commit script that runs
+the org html export and then runs Jekyll to generate your site.</p>
+<h2 id="happybloggers-jekyll-modification">HappyBlogger’s Jekyll Modification</h2>
+<p>Bjørn Arild Mæland has created some modifications to Jekyll to
+provide some pre-processing to org files to allow for better
+integration with Jekyll. You can find his code on <a href="http://github.com/bmaland/happyblogger">github</a>.</p>
+<h2 id="another-example-of-org-modejekyll-usage">Another example of Org-mode/Jekyll usage</h2>
+<p>The on-line documentation for <a href="../org-contrib/babel/index.org">Org-babel</a> development is published on
+<a href="http://github.com">github</a> which uses jekyll.  The following code is used to publish one
+blog post for every subheading of the first to top-level headings of a
+org file which tracks Org-babel development.  The results can be seen
+<a href="http://eschulte.github.io/babel-dev/">here</a>, and the code used to create this site is available <a href="http://github.com/eschulte/babel-dev/">here</a>.</p>
+<pre><code class="language-emacs-lisp">(save-excursion
+  ;; map over all tasks entries
+  (let ((dev-file (expand-file-name
+                   "development.org"
+                   (file-name-directory (buffer-file-name))))
+        (posts-dir (expand-file-name
+                    "_posts"
+                    (file-name-directory (buffer-file-name))))
+        (yaml-front-matter '(("layout" . "default"))))
+    ;; go through both the tasks and bugs
+    (mapc
+     (lambda (top-level)
+       (find-file dev-file)
+       (goto-char (point-min))
+       (outline-next-visible-heading 1)
+       (org-map-tree
+        (lambda ()
+          (let* ((props (org-entry-properties))
+                 (todo (cdr (assoc "TODO" props)))
+                 (time (cdr (assoc "TIMESTAMP_IA" props))))
+            ;; each task with a state and timestamp can be exported as a
+            ;; jekyll blog post
+            (when (and todo time)
+              (message "time=%s" time)
+              (let* ((heading (org-get-heading))
+                     (title (replace-regexp-in-string
+                             "[:=\(\)\?]" ""
+                             (replace-regexp-in-string
+                              "[ \t]" "-" heading)))
+                     (str-time (and (string-match "\\([[:digit:]\-]+\\) " time)
+                                    (match-string 1 time)))
+                     (to-file (format "%s-%s.html" str-time title))
+                     (org-buffer (current-buffer))
+                     (yaml-front-matter (cons (cons "title" heading) yaml-front-matter))
+                     html)
+                (org-narrow-to-subtree)
+                (setq html (org-export-as-html nil nil nil 'string t nil))
+                (set-buffer org-buffer) (widen)
+                (with-temp-file (expand-file-name to-file posts-dir)
+                  (when yaml-front-matter
+                    (insert "---\n")
+                    (mapc (lambda (pair) (insert (format "%s: %s\n" (car pair) (cdr pair))))
+                          yaml-front-matter)
+                    (insert "---\n\n"))
+                  (insert html))
+                (get-buffer org-buffer)))))))
+     '(1 2))))
+</code></pre>
+<h2 id="other-blog-solutions-for-org">Other Blog Solutions for org</h2>
+<h3 id="blorgit">Blorgit</h3>
+<p><a href="https://orgmode.org/worg/blorgit.html">Blorgit</a> uses org mode for markup and runs on the Sinatra mini
+framework. It is amenable to using git for posting and maintenance.</p>
+<h3 id="ikiwiki">ikiwiki</h3>
+<p><a href="http://ikiwiki.info/">ikiwiki</a> is a web site compiler written in Perl. In many ways it is
+similar to Jekyll, but has closer integration with version control
+systems. It supports blogging and has many plugins.</p>
+<p>There is an org mode plugin by <a href="http://www.golden-gryphon.com/blog/manoj/blog/2008/06/08/Using_org-mode_with_Ikiwiki/">Manoj</a>, which lets you write your posts in org
+and converts them to html suitable for processing by ikiwiki.</p>

@@ -1,0 +1,164 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+warning[org/no-effect]: `-n` has no effect in yuanme
+  --> alexforsale/content-org--learning-rust--learning-rust.org:25:18
+   |
+25 | #+begin_src rust -n
+   |                  ^^
+   |
+   = note: a code block's lines aren't numbered and its labels aren't rewritten
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `-n` has no effect in yuanme
+  --> alexforsale/content-org--learning-rust--learning-rust.org:33:18
+   |
+33 | #+begin_src rust -n
+   |                  ^^
+   |
+   = note: a code block's lines aren't numbered and its labels aren't rewritten
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `-n` has no effect in yuanme
+  --> alexforsale/content-org--learning-rust--learning-rust.org:55:18
+   |
+55 | #+begin_src rust -n
+   |                  ^^
+   |
+   = note: a code block's lines aren't numbered and its labels aren't rewritten
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `-n` has no effect in yuanme
+  --> alexforsale/content-org--learning-rust--learning-rust.org:69:18
+   |
+69 | #+begin_src rust -n
+   |                  ^^
+   |
+   = note: a code block's lines aren't numbered and its labels aren't rewritten
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `-n` has no effect in yuanme
+   --> alexforsale/content-org--learning-rust--learning-rust.org:119:18
+    |
+119 | #+begin_src rust -n :noweb yes
+    |                  ^^
+    |
+    = note: a code block's lines aren't numbered and its labels aren't rewritten
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--learning-rust--learning-rust.org:130:12
+    |
+130 | #+caption: the code in action
+    |            ^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+<p>This will be a part of a series on my rust-learning journey. The goal of this post is to document my process of creating a simple program that determine if the number given is a perfect number<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>. And also list the perfect number until the given number.</p>
+<h2 id="imports">Imports</h2>
+<pre id="imports"><code class="language-rust">use std::io;
+</code></pre>
+<p>This is the common input / output modules.</p>
+<h2 id="function-to-determine-the-perfect-number">Function to determine the perfect number</h2>
+<pre id="is_perfect_number"><code class="language-rust">fn is_perfect_number(n: i32) ->  bool {
+    let mut sum: i32 = 1;
+    let mut i: i32 = 2;
+
+    while i * i &#x3C;= n {
+        if n % i == 0 {
+            sum = sum + i + n / i;
+        }
+        i += 1;
+    }
+    if sum == n &#x26;&#x26; n != 1 {
+        return true
+    } else {
+        return false
+    }
+}
+</code></pre>
+<p>This will calculate if the number is a perfect number or not.</p>
+<h2 id="function-to-list-all-the-perfect-number">Function to list all the perfect number</h2>
+<pre id="perfect_number_list"><code class="language-rust">fn perfect_number_list(n: i32) ->  Vec&#x3C;i32>{
+    let mut numbers: Vec&#x3C;i32> = vec![];
+    for num in 1..n {
+        if is_perfect_number(num) {
+            numbers.push(num);
+        }
+    }
+    return numbers;
+}
+</code></pre>
+<p>This will calculate all the perfect number up to the given number. The return type is a vector, which is a resizeable arrays in rust. It size is unknown at compile time, and it can shrink or grow at any time.</p>
+<h2 id="the-main-function">The main function</h2>
+<pre id="main"><code class="language-rust">fn main() {
+    println!("Input a number!\n");
+    let mut input_number = String::new();
+    io::stdin()
+        .read_line(&#x26;mut input_number)
+        .expect("failed to read input.");
+    let x: i32 = input_number
+        .trim()
+        .parse()
+        .expect("Not an integer");
+    println!("Your input is: {}", x);
+    if is_perfect_number(x) {
+        println!("{} is a perfect number", x)
+    } else {
+        println!("{} is not a perfect number", x)
+    }
+
+    println!("Input a number!\n");
+    let mut number_range = String::new();
+    io::stdin()
+        .read_line(&#x26;mut number_range)
+        .expect("Failed to read input.");
+    let y: i32 = number_range
+        .trim()
+        .parse()
+        .expect("Not an integer");
+    print!("The perfect number from 1 to {} is: ", y);
+    for element in &#x26;perfect_number_list(y) {
+        print!("{} ", element);
+    }
+    println!(); // for whitespace
+}
+</code></pre>
+<p>There’s alot going on here:</p>
+<h3 id="reading-user-input">Reading user input</h3>
+<p>I’m sure there are packages that simplify this process, but when I’m learning new programming languages I try to stick with the builtins first. But basically it goes like this:</p>
+<dl>
+<dt><code>String::new</code></dt>
+<dd>It creates an empty string.
+I don’t actually know if all stdin should be treated as string.</dd>
+<dt><code>io::stdin</code></dt>
+<dd>From the <code>std::io</code> module.</dd>
+<dt><code>.readline</code></dt>
+<dd>The actual reading. The <code>&#x26;mut</code> before the variable <code>input_number</code> means it is a mutable reference to the variable <code>input_number</code>.</dd>
+<dt><code>.expect</code></dt>
+<dd>In case the input is not a string.</dd>
+</dl>
+<p>The conversion from string to integer is done by declaring it into another variable and:</p>
+<dl>
+<dt><code>.trim</code></dt>
+<dd>clear the whitespaces if any.</dd>
+<dt><code>.parse</code></dt>
+<dd>parsing it into another type, in this case <code>i32</code>, and lastly,</dd>
+<dt><code>.expect</code></dt>
+<dd>Guard it in case it is a different type</dd>
+</dl>
+<p>The rest of this main function is by using the two functions earlier.</p>
+<h2 id="the-whole-code">The Whole Code</h2>
+<pre><code class="language-rust">&#x3C;&#x3C;imports>>
+
+&#x3C;&#x3C;is_perfect_number>>
+
+&#x3C;&#x3C;perfect_number_list>>
+
+&#x3C;&#x3C;main>>
+</code></pre>
+<p>This is the running code.</p>
+<p><a href="./rust-perfect-number.png">file:rust-perfect-number.png</a></p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p><a href="https://en.wikipedia.org/wiki/Perfect_number">https://en.wikipedia.org/wiki/Perfect_number</a> <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

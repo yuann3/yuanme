@@ -1,0 +1,277 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="latex-preview-in-org">LaTeX preview in org</h2>
+<p>Org mode is used (among many other uses) by scientists taking
+notes. Sometimes these notes include mathematics and scientists almost
+universally use LaTeX in order to write mathematics, but since LaTeX
+is not WYSIWYG, it is often useful to provide a preview of what
+something will look like when typeset.</p>
+<p>Most scientists use AUCTeX to write their LaTeX papers and there is a
+LaTeX preview add-on that provides a preview facility in AUCTeX.</p>
+<p>Org mode provides a similar facility, whose essentials I try to
+summarize in this note.</p>
+<h2 id="basic-usage">Basic usage</h2>
+<p>Once the facility has been set up, it can be used very simply.  One
+writes LaTeX code and invokes the command <code>org-preview-latex-fragment</code>
+(bound to C-c C-x C-l). The command processes the latex code and
+produces a PNG image that is overlaid on the LaTeX code that was used
+to produce the image, thereby providing the required preview. Pressing
+C-c C-c gets rid of the overlay.</p>
+<p>Here’s an example:</p>
+<pre><code>\[
+e^{i\pi} = -1
+\]
+
+\[
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+\]
+</code></pre>
+<p>If you press C-c C-x C-l here (or C-u C-c C-x C-l to preview
+everything in the subtree, or C-u C-u C-c C-x C-l to preview
+everything in the buffer), you should see something like this (the
+placement on the page and the size of the equations are probably going
+to be different, but the formulas should be recognizably the same):</p>
+<p><code class="language-math math-display">
+e^{i\pi} = -1
+</code></p>
+<p><code class="language-math math-display">
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+</code></p>
+<p>Generally speaking, the preview mechanism looks for LaTeX environments
+in the current region of applicability and processes one or more of
+them. Prefix arguments and position in the buffer affect the region of
+applicability of the preview mechanism — the docstring of the
+function says it better than I possibly could:</p>
+<blockquote>
+<p>Preview the LaTeX fragment at point, or all locally or globally.</p>
+<p>If the cursor is on a LaTeX fragment, create the image and overlay
+it over the source code, if there is none.  Remove it otherwise.
+If there is no fragment at point, display all fragments in the
+current section.</p>
+<p>With prefix ARG, preview or clear image for all fragments in the
+current subtree or in the whole buffer when used before the first
+headline.  With a double prefix ARG C-u C-u preview or clear images
+for all fragments in the buffer.</p>
+</blockquote>
+<p>Mathematics is the most common application, but other environments (e.g.
+a listing environment for some code fragment) also work.</p>
+<h2 id="under-the-hood">Under the hood</h2>
+<p>There are two methods that can be used for LaTeX preview: dvipng and
+imagemagick.</p>
+<p>In the dvipng method, the latex fragment is embedded in a complete LaTeX
+file, which is then processed by the LaTeX program (“latex”) to
+produce a DVI file. The “dvipng” program is then invoked on the DVI
+file to produce the final PNG-format image.</p>
+<p>In the imagemagick method, the same LaTeX file is run through whatever
+LaTeX processor you have configured in the <code>org-latex-pdf-process</code>
+variable (the default is three runs of pdflatex). The output is a PDF
+file, which is then processed by the “convert” program (a member of
+the imagemagick family, hence the name of the method) to produce the
+PNG-format image.</p>
+<p>The two methods produce slightly different output: the foreground and
+background colors may differ.</p>
+<h2 id="dvipng-setup">dvipng setup</h2>
+<h3 id="obtaining-and-testing-the-dvipng-program">Obtaining and testing the <code>dvipng</code> program</h3>
+<p>You need the dvipng program. On Linux, it’s generally in its own package,
+not part of the larger TeX packages. For example, on Ubuntu, it can be
+installed with the command <code>apt-get install dvipng</code>.</p>
+<p>To test the installation, create a small TeX file:</p>
+<pre><code>#+BEGIN_SRC latex :tangle /tmp/example.tex
+\documentclass{article}
+
+\begin{document}
+
+\[
+e^{i\pi} = -1
+\]
+
+\[
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+\]
+
+\end{document}
+
+#+END_SRC
+</code></pre>
+<p>If you are looking at this on the web, you can cut and paste the latex
+program to /tmp/example.tex and process it through latex and dvipng,
+as shown below.  If you are looking at the org file of this tutorial,
+you can tangle the above code block with C-u C-c C-v C-t into the file
+/tmp/example.tex and process that through latex and dvipng. The
+following code uses the “display” program (part of the imagemagick
+family) to show the PNG file, but there are many such programs. Use
+what you have or can get easily.</p>
+<pre><code class="language-sh">cd /tmp
+latex /tmp/example.tex
+dvipng -o /tmp/example.png /tmp/example.dvi
+display /tmp/example.png
+</code></pre>
+<p>Don’t worry about how it looks: if there are no errors, everything is
+fine.  In actual use, the Org-mode LaTeX previewer will call <code>dvipng</code> with
+appropriate arguments for its nefarious purposes.</p>
+<h3 id="setting-up-org">Setting up org</h3>
+<p>There is one variable in org that needs to be set up:</p>
+<pre><code class="language-elisp">(setq org-latex-create-formula-image-program 'dvipng)
+</code></pre>
+<p>In addition, you might want to customize the set of latex
+packages that will be needed in order to produce the preview.
+Most of these are probably already included. Here is the current
+(as of <span class="timestamp-wrapper"><time class="timestamp" datetime="2013-07-05">[2013-07-05 Fri]</time></span>) list. You might have more than this
+because of customizations in your setup. You also might have
+less than this but that’s not likely:</p>
+<pre><code>\usepackage[usenames]{color}
+\usepackage{amsmath}
+\usepackage[mathscr]{eucal}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% Package fixltx2e omitted
+\usepackage{graphicx}
+% Package longtable omitted
+% Package float omitted
+% Package wrapfig omitted
+\usepackage[normalem]{ulem}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{latexsym}
+\usepackage{amssymb}
+% Package amstext omitted
+% Package hyperref omitted
+
+</code></pre>
+<p>The set of packages is specified using the variables
+<code>org-latex-default-packages-alist</code> and <code>org-latex-packages-alist</code>. The
+documentation strongly recommends that you leave the first one as is
+(unless you really know what you are doing - and even then, it’s easy
+to shoot yourself in the foot). The second one is normally empty, but
+you can use it to add whatever packages are necessary for your line of
+work: Feynman diagrams anybody?</p>
+<p>N.B. With the exception of the setting for
+<code>org-latex-create-formula-image-program</code>, everything else applies to
+the imagemagick case as well. In fact, it applies not only to latex
+preview but to latex export in general. Because of this generality,
+you might find yourself adding packages for latex export that lead
+to trouble with latex preview. An example is shown below.</p>
+<p>Normally, all of the packages above are included for latex export,
+but as you can see, some are omitted for latex preview. The mechanism
+for that is explained below as well.</p>
+<h2 id="imagemagick-setup">imagemagick setup</h2>
+<p>The imagemagick setup mirrors the dvipng setup almost exactly. You
+have to install the imagemagick package on your system somehow.</p>
+<p>The test file above can be used to test this setup as well. The
+commands needed are different though:</p>
+<pre><code class="language-sh">cd /tmp
+pdflatex /tmp/example.tex
+convert /tmp/example.pdf /tmp/example.png
+display /tmp/example.png
+</code></pre>
+<p>The necessary org setup is now</p>
+<pre><code class="language-elisp">(setq org-latex-create-formula-image-program 'imagemagick)
+</code></pre>
+<p>The package stuff is identical.</p>
+<h2 id="comparing-and-contrasting-the-two-methods">Comparing and contrasting the two methods</h2>
+<p>So choose a method, add a LaTeX fragment of your favorite
+mathematics, e.g.</p>
+<pre><code>\[
+e^{i\pi} = -1
+\]
+</code></pre>
+<p>and press C-c C-x C-l in the fragment. Does the preview show
+properly? If so, congratulations. Press C-c C-c to make it go away.</p>
+<p>If you are so inclined, switch to the other method by changing the
+value of <code>org-latex-create-formula-image-program</code> and try the preview
+again. You will have to delete the PNG file produced by the first
+method, in order to force the new method to create it again. The image
+files are created in the directory specified by the variable
+<code>org-latex-preview-ltxpng-directory</code> — by default, that directory is
+a subdirectory, named “ltxpng”, of the directory where the org file
+resides.</p>
+<h3 id="background-and-foreground-colors">Background and foreground colors</h3>
+<p>One difference in the two methods is that the foreground and background
+colors may come out different. In my case, I don’t do anything special
+to specify them and I’m using a (mostly) green-foreground-on-black-background
+emacs. The dvipng preview comes out as black-on-white and the imagemagick
+preview comes out as green-on-white in my case. Depending on your “theme”
+and other magic, YMMV. I don’t have much insight into these aspects however,
+so feel free to modify this paragraph for the sake of better accuracy.</p>
+<h3 id="minted">Minted</h3>
+<p>Programmers often find themselves in the position of having to include
+code fragments (or perhaps complete programs) in documentation. LaTeX
+makes that fairly easy. There are two packages contending for the
+championship: listings and minted. Many people prefer the latter
+because they think the output looks better, but there is a price to be
+paid: minted depends on a separate python program, whereas listings is
+a pure LaTeX package.</p>
+<p>The problem is that, by default, latex (as well as its siblings tex,
+pdflatex, etc.)  refuses to process a file that uses the minted
+package because of the necessity of running this separate program. It
+is considered a security risk.  There are various ways to convince
+latex to abandon its scruples in this regard.  The most convenient
+(and therefore most commonly used) is to run it with the
+<code>-shell-escape</code> option.</p>
+<p>So, let’s assume that you like minted over listings and have decided
+to use it for latex export. You read the documentation for the relevant
+variable, <code>org-latex-listings</code>, and set up things as the documentation
+suggests:</p>
+<pre><code class="language-elisp">(setq org-latex-listings 'minted)
+(require 'ox-latex)
+(add-to-list 'org-latex-packages-alist '("" "minted"))
+</code></pre>
+<p>You also have to make sure that <code>org-latex-pdf-process</code> calls
+latex (or pdflatex or xelatex or …) with the <code>-shell-escape</code>
+option.</p>
+<p>You <strong>export</strong> your articles to LaTeX and produce output that includes
+very nicely typeset program code fragments. Months later, you try to
+<strong>preview</strong> some mathematics and the preview does not work. What
+happened?</p>
+<p>Adding the minted package to <code>org-latex-packages-alist</code> as above, adds
+the <code>\usepackage{minted}</code> line to latex files produced by either latex
+export <strong>or</strong> latex preview. If you’ve set up preview to use the
+imagemagick method, then everything should work, because it uses
+<code>org-latex-pdf-process</code> and that has been set up already to use the
+<code>-shell-escape</code> option (otherwise export would not work), so using
+minted is not a problem.</p>
+<p>But if you have set up preview to use the dvipng method, you are in
+trouble: that method calls latex directly, the call is hardwired
+and it does <strong>not</strong> use the <code>-shell-escape</code> option. LaTeX refuses to
+run the external program that minted used, no DVI file is produced
+and dvipng cannot produce a PNG file.</p>
+<p>One way out of this predicament is to change the latex call. That
+requires modifying the org mode code and that’s not really a good
+idea. Adding an option that can be set by the user (so that one can
+pass the <code>-shell-escape</code> option to the latex call) is under
+consideration at this time (<span class="timestamp-wrapper"><time class="timestamp" datetime="2013-07-05">[2013-07-05]</time></span>), but it’s not there yet.</p>
+<p>Probably the best solution currently is to include minted for latex export
+but exclude it for latex preview. Remember the list of packages
+above, where some packages were omitted? Those packages are
+included by default for latex export, but excluded for latex preview.
+The magic that allows that is explained in the documentation
+for <code>org-latex-packages-alist</code>:</p>
+<blockquote>
+<p>Each cell is of the format:</p>
+<p>(“options” “package” snippet-flag)</p>
+<p>SNIPPET-FLAG, when t, indicates that this package is also needed
+when turning LaTeX snippets into images for inclusion into
+non-LaTeX output.</p>
+</blockquote>
+<p>Note that, counter-intuitively, if the snippet-flag is omitted
+altogether, then it’s as if it were set to t, not nil as one would
+normally expect. Presumably that’s for backward compatibility: the
+snippet-flag was added later and many people might have settings that
+don’t include it. If its absence were to be interpreted as nil, the
+packages would not be included for latex preview, leading to
+surprises.</p>
+<p>To exclude minted from latex preview then, all we have to do is change
+what we add to <code>org-latex-packages-alist</code>:</p>
+<pre><code class="language-elisp">(add-to-list 'org-latex-packages-alist '("" "minted" nil))
+</code></pre>
+<p>There still remains one problem: what does one do in order to include
+a code fragment into a preview, but wants that code fragment to be
+processed by minted? The best suggestion currently is: if you have to
+do that, use the imagemagick method, not the dvipng method.</p>
+<p>The dvipng method predates the imagemagick method, but maybe the
+problem with minted above, esoteric as it may be, provides motivation
+to use the imagemagick method instead for latex preview — it is a
+bit less brittle than the dvipng method.</p>

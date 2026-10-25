@@ -1,0 +1,79 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: `info:` links aren't in the Org subset
+  --> worg/topics--planning-timestamps.org:88:232
+   |
+88 | ...und in a configured Agenda command (see [[info:org#Setting options][org#Setting options]]).
+   |                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: link to a URL, another Entry's file, or a heading in this one
+   = note: run `yuanme docs org/unsupported-construct` for more
+<p>It’s a commonly asked question:</p>
+<div class="highlightbox">
+<p>“When should I use DEADLINE, SCHEDULED, or plain timestamps?”</p>
+</div>
+<h2 id="summary">Summary</h2>
+<p>In Org, these various timestamps are intended to have certain meanings:</p>
+<ul>
+<li>A <code>DEADLINE</code> timestamp is intended to mark the moment at which a task becomes overdue.</li>
+<li>A <code>SCHEDULED</code> timestamp is intended to mark the moment at which a task becomes eligible to be worked on; in terms of the Agenda, it marks the moment at which a task begins appearing in the Agenda.  It is <em>not</em> intended to mark the moment at which an event will actually occur (but see <a href="id:6f818149-b6da-4eef-bee9-dbfe04c14cb8">considerations</a> below).</li>
+<li>A plain timestamp in an entry’s heading or body, without a <em>planning keyword</em>, marks the entry as an <em>appointment</em>, i.e. an event that happens at a certain moment on a certain date.</li>
+</ul>
+<h2 id="details">Details</h2>
+<dl>
+<dt><code>DEADLINE</code> timestamps</dt>
+<dd>
+<p>Items with a <code>DEADLINE</code> timestamp (set with <code>C-c C-d</code>) appear on your agenda in advance of the when they are due and remain on your Agenda until they are done.  Add a <code>DEADLINE</code> to an item if you want to make sure to complete it by a certain date.  (The option <code>org-deadline-warning-days</code> determines how far in advance items with deadlines will show up in the agenda.  See <a href="../org-faq.org#warning-period-for-deadlines">this FAQ</a> for more information.)</p>
+<p>For example:</p>
+<pre><code class="language-org">* TODO Item with a deadline
+DEADLINE: &#x3C;2009-01-20 Tue>
+</code></pre>
+</dd>
+<dt><code>SCHEDULED</code> timestamps</dt>
+<dd>
+<p>Items with a <code>SCHEDULED</code> timestamp (set with <code>C-c C-s</code>) will appear on your Agenda on the day they are scheduled and on every day thereafter until they are done.  Schedule a task if you want to be reminded to do something beginning on a certain day and until it is done.</p>
+<p>For example:</p>
+<pre><code class="language-org">* TODO Scheduled item
+SCHEDULED: &#x3C;2009-03-01 Sun>
+</code></pre>
+</dd>
+<dt><em>Active timestamps</em></dt>
+<dd>
+<p>Items with an <em>active timestamp</em> (set with <code>C-c .</code>) will appear on your Agenda only on the days they are scheduled; they will appear in the time-grid at the given time, if any.  Use a timestamp for appointments or any reminders you want to show up only on a particular day.</p>
+<p>For example:</p>
+<pre><code class="language-org">* TODO Item with an active timestamp &#x3C;2009-04-18 Sat>
+</code></pre>
+<p>Or:</p>
+<pre><code class="language-org">* TODO Item with an active timestamp
+&#x3C;2009-04-18 Sat>
+</code></pre>
+</dd>
+</dl>
+<p><strong>Note:</strong> Items with inactive timestamps (set with <code>C-c !</code> and marked by square brackets) will not show up in the agenda at all.</p>
+<h2 id="considerations">Considerations</h2>
+<h3 id="usability">Usability</h3>
+<h4 id="editing">Editing</h4>
+<p>While an entry may have any number of timestamps in its heading and body, the <em>planning</em> timestamps (i.e. <code>DEADLINE</code>, <code>SCHEDULED</code>, and <code>CLOSED</code>) have associated commands that make them easy to set and unset, both from Org buffers and Org Agenda buffers.  Other timestamps require the user to locate them in the entry in order to change them.</p>
+<h4 id="agenda">Agenda</h4>
+<p>The Agenda and related search tools (including third-party tools like <a href="https://melpa.org/#/org-ql">Org QL</a>) provide support specifically for <em>planning</em> timestamps.  These timestamps are assumed to have certain meanings, as described above.</p>
+<p>As well, timestamps anywhere in an entry can be searched for: <em>active timestamps</em> (ones surrounded by <code>&#x3C;</code> and <code>></code>) appear in the Agenda by default, while <em>inactive timestamps</em> (ones surrounded by <code>[</code> and <code>]</code>) don’t (unless option <code>org-agenda-include-inactive-timestamps</code> is enabled).</p>
+<h4 id="configuration">Configuration</h4>
+<p>The option <code>org-agenda-include-inactive-timestamps</code> controls whether inactive timestamps in an entry causes it to appear in Agenda views.  The option may be set globally, bound locally, or bound in a configured Agenda command (see ).</p>
+<h3 id="organization">Organization</h3>
+<p>Organization is largely a personal matter.  Emacs and Org are tools designed to help users develop workflows to meet their needs, whatever they may be.  There’s virtually no limit to creativity in this regard.</p>
+<p>While Org was originally designed with some of its creator’s personal workflows in mind, and while some of those expectations persist in the code, Org is flexible and extensible enough to support nearly any workflow imaginable.  As long as the user understands how the various commands and options interact and what they expect, there’s little limit to what can be achieved.</p>
+<h2 id="resources">Resources</h2>
+<h3 id="articles">Articles</h3>
+<p><em>To be added.</em></p>
+<h3 id="discussions">Discussions</h3>
+<p><em>There are surely many more of these that would be useful to refer to; at the time of writing, these are merely the ones at hand.</em></p>
+<dl>
+<dt><span class="timestamp-wrapper"><time class="timestamp" datetime="2006-04-10">[2006-04-10 Mon]</time></span> <a href="https://lists.gnu.org/archive/html/emacs-orgmode/2006-04/msg00036.html">[Emacs-orgmode] Use case of TIMESTAMP, SCHEDULED and DEADLINE</a></dt>
+<dd>This thread includes responses from Org’s original author himself, Carsten Dominik.</dd>
+<dt><span class="timestamp-wrapper"><time class="timestamp" datetime="2024-04-21">[2024-04-21 Sun]</time></span> <a href="https://old.reddit.com/r/emacs/comments/1c9nbn9/orgmode_scheduled_and_ranges/">`org-mode`: SCHEDULED and ranges : emacs</a></dt>
+<dd>Various thoughts, including a comparison with Critical Path Analysis.</dd>
+</dl>
+<h2 id="colophon">Colophon</h2>
+<p><em>This question has been asked frequently since Org was created.  This page is intended to become a comprehensive resource that can be shared when the question is asked.  Please feel free to add relevant blog articles to the “Articles” section, and relevant discussions to the “Discussions” one.  When adding content, please follow the patterns established in each section.</em></p>

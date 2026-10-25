@@ -77,12 +77,12 @@ codes! {
         fix: "Rewrite it as YAML between `---` lines: `title: Pew`.",
     }
     ENTRY_DUPLICATE_KEY = "entry/duplicate-key" {
-        meaning: "A key appears twice in the same mapping of front matter or a Data file. YAML forbids it, and the second value would silently win.",
+        meaning: "A key appears twice in the same mapping of front matter or a Data file, or an Org keyword that sets a field is given twice. YAML forbids the first, and Org would join the two values (Org divergence 5).",
         example: "---\ntitle: Pew\ntitle: Pew 2\n---",
         fix: "Delete one of them.",
     }
     ENTRY_UNKNOWN_KEY = "entry/unknown-key" {
-        meaning: "Front matter, or a Data file with a schema, has a key its Collection or schema doesn't declare. Unknown keys are errors, so a typo can't silently do nothing.",
+        meaning: "Front matter, or a Data file with a schema, has a key its Collection or schema doesn't declare, or an Org Entry has a keyword that is neither a field nor one of Org's. Unknown keys are errors, so a typo can't silently do nothing.",
         example: "---\ntitle: Pew\ndraf: true\n---",
         fix: "Use the key the help suggests, such as `draft`, or declare the field under `[collections.<name>.fields]` in `yuanme.toml`.",
     }
@@ -136,10 +136,55 @@ codes! {
         example: "data/nav.toml and data/nav.yaml",
         fix: "Delete or rename one of them.",
     }
-    ORG_NOT_YET_SUPPORTED = "org/not-yet-supported" {
-        meaning: "This build of yuanme can't read Org Entries yet. Org support arrives before the first release, and this code goes away with it.",
-        example: "content/posts/proof.org",
-        fix: "Write the Entry in Markdown for now, or use a build of yuanme with Org support.",
+    ORG_UNSUPPORTED_CONSTRUCT = "org/unsupported-construct" {
+        meaning: "An Org body uses something outside the Org subset: macros, `#+INCLUDE`, `#+CALL` and other code that runs, citations, radio targets, dynamic blocks, inline tasks, headlines deeper than level 5, or a link type yuanme can't follow. Emacs would export it; yuanme fails the build rather than drop it or pass it through.",
+        example: "#+TITLE: Pew\n\nBuilt on {{{date}}}.",
+        fix: "Write what the construct would produce, as the help says. Here, write the date itself.",
+    }
+    ORG_SETUPFILE = "org/setupfile" {
+        meaning: "An Org Entry has a `#+SETUPFILE`. One Org file is one Entry, so yuanme doesn't read settings from another file.",
+        example: "#+TITLE: Pew\n#+SETUPFILE: ../setup.org",
+        fix: "Remove it, and put what it set where yuanme reads it: `#+OPTIONS` in the file itself, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates.",
+    }
+    ORG_OUT_OF_FUEL = "org/out-of-fuel" {
+        meaning: "An Org paragraph would take longer to parse than yuanme allows for its length, so the build stops instead of hanging. Only pathological input does this, such as hundreds of openers like `[[` or `*` that never close.",
+        example: "[[a [[a [[a [[a\n(and so on, many thousands of times)",
+        fix: "Close or remove the openers in the reported paragraph.",
+    }
+    ORG_TOO_DEEP = "org/too-deep" {
+        meaning: "Blocks, lists or markup in an Org body nest inside each other too deeply for yuanme to parse.",
+        example: "#+BEGIN_QUOTE\n#+BEGIN_QUOTE\n#+BEGIN_QUOTE\n(and so on, thousands of times)",
+        fix: "Nest them less deeply, or close the ones that never end.",
+    }
+    ORG_NO_EFFECT = "org/no-effect" {
+        meaning: "Something in an Org Entry is valid Org but changes nothing in yuanme's output, such as a keyword for Org's own exporter, an `#+OPTIONS` setting yuanme doesn't do, or a `#+CAPTION` on a paragraph.",
+        example: "#+TITLE: Pew\n#+AUTHOR: Yuan",
+        fix: "Remove it, or do it the way the note says. Here the author goes in `[site]` in yuanme.toml.",
+    }
+    ORG_UNDEFINED_FOOTNOTE = "org/undefined-footnote" {
+        meaning: "An Org footnote reference names a footnote that is never defined. Org's exporter fails on it too.",
+        example: "#+TITLE: Pew\n\nA claim.[fn:1]",
+        fix: "Define the footnote, as `[fn:1] The note.` at the start of a line, or inline, as `[fn:1:The note.]`.",
+    }
+    ORG_INVALID_ATTRIBUTE = "org/invalid-attribute" {
+        meaning: "An `#+ATTR_HTML` line has text that isn't an attribute. Attributes are written `:name value`.",
+        example: "#+ATTR_HTML: class=\"wide\"\n[[file:cat.png]]",
+        fix: "Write each attribute as `:name value`, here `#+ATTR_HTML: :class wide`.",
+    }
+    ORG_MISPLACED_KEYWORD = "org/misplaced-keyword" {
+        meaning: "A keyword that sets one of the Entry's fields, such as `#+TITLE` or `#+DATE`, comes after the first headline or body text. Fields are written at the top of the file.",
+        example: "* Intro\n#+DATE: 2025-12-12",
+        fix: "Move the keyword to the top of the file, before any headline or text.",
+    }
+    ORG_UNKNOWN_OPTION = "org/unknown-option" {
+        meaning: "`#+OPTIONS` has an option Org doesn't have, so it does nothing, in Emacs as in yuanme.",
+        example: "#+OPTIONS: tco:nil",
+        fix: "Use the option the help suggests, such as `toc`, or remove it.",
+    }
+    ORG_WRONG_WEEKDAY = "org/wrong-weekday" {
+        meaning: "An Org timestamp in a date field names a day of the week that isn't the date's. Org ignores the day name, and so does yuanme, but it is probably a typo in the date.",
+        example: "#+DATE: [2025-12-12 Mon]\n(the 12th was a Friday)",
+        fix: "Check the date, and correct the day name, here to `Fri`.",
     }
     MARKDOWN_EMPTY_DIRECTIVE = "markdown/empty-directive" {
         meaning: "A `:::` line opens a block directive with no name. A bare `:::` meant as a closing fence opens a new block instead when it is no longer than an open block's fence, and that block swallows the rest of the file.",

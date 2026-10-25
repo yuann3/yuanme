@@ -1,0 +1,128 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="a-standardized-short-report">A Standardized Short Report</h2>
+<p>This example is similar to the previous one, but here the users are
+expected to write substantial content.  This type of workflow might
+be used by a small organization whose employees regularly produce
+standard documents and where the writing tasks for any one document
+are divided among the authors.</p>
+<p>The HTML export facility of Org-mode is used to produce a guide to
+writing the standardized short report.  This HTML file can be used
+to train new authors.  The Org-mode content also supplies
+substantial direction to experienced authors as they write.
+Org-mode keywords and tags are used to keep track of writing
+assignments and progress.  Org-babel’s literate programming facility
+makes it possible to present writing tasks to the authors in an order
+different from which they appear in the report.</p>
+<h3 id="requirement">Requirement</h3>
+<ul>
+<li>A working LaTeX installation.</li>
+</ul>
+<h3 id="advantages">Advantages</h3>
+<ul>
+<li>The integration of training material with in-file instruction can
+be quite effective.</li>
+<li>Many authors find it easy to work from the bottom up, or from the
+particular to the general, rather than the usual sequence of
+general-particular-general found in reports.</li>
+</ul>
+<h3 id="disadvantages">Disadvantages</h3>
+<ul>
+<li>Some features of reftex are not yet integrated into the source
+code block editor, so writing and editing are sometimes less
+convenient than writing to the LaTeX document directly.</li>
+</ul>
+<h3 id="example">Example</h3>
+<ul>
+<li>This report must satisfy the requirements set out in <a href="http://hawaii.gov/dlnr/hpd/pdfs/revproc_har/275_284/pdfs/278.pdf">the Historic
+Preservation Division rule</a>.</li>
+<li>Complete each of the TODO items.</li>
+<li>Mark each item DONE when you have completed it.</li>
+<li><code>C-c a t</code> will make an agenda of items left to do in this
+document.</li>
+<li><code>C-c a m</code> YOURNAME will make an agenda of writing tasks assigned
+to you.</li>
+</ul>
+<h4 id="field-methods">Field Methods</h4>
+<h5 id="include-the-following-information-17">Include the following information: [1/7]</h5>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> When the fieldwork was carried out.</li>
+<li class="task-list-item"><input type="checkbox" disabled> Who directed the fieldwork.</li>
+<li class="task-list-item"><input type="checkbox" disabled> The names and qualifications of crew members.</li>
+<li class="task-list-item"><input type="checkbox" disabled> Establishment of site datum and grid.</li>
+<li class="task-list-item"><input type="checkbox" disabled> Excavation tools.</li>
+<li class="task-list-item"><input type="checkbox" disabled> Assignment of contexts.</li>
+<li class="task-list-item"><input type="checkbox" disabled> Bag list.</li>
+</ul>
+<h5 id="include-a-citation-to-the-project-plan">Include a citation to the project plan.</h5>
+<pre id="field-methods"><code class="language-latex">\section{Field Methods}
+\label{sec:field-methods}
+
+% Enter text below this line.
+
+Fieldwork for the project was carried out between December 26, 2008
+and February 3, 2009 following an approved plan \cite{plan}.
+</code></pre>
+<h4 id="results">Results</h4>
+<ul>
+<li>Note the use of Org-mode tags to assign sections to authors Veronica and Eric.</li>
+<li>Discuss the artifacts and midden recovered during excavation.</li>
+</ul>
+<h5 id="artifacts">Artifacts</h5>
+<ul>
+<li>Use Sinoto’s classification of one-piece fishhooks.</li>
+<li>Cite Anell when describing two-piece fishhooks.</li>
+<li>Use Emory’s classification of adzes when describing
+cross-section.</li>
+</ul>
+<pre id="artifacts"><code class="language-latex">\subsection{Description of Artifacts}
+\label{sec:artifact-description}
+
+% Enter text below this line
+</code></pre>
+<h5 id="midden">Midden</h5>
+<ul>
+<li>Use Kay for identifying and naming marine shells</li>
+<li>Cite Ziegler for information on fish habitats</li>
+</ul>
+<pre id="midden"><code class="language-latex">\subsection{Midden}
+\label{sec:midden}
+
+% Enter text below this line
+</code></pre>
+<h5 id="no-data-entry-beyond-this-line">No data entry beyond this line</h5>
+<pre id="results"><code class="language-latex">\section{Results}
+\label{sec:results}
+
+This section presents the results of excavation.
+
+&#x3C;&#x3C;artifacts>>
+
+&#x3C;&#x3C;midden>>
+</code></pre>
+<h4 id="introduction">Introduction</h4>
+<ul>
+<li>Give the reader a brief overview of the project and its results.</li>
+</ul>
+<pre id="intro"><code class="language-latex">\section{Introduction}
+\label{sec:introduction}
+
+% Text below this line
+</code></pre>
+<h4 id="no-data-entry-beyond-this-line-1">No data entry beyond this line</h4>
+<ul>
+<li>The LaTeX code here sets up the environment and inserts the
+defined source code blocks in their report order.</li>
+<li>A call to <code>org-babel-tangle</code> produces the LaTeX report document.</li>
+</ul>
+<pre><code class="language-latex">\documentclass{article}
+\begin{document}
+&#x3C;&#x3C;intro>>
+&#x3C;&#x3C;field-methods>>
+&#x3C;&#x3C;results>>
+\bibliographystyle{apa} 
+\bibliography{mybib}
+\end{document}
+</code></pre>

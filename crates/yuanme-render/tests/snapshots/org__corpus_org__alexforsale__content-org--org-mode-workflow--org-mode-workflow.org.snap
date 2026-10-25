@@ -1,0 +1,872 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:310:12
+    |
+310 | #+caption: my /dashboard/
+    |            ^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:313:12
+    |
+313 | #+caption: Vanilla Emacs =org-agenda=
+    |            ^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:339:12
+    |
+339 | #+caption: today's view
+    |            ^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:365:12
+    |
+365 | #+caption: =incomplete= section
+    |            ^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:394:12
+    |
+394 | #+caption: next 3 days
+    |            ^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:436:12
+    |
+436 | #+caption: the modified =org-agenda-custom-commands=
+    |            ^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:484:12
+    |
+484 | #+caption: upcoming deadlines
+    |            ^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:561:12
+    |
+561 | #+caption: org-capture in process
+    |            ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:603:12
+    |
+603 | #+caption: /org-capture/ with a predefined template
+    |            ^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:606:12
+    |
+606 | #+caption: the content of the template
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:609:12
+    |
+609 | #+caption: Prompt with completion
+    |            ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:612:12
+    |
+612 | #+caption: content of the capture target
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:623:14
+    |
+623 |   #+caption: =org-protocol= in Firefox
+    |              ^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:627:14
+    |
+627 |   #+caption: =org-protocol= capture
+    |              ^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:675:12
+    |
+675 | #+caption: org-modern
+    |            ^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--org-mode-workflow--org-mode-workflow.org:725:12
+    |
+725 | #+caption: org-modern agenda
+    |            ^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+<h2 id="how-i-mapped-my-brain-to-org-mode">How I mapped my brain to <em>org-mode</em></h2>
+<p>Lately I found that I am in dire need of an effective task management system as an <em>IT</em> support. There are some days where everything is hectic and I’m lost prioritizing my assignments. There’s moment where I was in the middle of doing one task, and suddenly another request / assignment came out of nowhere (not exactly nowhere, but you get the idea). Task management system is also useful for creating some kind of reporting, although this is not the main goal.</p>
+<p>Initially, this post was titled <em>Getting Things Done in Emacs</em>. But as I keep adding more information into this post, and how I interact with <em>org-mode</em> and <em>Emacs</em> in general, it was about capturing my thought process. Tasks is one thing, and the important one since that’s what I’m paid for. But there are stuffs floating around in my brain that I want to keep on exploring. By storing all that <em>impulses</em> into text, hopefully I could understand more on how my thought process work.</p>
+<p>I’ve known about the <em>Getting Things Done</em> method for a while now, even though I don’t actively trying to mimic the workflow. subconsciously I created my own workflow that (more and less) similar.</p>
+<p>The more I try to update this post the more I realised that my mind operates in such a non-linear way. I was thinking of updating a section of this post, but suddenly an idea came into my mind about tweaking other sections of the post, I don’t know if this is a good thing or not…</p>
+<p>I promise one day this post will make sense (to me most especially).</p>
+<h3 id="basically-what-i-want-is">Basically what I want is</h3>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> daily planner.</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Simple UI for task highlighting or focusing.</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> automation or templating for capturing tasks.</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> reviewing</li>
+<li class="task-list-item"><input type="checkbox" checked disabled> Sync between Laptop, PC, and android</li>
+</ul>
+<h3 id="the-5-steps-from-david-allens-gtd-method">The 5 Steps from David Allen’s GTD Method</h3>
+<dl>
+<dt>Capture</dt>
+<dd>Empty your mind</dd>
+<dt>Clarify</dt>
+<dd>Describe</dd>
+<dt>Organize</dt>
+<dd>Place it where it belongs</dd>
+<dt>Reflect</dt>
+<dd>Reflect on your progress</dd>
+<dt>Engage</dt>
+<dd>Take action</dd>
+</dl>
+<h4 id="capture">Capture</h4>
+<blockquote>
+<p>Our minds are for having ideas, not for holding them.</p>
+</blockquote>
+<p>Each capture should produce just <em>one</em> headline. Try not to use the word <strong>and</strong> and <strong>or</strong> into a headline. Put a line below write every thing that’s on my head at the time of capturing process.</p>
+<ul>
+<li>Dumping every ideas into text should be avoided. Not everything should go into the system, only add what I really need.</li>
+<li>Separate each capture into categories, tasks, notes, ideas, or other information that I took interest of.</li>
+<li>Since it’s necessary to me, I also separate my personal tasks/notes/ideas using <em>tag</em>.</li>
+</ul>
+<p>This is the first step of my workflow, and this is not necessarily about <em>Emacs</em>. I try to capture everything that interest me, or things that need my attention.</p>
+<ul>
+<li>A request came via <em>E-mail</em>, <em>messaging apps</em>, <em>phone calls</em>, or in person.</li>
+<li>An interesting book about meditation that requires a dedicated time to read.</li>
+<li>A topic about <em>GNU/Linux</em> from a <em>debian</em> mailing list (yes, silent reader here, but I still read it).</li>
+</ul>
+<p>As it seems, I don’t really need to capture it immediately into my <em>inbox</em> file, though it’s better, as long as I have some kind of media to note them.</p>
+<ul>
+<li>Mail messages have their received date and time.</li>
+<li>So do every messaging apps known to man.</li>
+<li>In-person requests / inquiries time doesn’t have to be precise to the minutes.</li>
+</ul>
+<h4 id="clarify">Clarify</h4>
+<p>Create sub tasks if needed. Reading a hierarchy of lists is better than reading a long line of text. Since I made these notes for me, I should understand it just by looking at them. But still every details count, especially product-related information (type, serial numbers, conditions etc).</p>
+<p>Another important details are date, time, and location. These are usually tasks related to meetings, appointments and such.</p>
+<p>This is also the first step to decide whether a tasks is considered a project. When I encounter tasks that take prolonged time of actions, and would create another task, I put it in the <code>:project:</code> category.</p>
+<p>For every other captures that doesn’t require any actions, I tried to collect as much information as possible. It could be a link to some internet articles that I’ve already collected, but somehow I forgot, it’d be nice if I knew the reason why I capture it in the first place. So the second time I encounter it I can immediately decide if it worth keeping.</p>
+<h4 id="organize">Organize</h4>
+<p>Use <code>org-refile</code> to organize your inbox file.</p>
+<p>A further sorting of all the lists I’ve acquired. Including all that I’ve captured previously. This phase is where I separate my tasks (actionable) with information, notes, links etc (non-actionable).</p>
+<p>I usually don’t trash any of my notes, if I made mistakes, it was my mistakes and I can (hopefully) learn from it.</p>
+<h4 id="reflect">Reflect</h4>
+<p>A deeper inspection of my <code>org-agenda</code> view. I should have an <em>agenda view</em> that shows everything happening for the current day, all the tasks that hasn’t yet completed, and all prioritized tasks for the upcoming week. Within the <code>org-agenda</code>, I can decide what tasks should I do first and mark them in-progress (<code>PROG</code>), what should I do next (<code>:schedule:</code> or <code>:deadline:</code> them if necessary).</p>
+<p>I’m still contemplating on having a separate <code>org-agenda</code> view for weekly. The problem is it really took a mental energy to view them and make decisions about a large inventory of open loops. Ath the moment I only set them for prioritized / scheduled / deadline tasks.</p>
+<h4 id="engage">Engage</h4>
+<p>Take action. Useful questions:</p>
+<dl>
+<dt>Context</dt>
+<dd>is this the right context for this action?</dd>
+<dt>Priority</dt>
+<dd>Is this the most important / impactful activity?</dd>
+<dt>Energy</dt>
+<dd>Do I have enough energy to do this?</dd>
+<dt>Time</dt>
+<dd>Do I have enough time to do this?</dd>
+</dl>
+<h4 id="what-i-will-need">What I will need</h4>
+<dl>
+<dt>Time</dt>
+<dd>This is basically building a habit, fortunately since I’ve used <em>Emacs</em> for a while now, this is nothing strange to me.</dd>
+<dt>Keep It Simple</dt>
+<dd>My <em>Emacs</em> configuration is already bloated enough, also the reason why I use <em>vanilla Emacs</em> to build this system.</dd>
+</dl>
+<h4 id="references">References</h4>
+<ul>
+<li><a href="https://medium.com/praxis-blog/building-a-second-brain-in-emacs-and-org-mode-faa20ae06fc">https://medium.com/praxis-blog/building-a-second-brain-in-emacs-and-org-mode-faa20ae06fc</a></li>
+<li><a href="https://fortelabs.com/blog/para/">https://fortelabs.com/blog/para/</a></li>
+<li><a href="https://fortelabs.com/blog/progressive-summarization-a-practical-technique-for-designing-discoverable-notes/">https://fortelabs.com/blog/progressive-summarization-a-practical-technique-for-designing-discoverable-notes/</a></li>
+<li><a href="https://www.float.com/resources/getting-things-done-method/">https://www.float.com/resources/getting-things-done-method/</a></li>
+</ul>
+<h2 id="using-org-mode">Using <em>org-mode</em></h2>
+<p><img src="./task-flow.svg" alt="task-flow.svg"></p>
+<p>An <em>Emacs</em> nerd as I am, of course the first stop is <code>org-mode</code>. Please forgive this messy chart since I’m still learning on <em><a href="https://plantuml.com/">plantuml</a></em>.</p>
+<p>I really want to try from the ground up, using a <em>vanilla</em> <em>Emacs</em> with no interference from my actual configuration file<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>. First of all, we need to set the minimal keybinding suggested by the <a href="https://orgmode.org/manual/Activation.html">manual</a>:</p>
+<h3 id="keybindings">Keybindings</h3>
+<figure>
+<figcaption>suggested keybindings</figcaption>
+<pre><code class="language-emacs-lisp">(global-set-key (kbd "C-c l") #'org-store-link)
+(global-set-key (kbd "C-c a") #'org-agenda)
+(global-set-key (kbd "C-c c") #'org-capture)
+(global-set-key (kbd "C-c C") #'org-capture-goto-last-stored)
+</code></pre>
+</figure>
+<h3 id="specific-org-mode-variables">Specific <code>org-mode</code> variables</h3>
+<h4 id="org-directory-and-org-agenda-files"><code>org-directory</code> and <code>org-agenda-files</code></h4>
+<p>Next is set the <code>org-directory</code>, this directory is going to be the location of <code>org-mode</code> files, well, you are free to place an <code>org-mode</code> files anywhere, but think of this as the <em>root</em> location, so every customizations we’ll be making will refers to this location, for example, if we want to define our <code>org-agenda-files</code> as <code>agenda.org</code> inside the <code>org-directory</code>, we’ll use:</p>
+<figure>
+<figcaption>set the location of <code>org-directory</code> inside <code>user-emacs-directory</code></figcaption>
+<pre><code class="language-emacs-lisp">(setq org-directory (expand-file-name "org" user-emacs-directory))
+</code></pre>
+</figure>
+<p>Usually you’ll want your <code>org-directory</code> to be separated from your <code>user-emacs-directory</code>, which mostly be under some kind of version control system (such as <em>git</em>). The simplest location is just on the root of your <code>home-directory</code></p>
+<figure>
+<figcaption>set the location of <code>org-directory</code> on the root of your home directory</figcaption>
+<pre><code class="language-emacs-lisp">(setq org-directory (expand-file-name "org" (getenv "HOME"))) ;; ~/org/
+</code></pre>
+</figure>
+<p>Assuming your <code>user-emacs-directory</code> is in <code>~/.emacs.d~</code>, then your <code>org-directory</code> is <code>~/.emacs.d/org</code></p>
+<figure>
+<figcaption>set the location of <code>org-agenda-files</code></figcaption>
+<pre><code class="language-emacs-lisp">(setq org-agenda-files (list org-directory))
+</code></pre>
+</figure>
+<h4 id="org-archive-location"><code>org-archive-location</code></h4>
+<p><code>org-archive-location</code> is another variable that I should consider, will I want an archiving method? If I do, where should I put it? Is storing archived task (the done, cancelled etc) in a designated file necessary?</p>
+<figure>
+<figcaption>An example of setting the <code>org-archive-location</code> to a file <em>archives.org</em> inside the <code>org-directory</code></figcaption>
+<pre><code class="language-emacs-lisp">(setq org-archive-location (concat (expand-file-name "archives.org" org-directory) "::datetree/* Archived Tasks"))
+</code></pre>
+</figure>
+<h4 id="org-todo-keywords"><code>org-todo-keywords</code></h4>
+<p>The <code>org-todo-keywords</code> also need to be customized, the default keywords are just <code>TODO</code>, and <code>DONE</code>. I’ve thought of this for a while, and perhaps this will suffice:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><caption>my todo keywords</caption><thead><tr><th>TODO Keyword</th><th>What it is</th></tr></thead><tbody><tr><td><code>TODO</code></td><td>Tasks that are not started, also not planned. There can be many of them.</td></tr><tr><td><code>NEXT</code></td><td>Tasks that are planned to do immediately.</td></tr><tr><td><code>WAIT</code></td><td>Tasks that needs other form of interaction in order for it to be set as <code>PROG</code> or <code>DONE</code> or <code>KILL</code>.</td></tr><tr><td><code>PROG</code></td><td>Tasks that are actively in working progress, these are usually the kind of tasks that can be done by myself, or have gone through the <code>WAIT</code> phase. Which also means that this can also revert back to <code>WAIT</code>.</td></tr><tr><td><code>HOLD</code></td><td>The kind of tasks that suspended without an escalation (these things happens im my workplace).</td></tr></tbody></table>
+<p>These <code>TODO</code> keywords are the ones that (supposed) to have further actions. I only have three keywords with no further actions:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><caption>keywords with no further actions</caption><thead><tr><th>TODO keyword</th><th>What it is</th></tr></thead><tbody><tr><td><code>DONE</code></td><td>GG, well played!</td></tr><tr><td><code>DELEGATED</code></td><td>I got someone else doing my job, GG, well played!</td></tr><tr><td><code>KILL</code></td><td>Cancelled, or my boss gave me a task beyond my paygrade</td></tr></tbody></table>
+<p>Translate these into <em>Emacs Lisp</em>:</p>
+<figure>
+<figcaption>defining my own <code>org-todo-keywords</code></figcaption>
+<pre><code class="language-emacs-lisp">(setq org-todo-keywords
+      '((sequence "TODO(t!)" "NEXT(n!)" "PROG(p!)" "WAIT(w!)" "HOLD(h!)" "|" "DONE(d!)" "DELEGATED(l!)" "KILL(k!)")))
+</code></pre>
+</figure>
+<ul>
+<li>
+<p>each character inside the parentheses are the fast state selection, when you use <code>C-c C-t</code> in a heading, you only have to type the character to select the keyword.</p>
+</li>
+<li>
+<p><code>~~</code> means to record the time of state changes.</p>
+<figure>
+<figcaption>example of state changes log</figcaption>
+<pre><code class="language-org">* TODO test
+- State "TODO"       from              [2024-03-14 Thu 22:10]
+</code></pre>
+</figure>
+</li>
+</ul>
+<h4 id="priority">Priority</h4>
+<p>Prioritizing tasks is important in my daily routines. And I would like to quickly identify the priority of all the tasks I have in my hand.</p>
+<figure>
+<figcaption>org-priority setup</figcaption>
+<pre><code class="language-emacs-lisp">(setq org-priority-highest ?A
+      org-priority-lowest ?D
+      org-priority-default ?B)
+
+(setq org-priority-faces
+      '((?A . (:foreground "#bf616a" :weight bold :underline t))
+        (?B . (:foreground "#d08770" :weight bold :underline t))
+        (?C . (:foreground "#4c566a" :weight bold :underline t))
+        (?D . (:foreground "#3b4252" :weight bold :underline t))))
+</code></pre>
+</figure>
+<p>This will set a list of priority from <code>A</code> to <code>D</code>, the default keybinding is <code>C-c ,</code>.</p>
+<h4 id="tags">Tags</h4>
+<p>Another useful way to implement labels and contexts for headlines, in <code>org-mode</code> tags must be preceeded and followed by a single colon (<code>:</code>), for example <code>:work:</code>, several tags can be specified, as in <code>:work:urgent</code>. Although I don’t use tags that often, there are several variables that I should customize:</p>
+<pre><code class="language-emacs-lisp">(setq org-use-tag-inheritance t
+      org-tags-exclude-from-inheritance '("crypt"))
+</code></pre>
+<p>The first one should be obvious, I want my sub-level headlines to inherit the tags from their parent headline. the second one is the tag that should not be inherited. The <code>:crypt:</code> tag is usually used for tagging headlines that contains password etc. The default keybinding for inserting tag is <code>C-c C-c</code> when the point is in the headline, or <code>C-c C-q</code> when under a headline.</p>
+<h3 id="deadlines-and-schedules">Deadlines and Schedules</h3>
+<h4 id="time-stamp">Time-stamp</h4>
+<p>In <code>org-mode</code> it’s a timestamp with a special keywords. Adding timestamp can be done with <code>C-c .</code> inside a heading, to insert an inactive timestamp (that doesn’t show in org-agenda) use <code>C-c !</code>. This will only insert date, to also insert time, use a <code>C-u</code> prefix (e.g. <code>C-u C-c .</code> or <code>C-u C-c !</code>).</p>
+<h4 id="deadline">Deadline</h4>
+<p>The default keybinding is <code>C-c C-d</code>. Meaning the heading, with a keyword (can be <code>TODO</code> or any other), is supposed to be finished at that date. Use <code>C-u C- C-d</code> to remove a deadline from the heading.</p>
+<figure>
+<figcaption>TODO task with a deadline</figcaption>
+<pre><code class="language-org">* TODO test
+DEADLINE: &#x3C;2024-03-14 Thu>
+- State "TODO"       from              [2024-03-14 Thu 22:10]
+</code></pre>
+</figure>
+<p>There are also different syntax for the date:</p>
+<ul>
+<li><code>DEADLINE: &#x3C;2024-03-14 Thu -3d></code>
+means a warning with the period of 3 days,</li>
+</ul>
+<h4 id="schedule">Schedule</h4>
+<p>Meaning that I’m planning to start doing the tasks at that date. The default keybinding is <code>C-c C-s</code>, use <code>C-u C-c C-s</code> to remove a schedule from a heading.</p>
+<figure>
+<figcaption>TODO task with a schedule</figcaption>
+<pre><code class="language-org">* TODO test
+SCHEDULED: &#x3C;2024-03-16 Sat 09:00>
+- State "TODO"       from              [2024-03-14 Thu 22:10]
+</code></pre>
+</figure>
+<p>Just as deadline, a different syntax also available:</p>
+<ul>
+<li><code>SCHEDULED: &#x3C;2024-03-16 Sat 10:00 -2d></code>
+means to delay the display of this task in the agenda for 2 day. The task is still scheduled on the 16th.</li>
+</ul>
+<h3 id="the-agenda-view">The Agenda view.</h3>
+<p><code>org-mode</code> has a builtin <em>agenda</em>. The default <em>Agenda views</em> will show informations of:</p>
+<ul>
+<li>Agenda for the current week or day, with the default key <code>a</code>.</li>
+<li>List of all <code>TODO</code> entries, key <code>t</code>.</li>
+<li>Matching queries of <em>tags</em>, <em>properties</em>, or <code>TODO</code> keywords. With the key <code>m</code>.</li>
+<li><code>s</code>, search for keywords.</li>
+<li><code>/</code> for multi-occur (never tried this).</li>
+<li><code>?</code> for finding flagged entries.</li>
+<li><code>*</code> for toggling sticky agenda views.</li>
+<li><code>n</code> for all agendas and <code>TODOs</code>.</li>
+</ul>
+<p>The agenda view is what I use the most for reviewing all my tasks, luckily there’s a package called <a href="https://github.com/emacs-dashboard/emacs-dashboard">dashboard</a> that also display several items from your agenda.</p>
+<p><a href="./emacs-dashboard.png">file:emacs-dashboard.png</a></p>
+<p><a href="./vanilla-emacs-org-agenda.png">file:vanilla-emacs-org-agenda.png</a></p>
+<h4 id="configuring-org-agenda-custom-commands">Configuring <code>org-agenda-custom-commands</code></h4>
+<p>This is the meat of my workflow, so I should have the information I want with just pressing each keyword.</p>
+<h5 id="viewing-the-custom-agenda">Viewing the custom agenda</h5>
+<h6 id="todays-section">today’s section</h6>
+<p>This will show on the top of my custom agenda view, showing today’s tasks.</p>
+<pre><code class="language-emacs-lisp">(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))))))
+</code></pre>
+<dl>
+<dt><code>org-agenda-span</code></dt>
+<dd>number of days to include in overview display, default to <code>'week</code>.</dd>
+<dt><code>org-deadline-warning-days</code></dt>
+<dd>Number of days before expiration during which a deadline becomes active, default to <code>14</code>.</dd>
+<dt><code>org-agenda-use-time-grid</code></dt>
+<dd>Non-nil means show a time grid in agenda schedule.</dd>
+<dt><code>org-scheduled-past-days</code></dt>
+<dd>Number of days to continue listing scheduled items not marked <code>DONE</code>.</dd>
+<dt><code>org-agenda-format-date</code></dt>
+<dd>formatting for the date.</dd>
+</dl>
+<p>This Will create a custom view <code>w</code>, with the first section marked “Today”, the <code>\n</code> is for inserting new line:</p>
+<p><a href="./org-agenda-custom-today.png">file:org-agenda-custom-today.png</a></p>
+<h6 id="incomplete-tasks-section">Incomplete tasks section</h6>
+<p>Useful to remind me for tasks that has not yet completed.</p>
+<figure>
+<figcaption>Incomplete tasks section addition</figcaption>
+<pre><code class="language-emacs-lisp">(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))
+          (tags-todo "*"
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-if-todo 'nottodo 'done))
+                      (org-agenda-use-time-grid nil)
+                      (org-agenda-overriding-header "\nIncomplete\n")))))))
+</code></pre>
+</figure>
+<p>This second section is filtered by <em>tags</em> (though it matches everything from <em>tags</em>, <em>properties</em>, and <em>TODO keywords</em>). The expression <code>"*"</code> means match all keywords.</p>
+<p>The other notable filter is the <code>org-agenda-skip-function</code>, this will only show tasks that matches from the function <code>'(org-agenda-skip-entry-if'nottodo 'done)</code>, which as its name suggest, skip entry if <code>TODO</code> keyword is not the type <code>'done</code> (the keywords on the right side of the <code>|</code> as defined <a href="id:6edcb547-3712-45a8-a665-8f1e7f05cd37">here</a>).</p>
+<p><a href="./org-agenda-custom-incomplete.png">file:org-agenda-custom-incomplete.png</a></p>
+<h6 id="next-three-days-section">Next three days section</h6>
+<p>Useful to get a head start of tasks for the coming days. I used to set it for the coming week, but I’d like to stay focused.</p>
+<pre><code class="language-emacs-lisp">(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (tags-todo "*"
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-if-todo 'nottodo 'done))
+                      (org-agenda-use-time-grid nil)
+                      (org-agenda-overriding-header "\nIncomplete\n")))))))
+</code></pre>
+<p>I inserted the “Next three days” section in between the “Incomplete”.</p>
+<p><a href="./org-agenda-custom-next-three-days.png">file:org-agenda-custom-next-three-days.png</a></p>
+<h6 id="section-for-upcoming-deadlines">Section for upcoming deadlines</h6>
+<p>This will show all the tasks with a deadline for the next 14 days, but starting at the 4th day, since the next three days already has it section.</p>
+<figure>
+<figcaption>upcoming deadlines</figcaption>
+<pre><code class="language-emacs-lisp">(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (tags-todo "*"
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-if-todo 'nottodo 'done))
+                      (org-agenda-use-time-grid nil)
+                      (org-agenda-overriding-header "\nIncomplete\n")))
+          (agenda "" ((org-agenda-time-grid nil)
+                      (org-agenda-start-on-weekday nil)
+                      ;; We don't want to replicate the previous section's
+                      ;; three days, so we start counting from the day after.
+                      (org-agenda-start-day "+4d")
+                      (org-agenda-span 14)
+                      (org-agenda-show-all-dates nil)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-entry-types '(:deadline))
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n")))))))
+</code></pre>
+</figure>
+<p><a href="./org-agenda-custom-commands-work.png">file:org-agenda-custom-commands-work.png</a></p>
+<p>Now I have a view of my daily, weekly agenda, and list of incomplete tasks. I can easily move into each tasks with pressing <code>RET</code> (<code>ENTER</code>) at each task.</p>
+<h6 id="separation-of-work-and-personal-tasks">Separation of work and personal tasks</h6>
+<p>I personally don’t use <em>org-agenda</em> for anything else beside my work stuffs. But occasionally there’s things that I put in my org files that are not work-related. For me, the easiest solution is just to use <code>org-tags</code> for all my personal tasks and use <code>org-agenda-tag-filter</code> in my agenda.</p>
+<figure>
+<figcaption>filter by tag</figcaption>
+<pre><code class="language-emacs-lisp">
+(setq org-agenda-custom-commands
+      `(("w" "work"
+         ((agenda ""
+                  ((org-agenda-span 1)
+                   (org-deadline-warning-days 0)
+                   (org-agenda-block-separator nil)
+                   (org-scheduled-past-days 0)
+                   (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
+                   (org-agenda-format-date "%A %-e %B %Y")
+                   (org-agenda-overriding-header "\nToday's Agenda\n")))
+          (agenda "" ((org-agenda-start-on-weekday nil)
+                      (org-agenda-start-day "+1d")
+                      (org-agenda-span 3)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nNext three days\n")))
+          (tags-todo "*"
+                     ((org-agenda-block-separator nil)
+                      (org-agenda-skip-function '(org-agenda-skip-if-todo 'nottodo 'done))
+                      (org-agenda-use-time-grid nil)
+                      (org-agenda-overriding-header "\nIncomplete\n")))
+          (agenda "" ((org-agenda-time-grid nil)
+                      (org-agenda-start-on-weekday nil)
+                      ;; We don't want to replicate the previous section's
+                      ;; three days, so we start counting from the day after.
+                      (org-agenda-start-day "+4d")
+                      (org-agenda-span 14)
+                      (org-agenda-show-all-dates nil)
+                      (org-deadline-warning-days 0)
+                      (org-agenda-block-separator nil)
+                      (org-agenda-entry-types '(:deadline))
+                      (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
+                      (org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n"))))
+         ((org-agenda-tag-filter-preset '("-personal" "-home"))))))
+</code></pre>
+</figure>
+<p>the <code>"-personal"</code> and <code>"-home"</code> means to filter out every headlines with the tag <code>personal</code>, and <code>home</code>, if you have many of them, just create another <em>agenda view</em> with that filter in reverse, using <code>+personal</code> or <code>+home</code></p>
+<p><a href="./org-agenda-custom-commands-upcoming.png">file:org-agenda-custom-commands-upcoming.png</a></p>
+<h6 id="stuck-projects">Stuck Projects</h6>
+<p>In <code>org-mode</code> term, a <em>stuck project</em> is a project (identified as a header) that has no defined next action, so it never shows up in the TODO list. The default value is:</p>
+<figure>
+<figcaption>default <code>org-stuck-projects</code></figcaption>
+<pre><code class="language-emacs-lisp">(setq org-stuck-projects
+      '("+LEVEL=2/-DONE"
+        ("TODO" "NEXT" "NEXTACTION")
+        nil ""))
+</code></pre>
+</figure>
+<p>It is a list with four items:</p>
+<ul>
+<li>a tag/todo/property matching a project.</li>
+<li>a list of todo keywords identifying non-stuck projects.</li>
+<li>a list of tags identifying non-stuck projects.</li>
+<li>a regular expression matching non stuck projects.</li>
+</ul>
+<p>The default means that a project is a level 2 headlines with the tag <code>PROJECT</code> but not if it has a todo keyword <code>MAYBE</code> and <code>DONE</code>, and will not be considered a stuck project if it has a todo keyword <code>TODO</code>, <code>NEXT</code>, or <code>NEXTACTION</code>, the third and fourth item is <code>nil</code> so it has no tag filter and no regular expression matcher for non-stuck projects.</p>
+<p>So I simply just use the tag <code>project</code> for tasks that I considered as a project. Using the <code>org-todo-keywords</code> that I already setup earlier, my <code>org-stuck-projects</code> is:</p>
+<figure>
+<figcaption>my <code>org-stuck-projects</code></figcaption>
+<pre><code class="language-emacs-lisp">(setq org-stuck-projects '("+{project*}-killed-Archives/-DONE-KILL-DELEGATED"
+                      ("TODO" "NEXT" "IDEA" "PROG")
+                      nil ""))
+</code></pre>
+</figure>
+<p>Then you can use org agenda to list all the stuck project with the key <code>#</code>, or with the command <code>M-x org-agenda #</code>.</p>
+<h3 id="refiling-and-archiving">Refiling and archiving</h3>
+<p>Eventually, the <code>org-files</code> used in my workflow will grow larger. So I will also need to move the previous tasks, refiling them into separate categories or even separate file. And also archiving them so they won’t clutter my agenda views, and also keep my <code>org-agenda</code> faster without having to check all those completed tasks.</p>
+<h4 id="archiving">Archiving</h4>
+<p>The main goal is to keep my main inbox file (the first entry of tasks) empty as soon as possible. This is where <em>org-archive</em> comes handy. The flow that I have in mind is to create a monthly file, perhaps in a headline consisting of <code>YYYY/MM</code> structure. The refiled entries are still monitored by <em>org-agenda</em>. I’d like to have some kind of <em>agenda view</em> for these files for reviewing purpose, perhaps maybe exporting them to different formats.</p>
+<figure>
+<figcaption>my <code>org-archive</code> setup</figcaption>
+<pre><code class="language-emacs-lisp">(setq org-archive-location  (concat org-directory  "/archive.org::datetree/* Archived Tasks"))
+</code></pre>
+</figure>
+<p>This will set the archive location to a file named <code>archives.org</code> inside my <code>org-directory</code>, and within a first level headline named “Archived Tasks”</p>
+<h4 id="refiling">Refiling</h4>
+<p>Still with the goal of having an unclutter inbox file, I’m using <code>org-refile</code> feature to move tasks from my inbox into another file, mainly for tasks that need (or waiting for) several steps to complete. Mostly though, I use <code>org-refile</code> in order to categorize my tasks, for examples I prefer to put tasks that are related to projects (in term of my work project), into a file named <code>projects.org</code> inside my <code>org-directory</code>, and routine tasks into <code>routines.org</code>, and my personal stuffs in <code>personal.org</code></p>
+<figure>
+<figcaption>my <code>org-refile</code> setup</figcaption>
+<pre><code class="language-emacs-lisp">(setq org-refile-targets
+      `((,(expand-file-name "projects.org" org-directory) :maxlevel . 1)
+        (,(expand-file-name "routines.org" org-directory) :maxlevel . 1)
+        (,(expand-file-name "personal.org" org-directory) :maxlevel . 1))
+      org-refile-use-outline-path 'file
+      org-outline-path-complete-in-steps nil)
+</code></pre>
+</figure>
+<dl>
+<dt><code>org-refile-use-outline-path</code></dt>
+<dd>this is set to <code>'file</code> to provide the file name as the refile target. Necessary since I’m using multiple files.</dd>
+<dt><code>org-outline-path-complete-in-steps</code></dt>
+<dd>set to <code>nil</code> so the completions won’t be set per step (filename -> headlines). Just to speed up the process.</dd>
+<dt><code>:maxlevel</code></dt>
+<dd>limits the level of headlines considered to be a target. A max level of 1 means only the top-level headlines. This also means that all the targets above can be set into one file (e.g. <code>refile.org</code>), and create a top-level headlines as the categories.</dd>
+</dl>
+<p>We’ll also need to add a <a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/Hooks.html">hook</a> to make sure that the target buffer is saved after the refiling process.</p>
+<figure>
+<figcaption>refile hook</figcaption>
+<pre><code class="language-emacs-lisp">(add-hook 'org-after-refile-insert-hook #'save-buffer)
+</code></pre>
+</figure>
+<h4 id="things-of-interest">Things of interest</h4>
+<dl>
+<dt><a href="https://200ok.ch/posts/2022-02-13_integrating_org_mode_agenda_into_other_calendar_apps.html">Exporting <em>org-agenda</em> to <em>thunderdbird</em></a></dt>
+<dd>I use <em>thunderbird</em>, and also have setup my <em>thunderbird</em> calendar to sync my <em>Outlook</em> calendars using <em><a href="https://davmail.sourceforge.net/">davmail</a></em>.</dd>
+</dl>
+<h3 id="using-org-capture">Using <code>org-capture</code></h3>
+<p>Of course all of the above would be useless if I have to manually create a task. At least I would like to have an <em>org-capture</em> template to make this easier.</p>
+<figure>
+<figcaption>org-capture-templates</figcaption>
+<pre><code class="language-emacs-lisp">(require 'org-capture)
+(setq org-capture-templates
+      `(("i" "Inbox" entry
+         (file+headline ,(expand-file-name "inbox.org" org-directory) "Inbox")
+         "** %?\n%i\n%a" :prepend t :jump-to-captured t)))
+</code></pre>
+</figure>
+<p><a href="./org-capture-1.png">file:org-capture-1.png</a>
+<a href="./org-capture-2.png">file:org-capture-2.png</a></p>
+<h4 id="capturing-with-templates">Capturing with templates</h4>
+<p>Let say there are some entries that usually have a similar format, we can provide a template for those entries. Name this <code>request.template</code> and put it inside the <code>org-directory</code>.</p>
+<pre><code>** TODO %?
+:PROPERTIES:
+:USER: %^{User}
+:UNIT: %^{Unit|MKN|GMN|STN}
+:DATE: %T
+:LOCATION:
+:CATEGORY: %^{Category|Meeting|Purchase|Repair|Assistance|Tech Issue|Complaints|Account Management}
+:REQUEST_VIA: %^{Request via|In Person|Phone/Messaging|Mail}
+:ITEM: %^{Item}
+:QTY: %^{Quantity|1}
+:LINK: %a
+:END:
+:LOGBOOK:
+- State "TODO"		from		%U
+:END:
+
+*** Requirements
+- [ ] Escalation
+- [ ] Approval
+- [ ] Vendor 
+</code></pre>
+<p>This will create a template for a 2nd level heading, with org <a href="https://orgmode.org/manual/Properties-and-Columns.html">properties</a> and a logbook <a href="https://orgmode.org/manual/Drawers.html">drawer</a>. But we also need some inputs:</p>
+<dl>
+<dt><code>%^{User}</code></dt>
+<dd>prompt for <em>User</em>.</dd>
+<dt><code>%^{Category|Meeting|Purchage|Repair|Assistance}</code></dt>
+<dd>Prompt for input with predefined values.</dd>
+<dt><code>%a</code></dt>
+<dd>Annotation, normally the link created with <code>org-store-link</code>.</dd>
+<dt><code>%U</code></dt>
+<dd>inactive timestamp for state tracking, only needed for the first time, will be updated automatically every time there’s a state change.</dd>
+<dt></dt>
+<dd>list started with <code>[ ]</code> means that it’s a checkbox list, we can change the state to <code>[x]</code> using <code>C-c C-c</code>.</dd>
+</dl>
+<figure>
+<figcaption>the org-capture-templates</figcaption>
+<pre><code class="language-emacs-lisp">(add-to-list 'org-capture-templates
+             `("r" "Request" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "Request")
+               (file ,(expand-file-name "request.template" org-directory))))
+</code></pre>
+</figure>
+<p><a href="./org-capture-with-template-1.png">file:org-capture-with-template-1.png</a></p>
+<p><a href="./org-capture-with-template-2.png">file:org-capture-with-template-2.png</a></p>
+<p><a href="./org-capture-with-template-3.png">file:org-capture-with-template-3.png</a></p>
+<p><a href="./org-capture-with-template-4.png">file:org-capture-with-template-4.png</a></p>
+<h4 id="things-of-interest-1">Things of interest</h4>
+<dl>
+<dt><a href="https://bzg.fr/en/some-emacs-org-mode-features-you-may-not-know/">Using context-aware capture-templates</a></dt>
+<dd>the link is not just about <code>org-capture</code>.</dd>
+</dl>
+<h2 id="synchronization-capture-methods-and-everything-else">Synchronization, Capture Methods and everything else</h2>
+<p>I mainly use <em><a href="https://syncthing.net/">syncthing</a></em> for synchronizing my <code>org-directory</code> across my devices. It has support for <em>android</em>, on which I use <a href="https://orgzly.com/">orgzly</a> mostly for viewing the org files. Once you’ve set the repository inside <em>orgzly</em> to point to <code>org-directory</code> (which already synced by <em>syncthing</em>), you’re ready to go. Also don’t forget to match the todo keywords with the one you’ve set in <em>Emacs</em>. The downside is you cannot attach to the org-file while in <em>orgzly</em>.</p>
+<p>And, depending on your <em>android</em> version, <em>syncthing</em> cannot sync properly on some filesystems. So it’s better to store your sync directory on the device internal storage than the external one. With that being said, I am still exploring other possibilities:</p>
+<dl>
+<dt><em>google’s keep</em></dt>
+<dd>
+<p>I never got the comfort of typing or navigating with my finger on a touchscreen. And to me, <em>Android</em> is such a mess by trying to pick comfort over functionality. Google Keep is the one app that (was) very simple and the only one app that I still consider a <em>Google App</em>. I can sync a note between my phone and my pc, I can also attach media to it (try taking photos of 41 printers of the same model, and guess each location, etc). But here comes the new UI updates…</p>
+</dd>
+<dt>Firefox</dt>
+<dd>
+<p>There used to be an editor war, now it just plain war. Now I just use Firefox just because I choose to use Firefox.</p>
+<p><a href="./org-capture-firefox.png">file:org-capture-firefox.png</a>
+<code>org-protocol</code> allows me to capture a link in Firefox into <code>org-mode</code> just by using a bookmark.</p>
+<p><a href="./org-protocol-capture-firefox.png">file:org-protocol-capture-firefox.png</a></p>
+<p>This allows me to easily insert links into my <code>org-capture</code>.</p>
+</dd>
+</dl>
+<h2 id="org-mode-extensions"><em>org-mode</em> extensions</h2>
+<p>Although all the configuration listed above is enough for my <em>task management</em> workflow, there are many packages for <em>Emacs</em> (builtin or external) to enhance your <em>org-mode</em> experience. Here are some of them:</p>
+<h3 id="evil-mode"><code>Evil-mode</code></h3>
+<p>I made a separate post for this package. If you’re coming from <em>Vim</em>, this is mandatory. If you’re not, try the default <em>Emacs</em> keybindings first, if your pinky fingers are not long enough, try this package.</p>
+<figure>
+<figcaption>recommended <em>evil</em> configuration</figcaption>
+<pre><code class="language-emacs-lisp">(use-package evil
+  :ensure t
+  :init
+  (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+  (setq evil-want-keybinding nil)
+  :config
+  (evil-mode 1))
+
+(use-package evil-collection
+  :after evil
+  :ensure t
+  :config
+  (evil-collection-init)
+  (with-eval-after-load 'org-agenda
+    (evil-set-initial-state #'org-agenda-mode 'normal)
+    (evil-define-key '(normal visual) org-agenda-mode-map
+      "q" 'org-agenda-quit
+      "Q" 'org-agenda-quit
+      (kbd "&#x3C;return>") 'org-agenda-switch-to
+      "t" 'org-agenda-todo
+      "gr" 'org-agenda-redo-all)))
+
+</code></pre>
+</figure>
+<h3 id="org-fancy-priorities"><code>org-fancy-priorities</code></h3>
+<pre><code class="language-emacs-lisp">(use-package org-fancy-priorities
+  :ensure t
+  :hook
+  (org-mode . org-fancy-priorities-mode)
+  :config
+  (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
+</code></pre>
+<figure>
+<img src="https://github.com/harrybournis/org-fancy-priorities/raw/master/screenshots/screenshot1.png" alt="screenshot1.png">
+<figcaption>image from <a href="https://github.com/harrybournis/org-fancy-priorities">their readme page</a></figcaption>
+</figure>
+<h3 id="org-modern"><code>org-modern</code></h3>
+<p><a href="./org-modern.png">file:org-modern.png</a>
+This package implements a modern style for your Org buffers using font locking and text properties. The package styles headlines, keywords, tables and source blocks. The styling is configurable, you can enable, disable or modify the style of each syntax element individually via the org-modern customization group.</p>
+<figure>
+<figcaption>org-modern configuration (mainly from their <a href="https://github.com/minad/org-modern/">github page</a>)</figcaption>
+<pre><code class="language-emacs-lisp">(use-package org-modern
+  :ensure t
+  :init
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (load-theme 'modus-vivendi t)
+  :config
+  (set-face-attribute 'org-modern-symbol nil :family "Iosevka Nerd Font")
+  (set-face-attribute 'default nil :family "Iosevka Nerd Font Mono")
+  (set-face-attribute 'variable-pitch nil :family "Iosevka Nerd Font Mono")
+  (modify-all-frames-parameters
+   '((right-divider-width . 40)
+     (internal-border-width . 40)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+  (setq
+   ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-ellipsis "…"
+
+   ;; Agenda styling
+   org-agenda-tags-column 0
+   org-agenda-block-separator ?─
+   org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000)
+     " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+   org-agenda-current-time-string
+   "◀── now ─────────────────────────────────────────────────")
+  (global-org-modern-mode))
+</code></pre>
+</figure>
+<p><a href="./org-modern-agenda.png">file:org-modern-agenda.png</a></p>
+<h3 id="builtin-packages">builtin packages</h3>
+<h4 id="saveplace"><code>saveplace</code></h4>
+<pre><code class="language-emacs-lisp">(use-package saveplace
+  :init
+  (save-place-mode 1)
+  :custom
+  (save-place-file (expand-file-name "places" user-emacs-directory)))
+</code></pre>
+<p>When you visit a file, point goes to the last place where it was when you previously visited the save file.</p>
+<h4 id="savehist"><code>savehist</code></h4>
+<p>Save the minibuffer history</p>
+<pre><code class="language-emacs-lisp">(use-package savehist
+  :init
+  (savehist-mode 1)
+  :custom
+  (savehist-file (expand-file-name "history" user-emacs-directory))
+  (savehist-coding-system 'utf-8)
+  (savehist-additional-variables
+   '(evil-jumps-history
+     kill-ring
+     register-alist
+     mark-ring
+     global-mark-ring
+     search-ring
+     regexp-search-ring)))
+</code></pre>
+<h4 id="various-files-configuration">various <code>files</code> configuration</h4>
+<pre><code class="language-emacs-lisp">(use-package files
+  :custom
+  (find-file-visit-truename t)
+  (version-control t)
+  (backup-by-copying t)
+  (delete-old-versions t)
+  (kept-new-versions 6)
+  (kept-old-versions 2)
+  (auto-save-include-big-deletions t)
+  (auto-save-list-file-prefix (expand-file-name ".autosave/" user-emacs-directory))
+  (backup-directory-alist `(("." . ,(expand-file-name ".backup" user-emacs-directory)))))
+</code></pre>
+<dl>
+<dt><code>find-file-visit-truename</code></dt>
+<dd>if the visited file is a symlink, it will find the truename of the file instead.</dd>
+<dt><code>version-control</code></dt>
+<dd>make numeric backup versions unconditionally.</dd>
+<dt><code>backup-by-copying</code></dt>
+<dd>always use copying to create backup files.</dd>
+<dt><code>delete-old-versions</code></dt>
+<dd>delete excess backup versions silently</dd>
+</dl>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>By using another instance of <em>Emacs</em>, but with a specific command arguments:</p>
+<pre><code class="language-sh">emacs --init-directory=/dev/null
+</code></pre>
+<p>This will ensure <em>Emacs</em> is started with no user configuration. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

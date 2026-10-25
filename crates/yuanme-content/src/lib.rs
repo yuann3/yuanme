@@ -4,6 +4,7 @@ pub mod document;
 pub mod entry;
 pub mod fields;
 pub mod markdown;
+pub mod org;
 pub mod site;
 pub mod slug;
 pub mod smartypants;

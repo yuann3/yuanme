@@ -1,0 +1,1242 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>This document is aimed at back-end developers for the generic export
+engine <code>ox.el</code>.  It assumes a good understanding of <a href="./org-syntax.org">Org syntax</a> from
+the reader.</p>
+<p>It covers <a href="#back-end">back-end creation</a> process, properties offered by the
+<a href="#communication">communication channel</a> during export, the <a href="#filter-system">filter system</a> internals and
+<a href="#toolbox">tools</a> provided by the exporter.  Eventually, expected <a href="#interactive">interactive
+functions</a> aimed at end-users are explained in the last part of this
+document.</p>
+<h2 id="back-end">Defining a Back-End</h2>
+<p>A back-end is defined with <code>org-export-define-backend</code> function.  It
+requires two mandatory arguments: the back-end name and its
+translation table, an alist that associates element and object types
+to translator functions.  According to the documentation:</p>
+<blockquote>
+<p>These functions should return a string without any trailing space,
+or nil.  They must accept three arguments: the object or element
+itself, its contents or nil when it isn’t recursive and the property
+list used as a communication channel.</p>
+<p>Contents, when not nil, are stripped from any global indentation
+(although the relative one is preserved).  They also always end with
+a single newline character.</p>
+<p>If, for a given type, no function is found, that element or object
+type will simply be ignored, along with any blank line or white
+space at its end.  The same will happen if the function returns the
+nil value.  If that function returns the empty string, the type will
+be ignored, but the blank lines or white spaces will be kept.</p>
+<p>In addition to element and object types, one function can be
+associated to the <code>template</code> symbol and another one to the
+<code>plain-text</code> symbol.</p>
+<p>The former returns the final transcoded string, and can be used to
+add a preamble and a postamble to document’s body.  It must accept
+two arguments: the transcoded string and the property list
+containing export options.</p>
+<p>The latter, when defined, is to be called on every text not
+recognized as an element or an object.  It must accept two
+arguments: the text string and the information channel.  It is an
+appropriate place to protect special chars relative to the back-end.</p>
+</blockquote>
+<p>Optionally, the function can set-up back-end specific properties (like
+values from specific buffer keywords) accessible from every translator
+function with the <code>:options-alist</code> keyword.  See
+<code>org-export-options-alist</code> for details on the structure of the value.</p>
+<p>As an example, the following excerpt from <code>latex</code> back-end
+definition introduces three new buffer keywords (and their
+headline’s property counterpart), and redefine <code>DATE</code> default value:</p>
+<pre><code class="language-emacs-lisp">(org-export-define-backend 'latex
+  ...
+  :options-alist '((:date "DATE" nil "\\today" t)
+                   (:date-format nil nil org-latex-date-timestamp-format)
+                   (:latex-class "LATEX_CLASS" nil org-latex-default-class t)
+                   (:latex-class-options "LATEX_CLASS_OPTIONS" nil nil t)
+                   (:latex-header-extra "LATEX_HEADER" nil nil newline)
+                   (:latex-hyperref-p nil "texht" org-latex-with-hyperref t)))
+</code></pre>
+<p>Eventually <code>org-export-define-backend</code> allows to define back-ends
+specific filters.  Refer to <a href="#filter-system">The Filter System</a> section for more
+information.</p>
+<p>If the new back-end shares most properties with another one, use
+<code>org-export-define-derived-backend</code> to simplify the creation
+process.  In the example below, we implement a new back-end which
+behaves like <code>latex</code> except for headlines and the template.</p>
+<pre><code class="language-emacs-lisp">(org-export-define-derived-backend 'my-latex 'latex
+  :translate-alist '((headline . my-latex-headline-translator)
+(template . my-latex-template)))
+</code></pre>
+<p>Back-ends defined with either function can be registered in the export
+dispatcher using special keyword <code>:menu-entry</code>.  See defuns docstrings
+for more information.</p>
+<p>Eventually, you can create an anonymous back-end with
+<code>org-export-create-backend</code>.  It can inherit from an existing
+back-end or define everything from scratch.</p>
+<p>Such a back-end doesn’t appear in any user-facing menu, however.  It
+is meant to be used as an argument for <code>org-export-with-backend</code> and
+<code>org-export-data-with-backend</code>, for exporting rules with a limited
+scope.</p>
+<p>For example, entries in a table of contents usually link to headings
+in the document.  As a consequence, targets, footnote references,
+and external links may be ignored from the table of contents.  As an
+example, the HTML export back-end prunes various link-like types
+from table of contents’ entries – here <code>toc-entry</code> – with the
+following code:</p>
+<pre><code class="language-emacs-lisp">(org-export-data-with-backend
+ toc-entry
+ (org-export-create-backend
+  :parent 'html
+  :transcoders `((footnote-reference . ,#'ignore)
+   (link . ,(lambda (l c i)
+(or c
+    (org-export-data
+     (org-element-property :raw-link l)
+     i))))
+   (radio-target . ,(lambda (_r c _i) c))
+   (target . ,#'ignore)))
+ info)
+</code></pre>
+<p>Since this is a common anonymous back-end, the above is readily
+available calling <code>org-export-toc-entry-backend</code>.</p>
+<h2 id="communication">The Communication Channel</h2>
+<p>During export process, every function has access to a number of
+properties.  They are of two types:</p>
+<ol>
+<li>
+<p>Environment options are collected once at the very beginning of
+the process, out of the original buffer and configuration.
+Collecting them is handled by <code>org-export-get-environment</code>
+function.</p>
+<p>Most environment options are defined through the
+<code>org-export-options-alist</code> variable.</p>
+</li>
+<li>
+<p>Tree properties are extracted directly from the parsed tree, just
+before export, by <code>org-export-collect-tree-properties</code>.</p>
+</li>
+</ol>
+<p>This is the full list of properties available during transcode
+process, with their category (<code>option</code> or <code>tree</code>) and their value
+type.</p>
+<h3 id="author"><code>:author</code></h3>
+<p>Author’s name.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string</dd>
+</dl>
+<h3 id="back-end-1"><code>:back-end</code></h3>
+<p>Current back-end used for transcoding.</p>
+<dl>
+<dt>category</dt>
+<dd>tree</dd>
+<dt>type</dt>
+<dd>structure</dd>
+</dl>
+<h3 id="creator"><code>:creator</code></h3>
+<p>String to write as creation information.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string</dd>
+</dl>
+<h3 id="date"><code>:date</code></h3>
+<p>String to use as date.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string</dd>
+</dl>
+<h3 id="description"><code>:description</code></h3>
+<p>Description text for the current data.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string</dd>
+</dl>
+<h3 id="email"><code>:email</code></h3>
+<p>Author’s email.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string</dd>
+</dl>
+<h3 id="exclude-tags"><code>:exclude-tags</code></h3>
+<p>Tags for exclusion of sub-trees from export process.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>list of strings</dd>
+</dl>
+<h3 id="export-options"><code>:export-options</code></h3>
+<p>List of export options available for current process.</p>
+<dl>
+<dt>category</dt>
+<dd>none</dd>
+<dt>type</dt>
+<dd>list of symbols, among <code>subtree</code>, <code>body-only</code> and
+<code>visible-only</code>.</dd>
+</dl>
+<h3 id="exported-data"><code>:exported-data</code></h3>
+<p>Hash table used to memoize results from <a href="#data"><code>org-export-data</code></a>.</p>
+<dl>
+<dt>category</dt>
+<dd>tree</dd>
+<dt>type</dt>
+<dd>hash table</dd>
+</dl>
+<h3 id="filetags"><code>:filetags</code></h3>
+<p>List of global tags for buffer.  Used by <a href="#get-tags"><code>org-export-get-tags</code></a> to
+get tags with inheritance.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>list of strings</dd>
+</dl>
+<h3 id="headline-levels"><code>:headline-levels</code></h3>
+<p>Maximum level being exported as an headline.  Comparison is done
+with the relative level of headlines in the parse tree, not
+necessarily with their actual level.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>integer</dd>
+</dl>
+<h3 id="headline-numbering"><code>:headline-numbering</code></h3>
+<p>Alist between headlines’ beginning position and their numbering, as
+a list of numbers – cf. <a href="#get-headline-number"><code>org-export-get-headline-number</code></a>.</p>
+<dl>
+<dt>category</dt>
+<dd>tree</dd>
+<dt>type</dt>
+<dd>alist (INTEGER . LIST)</dd>
+</dl>
+<h3 id="headline-offset"><code>:headline-offset</code></h3>
+<p>Difference between relative and real level of headlines in the
+parse tree.  For example, a value of -1 means a level 2 headline
+should be considered as level 1 —
+cf. <a href="#get-relative-level"><code>org-export-get-relative-level</code></a>.</p>
+<dl>
+<dt>category</dt>
+<dd>tree</dd>
+<dt>type</dt>
+<dd>integer</dd>
+</dl>
+<h3 id="ignore-list"><code>:ignore-list</code></h3>
+<p>List of elements and objects that will be unconditionally ignored
+during export.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>list of elements</dd>
+</dl>
+<h3 id="id-alist"><code>:id-alist</code></h3>
+<p>Alist between ID strings and destination file’s path, relative to
+current directory.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>alist (STRING . STRING)</dd>
+</dl>
+<h3 id="input-buffer"><code>:input-buffer</code></h3>
+<p>Original buffer name.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string</dd>
+</dl>
+<h3 id="input-file"><code>:input-file</code></h3>
+<p>Full path to input file, if any.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string or nil</dd>
+</dl>
+<h3 id="keywords"><code>:keywords</code></h3>
+<p>List of keywords attached to data.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string</dd>
+</dl>
+<h3 id="language"><code>:language</code></h3>
+<p>Default language used for translations.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string</dd>
+</dl>
+<h3 id="output-file"><code>:output-file</code></h3>
+<p>Full path to output file, if any.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>string or nil</dd>
+</dl>
+<h3 id="parse-tree"><code>:parse-tree</code></h3>
+<p>Whole parse tree, available at any time during transcoding.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>list (as returned by <code>org-element-parse-buffer</code>)</dd>
+</dl>
+<h3 id="preserve-breaks"><code>:preserve-breaks</code></h3>
+<p>Non-nil means transcoding should preserve all line breaks.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="section-numbers"><code>:section-numbers</code></h3>
+<p>Non-nil means transcoding should add section numbers to headlines.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="select-tags"><code>:select-tags</code></h3>
+<p>List of tags enforcing inclusion of sub-trees in transcoding.  When
+such a tag is present, sub-trees without it are <em>de facto</em> excluded
+from the process.  See <a href="#use-select-tags"><code>:use-select-tags</code></a>.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>list of strings</dd>
+</dl>
+<h3 id="time-stamp-file"><code>:time-stamp-file</code></h3>
+<p>Non-nil means transcoding should insert a time stamp in the output.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="translate-alist"><code>:translate-alist</code></h3>
+<p>Alist between element and object types and transcoding functions
+relative to the current back-end.  Special keys <code>template</code> and
+<code>plain-text</code> are also possible.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>alist (SYMBOL . FUNCTION)</dd>
+</dl>
+<h3 id="use-select-tags"><code>:use-select-tags</code></h3>
+<p>When non-nil, a select tags has been found in the parse tree.
+Thus, any headline without one will be filtered out.  See
+<a href="#select-tags"><code>:select-tags</code></a>.</p>
+<dl>
+<dt>category</dt>
+<dd>tree</dd>
+<dt>type</dt>
+<dd>integer or nil</dd>
+</dl>
+<h3 id="with-archived-trees"><code>:with-archived-trees</code></h3>
+<p>Non-nil when archived sub-trees should also be transcoded.  If it
+is set to the <code>headline</code> symbol, only the archived headline’s name
+is retained.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t, <code>headline</code>)</dd>
+</dl>
+<h3 id="with-author"><code>:with-author</code></h3>
+<p>Non-nil means author’s name should be included in the output.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-clocks"><code>:with-clocks</code></h3>
+<p>Non-nil means clock keywords should be exported.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-creator"><code>:with-creator</code></h3>
+<p>Non-nil means a creation sentence should be inserted at the end of
+the transcoded string.  If the value is <code>comment</code>, it should be
+commented.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (<code>comment</code>, nil, t)</dd>
+</dl>
+<h3 id="with-date"><code>:with-date</code></h3>
+<p>Non nil means output should contain a date.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-drawers"><code>:with-drawers</code></h3>
+<p>Non-nil means drawers should be exported.  If its value is a list
+of names, only drawers with such names will be transcoded.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t) or list of strings</dd>
+</dl>
+<h3 id="with-email"><code>:with-email</code></h3>
+<p>Non-nil means output should contain author’s email.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-emphasize"><code>:with-emphasize</code></h3>
+<p>Non-nil means emphasized text should be interpreted.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-fixed-width"><code>:with-fixed-width</code></h3>
+<p>Non-nil if transcoder should interpret strings starting with
+a colon as a fixed-with — verbatim — area.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-footnotes"><code>:with-footnotes</code></h3>
+<p>Non-nil if transcoder should interpret footnotes.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-latex"><code>:with-latex</code></h3>
+<p>Non-nil means <code>latex-environment</code> elements and <code>latex-fragment</code>
+objects should appear in export output.  When this property is set
+to <code>verbatim</code>, they will be left as-is.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (<code>verbatim</code>, nil, t)</dd>
+</dl>
+<h3 id="with-planning"><code>:with-planning</code></h3>
+<p>Non-nil means transcoding should include planning info.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-priority"><code>:with-priority</code></h3>
+<p>Non-nil means transcoding should include priority cookies.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-smart-quotes"><code>:with-smart-quotes</code></h3>
+<p>Non-nil means activate smart quotes during export.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil ,t)</dd>
+</dl>
+<h3 id="with-special-strings"><code>:with-special-strings</code></h3>
+<p>Non-nil means transcoding should interpret special strings in plain
+text.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-sub-superscript"><code>:with-sub-superscript</code></h3>
+<p>Non-nil means transcoding should interpret subscript and
+superscript.  With a value of <code>{}</code>, only interpret those using
+curly brackets.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, <code>{}</code>, t)</dd>
+</dl>
+<h3 id="with-tables"><code>:with-tables</code></h3>
+<p>Non-nil means transcoding should interpret tables.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h3 id="with-tags"><code>:with-tags</code></h3>
+<p>Non-nil means transcoding should keep tags in headlines.
+A <code>not-in-toc</code> value will remove them from the table of contents,
+if any, nonetheless.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t, <code>not-in-toc</code>)</dd>
+</dl>
+<h3 id="with-tasks"><code>:with-tasks</code></h3>
+<p>Non-nil means transcoding should include headlines with a TODO
+keyword.  A <code>todo</code> value will only include headlines with a TODO
+type keyword while a <code>done</code> value will do the contrary.  If a list
+of strings is provided, only tasks with keywords belonging to that
+list will be kept.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (t, <code>todo</code>, <code>done</code>, nil) or list of strings</dd>
+</dl>
+<h3 id="with-timestamps"><code>:with-timestamps</code></h3>
+<p>Non-nil means transcoding should include time stamps.  Special
+value <code>active</code> (resp. <code>inactive</code>) ask to export only active
+(resp. inactive) timestamps.  Otherwise, completely remove them.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol: (<code>active</code>, <code>inactive</code>, t, nil)</dd>
+</dl>
+<h3 id="with-toc"><code>:with-toc</code></h3>
+<p>Non-nil means that a table of contents has to be added to the
+output.  An integer value limits its depth.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t or integer)</dd>
+</dl>
+<h3 id="with-todo-keywords"><code>:with-todo-keywords</code></h3>
+<p>Non-nil means transcoding should include TODO keywords.</p>
+<dl>
+<dt>category</dt>
+<dd>option</dd>
+<dt>type</dt>
+<dd>symbol (nil, t)</dd>
+</dl>
+<h2 id="filter-system">The Filter System</h2>
+<p>Filters sets are lists of functions.  They allow to alter parse tree
+before export and to post-process output of each transcoded object
+or element.</p>
+<p>Each function in a set must accept three arguments: a string (or
+a parse tree as a special case), a symbol representing the current
+back-end, and the communication channel, as a plist.</p>
+<p>As an exception, functions in options filter only accept two
+arguments: the property list containing the export options and the
+back-end, as a symbol.</p>
+<p>From the developer side, filters sets can be installed using
+<code>:filters-alist</code> keyword while defining the back-end with
+<code>org-export-define-derived-backend</code>.  Each association has a key
+among the following symbols and a function or a list of functions as
+value:</p>
+<ul>
+<li><code>:filter-babel-call</code></li>
+<li><code>:filter-bold</code></li>
+<li><code>:filter-center-block</code></li>
+<li><code>:filter-clock</code></li>
+<li><code>:filter-code</code></li>
+<li><code>:filter-drawer</code></li>
+<li><code>:filter-dynamic-block</code></li>
+<li><code>:filter-entity</code></li>
+<li><code>:filter-example-block</code></li>
+<li><code>:filter-export-block</code></li>
+<li><code>:filter-export-snippet</code></li>
+<li><code>:filter-final-output</code></li>
+<li><code>:filter-fixed-width</code></li>
+<li><code>:filter-footnote-definition</code></li>
+<li><code>:filter-footnote-reference</code></li>
+<li><code>:filter-headline</code></li>
+<li><code>:filter-horizontal-rule</code></li>
+<li><code>:filter-inline-babel-call</code></li>
+<li><code>:filter-inline-src-block</code></li>
+<li><code>:filter-inlinetask</code></li>
+<li><code>:filter-italic</code></li>
+<li><code>:filter-item</code></li>
+<li><code>:filter-keyword</code></li>
+<li><code>:filter-latex-environment</code></li>
+<li><code>:filter-latex-fragment</code></li>
+<li><code>:filter-line-break</code></li>
+<li><code>:filter-link</code></li>
+<li><code>:filter-node-property</code></li>
+<li><code>:filter-options</code></li>
+<li><code>:filter-paragraph</code></li>
+<li><code>:filter-parse-tree</code></li>
+<li><code>:filter-plain-list</code></li>
+<li><code>:filter-plain-text</code></li>
+<li><code>:filter-planning</code></li>
+<li><code>:filter-property-drawer</code></li>
+<li><code>:filter-quote-block</code></li>
+<li><code>:filter-quote-section</code></li>
+<li><code>:filter-radio-target</code></li>
+<li><code>:filter-section</code></li>
+<li><code>:filter-special-block</code></li>
+<li><code>:filter-src-block</code></li>
+<li><code>:filter-strike-through</code></li>
+<li><code>:filter-statistics-cookie</code></li>
+<li><code>:filter-subscript</code></li>
+<li><code>:filter-superscript</code></li>
+<li><code>:filter-table</code></li>
+<li><code>:filter-table-cell</code></li>
+<li><code>:filter-table-row</code></li>
+<li><code>:filter-target</code></li>
+<li><code>:filter-timestamp</code></li>
+<li><code>:filter-underline</code></li>
+<li><code>:filter-verbatim</code></li>
+<li><code>:filter-verse-block</code></li>
+</ul>
+<p>For example, <code>ascii</code> back-end implements a filter that makes sure
+headlines end with two blank lines:</p>
+<pre><code class="language-emacs-lisp">(org-export-define-backend 'ascii
+  ...
+  :filters-alist '((:filter-headline . org-ascii-filter-headline-blank-lines)
+                   (:filter-section . org-ascii-filter-headline-blank-lines)))
+
+(defun org-ascii-filter-section-blank-lines (headline back-end info)
+  "Filter controlling number of blank lines after a section."
+  (let ((blanks (make-string 2 ?\n)))
+    (replace-regexp-in-string "\n\\(?:\n[ \t]*\\)*\\'" blanks headline)))
+</code></pre>
+<h2 id="toolbox">The Toolbox</h2>
+<p>A whole set of tools is available to help build new exporters.  Any
+function general enough to have its use across a couple of back-ends
+may be added here.</p>
+<p>Many of them are high-level access to properties from the
+communication channel.  As such, they should be preferred to
+straight access to communication channel, when possible.</p>
+<h3 id="activate-smart-quotes"><code>org-export-activate-smart-quotes</code></h3>
+<p>Transform quotes and apostrophes into their “smart” counterpart in
+a given string.</p>
+<p>It should be used after a check against <code>:with-smart-quotes</code> value
+in communication channel.</p>
+<p>Since this function needs the original string, it may be useful to
+apply others transformations (i.e. characters protection) on a copy
+of that string and provide the pristine original string as the
+optional argument.</p>
+<p>For example, in <code>html</code> back-end, it is necessary to protect ”&#x3C;”,
+”>” and ”&#x26;” characters before calling this function.  Here’s an
+excerpt of its <code>plain-text</code> transcoder:</p>
+<pre><code class="language-emacs-lisp">(let ((output text))
+  ;; Protect following characters: &#x3C;, >, &#x26;.
+  (setq output (org-html-encode-plain-text output))
+  ;; Handle smart quotes.  Be sure to provide original string since
+  ;; OUTPUT may have been modified.
+  (when (plist-get info :with-smart-quotes)
+    (setq output (org-export-activate-smart-quotes output :html info text)))
+  ...
+  ;; Return value.
+  output)
+</code></pre>
+<h3 id="collect-figures"><code>org-export-collect-figures</code></h3>
+<p>Return a list of all exportable figures in parse tree.</p>
+<p>Used to build a table of figures.</p>
+<p>See also: <a href="#collect-headlines"><code>org-export-collect-headlines</code></a>,
+<a href="#collect-tables"><code>org-export-collect-tables</code></a>, <a href="#collect-listings"><code>org-export-collect-listings</code></a>.</p>
+<h3 id="collect-footnote-definitions"><code>org-export-collect-footnote-definitions</code></h3>
+<p>List actually used footnotes definitions in order to add footnote
+listings throughout the transcoded data.</p>
+<p>Feed it with the whole parse tree to get the full footnote listing.
+Feed it with the current headline to get partial footnote listing
+relative to that headline.</p>
+<p>Number, label, if any, and definition are provided.</p>
+<p>See also: <a href="#footnote-first-reference-p"><code>org-export-footnote-first-reference-p</code></a>,
+<a href="#get-footnote-definition"><code>org-export-get-footnote-definition</code></a>,
+<a href="#get-footnote-number"><code>org-export-get-footnote-number</code></a>.</p>
+<h3 id="collect-headlines"><code>org-export-collect-headlines</code></h3>
+<p>Return a list of all exportable headlines, possibly limited to
+a certain depth.</p>
+<p>Used to build a table of contents, e.g., when a ”#+TOC: headlines
+2” keyword value pair is specified.</p>
+<p>See also: <a href="#collect-tables"><code>org-export-collect-tables</code></a>,
+<a href="#collect-figures"><code>org-export-collect-figures</code></a>, <a href="#collect-listings"><code>org-export-collect-listings</code></a>,
+<a href="#excluded-from-toc-p"><code>org-export-excluded-from-toc-p</code></a>.</p>
+<h3 id="collect-listings"><code>org-export-collect-listings</code></h3>
+<p>Return a list of all exportable source blocks with a caption or
+a name in parse tree.</p>
+<p>Used to build a table of listings, e.g., when a ”#+TOC: listings”
+keyword value pair is specified.</p>
+<p>See also: <a href="#collect-headlines"><code>org-export-collect-headlines</code></a>,
+<a href="#collect-tables"><code>org-export-collect-tables</code></a>, <a href="#collect-figures"><code>org-export-collect-figures</code></a>.</p>
+<h3 id="collect-tables"><code>org-export-collect-tables</code></h3>
+<p>Return a list of all exportable tables with a caption or a name in
+parse tree.</p>
+<p>Used to build a table of tables, e.g., when a ”#+TOC: tables”
+keyword value pair is specified.</p>
+<p>See also: <a href="#collect-headlines"><code>org-export-collect-headlines</code></a>,
+<a href="#collect-figures"><code>org-export-collect-figures</code></a>, <a href="#collect-listings"><code>org-export-collect-listings</code></a>.</p>
+<h3 id="data"><code>org-export-data</code></h3>
+<p>Transcode a given element, object, secondary string or string using
+current back-end.</p>
+<p>It is used primarily to transcode secondary strings, like <code>:title</code>.
+For example <code>beamer</code> back-end uses the following:</p>
+<pre><code class="language-emacs-lisp">(defun org-beamer-template (contents info)
+  (let ((title (org-export-data (plist-get info :title) info)))
+    ...))
+</code></pre>
+<h3 id="data-with-backend"><code>org-export-data-with-backend</code></h3>
+<p>Recursively convert some data (an element, an object, a secondary
+string or a string) using another backend.</p>
+<p>See also: <a href="#with-backend"><code>org-export-with-backend</code></a>,
+<a href="#toc-entry-backend"><code>org-export-toc-entry-backend</code></a>.</p>
+<h3 id="excluded-from-toc-p"><code>org-export-excluded-from-toc-p</code></h3>
+<p>Non-nil if a headline must not appear in a table of contents.</p>
+<p>See also : <a href="#collect-headlines"><code>org-export-collect-headlines</code></a>.</p>
+<h3 id="file-uri"><code>org-export-file-uri</code></h3>
+<p>Return URI associated to a given filename.</p>
+<h3 id="first-sibling-p"><code>org-export-first-sibling-p</code></h3>
+<p>Non-nil if an element or object is the first of its siblings.</p>
+<p>It may be used to know when to start a list if headline’s relative
+level is below the one specified in <a href="#headline-levels"><code>:headline-levels</code></a> property.</p>
+<p>See also: <a href="#get-relative-level"><code>org-export-get-relative-level</code></a>,
+<a href="#number-to-roman"><code>org-export-number-to-roman</code></a>, <a href="#last-sibling-p"><code>org-export-last-sibling-p</code></a>.</p>
+<h3 id="footnote-first-reference-p"><code>org-export-footnote-first-reference-p</code></h3>
+<p>Non-nil when a footnote reference if the first reference relative
+to its definition.</p>
+<p>Used when a back-end needs to attach the footnote definition only
+to the first occurrence of the corresponding label.</p>
+<p>Its scope can be arbitrary narrowed, e.g., to a headline.</p>
+<p>See also: <a href="#collect-footnote-definitions"><code>org-export-collect-footnote-definitions</code></a>,
+<a href="#get-footnote-definition"><code>org-export-get-footnote-definition</code></a>,
+<a href="#get-footnote-number"><code>org-export-get-footnote-number</code></a>.</p>
+<h3 id="format-code"><code>org-export-format-code</code></h3>
+<p>Helper function to format source code.  It applies a given function
+on each line of the code, passing current line number and
+associated code reference label, if any, as arguments.</p>
+<p>See also: <a href="#format-code-default"><code>org-export-format-code-default</code></a>, <a href="#get-loc"><code>org-export-get-loc</code></a>,
+<a href="#unravel-code"><code>org-export-unravel-code</code></a>.</p>
+<h3 id="format-code-default"><code>org-export-format-code-default</code></h3>
+<p>Return contents of a <code>src-block</code> or <code>example-block</code> element in
+a format suited for raw text or verbatim output.  More
+specifically, it takes care of line numbering and labels
+integration depending of element’s switches, but no formatting is
+otherwise applied to source code.</p>
+<p>See also: <a href="#format-code"><code>org-export-format-code</code></a>, <a href="#unravel-code"><code>org-export-unravel-code</code></a>.</p>
+<h3 id="get-alt-title"><code>org-export-get-alt-title</code></h3>
+<p>Return the alternative title for a given headline as a secondary
+string.  If no such title is found, it will return its main title.</p>
+<p>This function is useful when building a table of contents.</p>
+<h3 id="get-caption"><code>org-export-get-caption</code></h3>
+<p>Return the caption of a given element, as a secondary string.  With
+an optional argument, return the short caption instead.</p>
+<p>As an example, <code>ascii</code> back-end, when creating a list of listings,
+uses the following:</p>
+<pre><code class="language-emacs-lisp">(defun org-ascii--list-listings (keyword info)
+  (let ((title (org-ascii--translate "List of Listings" info)))
+    (concat title "\n"
+            ...
+            (mapconcat
+             (lambda (src-block)
+               ...
+               ;; Use short name in priority, if available.
+               (let ((caption (or (org-export-get-caption src-block t)
+                                  (org-export-get-caption src-block))))
+                 (org-export-data caption info)
+                 ...))
+             (org-export-collect-listings info) "\n"))))
+</code></pre>
+<p>See also: <a href="#read-attribute"><code>org-export-read-attribute</code></a>.</p>
+<h3 id="get-category"><code>org-export-get-category</code></h3>
+<p>Return category associated to a given element or object.  Unlike to
+the <code>:category</code> property from headlines and inlinetasks, this
+function handles inheritance and <code>CATEGORY</code> keywords.  Therefore,
+it should be the preferred way to retrieve a category during
+export.</p>
+<p>See also: <a href="#get-node-property"><code>org-export-get-node-property</code></a>.</p>
+<h3 id="get-coderef-format"><code>org-export-get-coderef-format</code></h3>
+<p>Return an appropriate format string for code reference links.</p>
+<p>See also: <a href="#resolve-coderef"><code>org-export-resolve-coderef</code></a>.</p>
+<h3 id="get-date"><code>org-export-get-date</code></h3>
+<p>Returns a date, as a string or a secondary string.  It handles
+<code>org-export-date-timestamp-format</code>.</p>
+<p>Note that <code>:with-date</code> property in <a href="#communication">communication channel</a> should be
+checked prior to use this, as shown in the following example
+extracted from <code>ox-latex.el</code>:</p>
+<pre><code class="language-emacs-lisp">(let ((date (and (plist-get info :with-date) (org-export-get-date info))))
+  (format "\\date{%s}\n" (org-export-data date info)))
+</code></pre>
+<h3 id="get-footnote-definition"><code>org-export-get-footnote-definition</code></h3>
+<p>Retrieve the footnote definition relative to a given footnote
+reference.</p>
+<p>If the footnote definition in inline, it is returned as a secondary
+string.  Otherwise, it is full Org data.</p>
+<p>See also: <a href="#collect-footnote-definitions"><code>org-export-collect-footnote-definitions</code></a>,
+<a href="#footnote-first-reference-p"><code>org-export-footnote-first-reference-p</code></a>,
+<a href="#get-footnote-number"><code>org-export-get-footnote-number</code></a>.</p>
+<h3 id="get-footnote-number"><code>org-export-get-footnote-number</code></h3>
+<p>Return the ordinal attached to a footnote reference or definition.</p>
+<p>Its scope can be arbitrary narrowed, e.g., to get the numbering
+relative to a headline.</p>
+<p>See also: <a href="#collect-footnote-definitions"><code>org-export-collect-footnote-definitions</code></a>,
+<a href="#footnote-first-reference-p"><code>org-export-footnote-first-reference-p</code></a>,
+<a href="#get-footnote-definition"><code>org-export-get-footnote-definition</code></a>.</p>
+<h3 id="get-headline-number"><code>org-export-get-headline-number</code></h3>
+<p>Return the section number of an headline, as a list of integers.</p>
+<p>See also: <a href="#headline-numbered-p"><code>org-export-headline-numbered-p</code></a>,
+<a href="#number-to-roman"><code>org-export-number-to-roman</code></a>.</p>
+<h3 id="get-loc"><code>org-export-get-loc</code></h3>
+<p>Return count of accumulated lines of code from previous
+line-numbered <code>example-block</code> and <code>src-block</code> elements, according
+to current element’s switches.</p>
+<p>In other words, the first line of code in the current block is
+supposed to be numbered as the returned value plus one, assuming
+its <code>:number-lines</code> properties is non-nil.</p>
+<p>See also: <a href="#format-code"><code>org-export-format-code</code></a>, <a href="#unravel-code"><code>org-export-unravel-code</code></a>.</p>
+<h3 id="get-next-element"><code>org-export-get-next-element</code></h3>
+<p>Return element (resp. object or string) after an element
+(resp. object), or nil.</p>
+<p>See also: <a href="#get-parent"><code>org-export-get-parent</code></a>,
+<a href="#get-parent-headline"><code>org-export-get-parent-headline</code></a>,
+<a href="#get-parent-paragraph"><code>org-export-get-parent-paragraph</code></a>,
+<a href="#get-previous-element"><code>org-export-get-previous-element</code></a>.</p>
+<h3 id="get-node-property"><code>org-export-get-node-property</code></h3>
+<p>Return the node property associated to an element or object.  If
+the element is an headline, this is equivalent to reading the
+property with <code>org-element-property</code>.</p>
+<p>Though, this function can optionally handle inheritance.</p>
+<p>See also: <a href="#get-category"><code>org-export-get-category</code></a>.</p>
+<h3 id="get-ordinal"><code>org-export-get-ordinal</code></h3>
+<p>Associate a sequence number to any object or element.  It is meant
+to be used to build captions.</p>
+<p>Also, it could be applied on a fuzzy link’s destination, since such
+links are expected to be replaced with the sequence number of their
+destination, provided they have no description.</p>
+<p>Taken from <code>ascii</code> back-end, the following example shows how fuzzy
+links could be handled :</p>
+<pre><code class="language-emacs-lisp">(let ((type (org-element-property :type link)))
+  (cond
+   ...
+   ;; Do not apply a special syntax on fuzzy links pointing to targets.
+   ((string= type "fuzzy")
+    (let ((destination (org-export-resolve-fuzzy-link link info)))
+      ;; If link has a description, use it.
+      (if (org-string-nw-p desc) desc
+        (when destination
+          (let ((number (org-export-get-ordinal destination info)))
+            (when number
+              (if (atom number) (number-to-string number)
+                (mapconcat 'number-to-string number "."))))))))
+   ...))
+</code></pre>
+<p>See also : <a href="#resolve-fuzzy-link"><code>org-export-resolve-fuzzy-link</code></a></p>
+<h3 id="get-parent"><code>org-export-get-parent</code></h3>
+<p>Return closest element containing current element or object, if
+any.  Return nil otherwise.</p>
+<p>See also: <a href="#get-next-element"><code>org-export-get-next-element</code></a>,
+<a href="#get-parent-paragraph"><code>org-export-get-parent-paragraph</code></a>,
+<a href="#get-parent-headline"><code>org-export-get-parent-headline</code></a>,
+<a href="#get-previous-element"><code>org-export-get-previous-element</code></a>.</p>
+<h3 id="get-parent-paragraph"><code>org-export-get-parent-element</code></h3>
+<p>Return the first element containing provided object, if any.
+Return nil otherwise.</p>
+<p>See also: <a href="#get-parent"><code>org-export-get-parent</code></a>,
+<a href="#get-parent-headline"><code>org-export-get-parent-headline</code></a>,
+<a href="#get-previous-element"><code>org-export-get-previous-element</code></a>, <a href="#get-next-element"><code>org-export-get-next-element</code></a>.</p>
+<h3 id="get-parent-headline"><code>org-export-get-parent-headline</code></h3>
+<p>Return the headline containing provided element or object, if any.
+Return nil otherwise.</p>
+<p>See also: <a href="#get-next-element"><code>org-export-get-next-element</code></a>, <a href="#get-parent"><code>org-export-get-parent</code></a>,
+<a href="#get-parent-paragraph"><code>org-export-get-parent-paragraph</code></a>,
+<a href="#get-previous-element"><code>org-export-get-previous-element</code></a>.</p>
+<h3 id="get-previous-element"><code>org-export-get-previous-element</code></h3>
+<p>Return element (resp. object or string) before an element
+(resp. object), or nil.</p>
+<p>See also: <a href="#get-next-element"><code>org-export-get-next-element</code></a>, <a href="#get-parent"><code>org-export-get-parent</code></a>,
+<a href="#get-parent-headline"><code>org-export-get-parent-headline</code></a>,
+<a href="#get-parent-paragraph"><code>org-export-get-parent-paragraph</code></a>.</p>
+<h3 id="get-reference"><code>org-export-get-reference</code></h3>
+<p>Return unique reference associated to an element or an object, as
+a string.</p>
+<p>Since it consists of alphanumerical characters only, it can be used
+as internal references for back-ends needing them.</p>
+<p>For example, <code>ox-latex.el</code> uses it to translate radio targets into
+<code>\label{}</code> and links to radio targets into <code>\hyperref{}</code>:</p>
+<pre><code class="language-emacs-lisp">(defun org-latex-radio-target (radio-target text info)
+  (format "\\label{%s}%s" (org-export-get-reference radio-target info) text))
+
+(defun org-latex-link (link desc info)
+  (let ((type (org-element-property :type link)))
+    (cond
+     ...
+     ((string= type "radio")
+      (let ((destination (org-export-resolve-radio-link link info)))
+        (if (not destination) desc
+          (format "\\hyperref[%s]{%s}"
+                  (org-export-get-reference destination info)
+                  desc))))
+     ...)))
+</code></pre>
+<p>See also: <a href="#inline-image-p"><code>org-export-inline-image-p</code></a>,
+<a href="#resolve-id-link"><code>org-export-resolve-id-link</code></a>, <a href="#resolve-fuzzy-link"><code>org-export-resolve-fuzzy-link</code></a>,
+<a href="#resolve-radio-link"><code>org-export-resolve-radio-link</code></a>.</p>
+<h3 id="get-relative-level"><code>org-export-get-relative-level</code></h3>
+<p>Return headline level, relatively to the lower headline level in
+the parsed tree.  It is meant to be used over <code>:level</code> headline’s
+property.</p>
+<p>See also:<a href="#first-sibling-p"><code>org-export-first-sibling-p</code></a>,
+<a href="#get-headline-number"><code>org-export-get-headline-number</code></a>,<a href="#headline-numbered-p"><code>org-export-headline-numbered-p</code></a>,
+<a href="#last-sibling-p"><code>org-export-last-sibling-p</code></a>.</p>
+<h3 id="get-table-cell-at"><code>org-export-get-table-cell-at</code></h3>
+<p>Return exportable cell object at a given position, or nil.  Hence,
+position <code>(0 . 0)</code> will always point to the first exportable cell
+in the table.</p>
+<p>See also: <a href="#table-cell-address"><code>org-export-table-cell-address</code></a>,
+<a href="#table-dimensions"><code>org-export-table-dimensions</code></a>.</p>
+<h3 id="get-tags"><code>org-export-get-tags</code></h3>
+<p>Return list of exportable tags attached to a given headline or
+inlinetask element.  With an optional argument, tags are inherited
+from parent headlines and <code>FILETAGS</code> keywords.</p>
+<p>In particular, it removes select tags and exclude tags. The
+function also accepts an arbitrary list of tags for further
+cleaning.</p>
+<p>For example, <code>latex</code> back-end uses the following snippet in the
+inlinetask transcode function.</p>
+<pre><code class="language-emacs-lisp"> (let ((title (org-export-data (org-element-property :title inlinetask) info))
+    (todo (and (plist-get info :with-todo-keywords)
+               (let ((todo (org-element-property :todo-keyword inlinetask)))
+                 (and todo (org-export-data todo info)))))
+    (todo-type (org-element-property :todo-type inlinetask))
+    (tags (and (plist-get info :with-tags)
+               (org-export-get-tags inlinetask info)))
+    (priority (and (plist-get info :with-priority)
+                   (org-element-property :priority inlinetask))))
+...)
+</code></pre>
+<h3 id="headline-numbered-p"><code>org-export-headline-numbered-p</code></h3>
+<p>Non nil when a given headline should be numbered.</p>
+<p>See also: <a href="#get-headline-number"><code>org-export-get-headline-number</code></a>,
+<a href="#get-relative-level"><code>org-export-get-relative-level</code></a>.</p>
+<h3 id="inline-image-p"><code>org-export-inline-image-p</code></h3>
+<p>Non-nil when the link provided should be considered as an inline
+image.  Note that it always return nil when the link has
+a description.</p>
+<p>It accepts an optional set of rules in order to tweak the
+definition of an inline image, which is, by default, any link
+targeting a local file whose extension is either “png”, “jpeg”,
+“jpg”, “gif”, “tiff”, “tif”, “xbm”, “xpm”, “pbm”, “pgm” or “ppm”.</p>
+<p>A set of rules consists in an alist whose key is a type of link, as
+a string, and whose value is a regexp matching link’s path.  As an
+example, <code>html</code> back-end uses the following rules:</p>
+<pre><code class="language-emacs-lisp">'(("file" . "\\.\\(jpeg\\|jpg\\|png\\|gif\\|svg\\)\\'")
+  ("http" . "\\.\\(jpeg\\|jpg\\|png\\|gif\\|svg\\)\\'")
+  ("https" . "\\.\\(jpeg\\|jpg\\|png\\|gif\\|svg\\)\\'"))
+</code></pre>
+<p>See also: <a href="#get-reference"><code>org-export-get-reference</code></a>,
+<a href="#get-coderef-format"><code>org-export-get-coderef-format</code></a>, <a href="#resolve-fuzzy-link"><code>org-export-resolve-fuzzy-link</code></a>.</p>
+<h3 id="last-sibling-p"><code>org-export-last-sibling-p</code></h3>
+<p>Non-nil if an element or object is the last of its siblings.</p>
+<p>It may be used to know when to close a list if headline’s relative
+level is below the one specified in <a href="#headline-levels"><code>:headline-levels</code></a> property.</p>
+<p>See also: <a href="#get-relative-level"><code>org-export-get-relative-level</code></a>,
+<a href="#number-to-roman"><code>org-export-number-to-roman</code></a>, <a href="#first-sibling-p"><code>org-export-first-sibling-p</code></a>.</p>
+<h3 id="number-to-roman"><code>org-export-number-to-roman</code></h3>
+<p>Convert numbers to roman numbers. It can be used to provide roman
+numbering for headlines and numbered lists.</p>
+<p>See also: <a href="#get-headline-number"><code>org-export-get-headline-number</code></a>.</p>
+<h3 id="read-attribute"><code>org-export-read-attribute</code></h3>
+<p>Read a property from a given element as a plist.  It can be used to
+normalize affiliated keywords’ syntax.  For example, the following
+affiliated keywords:</p>
+<pre><code class="language-org">#+ATTR_HTML: :width 10 :height 5
+#+ATTR_HTML: :file filename.ext
+</code></pre>
+<p>would be returned as:</p>
+<pre><code class="language-emacs-lisp">'(:width "10" :height "5" :file "filename.ext")
+</code></pre>
+<p>See also: <a href="#get-caption"><code>org-export-get-caption</code></a>.</p>
+<h3 id="resolve-coderef"><code>org-export-resolve-coderef</code></h3>
+<p>Search for a code reference within <code>src-block</code> and <code>example-block</code>
+elements.  Return corresponding –possibly accumulated– line
+number, or reference itself, depending on container’s switches.</p>
+<p>See also : <a href="#get-coderef-format"><code>org-export-get-coderef-format</code></a>,
+<a href="#resolve-fuzzy-link"><code>org-export-resolve-fuzzy-link</code></a>, <a href="#resolve-id-link"><code>org-export-resolve-id-link</code></a>,
+<a href="#resolve-radio-link"><code>org-export-resolve-radio-link</code></a>.</p>
+<h3 id="resolve-fuzzy-link"><code>org-export-resolve-fuzzy-link</code></h3>
+<p>Search destination of a fuzzy link — i.e. it has a <code>fuzzy</code> <code>:type</code>
+attribute – within the parsed tree, and return that element or
+object.</p>
+<p>See also: <a href="#get-ordinal"><code>org-export-get-ordinal</code></a>, <a href="#resolve-coderef"><code>org-export-resolve-coderef</code></a>,
+<a href="#resolve-id-link"><code>org-export-resolve-id-link</code></a>, <a href="#resolve-radio-link"><code>org-export-resolve-radio-link</code></a>,
+<a href="#get-reference"><code>org-export-get-reference</code></a>.</p>
+<h3 id="resolve-id-link"><code>org-export-resolve-id-link</code></h3>
+<p>Search headline targeted by an id link — i.e. it has a <code>id</code> or
+<code>custom-id</code> <code>:type</code> attribute — within the parse tree.  Return
+the matching headline in the tree, the name of the external file,
+as a string.</p>
+<p>See also : <a href="#resolve-coderef"><code>org-export-resolve-coderef</code></a>,
+<a href="#resolve-fuzzy-link"><code>org-export-resolve-fuzzy-link</code></a>, <a href="#resolve-radio-link"><code>org-export-resolve-radio-link</code></a>,
+<a href="#get-reference"><code>org-export-get-reference</code></a>.</p>
+<h3 id="resolve-radio-link"><code>org-export-resolve-radio-link</code></h3>
+<p>Return first radio target object matching a radio link — that is
+with a <code>radio</code> <code>:type</code> attribute — in the parse tree, or nil.</p>
+<p>Typically, target’s contents are exported through <code>org-export-data</code>
+and used as link description, as in the following excerpt from
+<code>ox-latex.el</code>:</p>
+<pre><code class="language-emacs-lisp">(defun org-latex-link (link desc info)
+  (let* ((type (org-element-property :type link))
+         ...)
+    (cond
+     ...
+     ((string= type "radio")
+      (let ((destination (org-export-resolve-radio-link link info)))
+        (when destination
+          (format "\\hyperref[%s]{%s}"
+                  (org-export-get-reference destination info)
+                  (org-export-data (org-element-contents destination) info)))))
+     ...)))
+</code></pre>
+<p>See also : <a href="#resolve-coderef"><code>org-export-resolve-coderef</code></a>,
+<a href="#resolve-fuzzy-link"><code>org-export-resolve-fuzzy-link</code></a>, <a href="#resolve-id-link"><code>org-export-resolve-id-link</code></a>,
+<a href="#get-reference"><code>org-export-get-reference</code></a>.</p>
+<h3 id="table-cell-address"><code>org-export-table-cell-address</code></h3>
+<p>Return row and column of a given cell object.  Positions are
+0-indexed and only exportable rows and columns are considered.  The
+function returns nil if called on a non-exportable cell.</p>
+<p>See also: <a href="#get-table-cell-at"><code>org-export-get-table-cell-at</code></a>,
+<a href="#table-dimensions"><code>org-export-table-dimensions</code></a>.</p>
+<h3 id="table-cell-alignment"><code>org-export-table-cell-alignment</code></h3>
+<p>Return expected alignment for the contents of a given cell object.
+It can be either <code>left</code>, <code>right</code> or <code>center</code>.</p>
+<p>See also: <a href="#table-cell-borders"><code>org-export-table-cell-borders</code></a>,
+<a href="#table-cell-width"><code>org-export-table-cell-width</code></a>.</p>
+<h3 id="table-cell-borders"><code>org-export-table-cell-borders</code></h3>
+<p>Indicate expected borders for a given cell object.  When non-nil,
+return value is a list of symbols among <code>top</code>, <code>bottom</code>, <code>above</code>,
+<code>below</code>, <code>left</code> and <code>right</code>.</p>
+<p>Special values <code>top</code> and <code>bottom</code> only happen for cells in,
+respectively, the first and the last exportable rows.</p>
+<p>See also: <a href="#table-cell-alignment"><code>org-export-table-cell-alignment</code></a>,
+<a href="#table-cell-width"><code>org-export-table-cell-width</code></a>.</p>
+<h3 id="table-cell-ends-colgroup-p"><code>org-export-table-cell-ends-colgroup-p</code></h3>
+<p>Non-nil when a table cell object ends a column group.</p>
+<p>See also: <a href="#table-cell-starts-colgroup-p"><code>org-export-table-cell-starts-colgroup-p</code></a>.</p>
+<h3 id="table-cell-starts-colgroup-p"><code>org-export-table-cell-starts-colgroup-p</code></h3>
+<p>Non-nil when a table cell object starts a column group.</p>
+<p>See also: <a href="#table-cell-ends-colgroup-p"><code>org-export-table-cell-ends-colgroup-p</code></a>.</p>
+<h3 id="table-cell-width"><code>org-export-table-cell-width</code></h3>
+<p>Return expected width for contents of a given cell object.</p>
+<p>Only width specified explicitly through meta-data is considered.
+If no such information can be found, return nil instead.</p>
+<p>Some back-end may still need to know the actual width of exported
+cell’s contents in order to compute column’s width.  In that case,
+every cell in the column must be transcoded in order to find the
+widest one.  The snippet below, extracted from <code>ox-ascii.el</code>
+illustrates a possible implementation.</p>
+<pre><code class="language-emacs-lisp">(or (org-export-table-cell-width table-cell info)
+    (let* ((max-width 0)
+           (table (org-export-get-parent-table table-cell info))
+           (specialp (org-export-table-has-special-column-p table))
+           (col (cdr (org-export-table-cell-address table-cell info))))
+      (org-element-map
+       table 'table-row
+       (lambda (row)
+         ;; For each exportable row, get the cell at column COL and
+         ;; transcode its contents.  Then compare its length with
+         ;; MAX-WIDTH and keep the greater of two.
+         (setq max-width
+               (max (length
+                     (org-export-data
+                      (org-element-contents
+                       (elt (if specialp (car (org-element-contents row))
+                              (org-element-contents row))
+                            col))
+                      info))
+                    max-width)))
+       info)
+      max-width))
+</code></pre>
+<p>See also: <a href="#table-cell-alignment"><code>org-export-table-cell-alignment</code></a>,
+<a href="#table-cell-borders"><code>org-export-table-cell-borders</code></a>.</p>
+<h3 id="table-dimensions"><code>org-export-table-dimensions</code></h3>
+<p>Return the number of exportable rows and columns in a given table.</p>
+<p>See also: <a href="#get-table-cell-at"><code>org-export-get-table-cell-at</code></a>,
+<a href="#table-cell-address"><code>org-export-table-cell-address</code></a>.</p>
+<h3 id="table-has-header-p"><code>org-export-table-has-header-p</code></h3>
+<p>Non-nil when table has at least two row groups.</p>
+<p>See also: <a href="#table-has-special-column-p"><code>org-export-table-has-special-column-p</code></a>,
+<a href="#table-row-is-special-p"><code>org-export-table-row-is-special-p</code></a>.</p>
+<h3 id="table-has-special-column-p"><code>org-export-table-has-special-column-p</code></h3>
+<p>Non-nil when first column in the table only contains meta-data.</p>
+<p>See also: <a href="#table-has-header-p"><code>org-export-table-has-header-p</code></a>,
+<a href="#table-row-is-special-p"><code>org-export-table-row-is-special-p</code></a>.</p>
+<h3 id="table-row-ends-header-p"><code>org-export-table-row-ends-header-p</code></h3>
+<p>Non-nil when a table row element ends table’s header.</p>
+<p>See also: <a href="#table-row-ends-rowgroup-p"><code>org-export-table-row-ends-rowgroup-p</code></a>,
+<a href="#table-row-group"><code>org-export-table-row-group</code></a>,
+<a href="#table-row-starts-header-p"><code>org-export-table-row-starts-header-p</code></a>,
+<a href="#table-row-starts-rowgroup-p"><code>org-export-table-row-starts-rowgroup-p</code></a>,
+<a href="#table-row-in-header-p"><code>org-export-table-row-in-header-p</code></a>.</p>
+<h3 id="table-row-ends-rowgroup-p"><code>org-export-table-row-ends-rowgroup-p</code></h3>
+<p>Non-nil when a a table row element ends a rowgroup, header
+included.</p>
+<p>See also: <a href="#table-row-ends-header-p"><code>org-export-table-row-ends-header-p</code></a>,
+<a href="#table-row-group"><code>org-export-table-row-group</code></a>,
+<a href="#table-row-starts-header-p"><code>org-export-table-row-starts-header-p</code></a>,
+<a href="#table-row-starts-rowgroup-p"><code>org-export-table-row-starts-rowgroup-p</code></a>.</p>
+<h3 id="table-row-group"><code>org-export-table-row-group</code></h3>
+<p>Return row group number for a given table row element.</p>
+<p>See also: <a href="#table-row-ends-header-p"><code>org-export-table-row-ends-header-p</code></a>,
+<a href="#table-row-ends-rowgroup-p"><code>org-export-table-row-ends-rowgroup-p</code></a>,
+<a href="#table-row-starts-header-p"><code>org-export-table-row-starts-header-p</code></a>,
+<a href="#table-row-starts-rowgroup-p"><code>org-export-table-row-starts-rowgroup-p</code></a>.</p>
+<h3 id="table-row-in-header-p"><code>org-export-table-row-in-header-p</code></h3>
+<p>Non-nil if a given table row element belongs to table’s header.
+Always nil if the table contains no header or the row is
+a separator.</p>
+<p>See also: <a href="#table-has-header-p"><code>org-export-table-has-header-p</code></a>,
+<a href="#table-row-starts-header-p"><code>org-export-table-row-starts-header-p</code></a>,
+<a href="#table-row-ends-header-p"><code>org-export-table-row-ends-header-p</code></a>.</p>
+<h3 id="table-row-is-special-p"><code>org-export-table-row-is-special-p</code></h3>
+<p>Non-nil if a given table row element only contains meta-data.</p>
+<p>See also: <a href="#table-has-header-p"><code>org-export-table-has-header-p</code></a>,
+<a href="#table-has-special-column-p"><code>org-export-table-has-special-column-p</code></a>.</p>
+<h3 id="table-row-starts-header-p"><code>org-export-table-row-starts-header-p</code></h3>
+<p>Non-nil when a table row element starts table’s header.</p>
+<p>See also: <a href="#table-row-ends-header-p"><code>org-export-table-row-ends-header-p</code></a>,
+<a href="#table-row-ends-rowgroup-p"><code>org-export-table-row-ends-rowgroup-p</code></a>,
+<a href="#table-row-group"><code>org-export-table-row-group</code></a>,
+<a href="#table-row-starts-rowgroup-p"><code>org-export-table-row-starts-rowgroup-p</code></a>,
+<a href="#table-row-in-header-p"><code>org-export-table-row-in-header-p</code></a>.</p>
+<h3 id="table-row-starts-rowgroup-p"><code>org-export-table-row-starts-rowgroup-p</code></h3>
+<p>Non-nil when a table row element starts a rowgroup, header
+included.</p>
+<p>See also: <a href="#table-row-ends-header-p"><code>org-export-table-row-ends-header-p</code></a>,
+<a href="#table-row-ends-rowgroup-p"><code>org-export-table-row-ends-rowgroup-p</code></a>,
+<a href="#table-row-group"><code>org-export-table-row-group</code></a>,
+<a href="#table-row-starts-header-p"><code>org-export-table-row-starts-header-p</code></a>.</p>
+<h3 id="toc-entry-backend"><code>org-export-toc-entry-backend</code></h3>
+<p>Generate an anonymous export back-end appropriate for entries in table
+of contents.</p>
+<p>See also: <a href="#data-with-backend"><code>org-export-data-with-backend</code></a>.</p>
+<h3 id="org-export-translate"><code>org-export-translate</code></h3>
+<p>Translate a string, i.e. “Table of Contents”, according to language
+specification.</p>
+<p>Refer to <code>org-export-dictionary</code> variable for the list of all
+supported strings.</p>
+<h3 id="unravel-code"><code>org-export-unravel-code</code></h3>
+<p>Clean source code from an <code>example-block</code> or a <code>src-block</code> element
+and extract code references out of it.</p>
+<p>Its purpose is to allow to transform raw source code first and then
+integrate line numbers or references back into the final output.
+That final task can be achieved with the help of
+<code>org-export-format-code</code> function.</p>
+<p>See also: <a href="#format-code"><code>org-export-format-code</code></a>,
+<a href="#format-code-default"><code>org-export-format-code-default</code></a>, <a href="#get-loc"><code>org-export-get-loc</code></a>.</p>
+<h3 id="with-backend"><code>org-export-with-backend</code></h3>
+<p>Export an element or object using locally another back-end.</p>
+<p>In a derived back-end, it may be used as a fall-back function once
+all specific cases have been handled.  Thus, <code>beamer</code> back-end,
+derived from <code>latex</code>, takes care of every internal link type and
+delegates everything else to its parent back-end:</p>
+<pre><code class="language-emacs-lisp">(let ((type (org-element-property :type link))
+      (path (org-element-property :path link)))
+  (cond
+   ;; Handle every internal link type, but be careful to ignore "id"
+   ;; type links pointing to external files.
+   ((equal type "radio") ...)
+   ((and (member type '("custom-id" "fuzzy" "id"))
+         (let ((destination (if (string= type "fuzzy")
+                                (org-export-resolve-fuzzy-link link info)
+                              (org-export-resolve-id-link link info))))
+           (pcase (org-element-type destination)
+             (`headline ...)
+             (`target ...)))))
+   ;; Otherwise, use `latex' back-end.
+   (t (org-export-with-backend 'latex link contents info))))
+</code></pre>
+<p>See also: <a href="#data-with-backend"><code>org-export-data-with-backend</code></a>.</p>
+<h3 id="timestamp-translate"><code>org-timestamp-translate</code></h3>
+<p>Translate a timestamp object according to
+<code>org-time-stamp-custom-formats</code>, which see.</p>
+<p>It should be used whenever exported timestamps are expected to
+comply to user-defined display.  As an example, in the following
+excerpt from, <code>ox-html.el</code>, the timestamp object is first turned
+into a custom string:</p>
+<pre><code class="language-emacs-lisp">(defun org-html-timestamp (timestamp contents info)
+  "Transcode a TIMESTAMP object from Org to HTML.
+CONTENTS is nil.  INFO is a plist holding contextual
+information."
+  (let ((value (org-html-plain-text
+                (org-timestamp-translate timestamp) info)))
+    (format "&#x3C;span class=\"timestamp-wrapper\">&#x3C;span class=\"timestamp\">%s&#x3C;/span>&#x3C;/span>"
+            (replace-regexp-in-string "--" "&#x26;ndash;" value))))
+</code></pre>
+<h2 id="interactive">Interactive functions</h2>
+<p>Once the back-end is complete, interactive functions have to be
+offered for the user to use it.  Depending on the desired output,
+three functions are provided to help in this task, along with
+a wrapper function allowing to make export asynchronous.</p>
+<p>Hence, <code>org-export-to-buffer</code> may be used if the expected output is
+a temporary buffer whereas <code>org-export-to-file</code> will be used when
+exporting to a file.  In the latter case,
+<code>org-export-output-file-name</code> can be useful to guess the name of the
+output file — though, don’t use it in an external process, since
+it will ask the user for a file name when guessing fails.  At the
+lowest level, <code>org-export-as</code> returns the output as a string.</p>
+<p>While it is suggested to have a look at their respective docstring,
+the following examples illustrate how to combine all these
+functions:</p>
+<ol>
+<li>
+<p>Export to a temporary buffer:</p>
+<pre><code class="language-emacs-lisp">;;;###autoload
+(defun org-latex-export-as-latex
+(&#x26;optional async subtreep visible-only body-only ext-plist)
+  (interactive)
+  (org-export-to-buffer 'latex "*Org LATEX Export*"
+    async subtreep visible-only body-only ext-plist (lambda () (LaTeX-mode))))
+</code></pre>
+</li>
+<li>
+<p>Export to a file:</p>
+<pre><code class="language-emacs-lisp">;;;###autoload
+(defun org-latex-export-to-latex
+  (&#x26;optional async subtreep visible-only body-only ext-plist)
+  (interactive)
+  (let ((outfile (org-export-output-file-name ".tex" subtreep)))
+    (org-export-to-file 'latex outfile
+      async subtreep visible-only body-only ext-plist)))
+</code></pre>
+</li>
+</ol>
+<p>It may also be interesting to provide a publishing function for the
+back-end.  Such function must accept three arguments: a plist
+containing properties relative to the project being exported, the
+name of the current file being published and the publishing
+directory.  It often is a simple wrapper around <code>org-publish-org-to</code>
+function defined in <code>ox-publish.el</code>, as shown in the following
+example:</p>
+<pre><code class="language-emacs-lisp">(defun org-html-publish-to-html (plist filename pub-dir)
+  (org-publish-org-to 'html filename ".html" plist pub-dir))
+</code></pre>

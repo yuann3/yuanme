@@ -1,0 +1,184 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>Cette page est une traduction du <a href="http://dto.freeshell.org/notebook/OrgTutorial.html">tutoriel original</a> de <a href="http://dto.freeshell.org/notebook/">David O’Toole</a>.</p>
+<p>Dernière mise à jour: &#x3C;10-07-2009></p>
+<p><a href="../index.org">{Retour à l’index de Worg}</a></p>
+<h2 id="introduction">Introduction</h2>
+<p>Org-mode est un gestionnaire d’informations personnelles pour Emacs.
+Il fonctionne avec Emacs.  Ce document a pour but de donner au lecteur
+un aperçu de org-mode et de lui apprendre son usage élémentaire, avec
+des instructions pas-à-pas et beaucoup de copies d’écran.  Il ne
+remplace pas le <a href="https://orgmode.org/manual/index.html">manuel</a> (en anglais) et seul un sous-ensemble des
+fonctionnalités d’org-mode est décrit.</p>
+<p>Ce document existe aussi en <a href="http://hpcgi1.nifty.com/spen/index.cgi?OrgTutorial">japonais</a>, en <a href="http://hokmen.chan.googlepages.com/OrgTutorial.en-cn.html">chinois</a> et en <a href="http://jmjeong.com/index.php%3Fdisplay%3DEmacs/OrgMode">coréen</a>.  Un merci
+particulier aux traducteurs.  Cette version française est une traduction
+de la <a href="http://dto.freeshell.org/notebook/OrgTutorial.html">version originale anglaise</a> de <a href="http://dto.freeshell.org">David O’Toole</a>.</p>
+<h3 id="obtenir-org-mode">Obtenir org-mode</h3>
+<p>Org-mode fait partie de Emacs 22 et Emacs 23, donc si vous avez une
+version moderne d’Emacs vous avez Org-mode.</p>
+<p>Sinon, vous pouvez télécharger Org-mode depuis <a href="https://orgmode.org/">son site web</a>, le
+dépaqueter et faire pointer le <code>load-path</code> d’Emacs vers le répertoire où
+se trouver Org-mode.</p>
+<pre><code>(add-to-list 'load-path "REPERTOIRE_OU_VOUS_AVEZ_DECOMPRESSE_ORGMODE/lisp")
+</code></pre>
+<h3 id="installation">Installation</h3>
+<p>Ajoutez les lignes suivantes à votre .emacs :</p>
+<pre><code>(require 'org)
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
+</code></pre>
+<p>Cela va assurer le chargement de org, et définir quelques raccourcis
+claviers globaux.  Nous décrirons “org-store-link” et “org-agenda”
+plus loin dans ce document.</p>
+<p>Encore une chose.  Il est préférable de conserver vos fichiers org
+dans un répertoire à part.  Je recommande d’utiliser ~/org.</p>
+<h2 id="les-bases">Les bases</h2>
+<p>Cette section illustre l’usage élémentaire de org-mode en montrant
+comment j’ai utilisé org-mode pour créer ce document.</p>
+<h3 id="créer-un-nouveau-fichier">Créer un nouveau fichier</h3>
+<p>Si vous avez configuré votre fichier d’initialisation d’Emacs comme
+suggéré ci-dessus, Emacs devrait passer en mode org-mode dès que vous
+visitez ou créez un fichier dont l’extension est “.org”.</p>
+<p>J’ai créé un nouveau fichier nommé “OrgTutorial.org” et vu
+l’indication “Org” dans la modeline, indiquant que nous sommes bien
+dans le mode org-mode.</p>
+<h3 id="une-simple-liste-de-tâches">Une simple liste de tâches</h3>
+<p>J’ai d’abord entré une <strong>titre de section</strong> appelé “Tasks” pour y placer
+les tâches.  Ce n’est pas nécessaire mais c’est souvent pratique,
+surtout quand vous voulez garder la liste des tâches séparée du corps
+du document que vous écrivez.</p>
+<p>Les titres de sections de premier niveau commencent avec un astérisque;
+ceux des sections de deuxième niveau avec deux astérisque, et ainsi de
+suite.</p>
+<p>Dans org-mode, les entrées TODO sont toujours des titres de section.
+J’ai saisie une entrée TODO pour “Start new org file for tutorial.”</p>
+<p><img src="../images/dto/tutorial-1.png" alt="tutorial-1.png"></p>
+<p>C’est un peu stupide, parce que nous avons déjà commencé un nouveau
+fichier.  Disons donc qu’on va marquer cet élément TODO comme DONE en
+déplaçant le curseur sur cette ligne et en pressant <strong>C-c C-t</strong>, ce qui
+envoie la commande <strong>org-todo</strong>.</p>
+<p>Voici le résultat :</p>
+<p><img src="../images/dto/tutorial-2.png" alt="tutorial-2.png"></p>
+<p>Remarquez comme org-mode utilise un marqueur temporel (“timestamp”)
+pour enregistrer le moment où un élément TODO a été achevé.</p>
+<p>Ajoutons plus d’éléments TODO. Positionnez le curseur sur la ligne
+suivante et pressez <strong>M-shift-RET</strong> pour
+lancer <strong>org-insert-todo-heading</strong>.  Vous pouvez presser le raccourci
+pour ajouter plusieurs TODOs.</p>
+<p><img src="../images/dto/tutorial-3.png" alt="tutorial-3.png"></p>
+<h3 id="utiliser-plusieurs-titres-de-sections-pour-structurer-un-document">Utiliser plusieurs titres de sections pour structurer un document</h3>
+<p>Souvent, la meilleure façon d’organiser vos idées est d’en visualiser
+la structure.  Ma prochaine étape consiste à mettre en relief les
+différents sujets de ce tutoriel.  En faisant ça, vous divisez cette
+page blanche intimidante en morceaux plus petits qu’il devient plus
+facile de remplir.</p>
+<p>Souvenez-vous qu’une section de premier niveau commence par un
+astérisque, et une section de deuxième niveau par deux astérisque.  Si vous
+avez besoin d’une plus grande profondeur de niveau, allez-y, utilisez
+trois astérisque ou plus !</p>
+<p>Voici à quoi ça ressemble une fois que j’ai fini de structurer le
+document :</p>
+<p><img src="../images/dto/tutorial-4.png" alt="tutorial-4.png"></p>
+<p>Remarquez que j’ai noté “Outline document” comme DONE une fois que
+j’ai fini.</p>
+<h3 id="remplir-les-sections">Remplir les sections</h3>
+<p>Vous pouvez facilement ajouter le corps du texte sous les titres de
+section.</p>
+<p><img src="../images/dto/tutorial-5.png" alt="tutorial-5.png"></p>
+<h3 id="les-liens-vers-dautres-ressources">Les liens vers d’autres ressources</h3>
+<p>Dans la section sur “Obtaining Org-mode” j’ai besoin de créer un lien
+vers le site d’org-mode.  Le lien se fait à l’aide d’une syntaxe
+spéciale utilisant les crochets droits :</p>
+<p><img src="../images/dto/tutorial-6.png" alt="tutorial-6.png"></p>
+<pre><code>[[sec-1.2][description]]
+</code></pre>
+<p>Voyez comment j’ai d’abord saisi le lien et sa description, puis
+laissé ouvert le dernier crochet :</p>
+<p>Ensuite je saisi le dernier crochet, le lien “disparaît” et seule la
+description apparaît.</p>
+<p><img src="../images/dto/tutorial-7.png" alt="tutorial-7.png"></p>
+<p>Essayez de déplacer le curseur au-dessus du lien et pressez <strong>C-c C-o</strong>
+pour <strong>org-open-at-point</strong>.</p>
+<p>Vous pouvez aussi créer des liens vers des fichiers locaux.  Essayez
+d’ouvrir un autre fichier - par exemple votre fichier de configuration
+d’Emacs.  Pressez <strong>C-c l</strong> pour lancer la commande <strong>org-store-link</strong>.
+Vous verrez un message apparaître disant qu’un lien pointant vers
+l’emplacement courant dans le fichier a été enregistré.</p>
+<p>Maintenant revenez à votre buffer org-mode et copiez le lien en
+utilisant <strong>C-c C-l</strong> pour lancer la commande <strong>org-insert-link</strong>.  (Vous
+aurez peut-être besoin d’utiliser les flèches pour faire défiler les
+liens et trouver le bon.)</p>
+<h3 id="survol-dun-document">Survol d’un document</h3>
+<p>Désormais, mon document est en train de devenir plus long et ne peut
+plus tenir sur un seul écran.  <strong>Org-mode</strong> vous permet facilement de
+survoler votre document en appuyant sur <strong>shift-TAB</strong>.</p>
+<p><img src="../images/dto/tutorial-9.png" alt="tutorial-9.png"></p>
+<p>Notez que seules les sections de plus haut niveau apparaissent.  Vous
+pouvez appuyer à nouveau sur <strong>shift-TAB</strong> pour voir toutes les
+sections, y compris les éléments TODO :</p>
+<p><img src="../images/dto/tutorial-10.png" alt="tutorial-10.png"></p>
+<p>Appuyez encore pour retourner à l’affichage normal de votre document,
+avec le corps des sections apparents :</p>
+<p><img src="../images/dto/tutorial-11.png" alt="tutorial-11.png"></p>
+<h3 id="ajouter-une-note-à-une-tâche">Ajouter une note à une tâche</h3>
+<p>Vous pouvez ajouter autant de texte que vous le voulez sous le titre
+d’un élément TODO.  En fait, vous pouvez même avoir des sous-sections
+sous un TODO et des TODOs sous les TODOs !</p>
+<p>La possibilité d’annoter les tâches permet de rassembler facilement
+les liens et réflexions associées à la tâche.  La possibilité
+d’insérer des tâches dans les tâches est très pratique pour modéliser
+le suivi du travail – assez souvent, une grande tâche est divisée en
+sous-tâches plus petites que vous voulez pouvoir marquer comme “DONE”
+au fur et à mesure que vous les accomplissez.</p>
+<h2 id="un-avant-goût-des-fonctionnalités-avancées">Un avant-goût des fonctionnalités avancées</h2>
+<p>Avant de finir, nous allons toucher à la liste globale TODO, la
+planification et les fonctionnalités de l’agenda.  Celles-ci sont
+utilisées pour arranger différents éléments TODO et les afficher par
+ordre de priorité et par ordre chronologique.  Vous pouvez aussi vous
+en servir pour voir quelles tâches ont été accomplies, et quand.</p>
+<h3 id="configuration">Configuration</h3>
+<p>Vous devez d’abord définir la variable <strong>org-agenda-files</strong> de sorte
+qu’org-mode sache dans quels fichiers chercher pour les élements TODOs
+et les éléments planifiés.</p>
+<p>Imaginons que vous avez déjà plusieurs fichiers org – disons un pour
+le travail (“work”), un pour la maison (“home”) et un pour l’école
+(“school”).</p>
+<p>Ainsi vous ajouterez ceci dans votre fichier d’initialisation
+d’Emacs :</p>
+<pre><code>(setq org-agenda-files (list "~/org/work.org"
+                             "~/org/school.org" 
+                             "~/org/home.org"))
+</code></pre>
+<h3 id="la-liste-todo-globale">La liste TODO globale</h3>
+<p>Pressez <strong>C-c a t</strong> pour entrer dans la liste globale TODO.  Org-mode va
+scanner les fichiers de <strong>org-agenda-files</strong> et présenter une liste de
+tous les éléments TODO encore en cours :</p>
+<p><img src="../images/dto/tutorial-16.png" alt="tutorial-16.png"></p>
+<p>Vous pouvez déplacer le curseur entre les différents éléments TODO, et
+appuyer sur “t” pour marquer un élément comme DONE, ou bien <strong>RET</strong> pour
+ouvrir le fichier dans lequel cet élément se trouve.</p>
+<h3 id="planifier-des-tâches-et-utiliser-lagenda">Planifier des tâches et utiliser l’agenda</h3>
+<p>Disons que je veux planifier “Finish document” pour aujourd’hui.  Je
+déplace le curseur jusqu’à la ligne contenant l’élément TODO “Finish
+document”, et j’appuie sur <strong>C-c C-s</strong> pour lancer la
+commande <strong>org-schedule</strong>.  Le calendrier surgit et je peux soit saisir
+la date, soit cliquer dessus :</p>
+<p><img src="../images/dto/tutorial-12.png" alt="tutorial-12.png"></p>
+<p>Une fois que je sélectionne la date, org-mode insère un marqueur
+temporel (“timestamp”) de planification après l’élément TODO :</p>
+<p><img src="../images/dto/tutorial-13.png" alt="tutorial-13.png"></p>
+<p>Maintenant sauvegardez votre fichier et pressez <strong>C-c a a</strong>
+pour <strong>org-agenda</strong>.  Les éléments planifiés pour cette semaine
+s’affichent :</p>
+<p><img src="../images/dto/tutorial-14.png" alt="tutorial-14.png"></p>
+<p>Maintenant appuyez sur “l” (L en bas-de-casse) pour afficher les
+journaux (“log”).   Cela affiche toutes les tâches finies et la date à
+laquelle elle ont été achevées.</p>
+<p><img src="../images/dto/tutorial-15.png" alt="tutorial-15.png"></p>
+<h2 id="adieu">Adieu</h2>
+<p>Ce n’était qu’un petit aperçu de org-mode.  Encore plus de
+réjouissances vous attendent dans le <a href="https://orgmode.org/manual/index.html">manuel en ligne d’org-mode.</a></p>
+<p><a href="http://bzg.fr">Retour à la page Bastien Guerry</a></p>

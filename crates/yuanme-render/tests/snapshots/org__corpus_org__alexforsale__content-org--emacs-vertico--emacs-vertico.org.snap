@@ -1,0 +1,583 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+  --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:16:12
+   |
+16 | #+caption: emacs without vertico
+   |            ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: only an image alone in its paragraph shows a caption
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+  --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:18:12
+   |
+18 | #+caption: emacs with vertico
+   |            ^^^^^^^^^^^^^^^^^^
+   |
+   = note: only an image alone in its paragraph shows a caption
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+  --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:73:12
+   |
+73 | #+caption: vertico-flat-mode
+   |            ^^^^^^^^^^^^^^^^^
+   |
+   = note: only an image alone in its paragraph shows a caption
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+  --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:77:12
+   |
+77 | #+caption: vertico-buffer-mode
+   |            ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: only an image alone in its paragraph shows a caption
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+  --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:90:12
+   |
+90 | #+caption: vertico-grid-mode
+   |            ^^^^^^^^^^^^^^^^^
+   |
+   = note: only an image alone in its paragraph shows a caption
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+  --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:94:12
+   |
+94 | #+caption: vertico-indexed-mode
+   |            ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: only an image alone in its paragraph shows a caption
+   = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:105:12
+    |
+105 | #+caption: vertico-reverse-mode
+    |            ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:126:12
+    |
+126 | #+caption: vertico-quick
+    |            ^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:162:12
+    |
+162 | #+caption: Marginalia on find-file
+    |            ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:165:12
+    |
+165 | #+caption: Marginalia on describe-variable
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:185:12
+    |
+185 | #+caption: marginalia with nerd-icons-completion
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:198:12
+    |
+198 | #+caption: orderless using the wiki completion-styles
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:313:12
+    |
+313 | #+caption: consult-buffer
+    |            ^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:316:12
+    |
+316 | #+caption: consult-flymake
+    |            ^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:319:12
+    |
+319 | #+caption: consult-yank-pop
+    |            ^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:322:12
+    |
+322 | #+caption: consult-outline
+    |            ^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:379:12
+    |
+379 | #+caption: corfu completion
+    |            ^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+warning[org/no-effect]: `#+CAPTION` has no effect on this paragraph
+   --> alexforsale/content-org--emacs-vertico--emacs-vertico.org:410:12
+    |
+410 | #+caption: nerd-icons-corfu
+    |            ^^^^^^^^^^^^^^^^
+    |
+    = note: only an image alone in its paragraph shows a caption
+    = note: run `yuanme docs org/no-effect` for more
+<p>Vertico provides a performant and minimalistic vertical completion UI based on the default completion system. The focus of Vertico is to provide a UI which behaves correctly under all circumstances. By reusing the built-in facilities system, Vertico achieves full compatibility with built-in Emacs completion commands and completion tables. Vertico only provides the completion UI but aims to be highly flexible, extendable and modular. Additional enhancements are available as extensions or complementary packages. The code base is small and maintainable. The main vertico.el package is only about 600 lines of code without white space and comments<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.</p>
+<h2 id="installation">Installation</h2>
+<p><a href="./emacs-without-vertico.png">file:emacs-without-vertico.png</a></p>
+<p><a href="./emacs-vertico.png">file:emacs-vertico.png</a></p>
+<h3 id="with-use-package">With <code>use-package</code></h3>
+<pre><code class="language-emacs-lisp">;; Enable vertico
+(use-package vertico
+  :init
+  (vertico-mode)
+  ;; Different scroll margin
+  ;; (setq vertico-scroll-margin 0)
+  ;; Show more candidates
+  ;; (setq vertico-count 20)
+  ;; Grow and shrink the Vertico minibuffer
+  ;; (setq vertico-resize t)
+  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+  ;; (setq vertico-cycle t)
+  )
+;; Persist history over Emacs restarts. Vertico sorts by history position.
+(use-package savehist
+  :init
+  (savehist-mode))
+
+;; A few more useful configurations...
+(use-package emacs
+  :init
+  ;; Add prompt indicator to `completing-read-multiple'.
+  ;; We display [CRM&#x3C;separator>], e.g., [CRM,] if the separator is a comma.
+  (defun crm-indicator (args)
+    (cons (format "[CRM%s] %s"
+                  (replace-regexp-in-string
+                   "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                   crm-separator)
+                  (car args))
+          (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+  ;; Do not allow the cursor in the minibuffer prompt
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+  ;; Vertico commands are hidden in normal buffers.
+  (setq read-extended-command-predicate
+        #'command-completion-default-include-p)
+  ;; Enable recursive minibuffers
+  (setq enable-recursive-minibuffers t))
+</code></pre>
+<h4 id="vertico-configuration">vertico configuration</h4>
+<dl>
+<dt><code>vertico-scroll-margin</code></dt>
+<dd>Number of lines at the top and bottom when scrolling (default to 2).</dd>
+<dt><code>vertico-count</code></dt>
+<dd>Maximal number of candidates to show (default to 10).</dd>
+<dt><code>vertico-resize</code></dt>
+<dd>How to resize the <code>vertico</code> minibuffer window (default to the value of <code>resize-mini-windows</code>, which is <code>'grow-only</code>).</dd>
+<dt><code>vertico-cycle</code></dt>
+<dd>enable cycling for <code>vertico-next</code> and <code>vertico-previous</code>, default to <code>nil</code>.</dd>
+</dl>
+<h2 id="extensions">Extensions</h2>
+<p>The package also includes some extensions, they’re installed automatically if using package from <code>ELPA</code>.</p>
+<h3 id="vertico-flat"><code>vertico-flat</code></h3>
+<p>Flat, horizontal display for <code>vertico</code>, enable it with <code>M-x vertico-flat-mode</code>.</p>
+<p><a href="./vertico-flat-mode.png">file:vertico-flat-mode.png</a></p>
+<h3 id="vertico-buffer"><code>vertico-buffer</code></h3>
+<p><code>vertico-buffer-mode</code> to display Vertico like a regular buffer.</p>
+<p><a href="./vertico-buffer-mode.png">file:vertico-buffer-mode.png</a></p>
+<h3 id="vertico-directory"><code>vertico-directory</code></h3>
+<p>Commands for Ido-like directory navigation. The commands can be bound in the <code>vertico-map</code>. Furthermore a cleanup function for shadowed file paths is provided.</p>
+<pre><code class="language-emacs-lisp">(keymap-set vertico-map "RET" #'vertico-directory-enter)
+(keymap-set vertico-map "DEL" #'vertico-directory-delete-char)
+(keymap-set vertico-map "M-DEL" #'vertico-directory-delete-word)
+(add-hook 'rfn-eshadow-update-overlay-hook #'vertico-directory-tidy)
+</code></pre>
+<p>this way when opening file (via <code>C-x C-f</code> or with <code>M-x find-file</code>), pressing <code>Backspace</code> (or <code>DEL</code>), will automatically remove one directory up.</p>
+<h3 id="vertico-grid"><code>vertico-grid</code></h3>
+<p>Enables grid-display.</p>
+<p><a href="./vertico-grid-mode">file:vertico-grid-mode.png</a></p>
+<h3 id="vertico-indexed-mode"><code>vertico-indexed-mode</code></h3>
+<p>Select indexed candidates with prefix arguments.</p>
+<p><a href="./vertico-indexed-mode">file:vertico-indexed-mode.png</a>
+Select the candidate number with <code>M-&#x3C;candidate></code>, for example: to select candidate <code>2</code> press <code>M-2 RET</code>.</p>
+<h3 id="vertico-mouse"><code>vertico-mouse</code></h3>
+<p>Support for scrolling and candidate selection.</p>
+<h3 id="vertico-unobstrusive-mode"><code>vertico-unobstrusive-mode</code></h3>
+<p>Display only the topmost candidate. It is a simple derivative of <code>vertico-flat-mode</code>.</p>
+<h3 id="vertico-suspend"><code>vertico-suspend</code></h3>
+<p>Suspend the current Vertico completion session. If <code>vertico-suspend</code> is called from within the currently active Vertico minibuffer, the completion session is suspended.  Otherwise the last session is restored.  It is possible to suspend multiple nested Vertico sessions.  Note that <code>vertico-suspend</code> requires that recursive minibuffers are enabled by setting the customizable variable <code>enable-recursive-minibuffers</code> to <code>t</code>.</p>
+<h3 id="vertico-reverse"><code>vertico-reverse</code></h3>
+<p>Reverse the list of candidates.</p>
+<p><a href="./vertico-reverse-mode.png">file:vertico-reverse-mode.png</a></p>
+<h3 id="vertico-repeat"><code>vertico-repeat</code></h3>
+<p>Enables repetition of Vertico sessions via the <code>vertico-repeat</code>, <code>vertico-repeat-previous</code> and <code>vertico-repeat-select</code> commands.  If the repeat commands are called from an existing Vertico minibuffer session, only sessions corresponding to the current minibuffer command are offered via completion.</p>
+<p>It is necessary to register a minibuffer setup hook, which saves the Vertico state for repetition.  In order to save the history across Emacs sessions, enable <code>savehist-mode</code> and add <code>vertico-repeat-history</code> to <code>savehist-additional-variables</code>.</p>
+<pre><code class="language-emacs-lisp">(add-to-list 'savehist-additional-variables 'vertico-repeat-history)
+(keymap-global-set "M-R" #'vertico-repeat)
+(keymap-set vertico-map "M-P" #'vertico-repeat-previous)
+(keymap-set vertico-map "M-N" #'vertico-repeat-next)
+(keymap-set vertico-map "S-&#x3C;prior>" #'vertico-repeat-previous)
+(keymap-set vertico-map "S-&#x3C;next>" #'vertico-repeat-next)
+(add-hook 'minibuffer-setup-hook #'vertico-repeat-save)
+</code></pre>
+<h3 id="vertico-quick"><code>vertico-quick</code></h3>
+<p>Similar to <code>vertico-indexed-mode</code>, which prefixes candidates with quick keys.  Typing these quick keys allows you to select the candidate in front of them.  This is designed to be a faster alternative to selecting a candidate with <code>vertico-next</code> and <code>vertico-previous</code>.</p>
+<pre><code class="language-emacs-lisp">(keymap-set vertico-map "M-q" #'vertico-quick-insert)
+(keymap-set vertico-map "C-q" #'vertico-quick-exit)
+</code></pre>
+<p><a href="./vertico-quick.png">file:vertico-quick.png</a>
+Pressing <code>M-q</code> while in <code>vertico-map</code> will show all the candidates, pressing <code>C-q</code> will exit the candidate selection.</p>
+<h3 id="vertico-multiform"><code>vertico-multiform</code></h3>
+<p>Perhaps the most complex extensions, used for fine tuning the Vertico display and other minibuffer modes per command or completion category.  For some commands you may want to use the <code>vertico-buffer</code> display and for completion categories like file you prefer the <code>vertico-grid-mode</code>.</p>
+<pre><code class="language-emacs-lisp">(setq vertico-multiform-commands
+      '((consult-line buffer)
+        (consult-imenu reverse buffer)
+        (execute-extended-command flat)))
+(setq vertico-multiform-categories
+      '((file buffer grid)
+        (imenu (:not indexed mouse))
+        (symbol (vertico-sort-function . vertico-sort-alpha))))
+(vertico-multiform-mode)
+</code></pre>
+<h2 id="marginalia">Marginalia</h2>
+<p>This package provides <code>marginalia-mode</code> which adds marginalia to the minibuffer completions. <a href="https://en.wikipedia.org/wiki/Marginalia">Marginalia</a> are marks or annotations placed at the margin of the page of a book or in this case helpful colorful annotations placed at the margin of the minibuffer for your completion candidates. Marginalia can only add annotations to the completion candidates. It cannot modify the appearance of the candidates themselves, which are shown unaltered as supplied by the original command<sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup>.</p>
+<h3 id="installation-1">Installation</h3>
+<pre><code class="language-emacs-lisp">;; Enable rich annotations using the Marginalia package
+(use-package marginalia
+  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  ;; The :init section is always executed.
+  :init
+
+  ;; Marginalia must be activated in the :init section of use-package such that
+  ;; the mode gets enabled right away. Note that this forces loading the
+  ;; package.
+  (marginalia-mode))
+</code></pre>
+<p><a href="./marginalia-files.png">file:marginalia-files.png</a></p>
+<p><a href="./marginalia-describe-variable.png">file:marginalia-describe-variable.png</a></p>
+<h3 id="adding-icons-in-the-minibuffer">Adding Icons in the minibuffer</h3>
+<p>With additional package: <a href="https://github.com/iyefrat/all-the-icons-completion">all-the-icons-completion</a> or <a href="https://github.com/rainstormstudio/nerd-icons-completion">nerd-icons-completion</a>.</p>
+<figure>
+<figcaption>nerd-icons-completion</figcaption>
+<pre><code class="language-emacs-lisp">(use-package nerd-icons-completion
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :config
+  (nerd-icons-completion-mode))
+</code></pre>
+</figure>
+<figure>
+<figcaption>all-the-icons-completion</figcaption>
+<pre><code class="language-emacs-lisp">(use-package all-the-icons-completion
+  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+  :init
+  (all-the-icons-completion-mode))
+</code></pre>
+</figure>
+<p><a href="./marginalia-find-file-with-icons.png">file:marginalia-find-file-with-icons.png</a></p>
+<h2 id="orderless">Orderless</h2>
+<p>This package provides an <code>orderless</code> completion style that divides the pattern into space-separated components, and matches candidates that match all of the components in any order. Each component can match in any one of several ways: literally, as a regexp, as an initialism, in the flex style, or as multiple word prefixes. By default, regexp and literal matches are enabled<sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup>.</p>
+<h3 id="installation-2">Installation</h3>
+<pre><code class="language-emacs-lisp">(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+</code></pre>
+<p><a href="./orderless-default.png">file:orderless-default.png</a></p>
+<h2 id="consult">Consult</h2>
+<p>Consult provides search and navigation commands based on the Emacs completion function <a href="https://www.gnu.org/software/emacs/manual/html_node/elisp/Minibuffer-Completion.html">completing-read</a>. Completion allows you to quickly select an item from a list of candidates. Consult offers asynchronous and interactive <code>consult-grep</code> and <code>consult-ripgrep</code> commands, and the line-based search command <code>consult-line</code>. Furthermore Consult provides an advanced buffer switching command <code>consult-buffer</code> to switch between buffers, recently opened files, bookmarks and buffer-like candidates from other sources. Some of the Consult commands are enhanced versions of built-in Emacs commands. For example the command <code>consult-imenu</code> presents a flat list of the Imenu with <a href="https://github.com/minad/consult#live-previews">live preview</a>, <a href="https://github.com/minad/consult#narrowing-and-grouping">grouping and narrowing</a>. Please take a look at the <a href="https://github.com/minad/consult#available-commands">full list of commands</a><sup><a href="#user-content-fn-4" id="user-content-fnref-4" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup>.</p>
+<h3 id="installation-3">Installation</h3>
+<pre><code class="language-emacs-lisp">(use-package consult
+  ;; Replace bindings. Lazily loaded due by `use-package'.
+  :bind (;; C-c bindings in `mode-specific-map'
+         ("C-c M-x" . consult-mode-command)
+         ("C-c h" . consult-history)
+         ("C-c k" . consult-kmacro)
+         ("C-c m" . consult-man)
+         ("C-c i" . consult-info)
+         ([remap Info-search] . consult-info)
+         ;; C-x bindings in `ctl-x-map'
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
+         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ;; M-g bindings in `goto-map'
+         ("M-g e" . consult-compile-error)
+         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s bindings in `search-map'
+         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+         ("M-s c" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+         ;; Minibuffer history
+         :map minibuffer-local-map
+         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+  ;; Optionally configure the register formatting. This improves the register
+  ;; preview for `consult-register', `consult-register-load',
+  ;; `consult-register-store' and the Emacs built-ins.
+  (setq register-preview-delay 0.5
+        register-preview-function #'consult-register-format)
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-&#x3C;down>" "S-&#x3C;up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+  ;; Optionally configure the narrowing key.
+  ;; Both &#x3C; and C-+ work reasonably well.
+  (setq consult-narrow-key "&#x3C;") ;; "C-+"
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+  ;; By default `consult-project-function' uses `project-root' from project.el.
+  ;; Optionally configure a different project root function.
+  ;;;; 1. project.el (the default)
+  ;; (setq consult-project-function #'consult--default-project--function)
+  ;;;; 2. vc.el (vc-root-dir)
+  ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
+  ;;;; 3. locate-dominating-file
+  ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+  ;;;; 4. projectile.el (projectile-project-root)
+  ;; (autoload 'projectile-project-root "projectile")
+  ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
+  ;;;; 5. No project support
+  ;; (setq consult-project-function nil)
+)
+</code></pre>
+<p><a href="./consult-buffer.png">file:consult-buffer.png</a></p>
+<p><a href="./consult-flymake.png">file:consult-flymake.png</a></p>
+<p><a href="./consult-yank-pop.png">file:consult-yank-pop.png</a></p>
+<p><a href="./consult-outline.png">file:consult-outline.png</a></p>
+<h2 id="corfu">Corfu</h2>
+<p>Corfu enhances in-buffer completion with a small completion popup. The current candidates are shown in a popup below or above the point. The candidates can be selected by moving up and down. Corfu is the minimalistic in-buffer completion counterpart of the <a href="https://github.com/minad/vertico">Vertico</a> minibuffer UI<sup><a href="#user-content-fn-5" id="user-content-fnref-5" data-footnote-ref="" aria-describedby="footnote-label">5</a></sup>.</p>
+<h3 id="installation-4">Installation</h3>
+<pre><code class="language-emacs-lisp">(use-package corfu
+  ;; Optional customizations
+  ;; :custom
+  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  ;; (corfu-auto t)                 ;; Enable auto completion
+  ;; (corfu-separator ?\s)          ;; Orderless field separator
+  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+
+  ;; Enable Corfu only for certain modes.
+  ;; :hook ((prog-mode . corfu-mode)
+  ;;        (shell-mode . corfu-mode)
+  ;;        (eshell-mode . corfu-mode))
+
+  ;; Recommended: Enable Corfu globally.  This is recommended since Dabbrev can
+  ;; be used globally (M-/).  See also the customization variable
+  ;; `global-corfu-modes' to exclude certain modes.
+  :init
+  (global-corfu-mode))
+
+;; A few more useful configurations...
+(use-package emacs
+  :init
+  ;; TAB cycle if there are only few candidates
+  (setq completion-cycle-threshold 3)
+
+  ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+  ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+  ;; (setq read-extended-command-predicate
+  ;;       #'command-completion-default-include-p)
+
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
+  (setq tab-always-indent 'complete))
+
+;; Use Dabbrev with Corfu!
+(use-package dabbrev
+  ;; Swap M-/ and C-M-/
+  :bind (("M-/" . dabbrev-completion)
+         ("C-M-/" . dabbrev-expand))
+  :config
+  (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
+  ;; Since 29.1, use `dabbrev-ignored-buffer-regexps' on older.
+  (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
+  (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode)
+</code></pre>
+<p><a href="./corfu-completion.png">file:corfu-completion.png</a></p>
+<p>By default, when typing, press <code>TAB</code> to start the completion, use <code>C-p</code> or <code>C-n</code> (<code>C-j</code> or <code>C-k</code> can also be used).</p>
+<h3 id="enable-completion-in-the-minibuffer">Enable completion in the minibuffer</h3>
+<pre><code class="language-emacs-lisp">(defun corfu-enable-always-in-minibuffer ()
+  "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+  (unless (or (bound-and-true-p mct--active)
+              (bound-and-true-p vertico--input)
+              (eq (current-local-map) read-passwd-map))
+    ;; (setq-local corfu-auto nil) ;; Enable/disable auto completion
+    (setq-local corfu-echo-delay nil ;; Disable automatic echo and popup
+                corfu-popupinfo-delay nil)
+    (corfu-mode 1)))
+(add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
+</code></pre>
+<p>This will enable corfu as long as there’s no other completion active.</p>
+<h3 id="nerd-icons-corfu">nerd-icons-corfu</h3>
+<p>Nerd-icons-corfu.el is a library for adding icons to completions in <a href="https://github.com/minad/corfu">Corfu</a>. It uses <a href="https://github.com/rainstormstudio/nerd-icons.el">nerd-icons.el</a> under the hood and, as such, works on both GUI and terminal<sup><a href="#user-content-fn-6" id="user-content-fnref-6" data-footnote-ref="" aria-describedby="footnote-label">6</a></sup>.</p>
+<pre><code class="language-emacs-lisp">(use-package nerd-icons-corfu
+  :ensure
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+  (setq nerd-icons-corfu-mapping
+      '((array :style "cod" :icon "symbol_array" :face font-lock-type-face)
+        (boolean :style "cod" :icon "symbol_boolean" :face font-lock-builtin-face)
+        ;; ...
+        (t :style "cod" :icon "code" :face font-lock-warning-face))))
+</code></pre>
+<p><a href="./nerd-icons-corfu.png">file:nerd-icons-corfu.png</a></p>
+<h2 id="cape">Cape</h2>
+<p>Cape provides Completion At Point Extensions which can be used in combination with <a href="https://github.com/minad/corfu">Corfu</a>, <a href="https://github.com/company-mode/company-mode">Company</a> or the default completion UI. The completion backends used by <code>completion-at-point</code> are so called <code>completion-at-point-functions</code> (Capfs)<sup><a href="#user-content-fn-7" id="user-content-fnref-7" data-footnote-ref="" aria-describedby="footnote-label">7</a></sup>.</p>
+<h3 id="configuration">Configuration</h3>
+<pre><code class="language-emacs-lisp">;; Add extensions
+(use-package cape
+  ;; Bind dedicated completion commands
+  ;; Alternative prefix keys: C-c p, M-p, M-+, ...
+  :bind (("C-c p p" . completion-at-point) ;; capf
+         ("C-c p t" . complete-tag)        ;; etags
+         ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
+         ("C-c p h" . cape-history)
+         ("C-c p f" . cape-file)
+         ("C-c p k" . cape-keyword)
+         ("C-c p s" . cape-elisp-symbol)
+         ("C-c p e" . cape-elisp-block)
+         ("C-c p a" . cape-abbrev)
+         ("C-c p l" . cape-line)
+         ("C-c p w" . cape-dict)
+         ("C-c p :" . cape-emoji)
+         ("C-c p \\" . cape-tex)
+         ("C-c p _" . cape-tex)
+         ("C-c p ^" . cape-tex)
+         ("C-c p &#x26;" . cape-sgml)
+         ("C-c p r" . cape-rfc1345))
+  :init
+  ;; Add to the global default value of `completion-at-point-functions' which is
+  ;; used by `completion-at-point'.  The order of the functions matters, the
+  ;; first function returning a result wins.  Note that the list of buffer-local
+  ;; completion functions takes precedence over the global list.
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-elisp-block)
+  ;;(add-to-list 'completion-at-point-functions #'cape-history)
+  ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
+  ;;(add-to-list 'completion-at-point-functions #'cape-tex)
+  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+  ;;(add-to-list 'completion-at-point-functions #'cape-elisp-symbol)
+  ;;(add-to-list 'completion-at-point-functions #'cape-line)
+)
+</code></pre>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p><a href="https://github.com/minad/vertico">https://github.com/minad/vertico</a> <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p><a href="https://github.com/minad/marginalia">https://github.com/minad/marginalia</a> <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-3">
+<p><a href="https://github.com/oantolin/orderless">https://github.com/oantolin/orderless</a> <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-4">
+<p><a href="https://github.com/minad/consult">https://github.com/minad/consult</a> <a href="#user-content-fnref-4" data-footnote-backref="" aria-label="Back to reference 4" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-5">
+<p><a href="https://github.com/minad/corfu">https://github.com/minad/corfu</a> <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 5" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-6">
+<p><a href="https://github.com/LuigiPiucco/nerd-icons-corfu">https://github.com/LuigiPiucco/nerd-icons-corfu</a> <a href="#user-content-fnref-6" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-7">
+<p><a href="https://github.com/minad/cape">https://github.com/minad/cape</a> <a href="#user-content-fnref-7" data-footnote-backref="" aria-label="Back to reference 7" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

@@ -11,8 +11,8 @@ use jiff::{Timestamp, Zoned};
 use minijinja::value::{Kwargs, Value, ValueKind};
 use minijinja::{Environment, Error, ErrorKind};
 use yuanme_content::document::{Document, Kind, Links};
-use yuanme_content::{config, markdown};
-use yuanme_diag::{Code, Files, Level, codes};
+use yuanme_content::{config, markdown, org};
+use yuanme_diag::{Code, Diagnostic, Files, Level, codes};
 
 /// What the filters read from the Site.
 pub(super) struct Site {
@@ -39,12 +39,7 @@ pub(super) fn add(env: &mut Environment<'_>, site: Site) {
     env.add_filter("pluralize", pluralize);
     env.add_filter("attrs", attrs);
     env.add_filter("markdown", markdown);
-    env.add_filter("org", |_: Value, _: Kwargs| -> Result<Value, Error> {
-        Err(coded(
-            &codes::ORG_NOT_YET_SUPPORTED,
-            "yuanme can't render Org yet; the `org` filter arrives with the Org subset".into(),
-        ))
-    });
+    env.add_filter("org", org);
     // Jinja's own `escape` escapes `/`, which the formatter doesn't (#19).
     for name in ["escape", "e"] {
         env.add_filter(name, |v: Value| match v.is_safe() {
@@ -254,19 +249,40 @@ fn attrs(v: Value) -> Result<Value, Error> {
 /// Markdown from a Data file or Site config, written as an Entry's body
 /// is. `inline=true` leaves out the paragraph around a single one.
 fn markdown(text: &str, kw: Kwargs) -> Result<Value, Error> {
-    let inline: bool = kw.get::<Option<bool>>("inline")?.unwrap_or(false);
-    kw.assert_all_used()?;
     let mut files = Files::default();
     let file = files.add("<markdown>", text);
     let (doc, diagnostics) = markdown::document(&files, file, 0..text.len());
+    fragment("markdown", "Markdown", doc, &diagnostics, kw)
+}
+
+fn org(text: &str, kw: Kwargs) -> Result<Value, Error> {
+    let mut files = Files::default();
+    let file = files.add("<org>", text);
+    let (doc, diagnostics) = org::document(&files, file);
+    fragment("org", "Org", doc, &diagnostics, kw)
+}
+
+/// The HTML of `doc`, the text a `markdown` or `org` filter read: its first
+/// error fails the filter. With `inline=true`, a lone paragraph loses its
+/// `<p>`.
+fn fragment(
+    filter: &str,
+    format: &str,
+    doc: Option<Document>,
+    diagnostics: &[Diagnostic],
+    kw: Kwargs,
+) -> Result<Value, Error> {
+    let inline: bool = kw.get::<Option<bool>>("inline")?.unwrap_or(false);
+    kw.assert_all_used()?;
     let error = diagnostics.iter().find(|d| d.level == Level::Error);
     let doc = match (doc, error) {
         (Some(doc), None) => doc,
         (_, error) => {
-            let message = error.map_or("the Markdown can't be read".into(), |d| d.message.clone());
+            let message =
+                error.map_or(format!("the {format} can't be read"), |d| d.message.clone());
             return Err(coded(
                 &codes::TEMPLATE_RENDER,
-                format!("`markdown`: {message}"),
+                format!("`{filter}`: {message}"),
             ));
         }
     };

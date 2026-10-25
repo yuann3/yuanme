@@ -1,0 +1,20 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="example-of-org-babel-for-r-literate-programming">Example of Org-Babel for R Literate Programming</h2>
+<h3 id="r-text-output">R text output</h3>
+<p>A simple summary.</p>
+<pre><code class="language-R">x &#x3C;- rnorm(10)
+summary(x)
+</code></pre>
+<h3 id="r-graphics-output">R graphics output</h3>
+<p>Note we use the object <code>x</code> generated in previous code block, thanks to
+the header option <code>:session *R*</code>.  The output graphics file is
+<code>a.png</code>.</p>
+<pre><code class="language-R">y &#x3C;- rnorm(10)
+plot(x, y)
+</code></pre>
+<p>Same plot with larger dimension:</p>
+<pre><code class="language-R">plot(x, y)
+</code></pre>

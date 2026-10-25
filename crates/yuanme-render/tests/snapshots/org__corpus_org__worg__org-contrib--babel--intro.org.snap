@@ -1,0 +1,1024 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> worg/org-contrib--babel--intro.org:552:1
+    |
+552 | /     #+name: call-square
+553 | |     #+call: square(x=6)
+    | |_______________________^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+<h2 id="introduction">Preamble</h2>
+<p>Babel is about letting <a href="languages/index.org">many different languages</a> work together.
+Programming languages live in code blocks inside natural language <a href="https://orgmode.org/">Org</a>
+documents.  A piece of data might pass from an Org table to a
+Python code block, then maybe move on to an R code block, and
+finally end up embedded as a value in the middle of a paragraph or
+possibly pass through a Gnuplot code block and end up as a plot
+embedded in the document.</p>
+<p>Through extending <a href="https://orgmode.org/">Org</a> with several features for editing, exporting,
+and executing source code, Babel transforms Org into a tool for
+literate programming and reproducible research.</p>
+<p>Babel augments <a href="https://orgmode.org/manual/Working-with-Source-Code.html">Org code blocks</a> by providing:</p>
+<ul>
+<li>interactive and programmatic execution of code blocks;</li>
+<li>code blocks as functions that accept parameters, refer to
+other code blocks, and can be called remotely; and</li>
+<li>export to files for literate programming.</li>
+</ul>
+<h2 id="overview">Overview</h2>
+<p>Babel provides new features on a few different fronts, and
+different people may want to start in different places.</p>
+<dl>
+<dt>Using code blocks in Org mode</dt>
+<dd>If you are not familiar with creating code blocks in an Org
+buffer, and moving between that buffer and the language major-mode
+edit buffer, then you should have a look at the <a href="https://orgmode.org/manual/Literal-Examples.html#Literal-Examples">Org manual’s
+Literal Examples section</a> and Section <a href="#source-code-blocks">Code Blocks</a>, try it
+out, and come back.</dd>
+<dt>Executing code</dt>
+<dd>The core of Babel is its ability to execute source code in Org
+code blocks, taking input from other blocks and tables, and with
+output to yet other blocks and tables. This is described in Section
+<a href="#source-code-execution">Executing Code Blocks</a>.</dd>
+<dt>Literate programming</dt>
+<dd>If you are a programmer writing code that you would normally
+execute in some other way (e.g. from the command line, or sourcing
+it into an interactive session), then a simple introduction to
+Babel is to place your code in blocks in an Org file, and to
+use Babel’s <a href="#literate-programming">literate programming</a> support to extract pure code
+from your Org files.</dd>
+</dl>
+<p>All of these use cases, as well as exhaustive documentation of the
+features of Babel are covered in the <a href="https://orgmode.org/manual/Working-with-Source-Code.html">Working with Source Code</a>
+section of the Org manual.</p>
+<h2 id="getting-started">Configuring Babel</h2>
+<p>If you have a working Emacs installation, then getting started with
+Babel is a simple process.</p>
+<ol>
+<li>If you are running Emacs24 or later a version of Org with
+Babel is already available by default. As of Org 7.0, Babel
+is included as part of Org.  If you would like to use a more
+recent Babel than the one that ships with your Emacs, then
+please follow <a href="https://orgmode.org/manual/Installation.html#Installation">these instructions</a>.</li>
+<li>Optionally, activate the subset of languages that you want to use
+with Babel.  See the instructions in Section <a href="languages/index.org#configure">Activate a
+Language</a>.  Note that Emacs Lisp is activated by default so this
+step can be skipped if you intend to work exclusively with it.</li>
+<li>If you have made changes to your setup, please remember to evaluate
+modified configuration file(s).</li>
+</ol>
+<h2 id="source-code-blocks">Code Blocks</h2>
+<h3 id="source-code-blocks-org">Code Blocks in Org</h3>
+<p>Babel is all about code blocks in Org. If you are unfamiliar
+with the notion of a code block in Org, where they are called ‘src’
+blocks, please have a look at the <a href="https://orgmode.org/manual/Literal-Examples.html#Literal-Examples">Org manual</a> before proceeding.</p>
+<p>Code blocks in supported languages can occur anywhere in an
+Org file.  Code blocks can be entered directly into the
+Org file, but it is often easier to enter code with the
+function <code>org-edit-src-code</code>, which is called with the keyboard
+shortcut, <code>C-c '</code>.  This places the code block in a new buffer with
+the appropriate mode activated.</p>
+<pre><code class="language-org">#+begin_src &#x3C;language> &#x3C;switches> 
+&#x3C;body>
+#+end_src
+</code></pre>
+<p>For example, a <a href="http://www.ruby-lang.org/">Ruby</a> code block looks like this in
+an Org file:</p>
+<pre><code class="language-org">#+begin_src ruby
+require 'date'
+"This file was last evaluated on #{Date.today}"
+#+end_src
+</code></pre>
+<h3 id="source-code-blocks-babel">Code Blocks in Babel</h3>
+<p>Babel adds some new elements to code blocks. The basic
+structure becomes:</p>
+<pre><code class="language-org">#+begin_src &#x3C;language>  &#x3C;switches> &#x3C;header arguments>
+&#x3C;body>
+#+end_src
+</code></pre>
+<dl>
+<dt>&#x3C;language></dt>
+<dd>An identifier for the code block language (see the
+<a href="https://orgmode.org/worg/org-contrib/babel/languages/index.html#orgf05f403">list of core languages</a> and the <a href="https://orgmode.org/worg/org-contrib/babel/languages/index.html#org8f1cf6c">list of contributed languages</a> for
+identifiers).</dd>
+<dt>&#x3C;switches></dt>
+<dd>Control code execution, export, and format.</dd>
+<dt>&#x3C;header arguments></dt>
+<dd>Header arguments control many facets of
+code block behavior, including <a href="https://orgmode.org/manual/Header-arguments.html#Header-arguments">tangling</a>, <a href="https://orgmode.org/manual/Evaluating-Code-Blocks.html">evaluation</a>, handling
+<a href="https://orgmode.org/manual/Results-of-Evaluation.html">results of evaluation</a>, and <a href="https://orgmode.org/manual/Exporting-Code-Blocks.html">exporting</a>.  In addition, the language
+of the code block might define additional header arguments (see
+<a href="https://orgmode.org/worg/org-contrib/babel/languages/index.html">Babel: Languages</a>).</dd>
+<dt>&#x3C;body></dt>
+<dd>The source code to be evaluated.  An important
+key-binding is <code>C-c '</code>.  This calls <code>org-edit-src-code</code>, a
+function that brings up an edit buffer containing the code using
+the Emacs major mode appropriate to the language.  You can edit
+your code block as you regularly would in Emacs.</dd>
+</dl>
+<h2 id="source-code-execution">Executing Code Blocks</h2>
+<p>Babel executes code blocks for interpreted languages such
+as shell, Python, R, etc. by passing code to the interpreter, which
+must be installed on your system.  You control what is done with the
+results of execution.</p>
+<p>Here are examples of code blocks in four different languages,
+followed by their output. If you are viewing the Org version of
+this document in Emacs, place point anywhere inside a block and press
+<code>C-c C-c</code> to run the code<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup> (and feel free to alter it!).</p>
+<h3 id="ruby">Ruby</h3>
+<p>In the Org file:</p>
+<pre><code>#+begin_src ruby
+"This block was last evaluated on #{Date.today}"
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre><code class="language-ruby">"This block was last evaluated on #{Date.today}"
+</code></pre>
+<p>HTML export of the resulting string:</p>
+<pre><code>This block was last evaluated on 2009-08-09
+</code></pre>
+<h3 id="shell">Shell</h3>
+<p>In the Org file:</p>
+<pre><code>#+begin_src shell
+  echo "This file takes up `du -h org-babel.org |sed 's/\([0-9k]*\)[ ]*org-babel.org/\1/'`"
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre><code class="language-shell">echo "This file takes up `du -h org-babel.org |sed 's/\([0-9k]*\)[ ]*org-babel.org/\1/'`"
+</code></pre>
+<p>HTML export of the resulting string:</p>
+<pre><code>This file takes up 4.0K
+</code></pre>
+<h3 id="r">R</h3>
+<p>What are the most common words in this file?</p>
+<p>In the Org file:</p>
+<pre><code>#+begin_src R :colnames yes
+  words &#x3C;- tolower(scan("intro.org", what="", na.strings=c("|",":")))
+  t(sort(table(words[nchar(words) > 3]), decreasing=TRUE)[1:10])
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="r-tutorial-example"><code class="language-R">words &#x3C;- tolower(scan("intro.org", what="", na.strings=c("|",":")))
+t(sort(table(words[nchar(words) > 3]), decreasing=TRUE)[1:10])
+</code></pre>
+<p>HTML export of the resulting table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>code</th><th>#+end_src</th><th>#+name:</th><th>#+begin_src</th><th>babel</th><th>with</th><th>block</th><th>this</th><th>that</th><th>blocks</th></tr></thead><tbody><tr><td>90</td><td>47</td><td>45</td><td>44</td><td>43</td><td>43</td><td>41</td><td>37</td><td>36</td><td>27</td></tr></tbody></table>
+<h3 id="ditaa">ditaa</h3>
+<p>In the Org file:</p>
+<pre><code>#+begin_src ditaa :file blue.png :cmdline -r
++---------+
+| cBLU    |
+|         |
+|    +----+
+|    |cPNK|
+|    |    |
++----+----+
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="ditaa-blue"><code class="language-ditaa">+---------+
+| cBLU    |
+|         |
+|    +----+
+|    |cPNK|
+|    |    |
++----+----+
+</code></pre>
+<figure>
+<img src="../../images/babel/blue.png" alt="blue.png">
+<figcaption>HTML export of the ditaa image.</figcaption>
+</figure>
+<h2 id="results">Capturing the Results of Code Evaluation</h2>
+<p>Babel provides two fundamentally different modes for capturing
+the results of code evaluation: functional mode and scripting
+mode.  The choice of mode is specified by the <code>:results</code> header
+argument.</p>
+<h3 id="results-value">Functional Mode</h3>
+<p>The ‘result’ of code evaluation is the value of the last
+statement in the code block. In functional mode, the code block is
+a function with a return value. Functional mode is indicated by
+setting the header argument <code>:results value</code>.</p>
+<p>The return value of one code block can be used as input for
+another code block, even one in a different language.  In this
+way, Babel becomes a <a href="#meta-programming-language">meta-programming language</a>. If the block
+returns tabular data (a vector, array or table of some sort) then
+this will be held as an Org table in the buffer. This setting is
+the default.</p>
+<p>For example, consider the following block of Python code and its
+output.</p>
+<pre id="python-tutorial-functional-mode"><code class="language-python">import time
+print("Hello, today's date is %s" % time.ctime())
+print('Two plus two is')
+return 2 + 2
+</code></pre>
+<pre><code>4
+</code></pre>
+<p>Notice that, in functional mode, the output consists of the value of
+the last statement and nothing else.</p>
+<h3 id="results-output">Scripting Mode</h3>
+<p>In scripting mode, Babel captures the text output of the code
+block and places it in the Org buffer.  Scripting mode is
+indicated by setting the header argument <code>:results output</code>.</p>
+<p>It is called scripting mode because the code block contains a
+series of commands, and the output of each command is
+returned. Unlike functional mode, the code block itself has no
+return value apart from the output of the commands it
+contains.<sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup></p>
+<p>Consider the result of evaluating this code block with
+scripting mode.</p>
+<pre id="python-tutorial-scripting-mode"><code class="language-python">import time
+print("Hello, today's date is %s" % time.ctime())
+print('Two plus two is')
+2 + 2
+</code></pre>
+<pre><code>Hello, today's date is Sat Oct 16 10:48:47 2021
+Two plus two is
+</code></pre>
+<p>Here, scripting mode returned the text that Python sent to
+<code>stdout</code> with the two <code>print()</code> statements.  Because the code
+block doesn’t include a <code>print()</code> statement for the last value,
+<code>(2 + 2)</code>, 4 does not appear in the results.</p>
+<h2 id="session-based-evaluation">Session-based Evaluation</h2>
+<p>For some languages, such as Python, R, Ruby and shell, it is
+possible to run an interactive session as an “inferior process”
+within Emacs. This means that an environment is created containing
+data objects that persist between different source code
+blocks. Babel supports evaluation of code within such sessions
+with the <code>:session</code> header argument. If the header argument is
+given a value, then that will be used as the name of the session.
+Thus, it is possible to run simultaneous sessions in the
+same language.</p>
+<p>Session-based evaluation is particularly useful for prototyping and
+debugging.  The function <code>org-babel-pop-to-session</code> can be used to
+switch to the session buffer.</p>
+<p>Once a code block is finished, it is often best to execute it
+outside of a session, so the state of the environment in which it
+executes will be certain.</p>
+<p>With R, the session will be under the control of <a href="http://ess.r-project.org/">Emacs Speaks
+Statistics</a> as usual, and the full power of ESS is thus still
+available, both in the R session, and when switching to the R
+code edit buffer with <code>C-c '</code>.</p>
+<h2 id="arguments-to-source-code-blocks">Arguments to Code Blocks</h2>
+<p>Babel supports parameterisation of code blocks, i.e.,
+arguments can be passed to code blocks, which gives them
+the status of functions. Arguments can be passed to code blocks in
+both functional and scripting modes.</p>
+<h3 id="using-a-code-block-as-a-function">Using a Code Block as a Function</h3>
+<p>First let’s look at a very simple example. The following Python
+code block defines a function that squares its argument.</p>
+<pre id="square"><code class="language-python">return x*x
+</code></pre>
+<p>In the Org file, the function looks like this:</p>
+<pre><code>#+name: square
+#+header: :var x=0
+#+begin_src python
+return x*x
+#+end_src
+</code></pre>
+<p>Now we use the Python code block with a <code>#+call:</code> line (for
+information on the <code>#+call:</code> syntax see <a href="https://orgmode.org/manual/Evaluating-Code-Blocks.html#Evaluating-Code-Blocks">Evaluating Code Blocks</a>):</p>
+<pre><code>#+call: square(x=6)
+</code></pre>
+<pre><code>36
+</code></pre>
+<h3 id="using-an-org-table-as-input">Using an Org Table as Input</h3>
+<p>In this example we define a function called <code>fibonacci-seq</code>, using
+Emacs Lisp.  The function <code>fibonacci-seq</code> computes a Fibonacci
+sequence.  The function takes a single argument, in this case, a
+reference to an Org table.</p>
+<p>Here is the Org table that is passed to <code>fibonacci-seq</code>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="fibonacci-inputs"><tbody><tr><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr><tr><td>2</td><td>4</td><td>6</td><td>8</td><td>10</td><td>12</td><td>14</td><td>16</td><td>18</td><td>20</td></tr></tbody></table>
+<p>The table looks like this in the Org buffer:</p>
+<pre><code>#+name: fibonacci-inputs
+| 1 | 2 | 3 | 4 |  5 |  6 |  7 |  8 |  9 | 10 |
+| 2 | 4 | 6 | 8 | 10 | 12 | 14 | 16 | 18 | 20 |
+</code></pre>
+<p>The <a href="http://www.gnu.org/software/emacs/manual/elisp.html">Emacs Lisp</a> source code:</p>
+<pre id="fibonacci-seq"><code class="language-emacs-lisp">(defun fibonacci (n)
+  (if (or (= n 0) (= n 1))
+      n
+    (+ (fibonacci (- n 1)) (fibonacci (- n 2)))))
+
+(mapcar (lambda (row)
+          (mapcar #'fibonacci row)) fib-inputs)
+</code></pre>
+<p>In the Org buffer the function looks like this:</p>
+<pre><code>#+name: fibonacci-seq
+#+begin_src emacs-lisp :var fib-inputs=fibonacci-inputs 
+  (defun fibonacci (n)
+    (if (or (= n 0) (= n 1))
+        n
+      (+ (fibonacci (- n 1)) (fibonacci (- n 2)))))
+
+  (mapcar (lambda (row)
+            (mapcar #'fibonacci row)) fib-inputs)
+#+end_src
+</code></pre>
+<p>The return value of <code>fibonacci-seq</code> is a table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td>1</td><td>1</td><td>2</td><td>3</td><td>5</td><td>8</td><td>13</td><td>21</td><td>34</td><td>55</td></tr><tr><td>1</td><td>3</td><td>8</td><td>21</td><td>55</td><td>144</td><td>377</td><td>987</td><td>2584</td><td>6765</td></tr></tbody></table>
+<h2 id="in-line-code-blocks">In-line Code Blocks</h2>
+<p>Code can be evaluated in-line using the following syntax:</p>
+<pre><code>Without header args: src_&#x3C;lang>{&#x3C;code>} or with header args: src_&#x3C;lang[&#x3C;args>]{&#x3C;code>},
+for example src_python[:session]{10*x}, where x is a variable existing in the
+python session.
+</code></pre>
+<h2 id="code-block-body-expansion">Code Block Body Expansion</h2>
+<p>Babel “expands” code blocks prior to evaluation, i.e., the
+evaluated code comprises the code block contents augmented with
+code that assigns referenced data to variables. It is possible to
+preview expanded contents, and also to expand code during
+tangling.  Expansion takes into account header arguments and
+variables.</p>
+<dl>
+<dt>preview</dt>
+<dd>
+<p>The shortcut, <code>C-c M-b p</code>, is bound to the function,
+<code>org-babel-expand-src-block</code>.  It can be used inside a code block
+to preview the expanded contents. This facility is useful for
+debugging.</p>
+</dd>
+<dt>tangling</dt>
+<dd>
+<p>The expanded body can be tangled.  Tangling this way
+includes variable values that may be</p>
+<ul>
+<li>the results of other code blocks,</li>
+<li>variables stored in headline properties, or</li>
+<li>tables.</li>
+</ul>
+<p>One possible use for tangling expanded code block is for <code>Emacs</code>
+initialization.  Values such as user names and passwords can be
+stored in headline properties or in tables.  The <code>:no-expand</code>
+header argument can be used to inhibit expansion of a code block
+during tangling.</p>
+</dd>
+</dl>
+<p>Here is an example of a code block and its resulting expanded body.</p>
+<p>The data are kept in a table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="user-data"><tbody><tr><td>username</td><td>john-doe</td></tr><tr><td>password</td><td>abc123</td></tr></tbody></table>
+<p>The code block refers to the data table:</p>
+<pre id="setup-my-account"><code class="language-emacs-lisp">(setq my-special-username (first (first data)))
+(setq my-special-password (first (second data)))
+</code></pre>
+<p>With point inside the code block, <code>C-c M-b p</code> expands the contents:</p>
+<pre><code class="language-emacs-lisp">(let ((data (quote (("john-doe") ("abc123")))))
+(setq my-special-username (first (first data)))
+(setq my-special-password (first (second data)))
+)
+</code></pre>
+<h2 id="meta-programming-language">A Meta-Programming Language for Org</h2>
+<p>Because the return value of a function written in one language can be
+passed to a function written in another language, or to an Org
+table, which is itself programmable, Babel can be used as a
+meta-functional programming language.  With Babel, functions from
+many languages can work together.  You can mix and match languages,
+using each language for the tasks to which it is best suited.</p>
+<p>For example, let’s take some system diagnostics in the shell and graph them with R.</p>
+<p>First, create a code block, using shell code, to list directories
+in our home directory together with their sizes. Babel
+automatically converts the output into an Org table.</p>
+<pre><code>#+name: directories
+#+begin_src shell :results replace
+  cd ~ &#x26;&#x26; du -sc * |grep -v total
+#+end_src
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="directories"><tbody><tr><td>72</td><td>”Desktop”</td></tr><tr><td>12156104</td><td>”Documents”</td></tr><tr><td>3482440</td><td>”Downloads”</td></tr><tr><td>2901720</td><td>”Library”</td></tr><tr><td>57344</td><td>”Movies”</td></tr><tr><td>16548024</td><td>”Music”</td></tr><tr><td>120</td><td>”News”</td></tr><tr><td>7649472</td><td>”Pictures”</td></tr><tr><td>0</td><td>”Public”</td></tr><tr><td>152224</td><td>”Sites”</td></tr><tr><td>8</td><td>”System”</td></tr><tr><td>56</td><td>”bin”</td></tr><tr><td>3821872</td><td>”mail”</td></tr><tr><td>10605392</td><td>”src”</td></tr><tr><td>1264</td><td>”tools”</td></tr></tbody></table>
+<p>Next write a function with a single line of R code that plots the
+data in the Org table as a dot chart. Note how this code block uses
+the <code>name</code> of the previous code block to obtain the data.</p>
+<p>In the Org file:</p>
+<pre><code>#+name: directory-dot-chart
+#+header: :var dirs=directories() :exports both
+#+begin_src R :results graphics file :file ../../images/babel/dirs.png
+  dotchart(dirs[,1], labels = dirs[,2])
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="directory-dot-chart"><code class="language-R">dotchart(dirs[,1], labels = dirs[,2])
+</code></pre>
+<figure>
+<img src="../../images/babel/dirs.png" alt="dirs.png">
+<figcaption>HTML export of the directories dot chart.</figcaption>
+</figure>
+<h2 id="spreadsheet">Using Code Blocks in Org Tables</h2>
+<p>In addition to passing data from tables as <a href="#arguments-to-source-code-blocks">arguments</a> to code blocks,
+and <a href="#results-value">storing</a> results as tables, Babel can be used in a third way
+with Org tables. First note that Org’s <a href="https://orgmode.org/manual/The-Spreadsheet.html">spreadsheet</a> is able to
+compute cell values from the values of other cells using a <code>#+TBLFM</code>
+formula line. In this way, table computations can be carried out
+using <a href="https://orgmode.org/manual/Formula-syntax-for-Calc.html#Formula-syntax-for-Calc">Calc</a> and <a href="https://orgmode.org/manual/Formula-syntax-for-Lisp.html#Formula-syntax-for-Lisp">Emacs Lisp</a>.</p>
+<p>What Babel adds is the ability to use code blocks (in whatever
+language) in the <code>#+TBLFM</code> line to perform the necessary computation.</p>
+<h3 id="example-1-data-summaries-using-r">Example 1: Data Summaries Using R</h3>
+<p>As a simple example, we’ll fill in a cell in an Org table with the
+average value of a few numbers. First, let’s make some data. The
+following code block creates an Org table filled with five random
+numbers between 0 and 1.</p>
+<pre><code>#+name: tbl-example-data
+#+begin_src R
+runif(n=5, min=0, max=1)
+#+end_src
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="tbl-example-data"><tbody><tr><td>0.836685163900256</td></tr><tr><td>0.696652316721156</td></tr><tr><td>0.382423302158713</td></tr><tr><td>0.987541858805344</td></tr><tr><td>0.994794291909784</td></tr></tbody></table>
+<p>Now we define a code block to calculate the mean of a table column.</p>
+<p>In the Org file:</p>
+<pre><code>#+name: R-mean
+#+begin_src R :var x=""
+colMeans(x)
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="R-mean"><code class="language-R">colMeans(x)
+</code></pre>
+<p>Finally, we create the table which is going to make use of the R
+code. This is done using the <code>org-sbe</code> (‘source block evaluate’) macro in
+the table formula line.</p>
+<p>In the Org file:</p>
+<pre><code>#+name: summaries
+|              mean |
+|-------------------|
+| 0.779619386699051 |
+#+TBLFM: @2$1='(org-sbe "R-mean" (x "tbl-example-data()"))
+</code></pre>
+<p>HTML export of code:</p>
+
+
+
+
+
+
+
+
+
+
+
+<table id="summaries"><thead><tr><th>mean</th></tr></thead><tbody><tr><td>0.78</td></tr></tbody></table>
+<p>To recalculate the table formula, use <code>C-u C-c C-c</code> in the
+table. Notice that as things stand the calculated value doesn’t
+change, because the data (held in the table above named
+<code>tbl-example-data</code>) are static. However, if you delete that data table,
+then the reference will be interpreted as a reference to the code
+block responsible for generating the data; each time the table formula
+is recalculated the code block will be evaluated again, and
+therefore the calculated average value will change.</p>
+<h3 id="example-2-org-babel-test-suite">Example 2: Org Babel Test Suite</h3>
+<p>While developing Babel, we used a suite of tests implemented
+as a large Org table.  To run the entire test suite we simply
+evaluate the table with <code>C-u C-c C-c</code>: all of the tests are run,
+the results are compared with expectations, and the table is updated
+with results and pass/fail statistics.</p>
+<p>Here’s a sample of our test suite.</p>
+<p>In the Org file:</p>
+<pre><code>#+name: org-babel-tests
+| functionality    | block        | arg |    expected |     results | pass |
+|------------------+--------------+-----+-------------+-------------+------|
+| basic evaluation |              |     |             |             | pass |
+|------------------+--------------+-----+-------------+-------------+------|
+| emacs lisp       | basic-elisp  |   2 |           4 |           4 | pass |
+| shell            | basic-shell  |     |           6 |           6 | pass |
+| ruby             | basic-ruby   |     |   org-babel |   org-babel | pass |
+| python           | basic-python |     | hello world | hello world | pass |
+| R                | basic-R      |     |          13 |          13 | pass |
+#+TBLFM: $5='(if (= (length $3) 1) (sbe $2 (n $3)) (sbe $2)) :: $6='(if (string= $4 $5) "pass" (format "expected %S but was %S" $4 $5))
+</code></pre>
+<p>HTML export of code:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="org-babel-tests"><thead><tr><th>functionality</th><th>block</th><th>arg</th><th>expected</th><th>results</th><th>pass</th></tr></thead><tbody><tr><td>basic evaluation</td><td></td><td></td><td></td><td></td><td>pass</td></tr><tr><td>emacs lisp</td><td>basic-elisp</td><td>2</td><td>4</td><td>4</td><td>pass</td></tr><tr><td>shell</td><td>basic-shell</td><td></td><td>6</td><td>6</td><td>pass</td></tr><tr><td>ruby</td><td>basic-ruby</td><td></td><td>org-babel</td><td>org-babel</td><td>pass</td></tr><tr><td>python</td><td>basic-python</td><td></td><td>hello world</td><td>hello world</td><td>pass</td></tr><tr><td>R</td><td>basic-R</td><td></td><td>13</td><td>13</td><td>pass</td></tr></tbody></table>
+<h4 id="code-blocks-for-tests">Code Blocks for Tests</h4>
+<p>In the Org file:</p>
+<pre><code>#+name: basic-elisp(n)
+#+begin_src emacs-lisp
+(* 2 n)
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="basic-elisp(n=0)"><code class="language-emacs-lisp">(* 2 n)
+</code></pre>
+<p>In the Org file:</p>
+<pre><code>#+name: basic-shell
+#+begin_src shell :results silent
+expr 1 + 5
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="basic-shell"><code class="language-shell">expr 1 + 5
+</code></pre>
+<p>In the Org file:</p>
+<pre><code>#+name: date-simple
+#+begin_src shell :results silent
+date
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="date-simple"><code class="language-shell">date
+</code></pre>
+<p>In the Org file:</p>
+<pre><code>#+name: basic-ruby
+#+begin_src ruby :results silent
+"org-babel"
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="basic-ruby"><code class="language-ruby">"org-babel"
+</code></pre>
+<p>In the Org file</p>
+<pre><code>#+name: basic-python
+#+begin_src python :results silent
+'hello world'
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="basic-python"><code class="language-python">'hello world'
+</code></pre>
+<p>In the Org file:</p>
+<pre><code>#+name: basic-R
+#+begin_src R :results silent
+b &#x3C;- 9
+b + 4
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="basic-R"><code class="language-R">b &#x3C;- 9
+b + 4
+</code></pre>
+<h2 id="library-of-babel">The Library of Babel</h2>
+<p>As we saw with the <a href="#using-a-code-block-as-a-function">square</a> example, once a code block function has
+been defined in the buffer it can be called using the <code>#+call:</code>
+notation:</p>
+<pre><code>#+call: square(x=6)
+</code></pre>
+<p>But what about code blocks that you want to make available to
+every Org buffer?</p>
+<p>In addition to the current buffer, Babel searches for
+pre-defined code block functions in files that have been assigned to
+the Library of Babel, a user-extensible collection of code
+blocks.</p>
+<p>In practice, you are free to register as many files as you wish to your Library of Babel
+using the function, <code>org-babel-lob-ingest</code>, which is bound to <code>C-c C-v l</code>.</p>
+<pre id="add-file-to-lob"><code class="language-emacs-lisp">(org-babel-lob-ingest "path/to/file.org")
+</code></pre>
+<p>Note that it is possible to pass table values or the output of a
+code block to registered Library of Babel functions. It is
+also possible to reference registered Library of Babel functions in
+arguments to code blocks.</p>
+<p>Once upon a time, Org was distributed with the eponymous
+Library of Babel file.  This file, which includes a wide variety of
+code blocks for common tasks, is now available at  <a href="https://git.sr.ht/~bzg/worg/tree/master/item/library-of-babel.org">library-of-babel.org</a>.</p>
+<p>For more information, see <a href="https://orgmode.org/manual/Library-of-Babel.html#Library-of-Babel">Library-of-Babel</a>.</p>
+<h2 id="literate-programming">Literate Programming</h2>
+<blockquote>
+<p>Let us change our traditional attitude to the construction of
+programs: Instead of imagining that our main task is to instruct a
+<em>computer</em> what to do, let us concentrate rather on explaining to
+<em>human beings</em> what we want a computer to do.</p>
+<p>The practitioner of literate programming can be regarded as an
+essayist, whose main concern is with exposition and excellence of
+style. Such an author, with thesaurus in hand, chooses the names of
+variables carefully and explains what each variable means. He or she
+strives for a program that is comprehensible because its concepts have
+been introduced in an order that is best for human understanding,
+using a mixture of formal and informal methods that reinforce each
+other.</p>
+<p>– Donald Knuth</p>
+</blockquote>
+<p>Babel supports <a href="https://en.wikipedia.org/wiki/Literate_programming">literate programming</a> (LP) by allowing the act of
+programming to take place inside an Org document.  The Org
+document can then be exported (woven in LP speak) to HTML or LaTeX for
+consumption by a human, and the embedded source code can be extracted
+(tangled in LP speak) into source code files for
+consumption by a computer.</p>
+<p>To support these operations Babel relies on Org’s <a href="https://orgmode.org/manual/Exporting.html#Exporting">export
+functionality</a> for weaving documentation, and on the
+<code>org-babel-tangle</code> function, which makes use of <a href="http://www.cs.tufts.edu/~nr/noweb/">Noweb</a> <a href="#literate-programming-example">reference
+syntax</a>, for tangling code files.</p>
+<p>The <a href="#literate-programming-example">following example</a> demonstrates the process of tangling in
+Babel.</p>
+<h3 id="literate-programming-example">Simple Literate Programming Example (Noweb Syntax)</h3>
+<p>Tangling functionality is controlled by the <code>:tangle</code> family of
+header arguments.  These arguments can be used to turn tangling on or
+off (the default), either for the code block or the Org
+heading level.</p>
+<p>The following code blocks demonstrate how to tangle them into a
+single source code file using <code>org-babel-tangle</code>.</p>
+<p>The following two code blocks have no <code>:tangle</code> header arguments
+and so will not, by themselves, create source code files.  They are
+included in the source code file by the third code block, which
+does have a <code>:tangle</code> header argument.</p>
+<p>In the Org file:</p>
+<pre><code>#+name: hello-world-prefix
+#+begin_src shell :exports none
+  echo "/-----------------------------------------------------------\\"
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<p>In the Org file</p>
+<pre><code>#+name: hello-world-postfix
+#+begin_src shell :exports none
+  echo "\-----------------------------------------------------------/"
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<p>The third code block does have a <code>:tangle</code> header argument
+indicating the name of the file to which the tangled source code will
+be written.  It also has <a href="http://www.cs.tufts.edu/~nr/noweb/">Noweb</a> style references to the two previous
+code blocks.  These references will be expanded during tangling
+to include them in the output file as well.</p>
+<p>In the Org file:</p>
+<pre><code>#+name: hello-world
+#+begin_src shell :tangle hello :exports results :noweb yes :results raw
+  &#x3C;&#x3C;hello-world-prefix>>
+  echo "|                       hello world                         |"
+  &#x3C;&#x3C;hello-world-postfix>>
+#+end_src
+</code></pre>
+<p>HTML export of code:</p>
+<pre id="hello-world"><code class="language-shell">&#x3C;&#x3C;hello-world-prefix>>
+echo "|                       hello world                         |"
+&#x3C;&#x3C;hello-world-postfix>>
+</code></pre>
+<p>HTML export of results:</p>
+<pre><code class="language-org">/-----------------------------------------------------------\
+|                       hello world                         |
+\-----------------------------------------------------------/
+</code></pre>
+<p>Calling <code>org-babel-tangle</code> will result in the following shell source
+code being written to the <code>hello.sh</code> file:</p>
+<pre id="hello-world-output"><code class="language-shell">#!/usr/bin/env sh
+
+# [[file:~/org/temp/index.org::*Noweb test][hello-world]]
+
+echo "/-----------------------------------------------------------\\"
+echo "|                       hello world                         |"
+echo "\-----------------------------------------------------------/"
+# hello-world ends here
+</code></pre>
+<p>In addition, the following Noweb syntax can be used to insert the results
+of evaluating a code block, in this case one named <code>example-block()</code>.</p>
+<pre><code># &#x3C;&#x3C;example-block()>>
+</code></pre>
+<p>Any optional arguments can be passed to <code>example-block()</code> by placing the
+arguments inside the parentheses following the convention defined when
+calling code block functions (see the <a href="#library-of-babel">Library of Babel</a>). For example,</p>
+<pre><code># &#x3C;&#x3C;example-block(a=9)>>
+</code></pre>
+<p>sets the value of argument <code>a</code> equal to <code>9</code>.  Note that
+these arguments are not evaluated in the current code
+block but are passed literally to <code>example-block()</code>.</p>
+<h2 id="emacs-initialization">Emacs Initialization with Babel</h2>
+<p>Babel has special support for embedding your Emacs initialization
+into Org files.  The <code>org-babel-load-file</code> function can be used
+to load the Emacs Lisp code blocks embedded in a literate
+Org file in the same way that you might load a regular Emacs Lisp
+file, such as <code>.emacs</code>.</p>
+<p>This allows you to make use of Org features, such as folding, tags,
+notes, HTML export, etc., to organize and maintain your Emacs initialization.</p>
+<figure>
+<img src="../../images/babel/dot-emacs.png" alt="dot-emacs.png">
+<figcaption>Org mode provides convenient facilities for organizing an initialization file.</figcaption>
+</figure>
+<p>To try this out, see the simple <a href="#literate-emacs-init">Literate Emacs Initialization</a>
+example, check out the literate programming version of Phil
+Hagelberg’s excellent <a href="http://github.com/technomancy/emacs-starter-kit/tree/master">emacs-starter-kit</a>, the <a href="https://github.com/eschulte/emacs24-starter-kit">Emacs 24 starter kit</a>,
+contributed by one of the Babel authors, or visit any one of the
+several sites found by an Internet search for the phrase “literate
+Emacs configuration.”</p>
+<h3 id="literate-emacs-init">Literate Emacs Initialization</h3>
+<p>For a simple example of usage, follow these steps:</p>
+<ul>
+<li>
+<p>create a directory named <code>.emacs.d</code> in the base of your home directory;</p>
+<pre><code class="language-shell">mkdir ~/.emacs.d
+</code></pre>
+</li>
+<li>
+<p>checkout the latest version of Org into the src subdirectory of this new directory;</p>
+<pre><code class="language-shell">cd ~/.emacs.d
+mkdir src
+cd src
+git clone https://git.savannah.nongnu.org/git/org-mode.git
+</code></pre>
+</li>
+<li>
+<p>place the following code block in a file called <code>init.el</code> in your Emacs initialization directory (<code>~/.emacs.d</code>).</p>
+<pre id="emacs-init"><code class="language-emacs-lisp">;;; init.el --- Where all the magic begins
+;;
+;; This file loads Org and then loads the rest of our Emacs initialization from Emacs lisp
+;; embedded in literate Org files.
+
+;; Load up Org Mode and (now included) Org Babel for elisp embedded in Org Mode files
+(setq dotfiles-dir (file-name-directory (or (buffer-file-name) load-file-name)))
+
+(let* ((org-dir (expand-file-name
+   "lisp" (expand-file-name
+    "org" (expand-file-name
+	   "src" dotfiles-dir))))
+(org-contrib-dir (expand-file-name
+    "lisp" (expand-file-name
+	    "contrib" (expand-file-name
+		       ".." org-dir))))
+(load-path (append (list org-dir org-contrib-dir)
+     (or load-path nil))))
+  ;; load up Org and Org-babel
+  (require 'org)
+  (require 'ob-tangle))
+
+;; load up all literate org-mode files in this directory
+(mapc #'org-babel-load-file (directory-files dotfiles-dir t "\\.org$"))
+
+;;; init.el ends here
+</code></pre>
+</li>
+<li>
+<p>implement all of your Emacs customizations inside of Emacs Lisp code blocks embedded in Org files in this directory; and</p>
+</li>
+<li>
+<p>re-start Emacs to load the customizations.</p>
+</li>
+</ul>
+<h2 id="reproducible-research">Reproducible Research</h2>
+<blockquote>
+<p>An article about computational science in a scientific publication is
+not the scholarship itself, it is merely advertising of the
+scholarship. The actual scholarship is the complete software
+development environment and the complete set of instructions which
+generated the figures.</p>
+<p>– D. Donoho</p>
+</blockquote>
+<p><a href="http://reproducibleresearch.net/">Reproducible research</a> (RR) is the practice of distributing, along with
+a research publication, all data, software source code, and tools
+required to reproduce the results discussed in the publication.  As
+such the RR package not only describes the research and its results,
+but becomes a complete laboratory in which the research can be
+reproduced and extended.</p>
+<p>Org already has exceptional support for <a href="https://orgmode.org/manual/Exporting.html#Exporting">exporting to HTML and
+LaTeX</a>.  Babel makes Org a tool for RR by activating the data
+and code blocks embedded in Org documents; the entire document
+becomes executable.  This makes it possible, and natural, to
+distribute research in a format that encourages readers to recreate
+results and perform their own analyses.</p>
+<p>One notable existing RR tool is <a href="https://en.wikipedia.org/wiki/Sweave">Sweave</a>, which provides a mechanism for
+embedding <a href="http://www.r-project.org/">R</a> code into LaTeX documents.  Sweave is a mature
+and very useful tool, but we believe that Babel has several
+advantages:</p>
+<ul>
+<li>it supports multiple languages (we’re not aware of other RR tools that do this);</li>
+<li>the <a href="https://orgmode.org/manual/Exporting.html#Exporting">export process</a> is flexible and powerful, including HTML as a
+target in addition to LaTeX; and</li>
+<li>the document can make use of Org features that support <a href="https://orgmode.org/manual/Agenda-Views.html">project
+planning</a> and <a href="https://orgmode.org/manual/TODO-Items.html">task management</a>.</li>
+</ul>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>Calling <code>C-c C-o</code> on a code block will open the
+block’s results in a separate buffer. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p>This mode will be familiar to Sweave users. <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

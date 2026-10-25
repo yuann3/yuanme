@@ -290,6 +290,10 @@ fn the_engine_filters_and_escaping() {
             r#"{{ "*hi* -- [x](/blog/a/)"|markdown }}|{{ "*hi*"|markdown(inline=true) }}"#,
             "<p><em>hi</em> — <a href=\"/blog/a/\">x</a></p>|<em>hi</em>",
         ),
+        (
+            r#"{{ "/hi/ -- [[https://o.org][x]]"|org }}|{{ "/hi/"|org(inline=true) }}"#,
+            "<p><em>hi</em> – <a href=\"https://o.org\">x</a></p>|<em>hi</em>",
+        ),
         // An absent optional field is false, and `default` covers it.
         (
             r#"{% set b = collections.posts|selectattr("slug", "eq", "b")|first %}{% if b.hero %}hero{% else %}none{% endif %} {{ b.order|default(0) }} {{ b.hero is defined }}"#,
@@ -423,9 +427,10 @@ const ERRORS: &[(&str, &str, &str, &str)] = &[
         "templates/home.html",
         "url('/blog/z/')",
     ),
+    // Org the Engine reports as an error fails its filter.
     (
-        "org/not-yet-supported",
-        "=== templates/home.html\n{{ \"* Heading\"|org }}",
+        "template/render",
+        "=== templates/home.html\n{{ \"#+SETUPFILE: x.org\"|org }}",
         "templates/home.html",
         "org",
     ),

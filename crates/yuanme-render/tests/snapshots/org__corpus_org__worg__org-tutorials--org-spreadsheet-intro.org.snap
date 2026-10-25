@@ -1,0 +1,303 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p><a href="org-tableur-tutoriel.org">Ce tutoriel en <strong>français</strong></a></p>
+<h2 id="introduction">Introduction</h2>
+<p>This short tutorial will go through the basics that you need to know
+if you want to use Org as a spreadsheet system.</p>
+<p>Let’s start with a this very simple table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Student</th><th>Maths</th><th>Physics</th></tr></thead><tbody><tr><td>Bertrand</td><td>13</td><td>09</td></tr><tr><td>Henri</td><td>15</td><td>14</td></tr><tr><td>Arnold</td><td>17</td><td>13</td></tr></tbody></table>
+<p>Which is the output of this table in Org:</p>
+<pre><code>| Student  | Maths | Physics |
+|----------+-------+---------|
+| Bertrand |    13 |      09 |
+| Henri    |    15 |      14 |
+| Arnold   |    17 |      13 |
+</code></pre>
+<p>The purpose of this tutorial is to understand how to get from this
+simple table to this one, where we have the mean per student and per
+discipline:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Student</th><th>Maths</th><th>Physics</th><th>Mean</th></tr></thead><tbody><tr><td>Bertrand</td><td>13</td><td>09</td><td>11</td></tr><tr><td>Henri</td><td>15</td><td>14</td><td>14.5</td></tr><tr><td>Arnold</td><td>17</td><td>13</td><td>15</td></tr><tr><td>Means</td><td>15</td><td>12</td><td>13.5</td></tr></tbody></table>
+<h2 id="getting-acquainted-with-references">Getting acquainted with references</h2>
+<p>Let’s start with the mean per student.</p>
+<pre><code>| Student  | Maths | Physics | Mean      |
+|----------+-------+---------+-----------|
+| Bertrand |    13 |      09 | [Formula] |
+| Henri    |    15 |      14 |           |
+| Arnold   |    17 |      13 |           |
+</code></pre>
+<p>Before being able to insert a formula in <code>[Formula]</code>, you need to know
+how to <strong>refer</strong> to a row, a column or a single field.</p>
+<p>The easiest way to learn about references is to type <code>C-c ?</code> while you
+are in a field.</p>
+<p>For example, if you are in the <code>[Formula]</code> field, <code>C-c ?</code> will tell
+you: <code>line @2, col $4, ref @2$4 or D2</code>, meaning that you are on the
+second row (or line) of the fourth column, and the reference for this
+field is either <code>@2$4</code> or <code>D2</code>.</p>
+<p>At any moment, if you are lost in rows and columns, you can always
+turn on the reference visualization grid with <code>C-c }</code>:</p>
+<p><img src="../images/bzg/reference_visualization.jpg" alt="reference_visualization.jpg"></p>
+<h2 id="your-first-formula">Your first formula</h2>
+<p>Put the cursor in the (empty) <code>[Formula]</code> field.  Now type
+<code>:=vmean($2..$3)</code> in this field.  This formula means: calculate the
+<em>mean</em> for fields from the second (<code>$2</code>) to the third (<code>$3</code>) field <em>in
+this row</em>.  If you prefer to use the other notation, type
+<code>:=vmean(B&#x26;..C&#x26;)</code> – where the <code>&#x26;</code> character stands for “in this row”,
+which is implicit in the previous notation.</p>
+<p>While still in the row, hit <code>C-c C-c</code> – you should observe two
+things: 1) the formula has been replaced by the result of the
+calculation and 2) a new line starting with <code>#+TBLFM</code> has been
+inserted at the bottom of the table.</p>
+<p>The <code>#+TBLFM</code> line contains all the formulas for the table above, and
+you should be careful while editing it manually.</p>
+<h2 id="column-formulas-and-field-formulas">Column formulas and field formulas</h2>
+<p>Ok, so now we have this table:</p>
+<pre><code>| Student  | Maths | Physics | Mean |
+|----------+-------+---------+------|
+| Bertrand |    13 |      09 |   11 |
+| Henri    |    15 |      14 |      |
+| Arnold   |    17 |      13 |      |
+#+TBLFM: @2$4=vmean($2..$3)
+</code></pre>
+<p>But what we really want is to compute the formulas for <em>all fields in
+the column</em> named “Mean”.  In other words, we really want a <code>column
+formula</code>, not a <code>field formula</code>.</p>
+<p>To replace the formula with a column formula, go back to the field
+where it has been defined and type <code>=vmean($2..$3)</code>.  Note that the
+only difference with what you’ve inserted previously is that the
+formula is prefixed by <code>=</code> instead of <code>:=</code>.  When you’re done, do a
+<code>C-c C-c</code> in the field: you should be prompted whether you want to
+replace the formula with a column formula, which is precisely what we
+want.</p>
+<p>Once you agree with this, the value in the field should be the same
+than before (namely <code>11</code>) and you can now update all the fields in
+this column by reapplying all formulas with <code>C-u C-c *</code> (or <code>C-c
+C-c</code> if you’re on the <code>#+TBLFM</code> line.)</p>
+<p>So now we have this table:</p>
+<pre><code>| Student  | Maths | Physics | Mean |
+|----------+-------+---------+------|
+| Bertrand |    13 |      09 |   11 |
+| Henri    |    15 |      14 | 14.5 |
+| Arnold   |    17 |      13 |   15 |
+#+TBLFM: $4=vmean($2..$3)
+</code></pre>
+<p>As our single formula in <code>#+TBLFM</code> now applies to the entire column,
+it doesn’t contain any reference to a row.  The formula was previously
+applied for the <code>@2$4</code> field, and it is now applied for the <code>$4</code>
+column.</p>
+<p>Finally, we can add the row for the means per discipline.  This row
+contains two <em>field formulas</em>, each one calculating the mean for the
+fields above in the same column:</p>
+<pre><code>| Student  | Maths | Physics | Mean |
+|----------+-------+---------+------|
+| Bertrand |    13 |      09 |   11 |
+| Henri    |    15 |      14 | 14.5 |
+| Arnold   |    17 |      13 |   15 |
+|----------+-------+---------+------|
+| Means    |    15 |      12 |      |
+#+TBLFM: $4=vmean($2..$3)::@5$2=vmean(@2$2..@4$2)::@5$3=vmean(@2$3..@4$3)
+</code></pre>
+<p>Which brings up this table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Student</th><th>Maths</th><th>Physics</th><th>Mean</th></tr></thead><tbody><tr><td>Bertrand</td><td>13</td><td>09</td><td>11</td></tr><tr><td>Henri</td><td>15</td><td>14</td><td>14.5</td></tr><tr><td>Arnold</td><td>17</td><td>13</td><td>15</td></tr><tr><td>Means</td><td>15</td><td>12</td><td></td></tr></tbody></table>
+<h2 id="interactively-edit-formulas">Interactively edit formulas</h2>
+<p>For now we have been defining formulas by inserting them directly in
+the table cells: typing <code>=</code> in a field starts the definition for a
+column formula and typing <code>:=</code> starts a definition for a field
+formula.</p>
+<p>If you prefer, you can edit formulas <em>in the minibuffer</em>: use <code>C-c =</code>
+for editing column formulas or <code>C-u C-c =</code> for field formulas.</p>
+<p>But you can also edit formulas more interactively in a dedicated
+buffer by typing C-c ’.  This new buffer lists all the formulas for
+the table at point and provides facilities to edit the references.</p>
+<p>When the cursor is above a reference, the corresponding field in the
+table get highlighted.  Nice!  But you can do more than that: you can
+actually select the reference by using the <code>S-&#x3C;left/right/up/down></code>
+keys.</p>
+<p><img src="../images/bzg/formulas_editor.jpg" alt="formulas_editor.jpg"></p>
+<p>Note: you might worry that moving a table’s column with
+<code>M-&#x3C;left/right></code> or a table’s row with <code>M-&#x3C;up/down></code> might confuse the
+references in the <code>#+TBLFM</code> line, but each move automagically updates
+the references in this line.</p>
+<h2 id="calc-and-elisp-formulas">Calc and Elisp formulas</h2>
+<p>The default syntax for formulas is the one of Calc, the GNU Emacs
+package for doing computations.</p>
+<p>Here is an excerpt from the <a href="http://www.delorie.com/gnu/docs/calc/calc_21.html">Calc manual</a> about algebraic-style
+formulas:</p>
+<pre><code>Algebraic formulas use the operators `+', `-', `*', `/', and `^'. You
+can use parentheses to make the order of evaluation clear. In the
+absence of parentheses, `^' is evaluated first, then `*', then `/',
+then finally `+' and `-'. For example, the expression
+
+2 + 3*4*5 / 6*7^8 - 9
+
+is equivalent to
+
+2 + ((3*4*5) / (6*(7^8)) - 9
+</code></pre>
+<p>In org tables, you can use references instead of values for performing
+the computation.  Pretty simple.</p>
+<p>But what if you want to use Emacs lisp code instead of Calc?</p>
+<p>Lets say for example that you want to associate each student with a
+decimal of the Pi number, depending on their mean across maths and
+physics.</p>
+<p>For this you need to tell Org about the value you consider to be the
+value of the Pi number.  You can do this by adding this line:</p>
+<pre><code>#+CONSTANTS: pi=3.14159265358979323846
+</code></pre>
+<p>(Don’t forget to hit <code>C-c C-c</code> on the <code>#+CONSTANTS</code> line so that
+org-mode knows about it.)</p>
+<p>Then you can define an Emacs lisp formula like this one:</p>
+<pre><code>$5='(substring (number-to-string $pi) (round $4) (1+ (round $4)));N
+</code></pre>
+<p>Ahem.  Let’s parse this:</p>
+<ul>
+<li><code>(substring S A B)</code>: get a substring of string <code>S</code> between <code>A</code> and
+<code>B</code></li>
+<li><code>(number-to-string $pi)</code>: convert the constant “Pi” into a string</li>
+<li><code>(round $4)</code>: get the rounded value of the value in column <code>$4</code></li>
+<li><code>;N</code>: consider the values of fields to be numeric values, not strings.</li>
+</ul>
+<p>If the mean of a student is 10, this formula returns the tenth decimal
+of Pi.</p>
+<h2 id="debugging-formulas">Debugging formulas</h2>
+<p>So now our table is this one:</p>
+<pre><code>| Student  | Maths | Physics | Mean | Pi number |
+|----------+-------+---------+------+-----------|
+| Bertrand |    13 |      09 |   11 |         5 |
+| Henri    |    15 |      14 | 14.5 |         7 |
+| Arnold   |    17 |      13 |   15 |         9 |
+#+TBLFM: $4=vmean($2..$3)::$5='(substring (number-to-string $pi) (round $4) (1+ (round $4)));N
+</code></pre>
+<p>If you come back to this table but feel a bit lazy trying to
+understand what the Emacs Lisp function does, you might as well want
+to <strong>debug</strong> the formula and follow the computation step by step.</p>
+<p>Turn the formulas debugger on with <code>C-c {</code> and hit <code>C-c C-c</code> in a
+field (or <code>C-u C-c *</code> anywhere on this table.)  This will perform the
+computations of the formulas one by one, and display details about the
+steps of the computation for each formula in a separate buffer.</p>
+<p>Here is what such a buffer looks like:</p>
+<pre><code>Substitution history of formula
+Orig:   '(substring (number-to-string $pi) (round $4) (1+ (round $4)));N
+$xyz->  '(substring (number-to-string 3.14159265358979323846) (round $4) (1+ (round $4)))
+@r$c->  '(substring (number-to-string 3.14159265358979323846) (round $4) (1+ (round $4)))
+$1->    '(substring (number-to-string 3.14159265358979323846) (round 11) (1+ (round 11)))
+Result: 5
+Format: NONE
+Final:  5
+</code></pre>
+<p>Once you’re done checking the formulas, you can switch the debugger
+off by hitting <code>C-c {</code> again.</p>
+<h2 id="much-much-more">Much, much more…</h2>
+<p>Using Org as a spreadsheet system turns to be really handy.</p>
+<p>But you can do a lot more than that!  You can use relative references,
+define names for columns and parameters for formulas, define fields that
+should be automatically recalculated, etc.  You can also use Emacs lisp in
+formulas (<a href="org-spreadsheet-lisp-formulas.org">read this tutorial</a>).</p>
+<p>Have a look to the <a href="https://orgmode.org/org.html#Advanced-features">advanced features</a> in Org-mode manual, it will give you a
+quick overlook on this…</p>
+<h2 id="comments">Comments</h2>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'worg'; // required: replace example with your forum shortname
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>

@@ -1,0 +1,237 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
+ --> kaorubb-hoff/ch3--3-4.org:3:1
+  |
+3 | #+SETUPFILE: ../setup.org
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
+  = note: run `yuanme docs org/setupfile` for more
+<h3 id="a">a</h3>
+<pre><code class="language-julia">using Distributions
+using Plots
+using StatsPlots
+using LaTeXStrings
+a₀ = 2
+b₀ = 8
+n = 43
+y = 15
+</code></pre>
+<pre><code class="language-julia"># prior
+plot(
+    Beta(a₀, b₀),
+    title=L"p(\theta)",
+    xlabel=L"\theta",
+    ylabel=L"p(\theta)",
+    legend=false,
+)
+</code></pre>
+<p><img src="../../fig/ch3/exercise3.4aplot1.jpg" alt="exercise3.4aplot1.jpg" width="500"></p>
+<pre><code class="language-julia">θ = 0:0.01:1.0
+pdf_for_θs = map(θ -> pdf(Binomial(n, θ), y), θ)
+
+# plot p(y|θ)
+plot(
+    θ, pdf_for_θs,
+    xlabel = "θ", ylabel = "p(y|θ)",
+    title = "p(y=$y|θ) as a function of θ",
+    legend = false,
+    size = (600, 400)
+    , margin = 5mm
+    , xticks = 0:0.1:1.0
+)
+</code></pre>
+<p><img src="../../fig/ch3/exercise3.4aplot2.jpg" alt="exercise3.4aplot2.jpg" width="500"></p>
+<code class="language-math math-display">\begin{align*}
+p(\theta \mid y)
+&#x26;= \frac{1}{p(y)} p(y \mid \theta) p(\theta) \\
+&#x26;= \frac{1}{p(y)} \begin{pmatrix} 43 \\ 15 \end{pmatrix} \theta^{15} (1-\theta)^{28} \frac{\Gamma(2+8)}{\Gamma(2)\Gamma(8)} \theta^{2-1} (1-\theta)^{8-1} \\
+&#x26;= \frac{1}{p(y)} \begin{pmatrix} 43 \\ 15 \end{pmatrix}
+\frac{\Gamma(2+8)}{\Gamma(2)\Gamma(8)} \theta^{17-1} (1-\theta)^{36-1} \\
+&#x26;= const \times \theta^{17-1} (1-\theta)^{36-1} \\
+&#x26;= dbeta(\theta, 17, 36)
+\end{align*}</code>
+<pre><code class="language-julia"># posterior
+posterior_dist = Beta(a₀ + y, b₀ + n - y)
+plot(
+    posterior_dist,
+    title=L"p(\theta|y)",
+    xlabel=L"\theta",
+    ylabel=L"p(\theta|y)",
+    legend=false,
+)
+</code></pre>
+<p><img src="../../fig/ch3/exercise3.4aposterior.jpg" alt="exercise3.4aposterior.jpg" width="500"></p>
+<pre><code class="language-julia"># posterior mean
+mean(posterior_dist)
+μ = (a₀ + y)/(a₀ + b₀ + n)
+</code></pre>
+<pre><code>0.32075471698113206
+</code></pre>
+<pre><code class="language-julia"># posterior mode
+mode(posterior_dist)
+(a₀ + y - 1)/(a₀ + b₀ + n - 2)
+</code></pre>
+<pre><code>0.3137254901960784
+</code></pre>
+<pre><code class="language-julia"># posterior standard deviation
+std(posterior_dist)
+var = (μ*(1 - μ))/(a₀ + b₀ + n + 1)
+sqrt(var)
+</code></pre>
+<pre><code>0.0635188989834093
+</code></pre>
+<pre><code class="language-julia"># posterior 95% interval
+quantile(posterior_dist, [0.025, 0.975])
+</code></pre>
+<pre><code>
+2-element Vector{Float64}:
+ 0.2032977878191033
+ 0.45102398221663165
+</code></pre>
+<h3 id="b">b</h3>
+<pre><code class="language-julia">a₀_b = 8
+b₀_b = 2
+</code></pre>
+<pre><code class="language-julia"># prior
+plot(
+    Beta(a₀_b, b₀_b),
+    title=L"p(\theta)",
+    xlabel=L"\theta",
+    ylabel=L"p(\theta)",
+    legend=false,
+)
+</code></pre>
+<p><img src="../../fig/ch3/exercise3.4bprior.jpg" alt="exercise3.4bprior.jpg" width="500"></p>
+<code class="language-math math-display">\begin{align*}
+p(\theta \mid y)
+&#x26;= \frac{1}{p(y)} p(y \mid \theta) p(\theta) \\
+&#x26;= \frac{1}{p(y)} \begin{pmatrix} 43 \\ 15 \end{pmatrix} \theta^{15} (1-\theta)^{28} \frac{\Gamma(2+8)}{\Gamma(2)\Gamma(8)} \theta^{8-1} (1-\theta)^{2-1} \\
+&#x26;= \frac{1}{p(y)} \begin{pmatrix} 43 \\ 15 \end{pmatrix}
+\frac{\Gamma(2+8)}{\Gamma(2)\Gamma(8)} \theta^{23-1} (1-\theta)^{30-1} \\
+&#x26;= const \times \theta^{23-1} (1-\theta)^{30-1} \\
+&#x26;= dbeta(\theta, 23, 30)
+\end{align*}</code>
+<pre><code class="language-julia"># posterior
+posterior_dist_b = Beta(a₀_b + y, b₀_b + n - y)
+plot(
+    posterior_dist_b,
+    title=L"p(\theta|y)",
+    xlabel=L"\theta",
+    ylabel=L"p(\theta|y)",
+    legend=false,
+)
+</code></pre>
+<p><img src="../../fig/ch3/exercise3.4bposterior.jpg" alt="exercise3.4bposterior.jpg" width="500"></p>
+<pre><code class="language-julia"># posterior mean
+mean(posterior_dist_b)
+μ_b = (a₀_b + y)/(a₀_b + b₀_b + n)
+</code></pre>
+<pre><code>0.4339622641509434
+</code></pre>
+<pre><code class="language-julia"># posterior mode
+mode(posterior_dist_b)
+(a₀_b + y - 1)/(a₀_b + b₀_b + n - 2)
+</code></pre>
+<pre><code>0.43137254901960786
+</code></pre>
+<pre><code class="language-julia"># posterior standard deviation
+std(posterior_dist_b)
+var_b = (μ_b*(1 - μ_b))/(a₀_b + b₀_b + n + 1)
+sqrt(var_b)
+</code></pre>
+<pre><code>0.06744531631926798
+</code></pre>
+<pre><code class="language-julia"># posterior 95% interval
+quantile(posterior_dist_b, [0.025, 0.975])
+</code></pre>
+<pre><code>
+2-element Vector{Float64}:
+ 0.30469562471174694
+ 0.5679527959964581
+</code></pre>
+<h3 id="c">c</h3>
+<pre><code class="language-julia">using SpecialFunctions
+prior_mix = θ -> 1//4 * gamma(10) / (gamma(2) * gamma(8)) * (3 * θ * (1 - θ)^7 + θ^7 * (1 - θ))
+</code></pre>
+<pre><code class="language-julia">xs = 0:0.01:1.0
+plot(
+    xs, prior_mix.(xs),
+    xlabel = "θ", ylabel = "p(θ)",
+    title = "mixture of a beta(2,8) and a beta(8,2) prior distribution",
+    titlefontsize = 12,
+    legend = false,
+    size = (600, 400)
+    , margin = 5mm
+    , xticks = 0:0.1:1.0
+)
+</code></pre>
+<p><img src="../../fig/ch3/exercise3.4cmixprior.jpg" alt="exercise3.4cmixprior.jpg" width="500"></p>
+<p><a href="id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12">a)</a>や<a href="id:3654b4ad-59d8-4c15-bcf8-8d30fbaf64c5">b)</a>の事前分布と異なり、上の分布は 2 つの山を持った形状になっている。
+この事前分布は、再犯率は高いか低いかのどちらかに偏っているという信念を表している。</p>
+<p>This prior distribution has two peaks, indicating a belief that the recidivism rate is either high or low, rather than being centered around a moderate value like the priors in <a href="id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12">a)</a> and <a href="id:3654b4ad-59d8-4c15-bcf8-8d30fbaf64c5">b)</a>.</p>
+<h3 id="d">d</h3>
+<h4 id="i">i</h4>
+<code class="language-math math-display">\begin{align*}
+p(\theta) \times p(y \mid \theta)
+&#x26;= \frac{1}{4} \frac{\Gamma(10)}{\Gamma(2)\Gamma(8)} [3 \theta (1-\theta)^7 + \theta^7 (1-\theta)] \times \begin{pmatrix} 43 \\ 15 \end{pmatrix} \theta^{15} (1-\theta)^{28} \\
+&#x26;= \frac{1}{4} \frac{\Gamma(10)}{\Gamma(2)\Gamma(8)} \begin{pmatrix} 43 \\ 15 \end{pmatrix} \left[3 \theta^{1+15} (1-\theta)^{7+28} + \theta^{7+15} (1-\theta)^{1+28}\right] \\
+&#x26;= \frac{1}{4} \frac{\Gamma(10) \Gamma(44)}{\Gamma(2)\Gamma(8) \Gamma(16) \Gamma(29)} \left[3 \theta^{16} (1-\theta)^{35} + \theta^{22} (1-\theta)^{29}\right] \\
+\end{align*}</code>
+<h4 id="ii">ii</h4>
+<p>Beta(17, 36) and Beta(23, 30)</p>
+<h4 id="iii">iii</h4>
+<pre><code class="language-julia">cond_prob = θ -> pdf(Binomial(n, θ), y)
+prior_times_cond_prob = θ -> prior_mix(θ) * cond_prob(θ)
+xs = 0:0.001:1.0
+plot(
+    xs, prior_times_cond_prob.(xs),
+    xlabel = "θ", ylabel = "p(θ) × p(θ|y)",
+    title = "p(θ) × p(θ|y)",
+    legend = false,
+)
+</code></pre>
+<p><img src="../../fig/ch3/exercise3.4diiiplot.jpg" alt="exercise3.4diiiplot.jpg" width="500"></p>
+<pre><code class="language-julia"># prior_times_cond_probが最大になるθ
+xs[argmax(prior_times_cond_prob.(xs))]
+</code></pre>
+<p>The mode of <a href="id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12">a)</a> is 0.313 and the mode of <a href="id:3654b4ad-59d8-4c15-bcf8-8d30fbaf64c5">b)</a> is 0.431, so this posterior mode is located in between, closer to <a href="id:7ca3e17b-cb8f-4b98-90df-0d77ce181a12">a)</a>.</p>
+<h3 id="e">e</h3>
+<p>The posterior distribution is calculated as follows:</p>
+<code class="language-math math-display">\begin{align*}
+p(\theta \mid y)
+&#x26;= \frac{p(y \mid \theta) p(\theta)}{p(y)} \\
+&#x26; \propto p(y \mid \theta) p(\theta) \\
+&#x26;= \begin{pmatrix} n \\ y \end{pmatrix} \theta^y (1-\theta)^{n-y} \times
+\frac{1}{4} \frac{\Gamma(10)}{\Gamma(2)\Gamma(8)} \left[3 \theta (1-\theta)^7 + \theta^7 (1-\theta)\right] \\
+&#x26; \propto 3 \theta^{y+1} (1-\theta)^{n-y+7} + \theta^{y+7} (1-\theta)^{n-y+1} \\
+\end{align*}</code>
+<p>As the normalizing constant <code class="language-math math-inline">C</code> is given by:</p>
+<code class="language-math math-display">\begin{align*}
+C &#x26;= \int_0^1 \left[ 3 \theta^{y+1} (1-\theta)^{n-y+7} + \theta^{y+7} (1-\theta)^{n-y+1} \right] d\theta \\
+&#x26;= 3 \int_0^1 \theta^{(y+2)-1} (1-\theta)^{(n-y+8)-1} d\theta + \int_0^1 \theta^{(y+8)-1} (1-\theta)^{(n-y+2)-1} d\theta \\
+&#x26;= 3 \cdot \frac{\Gamma(y+2) \Gamma(n-y+8)}{\Gamma(n+10)} + \frac{\Gamma(y+8) \Gamma(n-y+2)}{\Gamma(n+10)} \\
+&#x26;= \frac{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)}{\Gamma(n+10)} \\
+\end{align*}</code>
+<p>the posterior distribution can be expressed as:</p>
+<code class="language-math math-display">\begin{align*}
+p(\theta \mid y)
+&#x26;= \frac{1}{C} \left[ 3 \theta^{y+1} (1-\theta)^{n-y+7} + \theta^{y+7} (1-\theta)^{n-y+1} \right] \\
+&#x26;= \frac{\Gamma(n+10) \cdot \Gamma(y+2) \Gamma(n-y+8)}{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)} \cdot \frac{3 \theta^{y+1} (1-\theta)^{n-y+7}}{\Gamma(y+2) \Gamma(n-y+8)} \\
+&#x26;\quad+ \frac{\Gamma(n+10) \cdot \Gamma(y+8) \Gamma(n-y+2)}{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)} \cdot \frac{\theta^{y+7} (1-\theta)^{n-y+1}}{\Gamma(y+8) \Gamma(n-y+2)} \\
+&#x26;= \frac{3 \Gamma(y+2) \Gamma(n-y+8)}{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)} \cdot \mathrm{dbeta}(\theta, y+2, n-y+8) \\
+&#x26;\quad+ \frac{\Gamma(y+8) \Gamma(n-y+2)}{3\Gamma(y+2) \Gamma(n-y+8) + \Gamma(y+8) \Gamma(n-y+2)} \cdot \mathrm{dbeta}(\theta, y+8, n-y+2) \\
+\end{align*}</code>
+<p>The posterior weights represent the updated probability of each model being correct after observing the data <code class="language-math math-inline">(y, n)</code>.
+The formula embodies the principle: Posterior Belief ∝ Prior Belief × Evidence.</p>
+<p>Each weight’s numerator is a product of two key components:</p>
+<ol>
+<li>Prior Belief: The coefficients 3 and 1 reflect our initial assumption that beta(2,8) was three times more likely to be correct than beta(8,2).</li>
+<li>Evidence from Data: The Gamma function terms <code class="language-math math-inline">\Gamma(y+2) \Gamma(n-y+8)</code> and <code class="language-math math-inline">\Gamma(y+8) \Gamma(n-y+2)</code> are the decisive parts that determine which distribution gains more support from the data. A distribution that better aligns with the data will have a larger value.</li>
+</ol>
+<p>In short, the posterior weight for each distribution is determined by its initial credibility combined with the strength of support it receives from the data.</p>
+<p><a href="./3-3.org" class="nav-prev">3.3</a></p>
+<p><a href="./3-5.org" class="nav-next">3.5</a></p>

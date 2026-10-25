@@ -1,0 +1,394 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/invalid-attribute]: `width="400px"` isn't an attribute name
+  --> worg/org-tutorials--org-spreadsheet-lisp-formulas.org:46:14
+   |
+46 | #+ATTR_HTML: width="400px"
+   |              ^^^^^^^^^^^^^
+   |
+   = help: write each attribute as `:name value`, such as `#+ATTR_HTML: :class wide :width 300`
+   = note: run `yuanme docs org/invalid-attribute` for more
+error[org/invalid-attribute]: `width="400px"` isn't an attribute name
+  --> worg/org-tutorials--org-spreadsheet-lisp-formulas.org:80:14
+   |
+80 | #+ATTR_HTML: width="400px"
+   |              ^^^^^^^^^^^^^
+   |
+   = help: write each attribute as `:name value`, such as `#+ATTR_HTML: :class wide :width 300`
+   = note: run `yuanme docs org/invalid-attribute` for more
+error[org/unsupported-construct]: `info:` links aren't in the Org subset
+   --> worg/org-tutorials--org-spreadsheet-lisp-formulas.org:244:132
+    |
+244 |   information on using Lisp as formulas: see the [[https://orgmode.org/manual/Formula-syntax-for-Lisp.html][manual online]] or as an [[in...
+    |  ____________________________________________________________________________________________________________________________________^
+245 | | page]].
+    | |______^
+    |
+    = help: link to a URL, another Entry's file, or a heading in this one
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `info:` links aren't in the Org subset
+   --> worg/org-tutorials--org-spreadsheet-lisp-formulas.org:251:3
+    |
+251 |   [[info:org#The spreadsheet][the spreadsheet]].
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: link to a URL, another Entry's file, or a heading in this one
+    = note: run `yuanme docs org/unsupported-construct` for more
+<h2 id="introduction">Introduction</h2>
+<p>This tutorial explains how to use Emacs Lisp as formulas in Org tables.  If
+you want a general tutorial on how to use Org as a spreadsheet system, read
+<a href="org-spreadsheet-intro.org">this tutorial</a>.  You can also check the complete <a href="https://orgmode.org/manual/The-spreadsheet.html#The-spreadsheet">Org documentation</a> on this
+topic<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.</p>
+<h2 id="example-1-manipulate-cells">Example 1: manipulate cells</h2>
+<p>Here is a simple table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>First name</th><th>Last Name</th><th>Email</th></tr></thead><tbody><tr><td>John</td><td>Doe</td><td>john.doe@emacs.edu</td></tr><tr><td>Jennie</td><td>Duh</td><td>jennie.duh@emacs.edu</td></tr></tbody></table>
+<p>You easily notice the pattern <code>[firstname].[lastname]@emacs.edu</code> for the
+third column.  Given a first name and a last name, it should be easy to
+compute the result for the “Email” column.</p>
+<p>Okay, let’s do it then.  First put your cursor in the third column:</p>
+<p><img src="../images/bzg/org-spreadsheet-table1.jpg" alt="org-spreadsheet-table1.jpg"></p>
+<p>Now type <code>C-c }</code> to display the table’s coordinates.</p>
+<p>For each row, you want to concatenate the content of the first column
+(accessed with <code>$1</code>) to a string with a dot (”.”) to the cell of the second
+column (accessed with <code>$2</code>) and to the string “@emacs.edu”.  In Emacs Lisp,
+you would write this:</p>
+<pre><code class="language-emacs-lisp">'(concat $1 "." $2 "@emacs.edu")
+</code></pre>
+<p>Now copy this formula, type <code>C-c =</code> in the bottom right field to insert a
+<em>column formula</em><sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup> and copy the formula here.  Hitting <code>RET</code> will
+immediately insert the result in this field (<code>Jack.Goody@emacs.edu</code>) and
+add the <code>#+TBLFM</code> line at the bottom of the table.</p>
+<p><strong>Caveat</strong>: beware of the initial quote: the formula is the <em>expression
+itself</em>, not its value.  This expression will only have a meaning when the
+<code>$1</code> and <code>$2</code> references will be replaced by the right strings, an the
+expression will then by applied as a formula by pressing <code>C-c C-c</code> on
+<code>#+TBLFM</code>.</p>
+<p>So you now have this table:</p>
+<p><img src="../images/bzg/org-spreadsheet-table2.jpg" alt="org-spreadsheet-table2.jpg"></p>
+<p>At the time the formula is evaluated, the references <code>$1</code> and <code>$2</code> are
+interpreted and replaced by the values of these cells <em>as strings</em>: you
+don’t need to enclose <code>$1</code> with quotes (“$1”).</p>
+<p>If you want to force the references (<code>$1</code> and <code>$2</code>) to be interpreted as
+numbers, add the flag <code>;N</code> at the end of the Emacs lisp expression.  See
+for example this table</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>First name</th><th>Last Name</th><th>Maths</th><th>French</th><th>Mean</th></tr></thead><tbody><tr><td>John</td><td>Doe</td><td>12</td><td>16</td><td>14</td></tr><tr><td>Jennie</td><td>Duh</td><td>15</td><td>9</td><td>12</td></tr></tbody></table>
+<p>where we used this formula for the fifth column:</p>
+<pre><code class="language-org">#+TBLFM: $5='(/ (+ $3 $4) 2);N
+</code></pre>
+<p>As an exercise, try to find Emacs lisp formula for the fifth column in this
+table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>First name</th><th>Last Name</th><th>Maths</th><th>French</th><th>Mean</th></tr></thead><tbody><tr><td>John</td><td>Doe</td><td>12</td><td>16</td><td>John: 14</td></tr><tr><td>Jennie</td><td>Duh</td><td>15</td><td>9</td><td>Jennie: 12</td></tr></tbody></table>
+<p>All you have is the values of the first four columns.  (Hint: check the
+Emacs lisp functions <code>string-to-number</code> and <code>number-to-string</code>.)</p>
+<p><strong>Solution</strong>: we cannot use the <code>;N</code> flag because it will force
+interpretation of the cells as numbers, and if we do so, we will not be
+able to access the value of cells in the first row.  So one idea is to
+use <code>string-to-number</code> and <code>number-to-string</code> this way:</p>
+<pre><code class="language-org">#+TBLFM: $5='(concat $1 ": " (number-to-string (/ (+ (string-to-number $3) (string-to-number $4)) 2)))
+</code></pre>
+<p>Another idea is to use the <code>;L</code> flag: instead of using interpreting cells
+as strings or numbers, it inserts their content literally in the Emacs lisp
+expression.  So the formula above can safely be replaced by this more
+condensed one:</p>
+<pre><code class="language-org">#+TBLFM: $5='(concat "$1" ": " (number-to-string (/ (+ $3 $4) 2)));L
+</code></pre>
+<p>Note the double-quotes around “$1”: that’s because inserting a first name
+literally would mean “it is an Emacs lisp symbol”.  So, when using the <code>;L</code>
+flag, adding double-quotes makes sure the reference is interpreted as a
+string.</p>
+<p>We’re done!</p>
+<h2 id="example-2-manipulating-ranges">Example 2: manipulating ranges</h2>
+<p>Suppose now we have this table</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th><th>Col5</th></tr></thead><tbody><tr><td>?</td><td>?</td><td>in Col1 and Col2 (no duplicates)</td><td>only in Col1</td><td>only in Col2</td></tr><tr><td>?</td><td>?</td><td>…</td><td>…</td><td>…</td></tr><tr><td>?</td><td>?</td><td>…</td><td>…</td><td>…</td></tr></tbody></table>
+<p><code>Col1</code> and <code>Col2</code> contain strings.</p>
+<p>We want the first cell of the third column to contain a string with all the
+strings that are in both <code>Col1</code> and <code>Col2</code>, with no duplicates.  <code>Col4</code>
+contains strings that are only in <code>Col1</code> (and not in <code>Col2</code>) whereas <code>Col5</code>
+contains strings that are only in <code>Col2</code> (and not in <code>Col1</code>).</p>
+<p>How to automate this with an Emacs lisp formula?</p>
+<p>Let’s first figure out the result we want for a simple table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th><th>Col5</th></tr></thead><tbody><tr><td>a</td><td>a</td><td>a b c d</td><td>c</td><td>d</td></tr><tr><td>a</td><td>b</td><td></td><td></td><td></td></tr><tr><td>b</td><td>a</td><td></td><td></td><td></td></tr><tr><td>c</td><td>d</td><td></td><td></td><td></td></tr></tbody></table>
+<p>Now let’s get the values of the first column starting from the second row.</p>
+<p>The “a” on the top left cell can be accessed through the reference
+<code>@2$1</code>.  The “c” on the bottom left cell can be accessed through the
+reference <code>@5$1</code>.  The range of cells can then be accessed with
+<code>@2$1..@5$1</code>.</p>
+<p>Let’s add this range in the first cell of <code>Col3</code>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th><th>Col5</th></tr></thead><tbody><tr><td>a</td><td>a</td><td>a a b c</td><td>c</td><td>d</td></tr><tr><td>a</td><td>b</td><td></td><td></td><td></td></tr><tr><td>b</td><td>a</td><td></td><td></td><td></td></tr><tr><td>c</td><td>d</td><td></td><td></td><td></td></tr></tbody></table>
+<p>Here is the formula:</p>
+<pre><code class="language-org">#+TBLFM: @2$3='(mapconcat 'identity (list @2$1..@5$1) " ")
+</code></pre>
+<p>How to read it?</p>
+<p>When interpreted, the range <code>@2$1..@5$1</code> is replaced by the values of the
+cells, separated with a space.  So <code>(list @2$1..@5$1)</code> becomes <code>(list "a"
+"a" "b" "c")</code> and the whole formula becomes</p>
+<pre><code class="language-emacs-lisp">'(mapconcat 'identity (list "a" "a" "b" "c") " ")
+</code></pre>
+<p>which basically means “Concatenate elements of (“a” “a” “b” “c”) and add a
+single space between each of them”.</p>
+<p>Let’s generalize and say that we don’t know how many rows our table
+contains.  The range <code>@2$1..@5$1</code> becomes <code>@2$1..@>$1</code> where <code>@></code> means
+“the last row” and <code>@>$1</code> “the last row in the first column”.</p>
+<p>Remember: we want the third column to contain a string with all the strings
+that are in both <code>Col1</code> and <code>Col2</code>, with no duplicates.  Let’s first list
+all values from <code>Col1</code> and <code>Col2</code> with <code>(list @2$1..@>$1 @2$2..@>$2)</code>, then
+delete duplicates like this <code>(delete-dups (list @2$1..@>$1 @2$2..@>$2))</code>
+then put this expression in the one we already have above.</p>
+<pre><code class="language-org">#+TBLFM: @2$3='(mapconcat 'identity (delete-dups (list @2$1..@>$1 @2$2..@>$2)) " ")
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Col1</th><th>Col2</th><th>Col3</th><th>Col4</th><th>Col5</th></tr></thead><tbody><tr><td>a</td><td>a</td><td>a b c d</td><td>?</td><td>?</td></tr><tr><td>a</td><td>b</td><td></td><td></td><td></td></tr><tr><td>b</td><td>a</td><td></td><td></td><td></td></tr><tr><td>c</td><td>d</td><td></td><td></td><td></td></tr></tbody></table>
+<p>Okay.  Now that you know how to manipulate ranges, you can replace the ”?”
+with the right formulas…  remember: <code>Col4</code> contains strings that are only
+in <code>Col1</code> and not in <code>Col2</code>, whereas <code>Col5</code> contains strings that are only
+in <code>Col2</code> and not in <code>Col1</code>.  (Hint: you can write your own functions and
+use them in an Emacs lisp formula.)</p>
+<p>Don’t forget that you can edit a table’s formulas with by hitting C-c ’
+anywhere on the table: it will open the formulas editor, which highlights
+references that the cursor is on (both in the formulas editor and in the
+table).  The formulas editor is really handy when you need to check that
+your references are correct.  Also, hitting <code>TAB</code> on a formulas in this
+editor will pretty-print the formula, which helps editing a lot !</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Please check the Org manual for (condensed but accurate and up to date)
+information on using Lisp as formulas: see the <a href="https://orgmode.org/manual/Formula-syntax-for-Lisp.html">manual online</a> or as an .</p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>If you are reading this tutorial from within Emacs, go to the
+spreadsheet section of the manual by clicking on this link:
+. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p>Column formulas apply to the whole column, whereas Field formulas
+only apply to the current field.  Field formulas can be inserted by
+pressing <code>C-u C-c =</code> in a field. <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

@@ -1,0 +1,186 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="what-is-worg--what-is-its-relation-to-org">What is Worg?  What is its relation to Org?</h2>
+<p>Worg is a collaborative knowledge database about <a href="https://orgmode.org">Org</a>.</p>
+<p>It is made of numerous <code>.org</code> files that you can clone from
+<a href="https://git.sr.ht/~bzg/worg">https://git.sr.ht/~bzg/worg</a>.</p>
+<h2 id="who-can-participate-in-the-editing-of-worg">Who can participate in the editing of Worg?</h2>
+<p>Everyone with a minimal knowledge of Org (and Emacs).</p>
+<p>You can download <code>.org</code> source for any WORG page by replacing <code>.html</code>
+with <code>.org</code> in the URL.  Then, <a href="mailto:emacs-orgmode@gnu.org">send an email</a> to Org mailing list with
+your suggestions or edits.</p>
+<p>If you are familiar with Git, you can directly make edits to Worg
+sources.  See the section describing <a href="#git">how to use git for Worg</a> for
+details.</p>
+<p>If you are lost, you can ask <a href="mailto:contact@tecosaur.net">Timothy</a> for help.</p>
+<h2 id="whos-in-charge-of-worg">Who’s in charge of Worg?</h2>
+<p>Worg is currently maintained by Christian Moe.</p>
+<p>The maintainer’s role is to take care of <a href="https://git.sr.ht/~bzg/worg">the Worg repository</a> and to empower new
+maintainers and contributors.</p>
+<p>Worg was started by <a href="http://bzg.fr">Bastien</a> in the hope that other Org-ers around will
+bite into this and start sharing tutorials, example of codes, etc.</p>
+<h2 id="why-use-org-mode-for-creating-a-collaborative-website">Why use Org-mode for creating a collaborative website?</h2>
+<p>Org makes it easy, fast and effective to edit <strong>well-structured</strong>
+files.  Ever wanted to edit a <a href="org-tutorials/tables.org">table</a> in a wiki?  Ever wanted to change
+the outline structure in a wikipage?  Ever wanted to edit lists
+quickly?  Org lets you do this.</p>
+<p>Org-mode makes <strong>beautiful</strong> documents: it supports links, font
+beautification, examples, etc.  And you can export those documents to
+HTML, LaTeX, or DocBook.</p>
+<p>Org is also a powerful <strong>task-management system</strong>.  Hopefully sharing
+a <a href="todo.org">TODO file</a> will make it easy for everyone to know where they could help.</p>
+<h2 id="ok-i-want-to-contribute-to-worg-now">OK, I want to <strong>contribute to Worg</strong> now!</h2>
+<p>First, you may be interested in general advice and conventions on how
+to <a href="worg-editing.org">let Worg grow</a>.</p>
+<p>If you’re interested in how Worg publishes itself as a website, see
+the <a href="worg-setup.org">Worg setup</a> page.</p>
+<p>Once you are familiar with the above, you can contribute by sending
+your edits to the <a href="org-mailing-list.org">Org mailing list</a>.</p>
+<p>If you want to contribute via Git, review <a href="#git">How to use git for Worg</a>.</p>
+<pre><code>~$ git clone https://git.sr.ht/~bzg/worg
+</code></pre>
+<p>If you want to contribute regularly, you can ask for commit access.
+When you get it, you can clone the repository like this:</p>
+<pre><code>~$ git clone git@git.sr.ht:~bzg/worg
+</code></pre>
+<p>and push commits directly.</p>
+<h3 id="git">How to use git for Worg</h3>
+<h4 id="contribute-to-worg">The first time you contribute to Worg</h4>
+<ol>
+<li>
+<p>(optional) Create an account on <a href="https://sr.ht">Sourcehut</a>.  Make sure that your
+<a href="https://git-scm.com/book/en/v2/Git-on-the-Server-Generating-Your-SSH-Public-Key">public SSH key</a> has been added to your profile. (If you don’t have
+one, see <a href="worg-git-ssh-key.org">How to create your own SSH key</a>.)</p>
+</li>
+<li>
+<p>(optional) Request write access to <a href="https://git.sr.ht/~bzg/worg">the Worg repo</a>.</p>
+</li>
+<li>
+<p>Clone the project somewhere in a working directory:</p>
+<p>If you have write access,</p>
+<pre><code>~$ git clone git@git.sr.ht:~bzg/worg
+</code></pre>
+<p>Otherwise,</p>
+<pre><code>~$ git clone https://git.sr.ht/~bzg/worg
+</code></pre>
+</li>
+<li>
+<p>Go to the newly created <code>worg/</code> directory and edit some files.</p>
+</li>
+<li>
+<p>If you created files, add them to the git index:</p>
+<pre><code>~$ git add *.org
+</code></pre>
+</li>
+<li>
+<p>Commit changes with the appropriate comment:</p>
+<pre><code>~$ git commit -a -m "summary comment about all changes"
+</code></pre>
+</li>
+<li>
+<p>If you have write access, push your change directly to Worg:</p>
+<pre><code>~$ git push
+</code></pre>
+</li>
+<li>
+<p>If you do not have write access, create a patch and send it to <a href="mailto:emacs-orgmode@gnu.org">the mailing list</a></p>
+<pre><code>~$ git format-patch origin/master
+</code></pre>
+<p>This will create a patch file that you can attach to your email</p>
+</li>
+</ol>
+<p>The system is designed for immediate updates – if not, it means
+something is wrong.  You should be able to read the error message and
+see what is wrong, then help with fixing issues.  In general the
+issues are trivial to fix.</p>
+<h4 id="the-second-time-you-contribute-to-worg">The second time you contribute to Worg</h4>
+<ol>
+<li>
+<p>Go to your <code>worg/</code> directory.</p>
+</li>
+<li>
+<p>Be sure to “pull” the latest version of the repository.</p>
+<pre><code>~$ git pull --rebase
+</code></pre>
+</li>
+<li>
+<p>Make some changes.  (If you want to learn more about various git
+workflows, read <a href="worg-git-advanced.org">this page</a>.)</p>
+</li>
+<li>
+<p>Commit your changes to your local repository:</p>
+<pre><code>~$ git commit -a -m "summary comment about all changes"
+</code></pre>
+</li>
+<li>
+<p>Push your change to the remote repository</p>
+<pre><code>~$ git push
+</code></pre>
+<p>or create a patch and send it to <a href="mailto:emacs-orgmode@gnu.org">the mailing list</a></p>
+<pre><code>~$ git format-patch origin/master
+</code></pre>
+</li>
+</ol>
+<h4 id="going-deeper">Going deeper</h4>
+<h5 id="getting-organized">Getting organized</h5>
+<p>The Worg TODO file is <code>todo.org</code>.  If you are a Worg zealot, maybe
+you want to add this file to the list of your agenda files.  For
+example, here is my <code>org-agenda-files</code> variable:</p>
+<pre><code>(setq org-agenda-files '("~/org/bzg.org" "~/git/worg/todo.org")
+</code></pre>
+<p>I have an agenda custom command for checking tasks that are assigned
+to me:</p>
+<pre><code>(org-add-agenda-custom-command '("W" tags "Owner=\"Bastien\""))
+</code></pre>
+<p>The next time someone assigns a task for me, it will appear in my Worg
+agenda view.</p>
+<h5 id="register-your-changes-under-your-name">Register your changes under your name</h5>
+<p>Information regarding your name can be stored in your global
+<code>~/.gitconfig</code> file, or in <code>Worg/.git/config</code>.</p>
+<p>Edit it like this:</p>
+<pre><code>[user]
+       name = FirstName LastName
+       email = you@yourdomain.example.com
+</code></pre>
+<p>Now your changes will be filed under your name.</p>
+<h5 id="dealing-with-line-endings">Dealing with line endings</h5>
+<p>Unix, Windows and Mac all have different conventions for marking the
+end of a line. This might lead to problems when editing the same file
+across platforms. Github advises Linux users to automatically convert
+all external files to LF on committing (see
+<a href="http://help.github.com/dealing-with-lineendings">http://help.github.com/dealing-with-lineendings</a>) by setting:</p>
+<pre><code>~$ git config --global core.autocrlf input
+</code></pre>
+<p>For Worg, this is the wrong solution, since there are already files
+with both end of line conventions in the repository.  Instead tell git
+locally not to convert files by setting:</p>
+<pre><code>~$ git config core.autocrlf false
+</code></pre>
+<p>Of course you have to be careful not to save Windows files as Unix
+files or vice versa, since this would lead to large and confusing
+diffs. This should not be a problem with Worg as</p>
+<ul>
+<li>one rarely edits other people’s files anyway, and</li>
+<li>Emacs can deal with end of line conventions transparently.</li>
+</ul>
+<h5 id="git-usage-for-people-who-just-want-to-send-patches">Git usage for people who just want to send patches</h5>
+<p>See <a href="worg-git-advanced.org">this page</a>.</p>
+<h5 id="emacs-in-built-version-control-system-and-git">Emacs’ in-built version control system and git</h5>
+<p>Emacs’s VC supports many common git operations, but others, like
+repository syncing must be done from the command line.  For example
+the Command <code>C-x v v</code> does check in changes in the <strong>local</strong> and not in the
+<strong>remote</strong> repository, in contrast to other back ends like svn.  It is
+necessary to do additionally</p>
+<pre><code>~$ git push
+</code></pre>
+<p>to sync the change on the remote server.</p>
+<h3 id="something-went-wrong">Something went wrong</h3>
+<h4 id="preventing-publishing-errors">Preventing publishing errors</h4>
+<p>Locally export any document you edit as HTML (<code>C-c C-e h H</code>) prior to
+committing it to Worg and ensure the export process doesn’t fail.
+This will be more reliable if you’re running the latest version of
+Org.</p>
+<p>You may also want to check the formatting in a browser before
+committing your change (<code>C-c C-e h o</code>).</p>

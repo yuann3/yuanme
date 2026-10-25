@@ -1,0 +1,214 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="sec-intro">Introduction</h2>
+<p>This document is a set of examples to see how the org-ref cross-reference processor works. Go to <a href="#build">build</a> to run the preprocessor and do the exports.</p>
+<h3 id="sec-headings">section references</h3>
+<dl>
+<dt>ref</dt>
+<dd>ref:sec-intro</dd>
+<dt>autoref</dt>
+<dd>autoref:sec-intro</dd>
+<dt>nameref</dt>
+<dd>nameref:sec-intro</dd>
+<dt>pageref</dt>
+<dd>pageref:sec-intro</dd>
+<dt>cref, one</dt>
+<dd>cref:sec-intro</dd>
+<dt>cref, two</dt>
+<dd>cref:sec-intro,sec-headings</dd>
+<dt>cref, three, sorted</dt>
+<dd>cref:sec-tables,sec-intro,sec-headings</dd>
+<dt>Cref</dt>
+<dd>Cref:sec-intro</dd>
+<dt>Cref, two</dt>
+<dd>Cref:sec-intro,sec-headings</dd>
+<dt>Cref, three, sorted</dt>
+<dd>Cref:sec-tables,sec-intro,sec-headings</dd>
+</dl>
+<h3 id="sec-tables">tables refs</h3>
+
+
+
+
+
+
+
+
+<table id="b1"><caption>this is a table b1.</caption><tbody><tr><td>3</td><td>4</td></tr></tbody></table>
+
+
+
+
+
+
+
+
+<table id="b2"><caption>this is a table b2.</caption><tbody><tr><td>3</td><td>4</td></tr></tbody></table>
+<dl>
+<dt>ref</dt>
+<dd>ref:b1</dd>
+<dt>autoref</dt>
+<dd>autoref:b1</dd>
+<dt>nameref</dt>
+<dd>nameref:b1</dd>
+<dt>pageref</dt>
+<dd>pageref:b1</dd>
+<dt>cref</dt>
+<dd>cref:b1</dd>
+<dt>cref, two</dt>
+<dd>cref:b1,b2</dd>
+<dt>Cref</dt>
+<dd>Cref:b1</dd>
+<dt>Cref, two</dt>
+<dd>Cref:b1,b2</dd>
+</dl>
+<h3 id="equations">equations</h3>
+<code class="language-math math-display">\begin{equation}
+3+3=6
+\end{equation}</code>
+<code class="language-math math-display">\begin{equation}
+3+3=6
+\end{equation}</code>
+<p>This equation will have a number in the ODT export.</p>
+<code class="language-math math-display">\begin{equation}
+3+3=6
+\end{equation}</code>
+<dl>
+<dt>eqref</dt>
+<dd>eqref:q1</dd>
+<dt>autoref</dt>
+<dd>autoref:q1</dd>
+<dt>cref</dt>
+<dd>cref:q1,q2</dd>
+<dt>Cref</dt>
+<dd>Cref:q1,q2</dd>
+</dl>
+<h3 id="listings">Listings</h3>
+<figure id="s1">
+<figcaption>listing caption s1</figcaption>
+<pre><code class="language-jupyter-python">%matplotlib inline
+import matplotlib.pyplot as plt
+
+plt.plot([1, 2, 4])
+</code></pre>
+</figure>
+<figure id="s2">
+<figcaption>listing caption s2</figcaption>
+<pre><code class="language-jupyter-python">%matplotlib inline
+import matplotlib.pyplot as plt
+
+plt.plot([1, 2, 4])
+</code></pre>
+</figure>
+<figure id="s3">
+<figcaption>listing caption s3</figcaption>
+<pre><code class="language-jupyter-python">%matplotlib inline
+import matplotlib.pyplot as plt
+
+plt.plot([1, 2, 4])
+</code></pre>
+</figure>
+<figure id="s4">
+<figcaption>listing caption s4</figcaption>
+<pre><code class="language-jupyter-python">%matplotlib inline
+import matplotlib.pyplot as plt
+
+plt.plot([1, 2, 4])
+</code></pre>
+</figure>
+<dl>
+<dt>ref</dt>
+<dd>ref:s1</dd>
+<dt>autoref</dt>
+<dd>autoref:s1</dd>
+<dt>nameref</dt>
+<dd>nameref:s1</dd>
+<dt>cref</dt>
+<dd>cref:s1</dd>
+<dt>cref, 2</dt>
+<dd>cref:s1,s2  listings 1 and 2</dd>
+<dt>cref, 2, sorted</dt>
+<dd>cref:s2,s1  listings 1 and 2, cref does sorting!</dd>
+<dt>cref, 3</dt>
+<dd>cref:s1,s3,s4  listings 1, 3 and 4</dd>
+<dt>cref, 4</dt>
+<dd>cref:s1,s2,s3,s4  listings 1 to 4 (this seems too clever! you would have to be able to tell they were sequential.)</dd>
+<dt>Cref</dt>
+<dd>Cref:s1</dd>
+<dt>Cref</dt>
+<dd>Cref:s1,s2</dd>
+</dl>
+<h3 id="figures">figures</h3>
+<figure id="g1">
+<img src="./.ob-jupyter/46ed61e65bf11890f8772850057bb35847f984b8.png" alt="46ed61e65bf11890f8772850057bb35847f984b8.png">
+<figcaption>figure caption g1</figcaption>
+</figure>
+<figure id="g2">
+<img src="./.ob-jupyter/46ed61e65bf11890f8772850057bb35847f984b8.png" alt="46ed61e65bf11890f8772850057bb35847f984b8.png">
+<figcaption>figure caption g2</figcaption>
+</figure>
+<dl>
+<dt>ref</dt>
+<dd>ref:g1</dd>
+<dt>nameref</dt>
+<dd>nameref:g1</dd>
+<dt>pageref</dt>
+<dd>pageref:g1</dd>
+<dt>autoref</dt>
+<dd>autoref:g1</dd>
+<dt>cref</dt>
+<dd>cref:g1</dd>
+<dt>cref,2</dt>
+<dd>cref:g1,g2</dd>
+<dt>Cref</dt>
+<dd>Cref:g1</dd>
+<dt>Cref</dt>
+<dd>Cref:g1,g2</dd>
+</dl>
+<h3 id="mixed-cref">Mixed cref</h3>
+<ul>
+<li>cref:b1,sec-intro,s1,g1,b2,s2,s4,s3</li>
+<li>Cref:b1,sec-intro,s1,g1,b2,s2,s4,s3</li>
+<li>cref:sec-intro,s1,g1,b2,s2,s4,s3,b1</li>
+<li>Cref:sec-intro,s1,g1,b2,s2,s4,s3,b1</li>
+</ul>
+<h3 id="math-environments">math environments</h3>
+<h4 id="lemmas">Lemmas</h4>
+<div class="lemma" id="lm-1">
+<p>A named lemma</p>
+</div>
+<p>see cref:lm-1.</p>
+<h4 id="corollary">Corollary</h4>
+<div class="corollary" id="co-1">
+<p>see  cref:lm-1.</p>
+</div>
+<p>cref:co-1</p>
+<h4 id="theorem">theorem</h4>
+<div class="theorem" id="thm-1">
+<p>I have a theorem this will work. See the margin</p>
+</div>
+<p>Margin note cref:thm-1</p>
+<h2 id="build">build</h2>
+<h3 id="html">HTML</h3>
+<pre><code class="language-emacs-lisp">(require 'org-ref-refproc) ;; this is not loaded by default!
+
+(let ((org-export-before-parsing-hook '(org-ref-refproc)))
+  (org-open-file (org-html-export-to-html)))
+</code></pre>
+<h3 id="to-an-org-buffer">To an org buffer</h3>
+<pre><code class="language-emacs-lisp">(let ((org-export-before-parsing-hook '(org-ref-refproc)))
+   (org-org-export-as-org))
+</code></pre>
+<h3 id="to-odt">To ODT</h3>
+<p>See <a href="https://orgmode.org/manual/LaTeX-math-snippets.html">https://orgmode.org/manual/LaTeX-math-snippets.html</a> for details about the equations. You need these options. I didn’t get the latexml approach to work described there, but this worked somewhat ok.</p>
+<pre><code class="language-emacs-lisp">(let ((org-export-before-parsing-hook '(org-ref-refproc)))
+  (org-open-file (org-odt-export-to-odt) 'system))
+</code></pre>
+<h3 id="latex">LaTeX</h3>
+<p>It isn’t clear why you would go this route, since org-ref is for LaTeX in the
+first place, but this does work nicely.</p>
+<pre><code class="language-emacs-lisp">(let ((org-export-before-parsing-hook '(org-ref-refproc)))
+  (org-open-file (org-babel-latex-tex-to-pdf (org-latex-export-to-latex))))
+</code></pre>

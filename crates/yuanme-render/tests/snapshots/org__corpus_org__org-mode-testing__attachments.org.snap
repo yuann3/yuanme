@@ -1,0 +1,27 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[link/unresolved]: nothing here is called `attachment:fileA`: no `<<target>>`, `#+NAME` or headline title
+ --> org-mode-testing/attachments.org:8:27
+  |
+8 | A link to one attachment: [[attachment:fileA]]
+  |                           ^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `attachment:fileB`: no `<<target>>`, `#+NAME` or headline title
+  --> org-mode-testing/attachments.org:11:31
+   |
+11 | A link to another attachment: [[attachment:fileB]]
+   |                               ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: run `yuanme docs link/unresolved` for more
+<p>Used to test and verify the functionality of org-attach.</p>
+<h2 id="h1">H1</h2>
+<p>A link to one attachment: <a href=""></a></p>
+<h3 id="h11">H1.1</h3>
+<p>A link to another attachment: <a href=""></a></p>
+<h3 id="h12">H1.2</h3>
+<h2 id="h2">H2</h2>
+<h2 id="h3">H3</h2>
+<h3 id="h31">H3.1</h3>

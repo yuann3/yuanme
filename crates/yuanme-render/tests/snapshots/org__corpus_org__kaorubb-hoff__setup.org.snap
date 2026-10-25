@@ -1,0 +1,12 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
+  --> kaorubb-hoff/setup.org:20:1
+   |
+20 | #+SETUPFILE: ./org-html-themes/org/theme-readtheorg.setup
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
+   = note: run `yuanme docs org/setupfile` for more

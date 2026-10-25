@@ -1,0 +1,90 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="a-simple-model-of-evolution">A simple model of evolution</h2>
+<p>Evolution is the result of changes in the genetic composition of
+populations over time. One of the simplest models of evolution is as
+follows. There is a population of N individuals, among which there
+are two genetic types: red and blue<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>. Here is the initial
+generation of the population (N=10).</p>
+<p>There is no mutation, no selection and no sex; the next generation
+is made up by randomly choosing 10 individuals from the previous
+generation<sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup>. A single individual can be chosen more than once,
+or not at all; the number of times an individual is chosen
+corresponds to the number of progeny it has in the next
+generation. Even without mutation or natural selection the
+proportions of red and blue types will change, because different
+individuals will have different numbers of offspring, by chance.</p>
+<p>So the first two generations might look like this.</p>
+<p>This is a form of evolution called “genetic drift”. It is inevitable,
+although if the population is very large it will have less effect.</p>
+<p>Let X_t be the number of red individuals in generation t, and let p_t
+be the proportion of red individuals. So X_1 is 6 and p_1 is 0.6. To
+choose the number of red individuals in generation 2 we make 10
+choices, each time having probability 6/10 of getting a red
+individual. So X_2 is a <em>binomial</em> random variable, with 10 trials and
+success probability 0.6. In general, the random process is described
+by the following transition probabilities.</p>
+<p>We can simulate the evolution over many generations in R. This code
+simulates the change in frequency in a single population over 100
+generations. We’ll make the population larger (N=1000) but still
+start off with 60% red individuals.</p>
+<pre id="simpledrift(N=1000, X1=600, ngens=100)"><code class="language-R">p &#x3C;- numeric(ngens)
+p[1] &#x3C;- X1/N
+for(g in 2:ngens)
+    p[g] &#x3C;- rbinom(1, size=N, prob=p[g-1]) / N
+plot(p, type="l", ylim=c(0,1), xlab="Generation", ylab="Proportion red")
+</code></pre>
+<p>But how variable is this process? To answer this we need to repeat
+the simulation many times (i.e. simulate many identical but
+independent populations). We could do that as follows</p>
+<pre><code class="language-R">drift.slow &#x3C;- function(N, X1, ngens, nreps) {
+    p &#x3C;- matrix(NA, nrow=ngens, ncol=nreps)
+    p[1,] &#x3C;- X1/N
+    for(rep in 1:nreps) {
+        for(g in 2:ngens)
+            p[g,rep] &#x3C;- rbinom(1, size=N, prob=p[g-1,rep]) / N
+    }
+    p
+}
+</code></pre>
+<p>But this is not a good implementation. One should make use of
+“vectorisation”, which makes the simulation much more efficient when
+there are many replicates<sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup>. Note the way that rbinom simulates
+all replicates at once, but still one generation at a time.</p>
+<pre><code class="language-R">drift.faster &#x3C;- function(N, X1, ngens, nreps) {
+    p &#x3C;- matrix(NA, nrow=ngens, ncol=nreps)
+    p[1,] &#x3C;- X1/N
+    for(gen in 2:ngens)
+        p[gen,] &#x3C;- rbinom(n=nreps, size=N, prob=p[gen-1,]) / N
+    p
+}
+</code></pre>
+<p>To run the simulation:</p>
+<pre id="drift(N=1000, X1=600, nreps=10, ngens=100)"><code class="language-R">p &#x3C;- drift.faster(N, X1, ngens, nreps)
+matplot(p, type="l", ylim=c(0,1), lty=1)
+</code></pre>
+<p>And let’s quickly see how much of a speed difference the vectorisation
+makes.</p>
+<pre id="compare-times(N=1000, X1=600, nreps=1000, ngens=100)"><code class="language-R">functions &#x3C;- c(drift.slow=drift.slow, drift.faster=drift.faster)
+times &#x3C;- sapply(functions, function(f) as.numeric(system.time(f(N, X1, ngens, nreps))[1]))
+print(times)
+cat(sprintf("\nFactor speed-up = %.1f\n", times[1] / times[2]))
+</code></pre>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>Every individual is chacterised by a single type; no sex,
+recombination, mutation, selection, etc. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p>All members of the previous generation die as the next
+generation is formed. <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-3">
+<p>Note that we can’t vectorise the entire simulation because
+drift is a Markov process. <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

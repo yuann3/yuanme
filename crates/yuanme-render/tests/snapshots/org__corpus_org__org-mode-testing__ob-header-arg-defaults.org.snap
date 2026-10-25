@@ -1,0 +1,416 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+  --> org-mode-testing/ob-header-arg-defaults.org:31:1
+   |
+31 | #+CALL: showvar() :results silent
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: yuanme never runs code; paste in the results the call wrote
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+  --> org-mode-testing/ob-header-arg-defaults.org:58:1
+   |
+58 | #+CALL: showvar() :results silent
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: yuanme never runs code; paste in the results the call wrote
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+  --> org-mode-testing/ob-header-arg-defaults.org:83:1
+   |
+83 | #+CALL: showvar(end=6) :results silent
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: yuanme never runs code; paste in the results the call wrote
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/ob-header-arg-defaults.org:109:1
+    |
+109 | #+CALL: showvar(end=6) :results silent
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+<pre id="showvar"><code class="language-emacs-lisp">(mapconcat (lambda (n)
+             (let* ((n (string (+ 48 n)))
+                    (p (intern (concat "t" n))))
+               (if (boundp p) (eval p) (concat "--" n))))
+           (number-sequence 1 end)
+           "/")
+</code></pre>
+<h2 id="global-property">Global property</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Global</th><th>t1</th><th>t2</th><th>t3</th><th>t4</th><th>t5</th><th>t6</th><th>t7</th><th>t8</th><th>t9</th></tr></thead><tbody><tr><td>header-args</td><td>gh1</td><td>gh2</td><td>—</td><td>gh4</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>header-args:emacs-lisp</td><td>ge1</td><td>—</td><td>—</td><td>ge4</td><td>ge5</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Result</td><td>ge1</td><td>gh2</td><td>–3</td><td>ge4</td><td>ge5</td><td>–6</td><td>–7</td><td>–8</td><td>–9</td></tr></tbody></table>
+<pre><code class="language-emacs-lisp">&#x3C;&#x3C;showvar>>
+</code></pre>
+<h2 id="tree-property">Tree property</h2>
+<h3 id="overwrite">Overwrite</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Global</th><th>t1</th><th>t2</th><th>t3</th><th>t4</th><th>t5</th><th>t6</th><th>t7</th><th>t8</th><th>t9</th></tr></thead><tbody><tr><td>header-args</td><td>gh1</td><td>gh2</td><td>—</td><td>gh4</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>header-args:emacs-lisp</td><td>ge1</td><td>—</td><td>—</td><td>ge4</td><td>ge5</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Tree</td><td>t1</td><td>t2</td><td>t3</td><td>t4</td><td>t5</td><td>t6</td><td>t7</td><td>t8</td><td>t9</td></tr><tr><td>header-args</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>th7</td><td>—</td><td>—</td></tr><tr><td>header-args:emacs-lisp</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>te8</td><td>—</td></tr><tr><td>Result #+CALL</td><td>ge1</td><td>gh2</td><td>–3</td><td>ge4</td><td>ge5</td><td>–6</td><td>th7</td><td>te8</td><td>–9</td></tr><tr><td>Result noweb</td><td>–1</td><td>–2</td><td>–3</td><td>–4</td><td>–5</td><td>–6</td><td>th7</td><td>te8</td><td>–9</td></tr></tbody></table>
+<pre><code class="language-emacs-lisp">&#x3C;&#x3C;showvar>>
+</code></pre>
+<h3 id="accumulate">Accumulate</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Global</th><th>t1</th><th>t2</th><th>t3</th><th>t4</th><th>t5</th><th>t6</th><th>t7</th><th>t8</th><th>t9</th></tr></thead><tbody><tr><td>header-args</td><td>gh1</td><td>gh2</td><td>—</td><td>gh4</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>header-args:emacs-lisp</td><td>ge1</td><td>—</td><td>—</td><td>ge4</td><td>ge5</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Tree</td><td>t1</td><td>t2</td><td>t3</td><td>t4</td><td>t5</td><td>t6</td><td>t7</td><td>t8</td><td>t9</td></tr><tr><td>header-args+</td><td>—</td><td>th2</td><td>th3</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>header-args:emacs-lisp+</td><td>—</td><td>—</td><td>—</td><td>—</td><td>te5</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Result #+CALL</td><td>ge1</td><td>th2</td><td>th3</td><td>ge4</td><td>te5</td><td>–6</td><td>–7</td><td>–8</td><td>–9</td></tr><tr><td>Result noweb</td><td>ge1</td><td>th2</td><td>th3</td><td>ge4</td><td>te5</td><td>–6</td><td>–7</td><td>–8</td><td>–9</td></tr></tbody></table>
+<pre><code class="language-emacs-lisp">&#x3C;&#x3C;showvar>>
+</code></pre>
+<h3 id="complex">Complex</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Global</th><th>t1</th><th>t2</th><th>t3</th><th>t4</th><th>t5</th><th>t6</th><th>t7</th><th>t8</th><th>t9</th></tr></thead><tbody><tr><td>header-args</td><td>gh1</td><td>gh2</td><td>—</td><td>gh4</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>header-args:emacs-lisp</td><td>ge1</td><td>—</td><td>—</td><td>ge4</td><td>ge5</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Tree</td><td>t1</td><td>t2</td><td>t3</td><td>t4</td><td>t5</td><td>t6</td><td>t7</td><td>t8</td><td>t9</td></tr><tr><td>header-args+</td><td>—</td><td>th2</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>header-args:emacs-lisp</td><td>—</td><td>—</td><td>—</td><td>—</td><td>te5</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Result #+CALL</td><td>gh1</td><td>th2</td><td>go3</td><td>gh4</td><td>te5</td><td>–6</td><td>–7</td><td>–8</td><td>–9</td></tr><tr><td>Result noweb</td><td>gh1</td><td>th2</td><td>–3</td><td>gh4</td><td>te5</td><td>–6</td><td>–7</td><td>–8</td><td>–9</td></tr></tbody></table>
+<pre><code class="language-emacs-lisp">&#x3C;&#x3C;showvar>>
+</code></pre>

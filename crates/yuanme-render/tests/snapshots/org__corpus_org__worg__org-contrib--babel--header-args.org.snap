@@ -1,0 +1,374 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>For a complete header argument reference see the <a href="https://orgmode.org/manual/Working-with-Source-Code.html">Org mode manual</a>.
+This page holds ancillary notes and tricks which have not made it into
+the manual.</p>
+<h2 id="generally-use-verbatim-when-using-drawer-raw-or-org">Generally use <code>verbatim</code> when using <code>drawer</code>, <code>raw</code> or <code>org</code></h2>
+<p>We often want to add <code>verbatim</code> (which inhibits interpretation as a
+value, which can often result in a list or table result), when
+inserting results directly into the buffer using <code>drawer</code>, <code>raw</code> or
+<code>org</code> which don’t do tabular interpretation.</p>
+<p>An example w/o <code>verbatim</code>.</p>
+<pre><code>#+begin_src sh :results drawer
+cat &#x3C;&#x3C;EOF
+| 1 | 2
+|--
+| a | b
+EOF
+#+end_src
+
+#+RESULTS:
+:RESULTS:
+|   |    | 1 |   |   | 2 |
+|   | -- |   |   |   |   |
+|   |    | a |   |   | b |
+:END:
+</code></pre>
+<p>The same block <em>with</em> the <code>verbatim</code> flag.</p>
+<pre><code>#+begin_src sh :results verbatim drawer
+cat &#x3C;&#x3C;EOF
+| 1 | 2
+|--
+| a | b
+EOF
+#+end_src
+
+#+RESULTS:
+:RESULTS:
+| 1 | 2 |
+|---+---|
+| a | b |
+:END:
+</code></pre>
+<h2 id="common-combinations-of-header-args-and-result-types">Common combinations of header-args and result types</h2>
+<p>Many combinations of header arguments and result types are
+supported by Org Babel. Individual languages may even define
+special header args. Like always in combinatorics, the number
+of possible combinations increases rapidly when there are several
+factors with several levels each that can be freely combined.</p>
+<p>The following table shows combinations of header arguments and
+result types that might be considered reasonable for many
+programming languages.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>evaluation</th><th>collection</th><th>type</th></tr><tr><th>(:session)</th><th>(:results)</th><th>(:results)</th></tr></thead><tbody><tr><td>external</td><td>value</td><td>table (vector)</td></tr><tr><td></td><td></td><td>scalar (verbatim)</td></tr><tr><td></td><td></td><td>file</td></tr><tr><td></td><td></td><td>raw (org)</td></tr><tr><td></td><td></td><td>html</td></tr><tr><td></td><td></td><td>latex</td></tr><tr><td></td><td></td><td>code</td></tr><tr><td></td><td></td><td>pp</td></tr><tr><td></td><td>output</td><td>table (vector)</td></tr><tr><td></td><td></td><td>scalar (verbatim)</td></tr><tr><td></td><td></td><td>file</td></tr><tr><td></td><td></td><td>raw (org)</td></tr><tr><td></td><td></td><td>html</td></tr><tr><td></td><td></td><td>latex</td></tr><tr><td></td><td></td><td>code</td></tr><tr><td></td><td></td><td>pp</td></tr><tr><td>session</td><td>value</td><td>table (vector)</td></tr><tr><td></td><td></td><td>scalar (verbatim)</td></tr><tr><td></td><td></td><td>file</td></tr><tr><td></td><td></td><td>raw (org)</td></tr><tr><td></td><td></td><td>html</td></tr><tr><td></td><td></td><td>latex</td></tr><tr><td></td><td></td><td>code</td></tr><tr><td></td><td></td><td>pp</td></tr><tr><td></td><td>output</td><td>table (vector)</td></tr><tr><td></td><td></td><td>scalar (verbatim)</td></tr><tr><td></td><td></td><td>file</td></tr><tr><td></td><td></td><td>raw (org)</td></tr><tr><td></td><td></td><td>html</td></tr><tr><td></td><td></td><td>latex</td></tr><tr><td></td><td></td><td>code</td></tr><tr><td></td><td></td><td>pp</td></tr></tbody></table>
+<p>More special header arguments and their possible values are
+summarized in the next table:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>header-arg</th><th></th><th>values</th><th></th><th></th></tr></thead><tbody><tr><td>:results</td><td>silent</td><td>replace</td><td>append</td><td>prepend</td></tr><tr><td>(handling)</td><td></td><td></td><td></td><td></td></tr><tr><td>:exports</td><td>code</td><td>results</td><td>both</td><td>none</td></tr><tr><td>:comments</td><td>yes</td><td>(no?)</td><td></td><td></td></tr><tr><td>:noweb</td><td>no</td><td>yes</td><td></td><td></td></tr><tr><td>:tangle</td><td>yes</td><td>no</td><td>filename</td><td></td></tr><tr><td>:no-expand</td><td></td><td></td><td></td><td></td></tr><tr><td>:file</td><td></td><td></td><td></td><td></td></tr><tr><td>:dir</td><td></td><td></td><td></td><td></td></tr><tr><td>:cache</td><td>no</td><td>yes</td><td></td><td></td></tr><tr><td>:var</td><td>x=y</td><td></td><td></td><td></td></tr><tr><td>:hlines</td><td>no</td><td>yes</td><td></td><td></td></tr><tr><td>:colnames</td><td>nil</td><td>no</td><td>yes</td><td></td></tr><tr><td>:rownames</td><td>no</td><td>yes</td><td></td><td></td></tr><tr><td>:shebang</td><td>”string”</td><td></td><td></td><td></td></tr><tr><td>:eval</td><td>never</td><td>query</td><td></td><td></td></tr></tbody></table>
+<h2 id="setting-language-and-file-specific-default-header-argument-values">Setting language and file specific default header argument values</h2>
+<p>This may be useful to e.g., have all Python code blocks in a file use
+the same session.  The following file-local-variable syntax should be
+used, placing the customization at the end of the Org-mode file.</p>
+<pre><code>#+Title: Example of default file and language session
+
+The value in this buffer is...
+#+begin_src emacs-lisp
+  org-babel-default-header-args:Python
+#+end_src
+
+#+RESULTS:
+| (:session . foo) |
+
+# Local Variables:
+# eval: (setq-local org-babel-default-header-args:Python '((:session . "foo")))
+# End:
+</code></pre>

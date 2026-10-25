@@ -1,0 +1,69 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="general">General</h2>
+<p>WARNING: although the general ideas described herein are still valid,
+the implementation has changed starting with version 8.0. In
+particular, the file <code>org-special-blocks.el</code> does not exist any longer,
+so you cannot load it as described below: the “Loading it” section is
+obsolete. Special blocks are now part of Orgmode proper.</p>
+<p><code>org-special-blocks</code> turns org blocks into LaTeX environments and HTML
+divs.</p>
+<h2 id="how-to-use-it">How to use it</h2>
+<h3 id="quick-example">Quick Example</h3>
+<p>After loading <code>org-special-blocks</code>, you can begin using blocks in
+org files.  For example, let’s look at Fermat’s Last Theorem:</p>
+<pre><code>#+begin_theorem
+If an integer $n$ is greater than 2, then the equation $a^n + b^n = c^n$
+has no solutions in non-zero integers $a$, $b$, and $c$.
+#+end_theorem
+</code></pre>
+<pre><code>#+begin_proof
+I have a truly /marvelous/ proof of this proposition that this margin is too
+narrow to contain.
+#+end_proof
+</code></pre>
+<p>This is exported into LaTeX as follows:</p>
+<pre><code>\begin{theorem}
+If an integer $n$ is greater than 2, then the equation $a^n + b^n = c^n$
+has no solutions in non-zero integers $a$, $b$, and $c$.
+\end{theorem}
+</code></pre>
+<pre><code>\begin{proof}
+I have a truly \emph{marvelous} proof of this proposition that this
+margin is too narrow to contain.
+\end{proof}
+</code></pre>
+<p>Note that the standard org markup works inside the blocks.  If you
+were to use LaTeX environments inside an org file, this would not
+be true.  Also make sure that the name of the environment is
+something that LaTeX knows about – otherwise it will not be able
+to compile your file.</p>
+<p>The org file can also be exported into HTML.  In that case, the
+exported file would look something like this:</p>
+<pre><code>&#x3C;div class="theorem">
+...
+&#x3C;/div>
+</code></pre>
+<pre><code>&#x3C;div class="proof">
+...
+&#x3C;/div>
+</code></pre>
+<p>It is up to you to make sure that the div classes are styled
+properly.</p>
+<h3 id="obsolete-for-org-mode-versions--80-loading-it-no-surprises-here">(OBSOLETE for org-mode versions > 8.0) Loading it (No surprises here)</h3>
+<p>The easiest way is by</p>
+<p>M-x customize-apropos org-modules</p>
+<p>Check the line for special-blocks.  This will cause it to be loaded every
+time you start org-mode.</p>
+<p>You’ll still have to load it manually the first time.</p>
+<p>Of course, you can also just try it out by loading it manually.</p>
+<p>If you prefer to manually customize your emacs then make sure that the
+path to org’s contrib directory is in your load-path and add the
+following to your <code>.emacs</code>.</p>
+<pre><code>(require 'org-special-blocks)
+</code></pre>
+<h2 id="credits">Credits</h2>
+<p>Chris Gray wrote <code>org-special-blocks</code> with the help of Carsten
+Dominik.</p>

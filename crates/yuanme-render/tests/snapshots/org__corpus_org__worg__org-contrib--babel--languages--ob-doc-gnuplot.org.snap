@@ -1,0 +1,1170 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+  <div id="subtitle" style="float: center; text-align: center;">
+  <p>
+  Org-babel support for
+  <a href="http://www.gnuplot.info/">Gnuplot</a>
+  </p>
+  <p>
+  <a href="http://www.gnuplot.info/">
+  <img src="http://www.gnuplot.info/figs/title2.png"/>
+  </a>
+  </p>
+  </div>
+<h2 id="introduction">Introduction</h2>
+<p>org-babel-gnuplot allows gnuplot code to be executed directly from
+within embedded code blocks in Org-mode documents. These code blocks
+can plot functions, graph data from tables stored in the documents,
+and can include output as embedded graphics when the document is
+exported.</p>
+<p>The following provides instructions and some examples of gnuplot
+usage. Since babel is simply allowing native code to run inside of
+Org-mode, all gnuplot documentation is applicable and valid. <sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup></p>
+<p>This file may be downloaded here: <a href="https://git.sr.ht/~bzg/worg/tree/master/item/org-contrib/babel/examples/org-babel-gnuplot.org">org-babel-gnuplot.org</a>. The image
+links are to the images online on Worg, but running the code blocks
+will produce matching images in the same directory as the .org file.</p>
+<h2 id="requirements-and-setup">Requirements and Setup</h2>
+<p>Babel support for gnuplot requires that <a href="http://www.gnuplot.info/">gnuplot</a> be installed on your
+system, along with <a href="https://github.com/rudi/gnuplot-el">gnuplot.el</a>, an <code>Emacs</code> major mode for interacting
+with gnuplot.  You can install <a href="https://github.com/rudi/gnuplot-el">gnuplot.el</a> with <a href="http://tromey.com/elpa/">ELPA</a>.</p>
+<p>It should be mentioned that one can also use Org-mode’s org-plot as an
+alternative to babel. Instructions already exist on Worg for
+this.<sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup> The .org file used to create the org-plot Worg entry is
+linked in the Introduction on that page and can be very helpful in
+getting a feel for using gnuplot by using the <code>#+PLOT</code> header above a
+table. This page, in contrast, is about using gnuplot in it’s “native”
+form.</p>
+<p>To do this, babel support for the gnuplot language must be
+enabled. Versions of Org-mode prior to 7.01 required enabling <em>both</em>
+general babel support as well as specific language support like this:</p>
+<pre><code>;; set up babel support
+(require 'org-babel)
+(require 'org-babel-init)
+(require 'org-babel-gnuplot)
+;; add additional languages with (require 'org-babel-language)
+</code></pre>
+<p>As of Org-mode 7.01, babel support is included and there is no need to load it via
+.emacs. All you have to do is enable specific language support with
+the following in .emacs:<sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup></p>
+<pre><code>;; active Babel languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((gnuplot . t)))
+;; add additional languages with '((language . t)))
+</code></pre>
+<p>From then on, to access the power of gnuplot, the setup is generally
+like this:</p>
+<p><strong>Data Table</strong> (if pulling from a table and not a formula)</p>
+<pre><code>#+tblname: data-table
+| x | y1 | y2 |
+|---+----+----|
+| 0 |  3 |  6 |
+| 1 |  4 |  7 |
+| 2 |  5 |  8 |
+</code></pre>
+<p><strong>Gnuplot Source Block</strong></p>
+<pre><code>#+begin_src gnuplot :var data=data-table :file output.png
+
+  gnuplot code goes here
+
+#+end_src
+</code></pre>
+<p>To run gnuplot and produce a resultant graph (or to produce any result
+from babel code blocks), simply move one’s cursor anywhere in the code
+block and press <code>C-c C-c</code> (Ctrl+C followed by Ctrl+C) and type “yes”
+in the minibuffer when asked about executing the code. It’s that
+simple!</p>
+<h3 id="caveat-windows">Caveat: Windows</h3>
+<p>Unfortunately, there seems to be an issue with getting gnuplot-mode
+working properly with Org-mode on Windows machines. Attempts to use
+Babel for gnuplot code blocks or the org-plot method both seem to
+fail. Discussion is taking place on how to resolve this issue.<sup><a href="#user-content-fn-19" id="user-content-fnref-19" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup>
+As of Aug/Sept 2010, Bruce Ravel, the creator of gnuplot-mode, has
+indicated willingness to work with a mailing list member to identify
+the potential source of the issue.</p>
+<h2 id="babel-header-arguments">Babel Header Arguments</h2>
+<p>Babel block headers are used to pass various arguments to control the
+results of the executed code. The complete list of header arguments
+is covered in the Org-mode manual; for now, some options frequently used for
+gnuplot are:<sup><a href="#user-content-fn-4" id="user-content-fnref-4" data-footnote-ref="" aria-describedby="footnote-label">5</a></sup></p>
+<ul>
+<li><code>:var data=data-table</code>
+<ul>
+<li>When data is to be plotted from a table, it is helpful to use a
+heading right above the table in the form <code>#+tblname=data-table</code>,
+where “data-table” is replaced with some short name to identify
+the table to gnuplot.</li>
+</ul>
+</li>
+<li><code>:exports {code, results, both, none}</code>
+<ul>
+<li>When the code is run and the document exported (e.g. to HTML or
+<code class="language-math math-inline">\LaTeX</code> PDF), what should appear? Just the code block itself? Only
+the produced output (in this case a plot of some sort)? Both the
+code and the accompanying results? Or nothing?</li>
+</ul>
+</li>
+<li><code>:file foo.{png,eps,etc.}</code>
+<ul>
+<li>This option specifies where the resulting output should be put. If
+no option is given, a gnuplot window will open with the
+resultant plot. <strong>NOTE:</strong> Certain plot options may <em>not</em> output
+properly to gnuplot directly and thus <em>must</em> have the <code>:file
+    filename</code> option in the header. If the error “Code block produced
+no output” recurs, try outputting to a file instead of
+directly to gnuplot.</li>
+</ul>
+</li>
+</ul>
+<p>Note that the current `gnuplot-mode’ doesn’t provide support for
+multiple sessions, so it is not possible to run concurrent gnuplot
+sessions (see <a href="id:B29FD353-5E07-40E7-BD98-B6B5CED01F8B"><code>reset</code> in Code Blocks</a>).</p>
+<h2 id="quick-gnuplot-overview">Quick Gnuplot Overview</h2>
+<p>As stated earlier, the full gnuplot documentation can and should be
+consulted as the official reference, but it might be helpful to lay
+out some common syntax here as a quick reference. Any of the commands
+typed in <code>code</code> font below should be assumed to reside in a babel
+code block (between <code>#+begin_src gnuplot</code> and <code>#+end_src</code>).</p>
+<h3 id="title-and-axis-labels">Title and Axis Labels</h3>
+<p>Set the title for the whole graph like this:</p>
+<pre><code>set title "This Title Goes at the Top"
+</code></pre>
+<p>Set axis labels like so:</p>
+<pre><code>set xlabel "This is the X Axis"
+set ylabel "This is the Y Axis"
+</code></pre>
+<h3 id="graph-widthheight-raio">Graph Width/Height Raio</h3>
+<p>The size ratio of the graph is controlled like so:</p>
+<ul>
+<li>Wider/shorter: <code>set size ratio 0.5</code> (any number less than 1)</li>
+<li>Taller/thinner: <code>set size ratio 2</code> (any number greater than 1)</li>
+<li>Square (1:1): <code>set size square</code></li>
+</ul>
+<h3 id="tic-marks">Tic Marks</h3>
+<p>Tic marks are set with the method “start,increment[,end].” Start is
+the beginning tic value, increment sets how far apart the tics are,
+the the optional end specifies a stopping value. If no end is given,
+the tics will carrry on by the increment value until the max x/y value
+is reached. Here are some examples:</p>
+<pre><code>set xtics 0,10,100  %% tics every 10 from 0 -> 100
+set ytics -10,50    %% tics every 50 from -10 onward
+</code></pre>
+<p>Named tics can also be used. Two values are provided, a numerical
+value (where on the given axis the tic should be placed) and a name in
+quotes to indicate what word should be placed at the tic instead of the
+numerical value. This method allows for words instead of numbers to be
+used (which has many uses) as well as for complete control over tic
+mark placement.</p>
+<pre><code>set xtics ("Tic 1" -1, "Tic 2" 10, "Tic 3" 1001)
+</code></pre>
+<p>The gnuplot default is for tics to show up on both sides and the top and
+bottom of the graph. In other words, the tics on the left y-axis and
+bottom x-axis are “mirrored” to the opposing side of the plot
+borders. Stop this (tics only on left/bottom) by using:</p>
+<pre><code>set xtics nomirror
+set ytics nomirror
+</code></pre>
+<p>You can rotate tic marks for increased readability by specifying an
+angle at which to rotate their labels. Here is the syntax
+(substitute any angle value for -45):</p>
+<pre><code>set xtics rotate by -45
+set ytics rotate by -45
+</code></pre>
+<h3 id="plot">Plot</h3>
+<p>The heart of gnuplot is the <code>plot</code> command. It is broken down into
+several sections:</p>
+<h4 id="plot-what">Plot what?</h4>
+<p>This will either be a function or data. Plotting a function would look
+like this:</p>
+<pre><code>f(x) = x**2
+plot f(x)
+</code></pre>
+<p>Plotting data would go like this (remembering that the variable
+“data” was defined to correspond to some table in the Org-mode document):</p>
+<pre><code>plot data using x:y
+</code></pre>
+<p>The <code>x:y</code> identifies the column numbers in the table that should
+be used for the x values and corresponding y values. Using the command
+<code>plot data using 1:3</code> would tell gnuplot to go down the rows of the
+table and plot points using x values from the first column and grab
+corresponding y values from the third. “Using” can be abbreviated with
+as simply “u” which helps keep lines shorter (<code>plot data u 1:3</code>).</p>
+<h4 id="plot-how">Plot how?</h4>
+<p>To customize the look of plots, many options are available. To pass
+these options to gnuplot looks like this:</p>
+<pre><code>plot data u 1:2 with lines
+</code></pre>
+<p>In this case gnuplot will use the linestyle <code>lines</code> to plot the
+data. This will create a colored line through the data points. Some
+commonly used options (and their abbreviations) are:</p>
+<ul>
+<li>points (p)</li>
+<li>dots (d)</li>
+<li>lines (l)</li>
+<li>linespoints (lp)</li>
+<li>impulses (i)</li>
+<li>steps</li>
+<li>boxes</li>
+</ul>
+<p>One can find all available plot styles in the documentation or
+elsewhere online.<sup><a href="#user-content-fn-5" id="user-content-fnref-5" data-footnote-ref="" aria-describedby="footnote-label">6</a></sup> To thicken up lines or points, just add <code>lw #</code>
+(stands for “lineweight) after the style (e.g. <code>...with lines lw
+3</code>). The default weight is 1 which can look a little light. Use 2 or
+more for thicker, easier to see, lines and points. The word “with” can
+be abbreviated “w” to shorten code lines; <code>plot data u 1:3 w l lw 2</code>
+is equivalent to <code>plot data using 1:3 with lines lineweight 2</code>.</p>
+<h4 id="call-it-what">Call it what?</h4>
+<p>Add a title in the graph key like this:</p>
+<pre><code>plot data u 1:2 w lines lw 2 title 'Data Set 1'
+</code></pre>
+<p>To omit one (or more) plots from the key, use the <code>notitle</code> option:</p>
+<pre><code>plot data u 1:2 w lines notitle, \
+     data u 1:3 w points title 'Data Set 2', \
+     data u 1:4 w lp title 'Data Set 3', \
+     data u 1:5 w bars notitle
+</code></pre>
+<p>This is especially helpful when multiple data sets are plotted
+together. Sometimes, however, a key is not desired at all. When only
+one function or data set is plotted and its title is obvious, put this
+in the code block to get rid of the key altogether:</p>
+<pre><code>set nokey
+</code></pre>
+<p>Sometimes the key itself in its default position (upper right) is
+distracting from the graph, especially when the <code>with points</code> plot
+style is used since the point in the key looks like a point on the
+graph. To set a nice border around the key, do this:</p>
+<pre><code>set key box linestyle -1
+</code></pre>
+<p>The linestyle -1 creates a black lined border. The gnuplot manual and other
+locations list all available linestyles (colors, dots, dashes, etc.).<sup><a href="#user-content-fn-7" id="user-content-fnref-7" data-footnote-ref="" aria-describedby="footnote-label">7</a></sup></p>
+<h4 id="any-more">Any more?</h4>
+<p>If more than one plot is to be made on the same graph, it’s done like
+this for fuctions:</p>
+<pre><code>f(x)=x**2
+g(x)=x**3
+h(x)=sqrt(x)
+plot f(x),g(x),h(x)
+</code></pre>
+<p>For data from tables, it’s like this:</p>
+<pre><code>plot data u 1:2 w lines, data u 1:3 w points, \
+     data u 1:4 w lp
+</code></pre>
+<p>This plots column 1 (x) against column 2 (y) with lines, 1 against 3
+with points, and 1 against 4 with linespoints. The use of the <code>\</code>
+tells gnuplot to keep reading onward to the next line. Typically the end of a line signals the
+end of the command and gnuplot will complain since <code>data u 1:4 w lp</code>
+isn’t a command all by itself without <code>plot</code> preceding it. The <code>\</code>
+ensures that the whole command is understood. One can make an
+extremely long line, but <code>\</code> helps keep things looking tidy and keeps
+one from scrolling left and right to track the whole line of code.</p>
+<h2 id="basic-plot-examples">Basic Plot Examples</h2>
+<p>Following some introductory topics, here are some basic examples showing what things look
+like when all of the above is combined.</p>
+<h3 id="function-plot">Function Plot</h3>
+<p>A full babel block of code for a few functions might look like this:</p>
+<pre><code>#+begin_src gnuplot :exports code :file file.png
+reset
+
+set title "Putting it All Together"
+
+set xlabel "X"
+set xrange [-8:8]
+set xtics -8,2,8
+
+
+set ylabel "Y"
+set yrange [-20:70]
+set ytics -20,10,70
+
+f(x) = x**2
+g(x) = x**3
+h(x) = 10*sqrt(abs(x))
+
+plot f(x) w lp lw 1, g(x) w p lw 2, h(x) w l lw 3
+#+end_src
+</code></pre>
+<p><img src="https://orgmode.org/worg/org-contrib/babel/images/gnuplot-basic-function.png" alt="gnuplot-basic-function.png" width="800"></p>
+<h3 id="data-table-plot">Data Table Plot</h3>
+<p>Plotting data points from a table could look like this:<sup><a href="#user-content-fn-2" id="user-content-fnref-2-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="basic-plot"><thead><tr><th>x</th><th>y1</th><th>y2</th></tr></thead><tbody><tr><td>0.1</td><td>0.425</td><td>0.375</td></tr><tr><td>0.2</td><td>0.3125</td><td>0.3375</td></tr><tr><td>0.3</td><td>0.24999993</td><td>0.28333338</td></tr><tr><td>0.4</td><td>0.275</td><td>0.28125</td></tr><tr><td>0.5</td><td>0.26</td><td>0.27</td></tr><tr><td>0.6</td><td>0.25833338</td><td>0.24999993</td></tr><tr><td>0.7</td><td>0.24642845</td><td>0.23928553</td></tr><tr><td>0.8</td><td>0.23125</td><td>0.2375</td></tr><tr><td>0.9</td><td>0.23333323</td><td>0.2333332</td></tr><tr><td>1</td><td>0.2225</td><td>0.22</td></tr></tbody></table>
+<pre><code>#+begin_src gnuplot :var data=basic-plot :exports code :file file.png
+set title "Putting it All Together"
+
+set xlabel "X"
+set xrange [0:1]
+set xtics 0,0.1,1
+
+
+set ylabel "Y"
+set yrange [0.2:0.5]
+set ytics 0.2,0.05,0.5
+
+
+plot data u 1:2 w p lw 2 title 'x vs. y1', \
+     data u 1:3 w lp lw 1 title 'x vx. y2'
+#+end_src
+</code></pre>
+<p><img src="https://orgmode.org/worg/org-contrib/babel/images/gnuplot-basic-plot.png" alt="gnuplot-basic-plot.png" width="800"></p>
+<h2 id="above-and-beyond">Above and Beyond</h2>
+<h3 id="named-x-valuestics">Named X-Values/Tics</h3>
+<p>Sometimes it’s desireable to have text as the x-values/xtics instead of
+numbers.<sup><a href="#user-content-fn-8" id="user-content-fnref-8" data-footnote-ref="" aria-describedby="footnote-label">8</a></sup> Gnuplot will plot a column of text entries as the x-values for
+its points by spacing the named values evenly along the axis. Here’s
+an example of a running distance log:<sup><a href="#user-content-fn-6" id="user-content-fnref-6" data-footnote-ref="" aria-describedby="footnote-label">9</a></sup></p>
+<p><img src="https://orgmode.org/worg/org-contrib/babel/images/gnuplot-named-xtics.png" alt="gnuplot-named-xtics.png" width="800"></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="xtics"><tbody><tr><td>Date</td><td>Distance</td></tr><tr><td>8/25/2010</td><td>3.2</td></tr><tr><td>8/29/2010</td><td>3.0</td></tr><tr><td>9/1/2010</td><td>2.4</td></tr><tr><td>9/2/2010</td><td>2.5</td></tr><tr><td>9/5/2010</td><td>2.3</td></tr><tr><td>9//2010</td><td>2.0</td></tr></tbody></table>
+<pre><code>#+begin_src gnuplot :var data=xtics :exports code :file file.png
+  reset
+
+  set title "Running Stats"
+
+  set xlabel "Date"
+  set xtics rotate by -45
+
+  set yrange [1:5]
+  set ylabel "Distance (mi)"
+
+  plot data u 2:xticlabels(1) w lp lw 2 notitle
+#+end_src
+</code></pre>
+<p>The <code>2:xticlabels(1)</code> tells gnuplot to use the values in column 1 for
+the xtic names and to plot them against the y-values in column 2.</p>
+<h3 id="unevenly-spaced-x-valuestics">Unevenly Spaced X-Values/Tics</h3>
+<p>While the above example works extremely well when evenly placed tics is
+desired, other circumstances may arise in which
+<em>unevenly spaced</em> text values may be desired.<sup><a href="#user-content-fn-9" id="user-content-fnref-9" data-footnote-ref="" aria-describedby="footnote-label">10</a></sup> Remember from above that
+it <em>is</em> possible to set text xtics manually with <code>set xtics ("name"
+value, "name2" value2,...</code>), but the method here has the advantage of
+being automatic. Here is an example:</p>
+<p><img src="https://orgmode.org/worg/org-contrib/babel/images/gnuplot-uneven-named-xtics.png" alt="gnuplot-uneven-named-xtics.png" width="800"></p>
+<p>To accomplish this, make a table with a column for the <em>value</em> of the
+xtics (where it should be placed on the axis), another column with the name for
+each xtic (the names to be used), and then add whatever subsequent y
+values should correspond to these x-values. Here is an example:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="named-xtics"><tbody><tr><td>tic name</td><td>x-value</td><td>Dead (y)</td></tr><tr><td>Civil</td><td>1861</td><td>0.62</td></tr><tr><td>WWI</td><td>1914</td><td>9.8</td></tr><tr><td>WWII</td><td>1939</td><td>24</td></tr><tr><td>Nam</td><td>1955</td><td>1.5</td></tr><tr><td>Gulf</td><td>1990</td><td>0.04</td></tr></tbody></table>
+<pre><code>#+begin_src gnuplot :var data=named-xtics :exports code :file file.png
+  reset
+
+  set yrange [0:25]
+  set ylabel "Deaths (MM)"
+
+  set xtics ("1850" 1850, "2010" 2010)
+  set xrange [1850:2010]
+  set xlabel "Wars in Time"
+
+  set title 'War Deaths'
+
+  plot data using 2:3:xticlabels(1) w p lw 3 notitle
+#+end_src
+</code></pre>
+<p>For multiple data sets, simply include multiple columns for y-values
+to be plotted and plot each data set with the syntax
+<code>x:y:xticlabels(col #)</code>. Most likely, the <code>col #</code> will be the same for
+all data sets (the column of names for xtics will probably remain the
+same). Here is an example:</p>
+<pre><code>plot data u 2:3:xticlabels(1) title 'Set1',\
+data u 2:4:xticlabels(1) title 'Set2', \
+data u 2:5:xticlabels(1) title 'Set3'
+#+end_src
+</code></pre>
+<h3 id="multiple-xy-axes">Multiple X/Y Axes</h3>
+<p>It is possible to set different scales for both x and y axes. This can
+be helpful for various reasons:</p>
+<ul>
+<li>Plotting data in two units of measure (e.g. left y axis = degrees F,
+right = degrees C)</li>
+<li>Plotting one data set against one axis and another against the other
+in the same graph</li>
+</ul>
+<p>Returning to the running log, perhaps both times and distances were to
+be plotted in the same graph:<sup><a href="#user-content-fn-18" id="user-content-fnref-18" data-footnote-ref="" aria-describedby="footnote-label">11</a></sup></p>
+<p><img src="https://orgmode.org/worg/org-contrib/babel/images/gnuplot-multi-axes.png" alt="gnuplot-multi-axes.png" width="800"></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="multi-axes"><tbody><tr><td>Date</td><td>Time</td><td>Distance</td></tr><tr><td>8/25/2010</td><td>17:14</td><td>3.2</td></tr><tr><td>8/29/2010</td><td>14:00</td><td>2.4</td></tr><tr><td>9/1/2010</td><td>15:13</td><td>2.5</td></tr><tr><td>9/2/2010</td><td>13:45</td><td>2.3</td></tr><tr><td>9/5/2010</td><td>13:20</td><td>2.0</td></tr><tr><td>9//2010</td><td>16:35</td><td>2.8</td></tr></tbody></table>
+<pre><code>#+begin_src gnuplot :var data=multi-axes :exports code :file file.png
+  reset
+
+  set title "Running Stats"
+  set size ratio square
+  set key box linestyle -1
+
+  set xlabel "Date"
+  set xtics nomirror rotate by -45
+
+  set yrange [9:21]
+  set ylabel "Time (min)--Red"
+  set ytics nomirror
+
+  set y2range [1.5:3.5]
+  set y2label "Distance (mi)--Green"
+  set y2tics 0,0.5,3.5
+
+  set style data points
+  plot data u 2:xticlabels(1) axis x1y1 lw 3 title 'Time', \
+       data u 3:xticlabels(1) axis x1y2 lw 3 title 'Distance'
+#+end_src
+</code></pre>
+<p>Walking through the new items in the code:</p>
+<ul>
+<li><code>y2range</code>, <code>y2label</code>, and <code>y2tics</code> set the options for the second
+y-axis, the one on the right side of the graph</li>
+<li>Setting both <code>xtics</code> and <code>ytics</code> to <code>nomirror</code> keeps tics off of the
+top of the plot border as well as keeping the left ytics from showing up on
+the right y-axis since the scales are different (this would be confusing)</li>
+<li>The plot commands have an <code>axis x#y#</code> argument
+<ul>
+<li>The first is plotted against the bottom x-axis (<code>x1</code>) and the left
+y-axis(<code>y1</code>) by inserting <code>axis x1y1</code></li>
+<li>The second is plotted against the bottom x-axis (the x-values are
+the same for both plots) but the right y-axis with <code>axis x1y2</code></li>
+</ul>
+</li>
+</ul>
+<p>Lastly, in a plot like this where the left and right axis units
+(distance and time) can be related (d/t = speed), it is possible to
+create a “calibrated” plot. Note the ranges specified for the two
+graphs:</p>
+<ul>
+<li>y1min = 9min, y2min = 1.5mi; 1.5mi/9min = 10mph</li>
+<li>y1max = 21min, y2max = 3.5; 3.5mi/21min = 10mph</li>
+</ul>
+<p>Since both axes are “calibrated” in this way, examining the two points
+plotted for each date can be visually informative:</p>
+<ul>
+<li>Distance/time on top of each other indicate that the speed was 10mph</li>
+<li>If the distance plot is higher than time, speed > 10mph (e.g. 9/2)</li>
+<li>If the time plot is higher than distance, speed &#x3C; 10mph (e.g. 9/5)</li>
+</ul>
+<p>Simply changing the yranges allows for re-calibrating the plot for a
+different target speed.</p>
+<h3 id="different-scales">Different Scales</h3>
+<p>Sometimes, more than one scale is desired on the x-axis to
+call attention one or more areas on a curve. Perhaps most of a curve
+is rather “plain,” but some detail exists which would stand out more
+if the scale were altered. This can be accomplished by something
+called <code>multiplot</code> which uses multiple graphs overlayed next to
+one another to create the appearance of one graph that uses varying scales
+along the x-axis.<sup><a href="#user-content-fn-10" id="user-content-fnref-10" data-footnote-ref="" aria-describedby="footnote-label">12</a></sup> <sup><a href="#user-content-fn-11" id="user-content-fnref-11" data-footnote-ref="" aria-describedby="footnote-label">13</a></sup> Here is an example:</p>
+<p><img src="https://orgmode.org/worg/org-contrib/babel/images/gnuplot-diff-scales.png" alt="gnuplot-diff-scales.png" width="800"></p>
+<p>Here is some data on the population of the world through time:<sup><a href="#user-content-fn-12" id="user-content-fnref-12" data-footnote-ref="" aria-describedby="footnote-label">14</a></sup></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="diff-scales"><tbody><tr><td>tic name</td><td>x-loc</td><td>Pop</td></tr><tr><td>10k BC</td><td>-10000</td><td>1</td></tr><tr><td></td><td>-9000</td><td>3</td></tr><tr><td></td><td>-8000</td><td>5</td></tr><tr><td></td><td>-7000</td><td>7</td></tr><tr><td></td><td>-6000</td><td>10</td></tr><tr><td></td><td>-5000</td><td>15</td></tr><tr><td></td><td>-4000</td><td>20</td></tr><tr><td></td><td>-3000</td><td>25</td></tr><tr><td></td><td>-2000</td><td>35</td></tr><tr><td></td><td>-1000</td><td>50</td></tr><tr><td></td><td>-500</td><td>100</td></tr><tr><td>AD 1</td><td>1</td><td>200</td></tr><tr><td>1000</td><td>1000</td><td>310</td></tr><tr><td>1750</td><td>1750</td><td>791</td></tr><tr><td>1800</td><td>1800</td><td>978</td></tr><tr><td>1850</td><td>1850</td><td>1262</td></tr><tr><td>1900</td><td>1900</td><td>1650</td></tr><tr><td>\‘50</td><td>1950</td><td>2519</td></tr><tr><td></td><td>1955</td><td>2756</td></tr><tr><td></td><td>1960</td><td>2982</td></tr><tr><td></td><td>1965</td><td>3335</td></tr><tr><td></td><td>1970</td><td>3692</td></tr><tr><td>\‘75</td><td>1975</td><td>4068</td></tr><tr><td></td><td>1980</td><td>4435</td></tr><tr><td></td><td>1985</td><td>4831</td></tr><tr><td></td><td>1990</td><td>5263</td></tr><tr><td></td><td>1995</td><td>5674</td></tr><tr><td></td><td>2000</td><td>6070</td></tr><tr><td>2005</td><td>2005</td><td>6454</td></tr></tbody></table>
+<pre><code>#+begin_src gnuplot :var data=diff-scales :exports code :file file.png
+  reset
+
+  set xrange [ -10000 : 1 ]
+  set yrange [ 0 : 7000 ]
+  set xlabel "Time"
+
+  set multiplot
+
+  set size 0.275,1
+  set origin 0.0,0.0
+  set lmargin 10
+  set rmargin 0
+  set ylabel "Population (MM)"
+  set ytics nomirror
+  plot data using 2:3:xticlabels(1) with lines lw 3 notitle
+
+  set origin 0.275,0.0
+  set size 0.15,1
+  set format y ""
+  set noytics
+  set lmargin 0
+  set rmargin 0
+  set xrange [2 : 1750]
+  set ylabel ""
+  plot data using 2:3:xticlabels(1) with lines lw 3 notitle
+
+  set origin 0.425,0.0
+  set size 0.575,1
+  set format y ""
+  set noytics
+  set lmargin 0
+  set rmargin 2
+  set xrange [1751 : 2005]
+  set ylabel ""
+  plot data using 2:3:xticlabels(1) with lines lw 3 notitle
+
+  set nomultiplot
+#+end_src
+</code></pre>
+<p>Walking through the code:</p>
+<ul>
+<li>Left Slice
+<ul>
+<li>An initial <code>xrange/yrange</code> are set for the left-most “slice” of the graph</li>
+<li>An x-axis label is also provided and the multiplot mode is set</li>
+<li><code>set size</code> tells gnuplot to make the first slice the full height
+high (1) but only .275 (out of 1) wide. This leaves 72.5% of the
+graph for the next two slices</li>
+<li><code>set origin</code> tells gnuplot to start the plot at the bottom left (0,0)</li>
+<li><code>lmargin</code> is set for 10 (standard) but <code>rmargin</code> is set at 0 in
+order to let the left edge of the middle slice sit
+against the right edge of the left-most slice with no gap</li>
+<li>The <code>ylabel</code> is set here, and only once. Each slice is
+treated as a separate graph, and setting it for each slice creates
+mutliple labels which is unnecessary since they all share the same label/units.</li>
+<li>Lastly, the data is plotted</li>
+</ul>
+</li>
+<li>Middle slice
+<ul>
+<li>New values are given for the <code>xrange</code>, the <code>ylabel</code> is set to
+blank, and the plot command is about the same</li>
+<li>This time both <code>lmargin</code> <em>and</em> <code>rmargin</code> are set to 0 to allow for
+seamless alignment with the left-most and right-most slices of the
+plot</li>
+<li>The size is set for 0.15 width since this portion does not need to
+be very wide</li>
+<li>Note that the origin is set to start where the previous slice left off
+(left slice origin + left slice width = 0 + 0.275 = 0.275)</li>
+</ul>
+</li>
+<li>Right slice
+<ul>
+<li>New values are given for the <code>xrange</code>, the <code>ylabel</code> is set to
+blank, and the plot command is about the same again</li>
+<li>The <code>lmargin</code> is 0 so that the slice aligns with the right edge of
+the middle slice, but <code>rmargin</code> is set for 2 to provide a nice
+border between the picture  and the right y-axis</li>
+<li>The origin for the right slice is set for the left slice width +
+middle slice width = 0.275 + 0.15 = 0.425</li>
+<li>The size is set to take up the remaining width: 1 - 0.275 - 0.15 = 0.575</li>
+</ul>
+</li>
+</ul>
+<p>The <code>set no ytics</code> option removes the tics from the vertical divisions
+separating the slices. Using <code>set ytics nomirror</code> on the first
+slice keeps the ytics off of the first division.</p>
+<p>The divisions could be turned off altogether if one wanted to. Gnuplot
+accepts setting borders individually in the form of <code>set border
+1+2+4+8</code>. Each number stands for one of the borders:</p>
+<ul>
+<li><code>1</code> = bottom</li>
+<li><code>2</code> = left</li>
+<li><code>4</code> = top</li>
+<li><code>8</code> = right</li>
+</ul>
+<p>For no vertical divisions in our example, this would be used:</p>
+<ul>
+<li>Left slice: use <code>set border 1+2+4</code> (bottom, left, top)</li>
+<li>Middle slice: use <code>set border 1+4</code> (bottom, top)</li>
+<li>Right slice: use <code>set border 1+4+8</code> (bottom, top, right)</li>
+</ul>
+<p>While slightly more visually appealing, this may be potentially
+confusing since no divisions gives the illusion that the x-axis is
+the same scale. If the divisions are there, it helps communicate that
+there is something else going on.</p>
+<p>This method can be used for functions instead of data from a table as
+well in order to zoom in on a particular slice of a graph. One of the
+previous footnote above presents such case.<sup><a href="#user-content-fn-11" id="user-content-fnref-11-2" data-footnote-ref="" aria-describedby="footnote-label">13</a></sup></p>
+<h3 id="broken-x-axis">Broken X-Axis</h3>
+<p>Arrows can be used quite cleverly to “break” axes.<sup><a href="#user-content-fn-13" id="user-content-fnref-13" data-footnote-ref="" aria-describedby="footnote-label">15</a></sup> <sup><a href="#user-content-fn-14" id="user-content-fnref-14" data-footnote-ref="" aria-describedby="footnote-label">16</a></sup> <sup><a href="#user-content-fn-15" id="user-content-fnref-15" data-footnote-ref="" aria-describedby="footnote-label">17</a></sup> The method involves drawing 6 arrows to “break” both the top
+and bottom x-axes: 2 diagonal and 1 white per axis to create the illusion of a break.</p>
+<p>While the following is not <em>really</em> to scale, the example of a
+far distant date with a broken line and then some recent dates shows
+one example where this can be employed to create an esthetically
+pleasing plot. The world population data will be used again with some
+slight modifications.</p>
+<p><img src="https://orgmode.org/worg/org-contrib/babel/images/gnuplot-broken-axis.png" alt="gnuplot-broken-axis.png" width="800"></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="broken-axis"><tbody><tr><td>tic name</td><td>x-loc</td><td>Pre</td><td>Post</td></tr><tr><td>10,000 BC</td><td>1600</td><td>1</td><td></td></tr><tr><td></td><td>1650</td><td>15</td><td></td></tr><tr><td>AD 1</td><td>1700</td><td>200</td><td></td></tr><tr><td>1750</td><td>1750</td><td></td><td>791</td></tr><tr><td>1800</td><td>1800</td><td></td><td>978</td></tr><tr><td>1850</td><td>1850</td><td></td><td>1262</td></tr><tr><td>1900</td><td>1900</td><td></td><td>1650</td></tr><tr><td>\‘50</td><td>1950</td><td></td><td>2519</td></tr><tr><td></td><td>1955</td><td></td><td>2756</td></tr><tr><td></td><td>1960</td><td></td><td>2982</td></tr><tr><td></td><td>1965</td><td></td><td>3335</td></tr><tr><td></td><td>1970</td><td></td><td>3692</td></tr><tr><td>\‘75</td><td>1975</td><td></td><td>4068</td></tr><tr><td></td><td>1980</td><td></td><td>4435</td></tr><tr><td></td><td>1985</td><td></td><td>4831</td></tr><tr><td></td><td>1990</td><td></td><td>5263</td></tr><tr><td></td><td>1995</td><td></td><td>5674</td></tr><tr><td></td><td>2000</td><td></td><td>6070</td></tr><tr><td>2005</td><td>2005</td><td></td><td>6454</td></tr></tbody></table>
+<pre><code>#+begin_src gnuplot :var data=broken-axis :exports code :file file.png
+  reset
+
+  A=1725
+  B=1600
+  C=2010
+  D=0
+  E=6500
+
+  xoff=.005*(C-B)
+  yoff=.02*(E-D)
+
+  set arrow 1 from A-xoff, D to A+xoff, D nohead lw 2 lc rgb "#ffffff" front
+  set arrow 2 from A-xoff, E to A+xoff, E nohead lw 2 lc rgb "#ffffff" front
+  set arrow 3 from A-xoff-xoff, D-yoff to A+xoff-xoff, D+yoff nohead front
+  set arrow 4 from A-xoff+xoff, D-yoff to A+xoff+xoff, D+yoff nohead front
+  set arrow 5 from A-xoff-xoff, E-yoff to A+xoff-xoff, E+yoff nohead front
+  set arrow 6 from A-xoff+xoff, E-yoff to A+xoff+xoff, E+yoff nohead front
+
+  set xrange [B:C]
+  set yrange [D:E]
+
+  set xlabel 'Time'
+  set ylabel 'Population (MM)'
+  set title 'World Population'
+
+  plot data u 2:3:xticlabels(1) w l lw 3 notitle, data u 2:4:xticlabels(1) w l lw 3 lc 1 notitle
+#+end_src
+</code></pre>
+<p>Here are some notes on the above:</p>
+<ul>
+<li>A->E are variables used to set the break location (A), the <code>xrange</code>
+(B,C) and the <code>yrange</code> (D,E)</li>
+<li>xoff/yoff have to do with the break. xoff is the gap created in the
+x-axis and yoff is the height above and below the scale for the
+diagonal lines. The multipliers (.005 &#x26; .02) work for this example but may need
+tinkering to work elsewhere (if they don’t look right).</li>
+<li>The arrows (the <code>set arrow...</code> commands) draw the 4 diagonal lines and a white line in between
+them to create the actual break</li>
+<li>Two sets of y values and two plot commands were used to create the
+break between AD 1 and 1750. This is not always needed. See the
+gnuplot-tricks blog for how to do this with a continuous function
+(e.g. sin x) and an “offset” variable for the same effect.<sup><a href="#user-content-fn-14" id="user-content-fnref-14-2" data-footnote-ref="" aria-describedby="footnote-label">16</a></sup></li>
+</ul>
+<p>In the case above, the x-axis is “cheated” in that it is not only
+broken, but the scale is artificially manipulated. In the data chart,
+there should have been population values at 10,000 BC, 5,000 BC, and 1
+AD. Instead they occur at 1600, 1650 and 1700 AD. The spacing is proportionate, but scaled by 100x
+(50 years apart vs. 5,000). Compared to the plot from 1750-2005, it’s
+obviously not the same x-axis scale. If the actual data points were
+used, the later data points would have been significantly “scrunched.”
+While not technically correct, it’s perhaps more visually appealing, especially where scale is
+not too important. To get the point across, it does the job very well:
+left of break was not much growth, then in a much smaller time scale
+to the right of the break, much population growth occurred. The
+multi-axes/scales in the previous section is more “honest” with
+respect to scale, but perhaps this example is cleaner/better looking.</p>
+<p>Obviously there are many functions (like sin (x) from gnuplot-tricks)
+where changing the scale is <em>not</em> required and thus the plot is both
+visually appealing <em>and</em> manipulation of scales is not required.</p>
+<h2 id="miscellaneous-tipstricks">Miscellaneous Tips/Tricks</h2>
+<p>Helpful odds and ends are constantly surfacing on the Org-mode mailing
+list. This section will serve as a reservoir for summarizing new
+developments and techniques as they arise.</p>
+<h3 id="reset-in-code-blocks"><code>reset</code> in Code Blocks</h3>
+<p>Sometimes when executing code blocks, odd results occur. Plots will
+persist in displaying the wrong title, a “remnant” option from a
+previously generated plot will appear, the size ratio will be wrong,
+etc. This typically happens when multiple gnuplot blocks exist in the
+same document. The use of <code>reset</code> at the beginning of each gnuplot
+block eliminates these issues by clearing any “residual options” from
+previously generated output.</p>
+<h3 id="image-quality">Image Quality</h3>
+<p>For many graphs, output to .png (with <code>:file filename.png</code> in the header) may be
+sufficient. Sometimes, however, the generated image quality is not
+acceptable. The mailing list provided an excellent solution
+for increased gnuplot image quality:<sup><a href="#user-content-fn-16" id="user-content-fnref-16" data-footnote-ref="" aria-describedby="footnote-label">18</a></sup></p>
+<pre><code>#+begin_src gnuplot :file file.eps
+  reset
+  set terminal postscript [color] [solid] eps enhanced 20
+  ...
+  ...
+#+end_src
+</code></pre>
+<p>Note the output to <em>file.eps</em>, which corresponds to the <code>set
+terminal...</code> command used. This creates a higher resolution .eps image instead of a
+.png. The <code>color</code> and <code>solid</code> options are optional. Without the
+<code>color</code> option, the output will default to monochrome (black and
+white). The <code>solid</code> option can be used to keep all linestyles as solid
+lines; without it, gnuplot will cycle through various styles of
+dashes/shapes/etc.</p>
+<p>Once the .eps file is generated, ImageMagick can be used to convert
+it to .png:<sup><a href="#user-content-fn-17" id="user-content-fnref-17" data-footnote-ref="" aria-describedby="footnote-label">19</a></sup></p>
+<pre><code>convert -density 300 file.eps file.png
+</code></pre>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>Gnuplot manual downloads: <a href="http://www.gnuplot.info/documentation.html">http://www.gnuplot.info/documentation.html</a> <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p>Org-plot on Worg: <a href="https://orgmode.org/worg/org-tutorials/org-plot.html">https://orgmode.org/worg/org-tutorials/org-plot.html</a> <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a> <a href="#user-content-fnref-2-2" data-footnote-backref="" aria-label="Back to reference 2-2" class="data-footnote-backref">↩<sup>2</sup></a></p>
+</li>
+<li id="user-content-fn-3">
+<p>7.01 list of user visible changes: <a href="https://orgmode.org/Changes.html#ob-configuration-changes">https://orgmode.org/Changes.html#ob-configuration-changes</a> <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-19">
+<p><a href="http://www.mail-archive.com/emacs-orgmode@gnu.org/msg30080.html">http://www.mail-archive.com/emacs-orgmode@gnu.org/msg30080.html</a> <a href="#user-content-fnref-19" data-footnote-backref="" aria-label="Back to reference 4" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-4">
+<p>Org-mode manual on babel header args: <a href="https://orgmode.org/manual/Specific-header-arguments.html#Specific-header-arguments">https://orgmode.org/manual/Specific-header-arguments.html#Specific-header-arguments</a> <a href="#user-content-fnref-4" data-footnote-backref="" aria-label="Back to reference 5" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-5">
+<p>Nice plot style summary: <a href="http://t16web.lanl.gov/Kawano/gnuplot/intro/style-e.html">http://t16web.lanl.gov/Kawano/gnuplot/intro/style-e.html</a> <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-7">
+<p>Nice list of colors and styles: <a href="http://www2.yukawa.kyoto-u.ac.jp/~ohnishi/Lib/gnuplot.html">http://www2.yukawa.kyoto-u.ac.jp/~ohnishi/Lib/gnuplot.html</a> <a href="#user-content-fnref-7" data-footnote-backref="" aria-label="Back to reference 7" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-8">
+<p><a href="http://www.mail-archive.com/emacs-orgmode@gnu.org/msg22528.html">http://www.mail-archive.com/emacs-orgmode@gnu.org/msg22528.html</a> <a href="#user-content-fnref-8" data-footnote-backref="" aria-label="Back to reference 8" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-6">
+<p>Pertinent mailing list discussion and convenient data source: <a href="http://www.mail-archive.com/emacs-orgmode@gnu.org/msg29840.html">http://www.mail-archive.com/emacs-orgmode@gnu.org/msg29840.html</a> <a href="#user-content-fnref-6" data-footnote-backref="" aria-label="Back to reference 9" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-9">
+<p><a href="http://osdir.com/ml/emacs-orgmode-gnu/2010-08/msg00926.html">http://osdir.com/ml/emacs-orgmode-gnu/2010-08/msg00926.html</a> <a href="#user-content-fnref-9" data-footnote-backref="" aria-label="Back to reference 10" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-18">
+<p><a href="http://www.mail-archive.com/emacs-orgmode@gnu.org/msg29903.html">http://www.mail-archive.com/emacs-orgmode@gnu.org/msg29903.html</a> <a href="#user-content-fnref-18" data-footnote-backref="" aria-label="Back to reference 11" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-10">
+<p><a href="http://t16web.lanl.gov/Kawano/gnuplot/plot3-e.html">http://t16web.lanl.gov/Kawano/gnuplot/plot3-e.html</a> <a href="#user-content-fnref-10" data-footnote-backref="" aria-label="Back to reference 12" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-11">
+<p><a href="http://t16web.lanl.gov/Kawano/gnuplot/plot6-e.html">http://t16web.lanl.gov/Kawano/gnuplot/plot6-e.html</a> <a href="#user-content-fnref-11" data-footnote-backref="" aria-label="Back to reference 13" class="data-footnote-backref">↩</a> <a href="#user-content-fnref-11-2" data-footnote-backref="" aria-label="Back to reference 13-2" class="data-footnote-backref">↩<sup>2</sup></a></p>
+</li>
+<li id="user-content-fn-12">
+<p>Wikipedia: <a href="https://en.wikipedia.org/wiki/World_population#Population_by_region_2">https://en.wikipedia.org/wiki/World_population#Population_by_region_2</a> <a href="#user-content-fnref-12" data-footnote-backref="" aria-label="Back to reference 14" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-13">
+<p><a href="http://gnuplot-tricks.blogspot.com/2009/05/gnuplot-tricks-many-say-that-it-is.html">http://gnuplot-tricks.blogspot.com/2009/05/gnuplot-tricks-many-say-that-it-is.html</a> <a href="#user-content-fnref-13" data-footnote-backref="" aria-label="Back to reference 15" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-14">
+<p><a href="http://gnuplot-tricks.blogspot.com/2009/06/broken-axis-revisited.html">http://gnuplot-tricks.blogspot.com/2009/06/broken-axis-revisited.html</a> <a href="#user-content-fnref-14" data-footnote-backref="" aria-label="Back to reference 16" class="data-footnote-backref">↩</a> <a href="#user-content-fnref-14-2" data-footnote-backref="" aria-label="Back to reference 16-2" class="data-footnote-backref">↩<sup>2</sup></a></p>
+</li>
+<li id="user-content-fn-15">
+<p><a href="http://gnuplot-tricks.blogspot.com/2010/06/broken-axis-once-more.html">http://gnuplot-tricks.blogspot.com/2010/06/broken-axis-once-more.html</a> <a href="#user-content-fnref-15" data-footnote-backref="" aria-label="Back to reference 17" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-16">
+<p><a href="http://www.mail-archive.com/emacs-orgmode@gnu.org/msg26014.html">http://www.mail-archive.com/emacs-orgmode@gnu.org/msg26014.html</a> <a href="#user-content-fnref-16" data-footnote-backref="" aria-label="Back to reference 18" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-17">
+<p><a href="http://www.imagemagick.org/script/index.php">http://www.imagemagick.org/script/index.php</a> <a href="#user-content-fnref-17" data-footnote-backref="" aria-label="Back to reference 19" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

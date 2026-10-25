@@ -1,0 +1,30 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: `#+INCLUDE` keywords aren't in the Org subset
+ --> org-mode-testing/include.org:7:1
+  |
+7 | #+INCLUDE: "include2.org"
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: copy the text in, or link to the other file
+  = note: run `yuanme docs org/unsupported-construct` for more
+<p>Small Org file with an include keyword.</p>
+<h2 id="heading">Heading</h2>
+<p>body</p>
+<h2 id="ah">Another heading</h2>
+<p>1
+2
+3</p>
+<h2 id="ht">A headline with a table</h2>
+
+
+
+
+
+
+
+<table id="tbl"><caption>a table</caption><tbody><tr><td>1</td></tr></tbody></table>
+<h2 id="dh">drawer-headline</h2>
+<p>content</p>

@@ -1,0 +1,127 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="introduction-to-org-mode-and-worg">Introduction to Org-Mode and Worg</h2>
+<p>The page you’re reading is part of <code>Worg</code>, a section of the <a href="https://orgmode.org/">Org-mode
+web site</a> that is written by a volunteer community of Org-mode fans and
+supplements the official project docs on the rest of the site.  Worg
+is like a <em>W/​iki on /Org</em>, hence the name.  It includes tutorials,
+ideas, code snippets, etc., shared to make your introduction to and
+customization of Org-mode as easy as possible.  The source files are
+written in Org and hosted <a href="https://git.sr.ht/~bzg/worg">here</a>.  Worg is maintained by a group of
+<a href="worgers.org">contributors</a>, and maybe <a href="todo.org">you</a>.</p>
+<p><a href="https://orgmode.org">Org-mode</a> is a powerful system for organizing your complex life with
+simple plain-text files.  It seamlessly integrates all your notes,
+mindmaps, TODO lists, calendar, day planner, and project schedules
+into a single system that can be easily searched (e.g. by grep),
+encrypted (e.g. by <a href="http://www.gnupg.org/">GnuPG</a>), backed up and synced, imported/exported,
+and <a href="org-faq.org::*Org-mode%20on%20mobile%20devices">accessed on the go</a> (e.g. on an iPhone or Android smartphone).  It
+can even be used for authoring web pages and documents.</p>
+<p>Check out some <a href="org-screenshots.org">screenshots of Org-mode</a> in action.  See <a href="org-quotes.org">what people
+have to say</a> about Org-mode, and read a few <a href="org-testimonies/index.org">user stories</a>!</p>
+<p>Org-mode is distributed as part of the <a href="http://www.gnu.org/software/emacs/">Emacs</a> text editor and runs
+wherever Emacs runs, including on GNU-Linux, Windows, and Mac.
+Written by Carsten Dominik, it is now maintained by Ihor Radchenko and
+used by many helpful people who, like you, are desperate to get and
+stay organized.  You can read more on <a href="org-maintenance.org">how Org-mode is maintained</a>.</p>
+<h2 id="worg-documentation-on-your-machine">Worg documentation on your machine</h2>
+<p>If you are reading this on the website, you can also download the
+<code>.org</code> source files of all the Worg pages and read them in Emacs.  In
+Org mode you can try out features as you read about them, execute code
+snippets, access the built-in documentation of functions and variables
+mentioned, and learn by example from the files themselves.</p>
+<p>To download Worg <code>.org</code> files on your machine:</p>
+<pre><code>git clone https://git.sr.ht/~bzg/worg
+</code></pre>
+<h2 id="resources">Org-Mode Resources</h2>
+<h3 id="learn">Learn Org-Mode</h3>
+<ul>
+<li><a href="org-tutorials/index.org">Org-mode Tutorials</a> : Your best starting points for a relaxed overview</li>
+<li><a href="https://orgmode.org/manual/index.html">Org-mode Manual</a> : Extensive and complete official documentation</li>
+<li><a href="https://orgmode.org/guide/index.html">Org-mode Guide</a> : Not extensive, but complete documentation (also in <a href="http://www.davidam.com/docu/orgguide.es.html">spanish</a>, <a href="https://codeberg.org/bzg/orgguide_fr">french</a>, and <a href="https://jansky520.github.io/p/org%E5%BF%AB%E9%80%9F%E6%8C%87%E5%8D%97/">普通话</a>)</li>
+<li><a href="org-glossary.org">Org-mode Glossary</a> : An explanation of org-mode terminology</li>
+<li><a href="org-configs/index.org">Org-mode configuration</a> : Beginner’s customization guide, examples, survey, and a list of hooks</li>
+<li><a href="orgcard.org">Org-mode reference card</a> : Check the <a href="orgcard.org">HTML</a>, <a href="https://orgmode.org/orgcard.pdf">pdf</a> and <a href="https://orgmode.org/orgcard.txt">ASCII</a> versions and the French translation (<a href="code/latex/fr-orgcard.tex">tex</a> - <a href="images/bzg/fr-orgcard.pdf">pdf</a>)</li>
+</ul>
+<h3 id="get-help">Get Help with Org-Mode</h3>
+<ul>
+<li><a href="org-faq.org">Org-mode FAQ</a> : Check here before writing to the mailing list</li>
+<li><a href="org-mailing-list.org">Org-mode Mailing List</a> : For unanswered questions, suggestions, and discussion</li>
+<li><a href="org-irc.org">Org-mode IRC Channel</a> : For live Q&#x26;A, go to <code>#org-mode</code> on Libera</li>
+<li>Check <a href="https://fosstodon.org/tags/OrgMode">#orgmode</a> hashtag on Mastodon</li>
+<li>Check <a href="org-web-social.org">latest posts</a> on reddit.com and stackoverflow.com</li>
+<li>Browse <a href="https://www.reddit.com/r/orgmode/">Org-mode discussions on reddit.com</a></li>
+<li>Browse <a href="https://stackoverflow.com/questions/tagged/org-mode">Org-mode questions on stackoverflow.com</a></li>
+<li><a href="https://emacslife.com/calendar/">Emacs event calendar</a> : Join virtual and in-person Emacs events
+<ul>
+<li><a href="orgmeetup.org"><code>[[bbb:OrgMeetup]​]</code></a> : talk (online) with Org mode developers and users</li>
+</ul>
+</li>
+</ul>
+<p>Be warned that it is impossible to post on Reddit and Stackoverflow
+from the free software world<sup><a href="#user-content-fn-anonymous.1" id="user-content-fnref-anonymous.1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>, so we do not
+encourage people to ever do that.  You can use
+alternative privacy-respecting Reddit/Stackoverflow UIs listed on
+<a href="https://libredirect.manerakai.com/">https://libredirect.manerakai.com/</a> to read these websites without running
+non-free JavaScript.</p>
+<h3 id="use-effectively">Use Org-Mode Effectively</h3>
+<ul>
+<li>Use Org-mode as a <a href="org-gtd-etc.org">task management system</a> (GTD and Pomodoro)</li>
+<li>Author <a href="org-blog-wiki.org">Blogs and Wikis with Org-mode</a> (see <a href="org-web.org::*Personal%20Web%20Sites">Personal Web Sites</a>)</li>
+<li>Synchronize org-mode files with <a href="https://github.com/simonthum/git-sync">git-sync</a>, a <a href="org-tutorials/org-vcs.org">VCS of your choice</a>, or <a href="org-tutorials/unison-sync.org">Unison</a></li>
+<li>Integrate <a href="org-mac.org">Org-mode with Mac OS X</a></li>
+</ul>
+<h3 id="more-resources">Dive Deeper into Org-Mode</h3>
+<ul>
+<li><a href="org-hacks.org">Org-mode Hacks</a> : Copy code snippets from other users</li>
+<li><a href="org-syntax.org">Org syntax</a> : Documentation about Org syntax</li>
+<li><a href="dev/index.org">Org-mode for developers</a> : Reference documentation for developers</li>
+<li><a href="org-blog-articles.org">Blog posts</a> : Read a variety of articles from introductions to specific customizations</li>
+<li><a href="org-contrib/babel/index.org">Babel</a> : <a href="https://en.wikipedia.org/wiki/Literate_programming">Literate programming</a> with active source code blocks
+<ul>
+<li>Includes documentation of <a href="org-contrib/babel/languages/index.org">supported programming languages</a></li>
+</ul>
+</li>
+<li><a href="org-tools/index.org">Org-mode parsing libraries</a> : Parse and analyze <code>.org</code> files</li>
+<li><a href="org-translators.org">Org-mode conversion tools</a>  : Import into and export out of Org-mode</li>
+<li><a href="org-dependencies.org">Org-mode dependencies</a> : Dependencies on external packages for advanced functionality</li>
+<li><a href="org-papers.org">Org-papers</a> : Whitepapers and books about Org-mode</li>
+<li><a href="org-tidy.org">Keep your Org-files tidy</a> : Suggestions for attentive users</li>
+</ul>
+<h3 id="third-party-contributions">Check Out Third-Party Contributions</h3>
+<ul>
+<li><a href="org-contrib/index.org">Contributed packages</a>, including extensive documentation</li>
+<li><a href="org-devel.org">Additions under development</a></li>
+</ul>
+<h2 id="help-us-sustain-our-efforts">Help us sustain our efforts</h2>
+<p>Org-mode is maintained and developed by volunteers on their free time.</p>
+<p>You can help us dedicate more of our time by making a donation or by
+<a href="org-contribute.org">contributing</a> directly.</p>
+<h3 id="worg-maintenance">Worg maintenance</h3>
+<ul>
+<li><a href="worg-about.org">About the Worg project</a>: A good place to start if you want to
+contribute</li>
+<li><a href="worg-setup.org">How Worg is set up on the server</a></li>
+<li><a href="todo.org">The Worg TODO file</a></li>
+<li><a href="worg-about.org#git">How to use git for Worg</a></li>
+<li><a href="worg-editing.org">Conventions and tools for editing Worg</a></li>
+<li><a href="https://git.sr.ht/~bzg/worg/log">Recent changes to Worg</a></li>
+<li><a href="https://git.sr.ht/~bzg/worg/tree">Org-mode source documents of all Worg pages</a></li>
+<li><a href="archive/index.org">The archive</a> (obsolete content)</li>
+</ul>
+<h3 id="join-the-community">Join the Community</h3>
+<p>Check out the list of <a href="worgers.org">Worgers and their User Pages</a> and a few <a href="org-people.org">profiles
+of the Org-mode Community</a> (with photos ☺).  You can also meet other
+users in the flesh at <a href="orgcamps.org">OrgCamps</a>.</p>
+<h3 id="gitr-done">Git’r done!</h3>
+<p>If you like losing your time by reading stuff on how to get organized,
+go and check the <a href="gitrdone.org">Git’r done!</a> page.</p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-anonymous.1">
+<p>See
+<a href="https://www.gnu.org/philosophy/javascript-trap.html">https://www.gnu.org/philosophy/javascript-trap.html</a> <a href="#user-content-fnref-anonymous.1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

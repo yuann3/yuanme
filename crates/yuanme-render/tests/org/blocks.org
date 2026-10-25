@@ -1,0 +1,101 @@
+#+BEGIN_VERSE
+Roses are red,
+  violets are blue.
+#+END_VERSE
+
+#+BEGIN_CENTER
+Centered.
+#+END_CENTER
+
+#+ATTR_HTML: :class wide :data-x 1
+#+BEGIN_note
+A note.
+#+END_note
+
+- Org :: a mode
+- Emacs :: an editor
+
+Tasks:
+
+- [-] partly
+  - [X] one
+  - [ ] two
+- [ ] none
+
+Numbers:
+
+1. one
+2. [@5] five
+3. six
+
+#+NAME: fig:cat
+#+CAPTION: A cat,
+#+CAPTION: sitting.
+#+ATTR_HTML: :width 300
+[[file:cat.png]]
+
+#+NAME: tbl:data
+#+CAPTION: Some data.
+#+ATTR_HTML: :class data
+| a | b |
+| 1 | 2 |
+
+#+NAME: src:hello
+#+CAPTION: Hello in Python.
+#+BEGIN_SRC python :exports both
+print("hello")
+#+END_SRC
+
+#+RESULTS:
+: hello
+
+#+BEGIN_SRC sh :exports results
+echo results only
+#+END_SRC
+
+#+RESULTS:
+: results only
+
+#+BEGIN_SRC sh :exports none
+echo nothing
+#+END_SRC
+
+#+RESULTS:
+: nothing
+
+#+BEGIN_SRC elisp
+(message "no results shown")
+#+END_SRC
+
+#+RESULTS:
+: no results shown
+
+#+BEGIN_EXAMPLE -n
+numbered in Emacs
+#+END_EXAMPLE
+
+:NOTES:
+A drawer's contents.
+:END:
+:LOGBOOK:
+- State "DONE" from "TODO" [2025-12-12 Fri 10:00]
+:END:
+
+# A comment.
+#+BEGIN_COMMENT
+A comment block.
+#+END_COMMENT
+
+: fixed
+:   width
+
+\begin{equation}
+E = mc^2
+\end{equation}
+
+-----
+
+#+HTML: <hr class="fancy">
+#+BEGIN_EXPORT latex
+\newpage
+#+END_EXPORT

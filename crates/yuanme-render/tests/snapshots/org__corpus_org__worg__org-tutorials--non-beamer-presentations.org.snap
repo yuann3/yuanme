@@ -1,0 +1,183 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="introduction">Introduction</h2>
+<p>While <a href="org-beamer/tutorial.org">Beamer</a> is a great option for generating high-quality
+presentations from Org-mode documents, sometimes a lighter-weight
+simpler option is desirable.  This page presents the alternative
+options for giving quick slide-show presentations from Org-mode
+documents.</p>
+<dl>
+<dt><a href="#Epresent">Epresent</a></dt>
+<dd>is an Emacs minor mode for giving presentations.  The
+Emacs editor is used in a full-screen mode as the presentation
+engine, and headings of the Org-mode buffer are presented
+directly (with a few nice bells and whistles).</dd>
+<dt><a href="#S5">S5</a></dt>
+<dd>is a standards-based suite for writing slide-show
+presentations in html web pages.  The browser is used as the
+presentation engine, and a slightly altered form of Org-mode’s
+HTML export serves as the base of the presentation.</dd>
+<dt>org-html5presentation</dt>
+<dd>Is an Exporter of Org-mode documents to
+HTML5 slide show presentations.
+(see <a href="https://gist.github.com/509761">gist.github.com/509761</a> for code and usage information)</dd>
+<dt><a href="#org-tree-slide">org-tree-slide</a></dt>
+<dd>is a simple tool to treat a tree of an org buffer as
+a single slide. Since each slide is displayed by simple narrowing,
+an editable presentation is easily achieved without restricting
+the functionality of Org Mode. And usage of org-tree-slide is not
+limited to a presentation. Three profiles are predefined for
+different use cases.</dd>
+<dt><a href="#org-reveal">org-reveal</a></dt>
+<dd>is an Org-mode extension that exports Org documents
+into Reveal.js presentations. Reveal.js is a web-based
+presentation framework with 3-D effects, customizable
+themes and animations, powered by the latest HTML5
+technologies. For details, please check the <a href="#org-reveal">org-reveal</a>
+section below.</dd>
+</dl>
+<h2 id="Epresent">Epresent</h2>
+<p>Epresent was originally developed on top of outline mode by Tom
+Tromey.  Eric Schulte then adopted it for work with Org-mode.  The
+code for using Org-mode with epresent is available at
+<a href="https://github.com/eschulte/epresent">https://github.com/eschulte/epresent</a>.</p>
+<p>Epresent leverages existing Org-mode features like inline image
+display, inline latex fragments, and in-buffer code fontification to
+generate very nice (if somewhat nerdy) looking presentations directly
+from within Emacs.  This has the nice benefit that during-presentation
+editing and code evaluation is possible.</p>
+<p>The README file in the epresent repository has instillation
+instructions, however usage is as simple as…</p>
+<ol>
+<li><code>M-x load-file epresent.el</code></li>
+<li>open the example <code>present.org</code> file located in the repository</li>
+<li>call <code>M-x epresent-run</code></li>
+<li>press “<code>t</code>” to view the top level of the presentation</li>
+<li>navigate the presentation with “<code>n</code>”, “<code>p</code>”, “<code>t</code>” and quit with “<code>q</code>”</li>
+</ol>
+<h2 id="S5">S5</h2>
+<p><a href="http://meyerweb.com/eric/tools/s5/">S5</a> is a “<em>Simple Standards-Based Slide Show System</em>” implemented using
+HTML, CSS and Javascript.</p>
+<p>Two S5 options exist for Org-mode.</p>
+<ol>
+<li>
+<p>Yann Hodique has developed a javascript based option which works
+directly with Org-mode’s existing html export.</p>
+<p>This technique is described on Yann’s blog
+<a href="http://www.hodique.info/blog/2009/11/14/s5_presentation_from_org-mode">s5 presentation from org-mode</a>.</p>
+</li>
+<li>
+<p>There is also code implementing an altered version of Org-mode’s
+existing html export tailored to generating static S5
+presentations.</p>
+<p>This second technique is described below.</p>
+</li>
+</ol>
+<h3 id="code-and-usage-for-org-export-as-s5">Code and usage for <code>org-export-as-s5</code>.</h3>
+<ul>
+<li>
+<p>The emacs-lisp code available <a href="https://github.com/eschulte/org-S5/blob/master/org-export-as-s5.el">here</a> defines a single function
+(<code>org-export-as-s5</code>) as a simple wrapper around Org-mode’s existing
+html export.  This function is based heavily on Pierre de Buyl’s
+<a href="https://list.orgmode.org/28A74B24-4011-4F2D-AA51-7E18C4765669@chem.utoronto.ca">very thorough S5 export instructions</a> posted to the Org-mode mailing
+list.</p>
+</li>
+<li>
+<p>Simply evaluate this code, or add it to your <code>.emacs</code>, then call
+<code>M-x org-export-as-s5</code> from within an Org-mode buffer. <strong>Note</strong>: the
+<a href="http://gitweb.adaptive.cs.unm.edu/org-S5.git/tree/HEAD:/ui">ui</a> directory holding S5 support files must be located in the same
+directory as the exported html.</p>
+</li>
+<li>
+<p>Currently there are three themes which can be set with the
+following.</p>
+<pre><code class="language-emacs-lisp">(setq org-s5-theme "railscast")   ; based off `color-theme-railscasts'
+(setq org-s5-theme "default")     ; the default S5 theme
+(setq org-s5-theme "i18n")        ; the i18n theme by the author of S5
+</code></pre>
+</li>
+<li>
+<p>This entire directory is available as a <a href="https://github.com/eschulte/org-S5/blob/master/org-export-as-s5.el">git repository</a>.</p>
+</li>
+<li>
+<p>For two examples of org-S5 in action see <a href="http://eschulte.github.io/org-S5/">here</a>.</p>
+</li>
+</ul>
+<h2 id="org-tree-slide">org-tree-slide</h2>
+<p>org-tree-slide is an Emacs minor mode for Org Mode. Once you toggle
+<code>M-x org-tree-slide-mode</code>, just type <code>C-></code> and <code>C-&#x3C;</code> to move between slides.
+To show CONTENT, type <code>C-x s c</code>. When you exit this minor mode,
+the slideshow will be finished. It is recommended to customize the default
+keybindings so that user can smoothly operate their presentations.</p>
+<p>The code is available at <a href="https://github.com/takaxp/org-tree-slide">Github</a>. Please read <a href="https://github.com/takaxp/org-tree-slide/blob/master/README.org">README.org</a> and check the user
+variables to make your presentation more attractive.</p>
+<p>Download org-tree-slide from the following direct link:
+<a href="https://raw.github.com/takaxp/org-tree-slide/master/org-tree-slide.el">https://raw.github.com/takaxp/org-tree-slide/master/org-tree-slide.el</a></p>
+<h3 id="recommended-key-bindings-and-profiles">Recommended key bindings and profiles</h3>
+<pre><code class="language-emacs-lisp">(global-set-key (kbd "&#x3C;f8>") 'org-tree-slide-mode)
+(global-set-key (kbd "S-&#x3C;f8>") 'org-tree-slide-skip-done-toggle)
+</code></pre>
+<p>Preset profiles are defined in org-tree-slide.</p>
+<ol>
+<li><code>M-x org-tree-slide-simple-profile</code>            ; Simple use</li>
+<li><code>M-x org-tree-slide-presentation-profile</code>      ; Presentation use</li>
+<li><code>M-x org-tree-slide-narrowing-control-profile</code> ; TODO Pursuit with narrowing</li>
+</ol>
+<p>These functions set user variables for each using scenario.
+You can find more detail in <a href="https://github.com/takaxp/org-tree-slide/blob/master/README.org">README.org</a>.</p>
+<h3 id="frame-maximized-presentation">Frame maximized presentation</h3>
+<p>Normally, presentations will appear in full screen or frame maximized.
+<a href="https://github.com/takaxp/moom#org-mode-org-tree-slide">moom</a> is useful in such cases since the package can change frame position and size
+by keyboard and the font size will be increased suitably for your presentation.</p>
+<h2 id="orgmode-slideshow">orgmode-slideshow</h2>
+<p>Sander Boer created orgmode-slideshow – see his message:</p>
+<p>I hacked together a javascript and a css that transforms the default html
+export of my org file to a slide show:</p>
+<ul>
+<li><a href="http://www.mauc.nl/presentations/test.html">http://www.mauc.nl/presentations/test.html</a></li>
+</ul>
+<p>Here’s the org-file:</p>
+<ul>
+<li><a href="http://www.mauc.nl/presentations/test.org">http://www.mauc.nl/presentations/test.org</a></li>
+</ul>
+<p>Here’s the rest (depends on jQuery)</p>
+<ul>
+<li><a href="http://www.mauc.nl/assets/css/orgmode-slideshow.css">http://www.mauc.nl/assets/css/orgmode-slideshow.css</a></li>
+<li><a href="http://www.mauc.nl/assets/js/orgmode-slideshow.js">http://www.mauc.nl/assets/js/orgmode-slideshow.js</a></li>
+</ul>
+<h2 id="org-reveal">org-reveal</h2>
+<p>Reveal.js is a web-based presentation framework, with attracting
+features like:</p>
+<ul>
+<li>3-D slide transition effect.</li>
+<li>2-D slide arrangement.</li>
+<li>Fragmented items.</li>
+<li>Navigation control.</li>
+<li>Slide thumbnail.</li>
+<li>Customizable themes.</li>
+</ul>
+<p>An <a href="http://lab.hakim.se/reveal-js/">example of Reveal.js</a> is available online.</p>
+<p>Org-reveal is an Org-mode extension that exports Org-mode documents
+into Reveal.js presentations. With org-reveal, you can easily
+organize Reveal.js presentations without knowing the detail of HTML,
+AND with some extra benifits:</p>
+<ul>
+<li>Highlighted source codes.</li>
+<li>Neat math equations.</li>
+</ul>
+<h3 id="sources">Sources</h3>
+<p>Both Reveal.js and org-reveal are hosted on GitHub.</p>
+<dl>
+<dt>Reveal.js</dt>
+<dd><a href="https://github.com/hakimel/reveal.js/">https://github.com/hakimel/reveal.js/</a></dd>
+<dt>Org-reveal</dt>
+<dd><a href="https://github.com/yjwen/org-reveal/">https://github.com/yjwen/org-reveal/</a></dd>
+</dl>
+<h3 id="usage">Usage</h3>
+<p>See org-reveal’s <a href="https://github.com/yjwen/org-reveal/blob/master/Readme.org">Readme.org</a> for detail instruction about installing
+Reveal.js/org-reveal and the setting ups.</p>
+<p>Though you can read it online, it is recommended to download the
+projects and read it in your Emacs, so that you can try exporting
+it to Reveal.js presentation while reading.</p>

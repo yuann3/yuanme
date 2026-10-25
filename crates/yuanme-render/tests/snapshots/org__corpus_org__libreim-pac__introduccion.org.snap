@@ -1,0 +1,276 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>Estos apuntes son una adptación en su mayoría del contenido del libro cite:shwartz_understanding_ml</p>
+<h2 id="introducción">Introducción</h2>
+<p>Damos unas notaciones/definiciones básicas que utilizaremos de aquí en adelante.</p>
+<ul>
+<li><strong>Dominio</strong>: <code class="language-math math-inline">\mathcal{X}</code>, sobre el que tenemos definida una <code class="language-math math-inline">\sigma</code> álgebra de conjuntos <code class="language-math math-inline">\mathscr{B}</code>. Llamamos una instancia a <code class="language-math math-inline">x\in \mathcal{X}</code></li>
+<li><strong>Conjunto de etiquetas</strong>: <code class="language-math math-inline">\mathcal{Y} \subseteq \mathbb{R}</code> finito , que asumiremos como <code class="language-math math-inline">\{0,1\}</code> en lo que sigue hasta que se indique lo contrario. Esto nos restringe al paradigma de clasificación binario.</li>
+<li><strong>Verdadero etiquetado</strong>: Asumimos la existencia de una función <code class="language-math math-inline">f: \mathcal{X} \rightarrow \mathcal{Y}</code> que devuelve el verdadero etiquetado de todas las instancias.</li>
+<li><strong>Generación de instancias</strong>: Asumimos la existencia de una distribución de probabilidad <code class="language-math math-inline">\mathcal{D}</code> sobre <code class="language-math math-inline">\mathcal{X}</code>, para la <code class="language-math math-inline">\sigma</code> álgebra de conjuntos mencionada anteriormente, que nos da información sobre la probabilidad de extraer cada posible instancia desde <code class="language-math math-inline">\mathcal{X}</code>.</li>
+<li><strong>Conjunto de entrenamiento</strong>: Tenemos una muestra aleatoria simple <code class="language-math math-inline">S = (\mathcal{X}_1, \ldots ,\mathcal{X}_m)</code>, idéntica e independientemente distribuida, donde <code class="language-math math-inline">S \sim \mathcal{D}^m</code>, esto es cada <code class="language-math math-inline">X_i</code> sigue la misma distribución que <code class="language-math math-inline">\mathcal{X}</code>, <code class="language-math math-inline">X_i \sim \mathcal{D}</code>, y las distribuciones marginales son independientes entre sí. Notaremos <code class="language-math math-inline">S_x</code> a una realización muestral <code class="language-math math-inline">(x_1, \ldots x_m)</code>. Cada elemento <code class="language-math math-inline">x_i</code> de una realización muestral <code class="language-math math-inline">S_x = (x_1, \ldots x_n)</code> se etiqueta por <code class="language-math math-inline">f</code>, y llamando <code class="language-math math-inline">f(x_i) = y_i</code> definimos como conjunto de entrenamiento a la tupla <code class="language-math math-inline">((x_1, y_1), \ldots ,(x_m, y_m))</code>. La relación entre la realización muestral y el conjunto de entrenamiento asociado es biunívoca, por lo que por abuso de notación llamaremos indiferentemente conjunto de entrenamiento a ambas tuplas.</li>
+<li><strong>Resultado del aprendizaje</strong>: disponemos de un algoritmo de aprendizaje <code class="language-math math-inline">A: (\mathcal{X} \times \mathcal{Y})^m \rightarrow \mathcal{Y}^{\mathcal{X}}</code> que recibe un conjunto de entrenamiento y devuelve una función <code class="language-math math-inline">h: \mathcal{X} \rightarrow \mathcal{Y}</code> que llamaremos hipótesis/clasificador. El algoritmo “desconoce” el valor de la verdadera función de etiquetado <code class="language-math math-inline">f</code> en los puntos no pertenecientes al conjunto de entrenamiento.</li>
+<li><strong>Error del clasificador</strong>: Definimos el error de un clasificador <code class="language-math math-inline">h: \mathcal{X} \rightarrow \mathcal{Y}</code> como:</li>
+</ul>
+<p><code class="language-math math-display">L_{\mathcal{D},f}(h) :=  P (\{x\in \mathcal{X} : h(x)\neq f(x)\}) = P[f\neq h]</code></p>
+<p>Por simplificar la escritura, omitiremos a partir de ahora el hecho de que sobre <code class="language-math math-inline">\mathcal{X}</code> tenemos definida una <code class="language-math math-inline">\sigma</code> álgebra de conjuntos, <code class="language-math math-inline">\mathscr{B}</code>, y que todas las distribuciones asignan probabilidad a los conjuntos de alguna <code class="language-math math-inline">\sigma</code> álgebra que contenga a <code class="language-math math-inline">\mathscr{B}</code>. Además, consideraremos que la función de verdadero etiquetado y los clasificadores son funciones medibles para que la definición de los errores sea correcta.</p>
+<h3 id="minimización-del-riesgo-empírico-erm">Minimización del riesgo empírico (ERM)</h3>
+<div class="definition">
+<p><strong>Riesgo empírico (ER)</strong></p>
+<p>Fijado un clasificador <code class="language-math math-inline">h : \mathcal{X} \rightarrow \mathcal{Y}</code>, definimos el riesgo empírico o error empírico, como una variable aleatoria:</p>
+<p><code class="language-math math-display">\begin{array}{llll}
+L_S(h): &#x26; \mathcal{X}_1 \times \ldots \times \mathcal{X}_m &#x26; \rightarrow &#x26;\mathbb{R}\\
+&#x26; (x_1, \ldots x_m) &#x26; \mapsto &#x26; L_{S_x} (h) = \frac{\#\{i\in {1\ldots m}: h(x_i) \neq f(x_i)\}}{m}
+\end{array}</code></p>
+</div>
+<p>Para un conjunto de entrenamiento el riesgo empírico proporciona el error del clasificador sobre el conjunto de entrenamiento.</p>
+<p>Un algoritmo que obtiene una hipótesis que minimiza el error empírico sobre un conjunto de entrenamiento recibe el nombre de ERM y notamos <code class="language-math math-inline">ERM(S_x)</code> al clasificador obtenido con dicho algoritmo.</p>
+<p>Este error no es siempre óptimo. Pensemos en el siguiente ejemplo:</p>
+<p>Sea <code class="language-math math-inline">\mathcal{X} = \mathbb{R}</code>, <code class="language-math math-inline">\mathcal{D}</code> la distribución uniforme sobre <code class="language-math math-inline">[0,2]\subset \mathbb{R}</code>, y la siguiente función:</p>
+<p><code class="language-math math-display">f(x) = \left\{\begin{array}{lcl}
+1 &#x26;&#x26; x\in [0,1]\\
+0 &#x26;&#x26; x\in \mathbb{R}\setminus [0,1]
+\end{array}\right.</code></p>
+<p>Sea <code class="language-math math-inline">((x_1,y_1), \ldots (x_m, y_m))</code> un conjunto de entrenamiento de tamaño <code class="language-math math-inline">m</code> y el clasificador:</p>
+<p><code class="language-math math-display">h(x) = \left\{\begin{array}{lcl}
+y_i &#x26;&#x26; \exists i\in \{1\ldots m\} : x=x_i\\
+0 &#x26;&#x26; \nexists i\in \{1\ldots m\} : x=x_i
+\end{array}\right.</code></p>
+<p>Nótese que el conjunto de entrenamiento no puede tener elementos no repetidos puesto que se etiquetan mediante <code class="language-math math-inline">f</code>, que es una función y no puede arrojar dos imágenes distintas para un mismo <code class="language-math math-inline">x \in \mathcal{X}</code> de entrada.</p>
+<p>Este clasificador es perfecto respecto a la minimización de riesgo empírico, pero <code class="language-math math-inline">L_{\mathcal{D}, f}(h) = 1/2</code>. Es decir, tiene el mismo nivel de acierto que el clasificador idénticamente 1. A este fenómeno, minimizar el riesgo empírico siendo un clasificador con un error muy alto, lo denominamos <em>overfitting</em>.</p>
+<p>El hecho de tomar el error sobre el conjunto de entrenamiento como aproximación al verdadero error del clasificador se respalda por la siguiente proposición:</p>
+<div class="fact">
+<p><strong>Relación entre riesgo empírico y error del clasificador</strong></p>
+<p>Sea <code class="language-math math-inline">\mathcal{H}</code> clase de clasificadores binarios sobre un dominio <code class="language-math math-inline">\mathcal{X}</code>. Sea <code class="language-math math-inline">\mathcal{D}</code> una distribución desconocida sobre <code class="language-math math-inline">\mathcal{X}</code>. Sea <code class="language-math math-inline">f</code> la función de verdadero etiquetado. Para <code class="language-math math-inline">h\in \mathcal{H}</code> fijo se verifica:</p>
+<p><code class="language-math math-display">\mathbb{E} [L_S(h)] = L_{\mathcal{D},f}(h)</code></p>
+</div>
+<p>Llamamos <code class="language-math math-inline">p=P [f \neq h ] = L_{\mathcal{D},f}(h)</code></p>
+<code class="language-math math-display">\begin{align*}
+\mathbb{E} [L_S(h)] &#x26;= \sum_{k=0}^m \frac{k}{m} \binom{m}{k} p^k(1-p)^{m-k} = \sum_{k=1}^m \frac{k}{m} \binom{m}{k} p^k(1-p)^{m-k} =\\
+&#x26;= \sum_{k=1}^m \binom{m-1}{k-1} p^k(1-p)^{m-k} = \sum_{k=0}^{m-1} \binom{m-1}{k} p^{k+1}(1-p)^{m-1-k} = \\
+&#x26;= p\cdot \sum_{k=0}^{m-1} \binom{m-1}{k} p^{k}(1-p)^{m-1-k} = p(1+(1-p))^{m-1} = p
+\end{align*}</code>
+<h3 id="erm-con-sesgo-inductivo">ERM con <em>sesgo inductivo</em></h3>
+<p>Con objeto de corregir el ERM, para evitar <em>overfitting</em>, usamos el conocimiento previo sobre el problema (la información que dispongamos sobre el dominio, la distribución, etc) restringiendo el espacio de búsqueda, esto es, la clase de hipótesis <code class="language-math math-inline">\mathcal{H}</code> desde la que el algoritmo puede escoger un <code class="language-math math-inline">h: \mathcal{X}\rightarrow \mathcal{Y}</code>. Llamamos a esto <strong>sesgo inductivo</strong> puesto que se asumirá una determinada clase de funciones <code class="language-math math-inline">\mathcal{H}</code> en función de las características del problema.</p>
+<p>Notaremos a un clasificador obtenido con este paradigma <code class="language-math math-inline">h_{S_x} := ERM_{\mathcal{H}}(S_x)</code>, y lo definimos de manera que:</p>
+<p><code class="language-math math-display">h_{S_x} \in \underset{h\in \mathcal{H}}{argmin} \{L_{S_x}(h)\}</code></p>
+<p>La existencia de <code class="language-math math-inline">\underset{h\in \mathcal{H}}{min} \{L_{S_x}(h)\}</code> está garantizada, ya que <code class="language-math math-inline">m \cdot L_{S_x}(h) \in \mathbb{N}</code> para todo <code class="language-math math-inline">h\in \mathcal{H}</code>.</p>
+<p>Enunciamos la propiedad de factibilidad, que usaremos más adelante.</p>
+<div class="definition">
+<p><strong>Propiedad de factibilidad</strong></p>
+<p>Existe <code class="language-math math-inline">\bar{h} \in \mathcal{H}</code> verificando <code class="language-math math-inline">L_{\mathcal{D},f}(\bar{h}) = 0</code>.</p>
+</div>
+<p>La hipótesis de factibilidad implica que <code class="language-math math-inline">P [L_S(\bar{h})=0] = 1</code>, ya que:</p>
+<code class="language-math math-display">\begin{align*}
+P (\{(x_1, \ldots x_m): \bar{h}(x_i) = f(x_i), i=1, \ldots m\}) =\\
+= \prod_{i=1}^m P [h=f] = \prod_{i=1}^m (1 - P[h\neq f]) = 1
+\end{align*}</code>
+<p>Por tanto <code class="language-math math-inline">P [L_S(h_S)=0]=1</code>.</p>
+<p>Para finalizar estos preliminares remarcamos que el valor de <code class="language-math math-inline">L_{\mathcal{D},f}(h_{S_x})</code> dependerá del conjunto de entrenamiento, extraído y etiquetado a partir del vector aleatorio <code class="language-math math-inline">S</code>, y la elección del mismo está sometida al azar. Asimismo, necesitamos una medida de la bondad de la predicción.</p>
+<h2 id="aprendizaje-pac">Aprendizaje PAC.</h2>
+<div class="definition">
+<p><strong>PAC (Probablemente Aproximadamente Correcto) cognoscible</strong></p>
+<p>Una clase de funciones <code class="language-math math-inline">\mathcal{H} \subseteq \mathcal{Y}^{\mathcal{X}}</code> es PAC cognoscible sii existe una función <code class="language-math math-inline">m_{\mathcal{H}} : ]0,1[^2\rightarrow \mathbb{N}</code>, llamada complejidad muestral, y un algoritmo <code class="language-math math-inline">A</code> verificando que si <code class="language-math math-inline">0 &#x3C; \epsilon, \delta &#x3C; 1</code>, entonces para toda distribución <code class="language-math math-inline">\mathcal{D}</code> sobre <code class="language-math math-inline">\mathcal{X}</code> y para toda función de verdadero etiquetado <code class="language-math math-inline">f:\mathcal{X} \rightarrow \{0,1\}</code> cumpliendo la propiedad de factibilidad, ejecutando el algoritmo para un conjunto de entrenamiento generado por <code class="language-math math-inline">S\sim \mathcal{D}^m</code> etiquetado mediante <code class="language-math math-inline">f</code>, con <code class="language-math math-inline">m\ge m_{\mathcal{H}}(\epsilon, \delta)</code> se tiene que:</p>
+<p><code class="language-math math-display">P [L_{\mathcal{D},f}(A(S)) \le \epsilon] \ge 1-\delta</code></p>
+</div>
+<p>Llamamos a <code class="language-math math-inline">(1-\delta)</code> <em>confianza de la predicción</em> y a <code class="language-math math-inline">(1-\epsilon)</code> la <em>exactitud</em>. Estos dos parámetros explican el nombre aproximadamente (<code class="language-math math-inline">\leftrightarrow</code> confianza) correcto (<code class="language-math math-inline">\leftrightarrow</code> exactitud).</p>
+<p>Podemos considerar <code class="language-math math-inline">m_{\mathcal{H}}</code> única en el sentido de que para cada <code class="language-math math-inline">(\delta, \epsilon)</code> nos devuelva el menor natural verificando las hipótesis del enunciado.</p>
+<p>Nótese que las condiciones exigidas, cumplir la propiedad de factibilidad y que la hipótesis devuelta deba estar en <code class="language-math math-inline">\mathcal{H}</code>, son muy fuertes. Relajaremos esta definición más adelante con el concepto de PAC agnóstico.</p>
+<h3 id="aprendizaje-con-clases-finitas">Aprendizaje con clases finitas</h3>
+<div class="theorem">
+<p><strong>Las clases finitas de funciones son PAC cognoscibles</strong></p>
+<p>Sea <code class="language-math math-inline">\mathcal{H} \subseteq \mathcal{Y}^{\mathcal{X}}</code> finito. Sean <code class="language-math math-inline">0 &#x3C; \epsilon, \delta &#x3C; 1</code>, y un natural <code class="language-math math-inline">m\in \mathbb{N}</code> verificando:</p>
+<p><code class="language-math math-display">m \ge \frac{1}{\epsilon}log\left(\frac{|\mathcal{H}|}{\delta}\right)</code></p>
+<p>Entonces para toda función de verdadero etiquetado <code class="language-math math-inline">f: \mathcal{X}\rightarrow \{0,1\}</code>, y para toda distribución <code class="language-math math-inline">\mathcal{X}\sim \mathcal{D}</code> para la que se verifique la propiedad de factibilidad, las hipótesis que obtenemos a través del algoritmo ERM son con una confianza superior a <code class="language-math math-inline">1-\delta</code>, <code class="language-math math-inline">1-\epsilon</code> exactas.</p>
+<p>Como consecuencia, deducimos que la complejidad muestral es menor o igual a <code class="language-math math-inline">\left\lceil \frac{1}{\epsilon}log \left(\frac{|\mathcal{H}|}{\delta} \right) \right\rceil</code></p>
+</div>
+<div class="proof">
+<p>Fijada una distribución <code class="language-math math-inline">\mathcal{D}</code>, <code class="language-math math-inline">m\in \mathbb{N}</code> y una función de etiquetado <code class="language-math math-inline">f</code>, notamos:</p>
+<p><code class="language-math math-display">\mathcal{H}_B = \{h\in \mathcal{H}: L_{\mathcal{D},f}(h) > \epsilon\}</code></p>
+<p>Se tiene:</p>
+<p><code class="language-math math-display">P [L_{\mathcal{D},f}(h_S) > \epsilon] \le P [\exists h\in \mathcal{H}_B : L_S(h) = 0] \le \sum_{h\in \mathcal{H}_B} P [L_S(h) = 0] </code></p>
+<p>La primera desigualdad viene dada porque dada <code class="language-math math-inline">h_{S_x}</code> se verifica, por la propiedad de factibilidad, que <code class="language-math math-inline">L_S(h_{S_x})=0</code>. La segunda por subaditividad.</p>
+<p>Además, fijada <code class="language-math math-inline">h\in \mathcal{H}_B</code>, como <code class="language-math math-inline">L_{\mathcal{D},f}(h) > \epsilon</code>:</p>
+<code class="language-math math-display">\begin{align*}
+P [L_S(h) = 0] = P (\{(x_1, \ldots x_m) : h(x_i) = f(x_i), i =1,\ldots m\}) =\\
+= \prod_{i=1}^m P [h = f] = \prod_{i=1}^m (1 - L_{\mathcal{D},f}(h)) \le (1-\epsilon)^m \le e^{-\epsilon m}
+\end{align*}</code>
+<p>Las dos desigualdades probadas, junto a la hipótesis del enunciado, y usando <code class="language-math math-inline">\mathcal{H}_B \subseteq \mathcal{H}</code> dan lugar a:</p>
+<p><code class="language-math math-display">P_{S\sim \mathcal{D}^m}[L_{\mathcal{D},f}(h_S) > \epsilon] \le |\mathcal{H}|e^{-\epsilon m} \le \delta</code></p>
+</div>
+<h3 id="aprendizaje-con-clases-no-finitas">Aprendizaje con clases no finitas</h3>
+<p>¿Hay ejemplos de clases infinitas PAC cognoscibles? Veamos un ejemplo.</p>
+<div class="definition">
+<p><strong>Clasificadores de rectángulo</strong></p>
+<p>Un clasificador de rectángulo es un clasificador que asigna 1 a los puntos que se quedan dentro de un cierto rectángulo en el plano real.</p>
+<p><code class="language-math math-display">h_{a,b,c,d} = \mathds{1}_{[a,b]\times [c,d]</code></p>
+<p>La clase de clasificadores de rectángulo en el plano se define por:</p>
+<p><code class="language-math math-display">\mathcal{H}^2_{rec} = \{ h_{a,b,c,d}: a\le b, c\le d\}</code></p>
+</div>
+<div class="fact">
+<p><strong>Los rectángulos son PAC cognoscibles</strong></p>
+<p>Asumiendo propiedad de factibilidad, los rectángulos son PAC cognoscibles</p>
+</div>
+<p>Sea <code class="language-math math-inline">A</code> el algoritmo que devuelve el rectángulo más pequeño que engloba a todos los ejemplos positivos del conjunto de entrenamiento <code class="language-math math-inline">S_x</code>.</p>
+<p>Partiendo de la propiedad de factibilidad, debe existir un clasificador de rectángulo <code class="language-math math-inline">\bar{h} = h_{a,b,c,d}</code> que haga el ERM nulo y que cumpla <code class="language-math math-inline">L_{\mathcal{D},f}(\bar{h}) = 0</code>. Por tanto debe verificarse que <code class="language-math math-inline">h_{S_x}</code> debe acertar en todas las instancias positivas (cuya etiqueta sea 1) del conjunto de entrenamiento, con probabilidad 1, ya que si valiese 0 en algún ejemplo positivo del conjunto de entrenamiento, el ERM sería mayor que 0.</p>
+<p>El algoritmo que devuelve el mínimo rectángulo que engloba a todos los ejemplos positivos es por tanto un ERM.</p>
+<p>Veamos que con este algoritmo minimizador del ERM la clase de rectángulos es PAC cognoscible.</p>
+<p>Sea <code class="language-math math-inline">R^{\ast} = [a,b]\times [c,d]</code> el rectángulo que materializa la propiedad de factibilidad. Fijamos <code class="language-math math-inline">1 > \epsilon, \delta > 0</code>.</p>
+<p>Tomamos <code class="language-math math-inline">R_1 = [a,b^{\ast}] \times [c,d]</code> un rectángulo verificando <code class="language-math math-inline">L_{\mathcal{D},f}(\mathds{1}_{R_1}) \le \epsilon/4</code>, con <code class="language-math math-inline">a\le b^{\ast} \le b</code>.</p>
+<p><code class="language-math math-inline">R_2= [a^{\ast},b] \times [c,d], R_3=[a,b] \times [c,d^{\ast}], R_4=[a,b] \times [c^{\ast},d]</code> se definen de forma análoga.</p>
+<p>Llamando <code class="language-math math-inline">h_{R}=A(S)</code>, <code class="language-math math-inline">R(S) = R</code> el rectángulo obtenido como resultado de aplicar el algoritmo del ejercicio para cada conjunto de entrenamiento, es claro que <code class="language-math math-inline">P_{S \sim \mathcal{D}^m}[R \subset R^{\ast}] = 1</code>.</p>
+<p>Supongamos <code class="language-math math-inline">\forall i : R \cap R_i \neq \emptyset</code>. Entonces:</p>
+<p><code class="language-math math-display">L_{\mathcal{D},f}(h_R) = P_{x\sim \mathcal{D}} [h_R \neq f] \le P \left(\cup_i [h_R \neq f] \cap R_i\right) \le P \left(\cup_i R_i\right) \le 4\frac{\epsilon}{4} = \epsilon</code></p>
+<p>La demostración acaba probando que:</p>
+<p><code class="language-math math-display">P_{S\sim \mathcal{D}^m} [\exists i : R(S)\cap R_i = \emptyset] \le \sum_{i=1}^4 P [R(S)\cap R_i = \emptyset] = 4(1-\frac{\epsilon}{4})^m \le 4e^{-\epsilon m/4}</code></p>
+<p>y tomando <code class="language-math math-inline">m > \frac{4}{\epsilon} log \left( \frac{4}{\delta} \right)</code>.</p>
+<h2 id="generalización-aprendizaje-pac-pac-agnóstico">Generalización aprendizaje PAC: PAC agnóstico</h2>
+<p>Hasta ahora tenemos dos problemas en la definición de PAC. Intentamos buscar una hipótesis sobre una función de verdadero etiquetado, <code class="language-math math-inline">f</code> determinista, que por tanto no podrá asignar dos imágenes distintas al mismo punto, y además, estamos suponiendo que se cumple la propiedad de factibilidad.</p>
+<p>Para paliar esto, podríamos considerar <code class="language-math math-inline">\mathcal{D}</code> como la distribución conjunta sobre <code class="language-math math-inline">\mathcal{X} \times \mathcal{Y}</code>, y la noción de error para <code class="language-math math-inline">h: \mathcal{X} \rightarrow \mathcal{Y}</code> quedaría:</p>
+<p><code class="language-math math-display">L_{\mathcal{D}}(h):= P_{(x,y) \sim \mathcal{D}} [h(x) \neq y]</code></p>
+<p>Con estos conceptos revisitados, podríamos asegurar que la hipótesis que menor error comete para <code class="language-math math-inline">\mathcal{Y} = \{0,1\}</code> es el llamado <strong>clasificador de Bayes</strong>:</p>
+<p><code class="language-math math-display">f_{\mathcal{D}}(x) = \left\{\begin{array}{ll}
+1 &#x26; P [y = 1 |x] >= 0.5\\
+0 &#x26; \quad si \quad no
+\end{array}\right.</code></p>
+<p>Pero deseamos ir aún más allá, y generalizar la definición para una función de pérdida arbitraria.</p>
+<div class="definition">
+<p><strong>Función de pérdida</strong></p>
+<p>Dados un conjunto <code class="language-math math-inline">\mathcal{H}</code>, <code class="language-math math-inline">Z</code> y una <code class="language-math math-inline">\sigma</code> álgebra de conjuntos sobre <code class="language-math math-inline">Z</code>, se denomina función de pérdida de <code class="language-math math-inline">\mathcal{H}</code> sobre <code class="language-math math-inline">Z</code> a cualquier función de la forma:</p>
+<p><code class="language-math math-display">l : \mathcal{H} \times Z \rightarrow \mathbb{R}^{+}</code></p>
+<p>que verifique que fijada <code class="language-math math-inline">h\in \mathcal{H}</code> arbitrario la función <code class="language-math math-inline">l(h, \cdot)</code> sea medible.</p>
+</div>
+<p>Aumiendo ya como <code class="language-math math-inline">\mathcal{D}</code> la distribución conjunta, con funciones de pérdida arbitrarias, redefiniríamos los conceptos de <em>error</em> y <em>error empírico</em> de la forma:</p>
+<code class="language-math math-display">\begin{align*}
+L_{\mathcal{D}} (h) := \mathbb{E}_{z\sim \mathcal{D}}[l(h,z)]\\
+L_{S_z} (h) := \frac{1}{m} \sum_{i=1}^m l(h,z_i)
+\end{align*}</code>
+<p>Donde los conjuntos de entrenamiento se generan a partir de una muestra aleatoria simple <code class="language-math math-inline">S = (Z_1 \times \ldots \times Z_m)</code> con <code class="language-math math-inline">Z_i = (\mathcal{X}\times \mathcal{Y})_i \sim \mathcal{D}</code></p>
+<div class="definition">
+<p><strong>Aprendizaje PAC agnóstico</strong></p>
+<p>Una clase de funciones <code class="language-math math-inline">\mathcal{H} \subseteq \mathcal{Y}^{\mathcal{X}}</code> es agnósticamente PAC cognoscible respecto a <code class="language-math math-inline">Z = \mathcal{X} \times \mathcal{Y}</code> (sobre el que tenemos definida una <code class="language-math math-inline">\sigma</code> álgebra de conjuntos) y a una función de pérdida <code class="language-math math-inline">l: \mathcal{H} \times Z \rightarrow \mathbb{R}^{+}</code> si existe una función <code class="language-math math-inline">m_{\mathcal{H}} : ]0,1[^2\rightarrow \mathbb{N}</code> y un algoritmo <code class="language-math math-inline">A</code> verificando que si <code class="language-math math-inline">0 &#x3C; \epsilon, \delta &#x3C; 1</code>, entonces para toda distribución <code class="language-math math-inline">\mathcal{D}</code> sobre <code class="language-math math-inline">Z</code> ejecutando el algoritmo para un conjunto de entrenamiento <code class="language-math math-inline">S\sim \mathcal{D}^m</code>, con <code class="language-math math-inline">m\ge m_{\mathcal{H}}(\epsilon, \delta)</code> se tiene:</p>
+<p><code class="language-math math-display">P_{S\sim \mathcal{D}^m}[L_{\mathcal{D}}(A(S)) \le \underset{h\in \mathcal{H}}{inf} L_{\mathcal{D}}(h) + \epsilon] \ge 1-\delta</code></p>
+<p>El algoritmo <code class="language-math math-inline">A</code> devuelve un elemento de <code class="language-math math-inline">\mathcal{H}</code>.</p>
+</div>
+<p>Notamos desde esta definición tomando una <strong>función de pérdida 0-1</strong>:</p>
+<p><code class="language-math math-display">l_{0-1} (h,(x,y)) := \left\{\begin{array}{ll}
+0 &#x26; h(x) = y\\
+1 &#x26; si \quad no
+\end{array}\right.</code></p>
+<p>equivale a la primera definición que dimos de aprendizaje PAC si asumimos propiedad de factibilidad. Por ello no distinguiremos en el uso de uno u otro concepto, sino que se deducirá de si estamos asumiendo propiedad de factibilidad o no.</p>
+<p>Cuando permitimos que el algoritmo <code class="language-math math-inline">A</code> devuelva una función <code class="language-math math-inline">h \notin \mathcal{H}</code>, de manera que <code class="language-math math-inline">h \in \mathcal{H}'</code> y <code class="language-math math-inline">\mathcal{H} \subset \mathcal{H}'</code> una clase de funciones donde la función de pérdida es extensible de manera natural, el aprendizaje recibe el nombre de <strong>aprendizaje impropio</strong>. La definición aquí dada se ha hecho para <strong>aprendizaje propio</strong>.</p>
+<h2 id="condiciones-suficientes-para-ser-pac-cognoscible">Condiciones suficientes para ser PAC cognoscible</h2>
+<div class="definition">
+<p><strong>Convergencia uniforme / clase de Glivenko-Cantelli</strong></p>
+<p>Decimos que una clase de hipótesis <code class="language-math math-inline">\mathcal{H}</code> tiene la propiedad de <strong>convergencia uniforme o es de Glivenko-Cantelli</strong>, respecto a un dominio <code class="language-math math-inline">Z</code>, y a una función de pérdida <code class="language-math math-inline">l</code> si existe una función <code class="language-math math-inline">m_{\mathcal{H}}^{CU}: ]0,1[^2 \rightarrow \mathbb{N}</code> verificando que para todo <code class="language-math math-inline">0 &#x3C; \delta, \epsilon &#x3C; 1</code> y para toda distribución <code class="language-math math-inline">\mathcal{D}</code> sobre <code class="language-math math-inline">Z</code>, si <code class="language-math math-inline">S</code> es un conjunto de entrenamiento de tamaño mayor o igual a <code class="language-math math-inline">m \ge m_{\mathcal{H}}^{CU}(\epsilon, \delta)</code>, entonces:</p>
+<p><code class="language-math math-display">P_{S\sim \mathcal{D}^m} [\forall h\in \mathcal{H}, |L_S(h) - L_{\mathcal{D}}(h)| \le \epsilon] \ge 1-\delta</code></p>
+</div>
+<div class="theorem">
+<p><strong>La convergencia uniforme es condición suficiente para ser PAC cognoscible</strong></p>
+<p>Sea <code class="language-math math-inline">\mathcal{H}</code> una clase de hipótesis con la propiedad de convergencia uniforme. Entonces es agnósticamente PAC cognoscible con cualquier algoritmo ERM y complejidad muestral menor o igual al <code class="language-math math-inline">m_{\mathcal{H}}^{UC} \left(\frac{\epsilon}{2}, \delta \right)</code> dado en la definición anterior.</p>
+</div>
+<div class="proof">
+<p>Fijamos <code class="language-math math-inline">m = m_{\mathcal{H}}^{UC} \left(\frac{\epsilon}{2}, \delta \right)</code>.</p>
+<p>Fijado un conjunto de entrenamiento <code class="language-math math-inline">S_z</code> extraído de la variable aleatoria <code class="language-math math-inline">S = (Z_1, \ldots Z_m) \sim \mathcal{D}^m</code> verificando que:</p>
+<p><code class="language-math math-display">\forall h\in \mathcal{H}, |L_{S_z}(h)-L_{\mathcal{D}}(h)| \le \frac{\epsilon}{2}</code></p>
+<p>Entonces, notando <code class="language-math math-inline">\bar{h} = ERM_{\mathcal{H}}(S_z)}</code>, para <code class="language-math math-inline">h \in \mathcal{H}</code> arbitrario:</p>
+<p><code class="language-math math-display">L_{\mathcal{D}}(\bar{h}) \le L_{S_z}(\bar{h}) + \frac{\epsilon}{2} \le L_{S_z}(h) + \frac{\epsilon}{2} \le L_{\mathcal{D}}(h) + \frac{\epsilon}{2} + \frac{\epsilon}{2} =  L_{\mathcal{D}}(h) + \epsilon</code></p>
+<p>Donde la segunda desigualdad viene desde la definición de ERM.</p>
+</div>
+<div class="fact">
+<p><strong>Las clases finitas tienen la propiedad de convergencia uniforme</strong></p>
+<p>Sea <code class="language-math math-inline">\mathcal{H}</code> una clase de hipótesis finita, <code class="language-math math-inline">Z</code> un dominio y sea <code class="language-math math-inline">l : \mathcal{H} \times Z \rightarrow [a,b]</code> una función de pérdida. Entonces <code class="language-math math-inline">\mathcal{H}</code> verifica la propiedad de convegencia uniforme con:</p>
+<p><code class="language-math math-display">m_{\mathcal{H}}^{CU}(\epsilon, \delta) \le \left\lfloor \frac{log(2|\mathcal{H}|/\delta)(b-a)^2}{2\epsilon^2} \right\rfloor + 1</code></p>
+</div>
+<div class="lemma">
+<p><strong>Desigualdad de Hoeffding</strong></p>
+<p>Sean <code class="language-math math-inline">(X_1, \ldots X_m)</code> una muestra aleatoria simple de una variable <code class="language-math math-inline">X</code>, <code class="language-math math-inline">\bar{X} = \frac{1}{m} \sum_{i=1}^m X_i</code> con <code class="language-math math-inline">E[\bar{X}] = \mu</code> y <code class="language-math math-inline">P[a \le X_i \le b] = 1, i=1, \ldots m</code>. Entonces para todo <code class="language-math math-inline">\epsilon > 0</code></p>
+<p><code class="language-math math-display">P\left[\left| \bar{X} - \mu \right| > \epsilon \right] \le 2e^{-2m \left(\frac{\epsilon}{b-a}\right)^2} </code></p>
+</div>
+<div class="proof">
+<p>Sea <code class="language-math math-inline">\mathcal{H}</code> una clase de hipótesis finita.</p>
+<p>Fijamos <code class="language-math math-inline">0 &#x3C; \delta, \epsilon &#x3C; 1</code>. Necesitamos encontrar <code class="language-math math-inline">m\in \mathbb{N}</code> verificando:</p>
+<p><code class="language-math math-display">P_{S\sim \mathcal{D}^m} [\exists h\in \mathcal{H} |L_S(h) - L_{\mathcal{D}}(h)| > \epsilon] &#x3C; \delta</code></p>
+<p>Partimos de la siguiente desigualdad, que usaremos más adelante, obtenida por subaditividad:</p>
+<p><code class="language-math math-display">P [\exists h\in \mathcal{H} |L_S(h) - L_{\mathcal{D}}(h)| > \epsilon] \le \sum_{h \in \mathcal{H}} P [|L_S(h) - L_{\mathcal{D}}(h)| > \epsilon]</code>
+Fijamos <code class="language-math math-inline">h \in \mathcal{H}</code>.</p>
+<p>Dado un conjunto de entrenamiento <code class="language-math math-inline">S_z = (z_1, \ldots z_m)</code>, recordamos que <code class="language-math math-inline">L_{\mathcal{D}} (h) = \mathbb{E}_{z\sim \mathcal{D}} [l(h,z)]</code> y que <code class="language-math math-inline">L_{S_z}(h) = \frac{1}{m} \sum_{i=1}^m l(h,z_i)</code></p>
+<p>Donde <code class="language-math math-inline">z_i \sim \mathcal{D}</code> y por tanto <code class="language-math math-inline">\mathbb{E}_{S \sim \mathcal{D}^m} [L_S(h)] = \mathbb{E}_{z \sim \mathcal{D}} [l(h,z)] = L_{\mathcal{D}} (h)</code>. Además, llamando <code class="language-math math-inline">X_i = l(h,Z_i)</code>, por ser <code class="language-math math-inline">S=(Z_1, \ldots Z_m)</code> m.a.s que genera los conjuntos de entrenamiento, se tiene que las <code class="language-math math-inline">X_i</code> son independientes e idénticamente distribuidas, con <code class="language-math math-inline">P[a \le X_i \le b] = 1</code>. Estamos en condiciones de aplicar la desigualdad de Hoeffding.</p>
+<p>Por tanto:</p>
+<p><code class="language-math math-display">P \left[\left| \frac{1}{m} \sum_{i=1}^m X_i - L_{\mathcal{D}} (h) \right| > \epsilon\right] = P [|L_S(h) - L_{\mathcal{D}}(h)| > \epsilon] \le 2e^{-2m \left( \frac{\epsilon}{b-a} \right)^2}</code></p>
+<p>Y por tanto:</p>
+<p><code class="language-math math-display">P [\exists h\in \mathcal{H} |L_S(h) - L_{\mathcal{D}}(h)| > \epsilon] \le |\mathcal{H}| 2e^{-2m \left( \frac{\epsilon}{b-a} \right)^2}</code></p>
+<p>Despejando <code class="language-math math-inline">m</code> para que <code class="language-math math-inline">|\mathcal{H}| 2e^{-2m \left( \frac{\epsilon}{b-a} \right)^2} &#x3C; \delta</code> llegamos al resultado buscado.</p>
+</div>
+<p>Recordemos hasta ahora el resultado que habíamos obtenido era su carácter PAC cognoscible, donde agnósticamente PAC cognoscible y cognoscible con funciones de pérdida 0-1 era un término equivalente. El teorema que enunciamos a continuación, deducible a partir del teorema sobre el caracter agnóstico - PAC cognoscible de clases de funciones con propiedad de convergencia uniforme, en particular las finitas, generaliza el resultado para cualquier funciones de pérdida acotada.</p>
+<div class="theorem">
+<p><strong>Las clases finitas son agnósticamente PAC cognoscible</strong></p>
+<p>Sea <code class="language-math math-inline">\mathcal{H}</code> una clase de hipótesis finita, <code class="language-math math-inline">Z</code> un dominio y sea <code class="language-math math-inline">l : \mathcal{H} \times Z \rightarrow [a,b]</code> una función de pérdida. Entonces <code class="language-math math-inline">\mathcal{H}</code> es PAC cognoscible con complejidad muestral:</p>
+<p><code class="language-math math-display">m_{\mathcal{H}}( \epsilon, \delta ) \le \left\lceil \frac{2 log(2|\mathcal{H}|/\delta)(b-a)^2}{\epsilon^2} \right\rceil</code></p>
+</div>
+<div class="proof">
+<p>Es trivial desde el anterior teorema y el hecho de que convergencia uniforme implica ser agnósticamente PAC cognoscible</p>
+</div>
+<h2 id="equilibrio-error-varianza">Equilibrio error-varianza</h2>
+<p>Veamos que dado un algoritmo de aprendizaje no puede ser el óptimo para aprender todas las distribuciones.</p>
+<p>Damos un lema previo, la desigualdad de Markov:</p>
+<div class="lemma">
+<p><strong>Desigualdad de Markov</strong></p>
+<p>Dada una variable aleatoria <code class="language-math math-inline">Z</code> no negativa. Entonces para todo <code class="language-math math-inline">a\ge 0</code></p>
+<p><code class="language-math math-display">P[Z \ge a] \le \frac{\mathbb{E}[Z]}{a}</code></p>
+</div>
+<div class="proof">
+<p>Sea <code class="language-math math-inline">f</code> la función de densidad de <code class="language-math math-inline">Z</code>.</p>
+<p><code class="language-math math-display">a P[Z \ge a] = \int_a^{+\infty} a f(z) dz \le \int_a^{+\infty} zf(z) dz \le \int_0^{+\infty} zf(z) dz = \mathbb{E}[Z]</code></p>
+</div>
+<div class="theorem">
+<p><strong>Teorema de No Free Lunch</strong></p>
+<p>Sea <code class="language-math math-inline">A</code> cualquier algoritmo de aprendizaje para clasificación binaria con respecto a la función de pérdida 0-1 sobre el dominio <code class="language-math math-inline">\mathcal{X}</code>. Sea un conjunto de entrenamiento de tamaño <code class="language-math math-inline">m &#x3C; |\mathcal{X}|/2</code>. Entonces existe una distribución <code class="language-math math-inline">\mathcal{D}</code> sobre <code class="language-math math-inline">\mathcal{X} \times \{0,1\}</code> verificando:</p>
+<ol>
+<li>Existe una función <code class="language-math math-inline">f: \mathcal{X} \rightarrow \{0,1\}</code> con <code class="language-math math-inline">L_{\mathcal{D}}(f)=0</code></li>
+<li><code class="language-math math-inline">P_{S\sim \mathcal{D}^m} [L_{\mathcal{D}} (A(S)) \ge 1/8] \ge 1/7</code></li>
+</ol>
+</div>
+<div class="proof">
+<p>Sea un conjunto de entrenamiento (consideramos un conjunto y no una secuencia) de tamaño <code class="language-math math-inline">2m</code>, <code class="language-math math-inline">C</code>. Hay <code class="language-math math-inline">T = 2^{2m}</code> posibilidades de etiquetado del conjunto, esto es, <code class="language-math math-inline">T</code> posibles hipótesis, <code class="language-math math-inline">f_i: C\rightarrow \{0,1\}</code>, que vamos a extender a <code class="language-math math-inline">\mathcal{X}</code> llamándolas <code class="language-math math-inline">\bar{f}_i</code> de forma que <code class="language-math math-inline">\bar{f}_{i|C} = f_i</code> y <code class="language-math math-inline">\bar{f}_i(x) = 0 \quad \forall x\in \mathcal{X}\setminus C</code>. Vamos a tomar para cada una de ellas una distribución <code class="language-math math-inline">\mathcal{D}_i</code> definida sobre <code class="language-math math-inline">\mathcal{X} \times \{0,1\}</code> definida por:</p>
+<p><code class="language-math math-display">\forall (x,y)\in \mathcal{X} \times \{0,1\} \qquad P_{Z\sim \mathcal{D}_i} [Z = (x,y)] = \left\{\begin{array}{ll}
+1/|C| &#x26; x \in C, y=f_i(x)\\
+0     &#x26; si \quad no
+\end{array}\right.</code></p>
+<p>Claramente <code class="language-math math-inline">L_{\mathcal{D}_i}(f_i) = 0</code>. Tenemos distribuciones de probabilidad que sólo asignan toda la masa de probabilidad a la marginal en <code class="language-math math-inline">\mathcal{X}</code> al conjunto <code class="language-math math-inline">C</code>.</p>
+<p>Vamos a probar que:</p>
+<p><code class="language-math math-display">\exists i\in \{1, \ldots T\} : \mathbb{E}_{S\sim \mathcal{D}_i^m} [L_{\mathcal{D}_i} (A(S))] \ge \frac{1}{4}</code></p>
+<p>Fijamos <code class="language-math math-inline">i \in \{1, \ldots T\}</code>. Hay <code class="language-math math-inline">k = (2m)^m</code> posibles tuplas de tamaño <code class="language-math math-inline">m</code>, <code class="language-math math-inline">S_{j}, j=1, \ldots k</code> tomadas desde <code class="language-math math-inline">C</code>. Siendo <code class="language-math math-inline">S_j = (x_1, \ldots x_m)</code> notamos <code class="language-math math-inline">S_j^i = ((x_1, f_i(x_1)), \ldots, (x_m, f_i(x_m)))</code>. Cada <code class="language-math math-inline">S_j</code> tiene la misma probabilidad de ser nuestro conjunto de entrenamiento (extracción de <code class="language-math math-inline">m</code> valores con reemplazamiento desde el conjunto $C$), verificándose:</p>
+<p><code class="language-math math-display">\mathbb{E}_{S\sim \mathcal{D}_i^m} [L_{\mathcal{D}_i} (A(S))] = \frac{1}{k} \sum_{j=1}^k L_{\mathcal{D}_i} (A(S_j^i))</code></p>
+<p>Recordando que hemos llamado <code class="language-math math-inline">k=(2m)^m</code>, <code class="language-math math-inline">T=2^{2m}</code>, se tiene:</p>
+<code class="language-math math-display">\begin{align*}
+max_{i \in \{1,\ldots T\}} \frac{1}{k} \sum_{j=1}^{k} L_{\mathcal{D}_i} (A(S_j^i)) &#x26;\ge 
+       \frac{1}{T} \sum_{i=1}^{T} \frac{1}{k} \sum_{j=1}^{k}  L_{\mathcal{D}_i} (A(S_j^i))   =\\
+&#x26;=     \frac{1}{k} \sum_{j=1}^{k} \frac{1}{T} \sum_{i=1}^{T}  L_{\mathcal{D}_i} (A(S_j^i)) \ge\\
+&#x26;\ge min_{j \in \{1, \ldots k\}} \frac{1}{T} \sum_{i=1}^{T}  L_{\mathcal{D}_i} (A(S_j^i))
+\end{align*}</code>
+<p>Además fijado <code class="language-math math-inline">j \in \{1,\ldots k\}</code>:</p>
+<p>Sean <code class="language-math math-inline">{v_r}_{i=r}^p</code> los elementos de <code class="language-math math-inline">C</code> no presentes en el conjunto de entrenamiento <code class="language-math math-inline">S_j</code>. Claramente, como <code class="language-math math-inline">|C|=2m</code> y <code class="language-math math-inline">|S_j| = m</code> y puede tener elementos repetidos, <code class="language-math math-inline">p \ge m</code></p>
+<p><code class="language-math math-display">L_{\mathcal{D}_i} (A(S^i_j)) = \frac{1}{|C|} \sum_{x\in C} \mathds{1}_{[A(S^i_j)(x) \neq f_i(x)]} = \frac{1}{2m} \sum_{x \in C} \mathds{1}_{[A(S^i_j)(x) \neq f_i(x)]}</code></p>
+<p>Por tanto:</p>
+<code class="language-math math-display">\begin{align*}
+\frac{1}{T} \sum_{i=1}^{T}  L_{\mathcal{D}_i} (A(S_j^i)) &#x26;\ge
+\frac{1}{T} \sum_{i=1}^{T}  \frac{1}{2m} \sum_{x \in C} \mathds{1}_{[A(S^i_j)(x) \neq f_i(x)]} \ge \\
+&#x26;\ge \frac{1}{2p} \sum_{r=1}^p \frac{1}{T} \sum_{i=1}^{T}  \mathds{1}_{[A(S^i_j)(v_r) \neq f_i(v_r)]} \ge \\
+&#x26;\ge \frac{1}{2} min_{r} \frac{1}{T} \sum_{i=1}^{T}  \mathds{1}_{[A(S^i_j)(v_r) \neq f_i(v_r)]}
+\end{align*}</code>
+<p>Como dado un <code class="language-math math-inline">v_r</code> cualquiera, <code class="language-math math-inline">v_r \notin S_j</code>, y existen <code class="language-math math-inline">f_i, f_{i'}</code> que se diferencian justo en el elemento <code class="language-math math-inline">v_r</code>, uno coincidirá con el valor en <code class="language-math math-inline">v_r</code> de <code class="language-math math-inline">A(S_{j}^i) = A(S_{j}^{i'}</code> y otro no:</p>
+<p><code class="language-math math-display">\frac{1}{2} \frac{1}{T} \sum_{i=1}^{T}  \mathds{1}_{[A(S^i_j)(v_r) \neq f_i(v_r)]} = \frac{1}{2} \frac{1}{T} \frac{T}{2} = \frac{1}{4}</code></p>
+<p>Y uniendo toda esta información:</p>
+<p><code class="language-math math-display">max_{i \in \{1,\ldots T\}} \frac{1}{k} \sum_{j=1}^{k} L_{\mathcal{D}_i} (A(S_j^i)) \ge \frac{1}{4}</code></p>
+<p>Sea <code class="language-math math-inline">k = argmax_{i \in \{1,\ldots T\}} \frac{1}{k} \sum_{j=1}^{k} L_{\mathcal{D}_i} (A(S_j^i))</code></p>
+<p>Si <code class="language-math math-inline">\mathcal{D} = \mathcal{D}_k</code> cumple la parte 2 del enunciado del teorema, es nuestra distribución buscada, y como función buscada en el apartado 1. podemos tomar <code class="language-math math-inline">f=f_k</code></p>
+<p>Como <code class="language-math math-inline">L_{\mathcal{D}} (A(\cdot))</code> puede ser vista como una variable aleatoria donde <code class="language-math math-inline">S \sim \mathcal{D}^m</code> y que toma valores en <code class="language-math math-inline">[0,1]</code>, tenemos que tomando <code class="language-math math-inline">Z = 1-L_{\mathcal{D}}(A(\cdot))</code>, <code class="language-math math-inline">a=\frac{7}{8}</code> en el lema previo llegamos a:</p>
+<p><code class="language-math math-display">P_{S\sim \mathcal{D}^m} \left(\frac{1}{8} \ge L_{\mathcal{D}}(A(S)) \right) \le \frac{3}{4} \cdot \frac{8}{7} = 24/28</code></p>
+<p>donde <code class="language-math math-inline">\mathbb{E}(Z) = \mathbb{E} (1 - L_{\mathcal{D}}(A(\cdot))) = 1 - \mathbb{E} (L_{\mathcal{D}}(A(\cdot))) \le \frac{3}{4}</code></p>
+<p>Es decir:</p>
+<p><code class="language-math math-display">P_{S\sim \mathcal{D}^m} \left( L_{\mathcal{D}}(A(S)) \ge \frac{1}{8} \right) \ge \frac{4}{28} = \frac{1}{7}</code></p>
+</div>
+<p>Como consecuencia del teorema, podemos decir que no hay un algoritmo de aprendizaje óptimo para todas las distribuciones, puesto que para una dada por el resultado del teorema, el algoritmo ERM con <code class="language-math math-inline">\mathcal{H} = \{f\}</code> aprendería mejor.</p>

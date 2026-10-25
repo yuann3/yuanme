@@ -1,5 +1,5 @@
 //! Field values, checked against the types Site config declares (#18).
-//! Front matter and, from #49, Org keywords hand their values in as YAML
+//! Front matter and Org keywords hand their values in as YAML
 //! nodes, so both Source formats share one set of rules.
 
 use std::cmp::Ordering;

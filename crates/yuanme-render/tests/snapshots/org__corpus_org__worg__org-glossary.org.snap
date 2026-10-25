@@ -1,0 +1,720 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="the-glossary">The Glossary</h2>
+<p>The org-manual does a great job of explaining the myriad features of
+org-mode. But for new users, the sheer number of options and features
+can be overwhelming.</p>
+<blockquote>
+<p></p>
+<p>What exactly are properties? How should I use them? Do I need to know
+how they work in order to use org mode?</p>
+<p>What are categories? How do they differ from tags?</p>
+</blockquote>
+<p>If you find yourself asking such questions, this document is for you.
+In the table of contents, you will find an alphabetical list of basic
+concepts/features in org-mode. Click on any of them to jump to a brief
+definition, a more detailed explanation of the feature, and a
+description of possible uses. And feel free to add your own
+definitions by <a href="worg-about.org">editing Worg</a>.</p>
+<h2 id="agenda">Agenda</h2>
+<h3 id="definition">Definition</h3>
+<p>The agenda allows you to create filtered views of the items in your
+<a href="#agenda-files">agenda files</a>. These include “day-planner” views of your schedule,
+lists of your todos, and the results of queries (for tags, words,
+regular expressions, etc.). You might think of the agenda as a
+combination of a task manager and a very powerful search interface.</p>
+<h3 id="details">Details</h3>
+<p>Provided you have followed the manual’s instructions on setting up
+org-mode and have designated some <a href="#agenda-files">agenda files</a>, simply type <code>C-c C-a</code>
+(or <code>M-x org-agenda</code>) to gain access to the various views available.</p>
+<p>Here are brief explanations of the options:</p>
+<dl>
+<dt>a (Agenda)</dt>
+<dd>Presents a view of today’s (or, optionally, this
+week’s) scheduled items, appointments, and upcoming deadlines.</dd>
+<dt>t (Todo entries)</dt>
+<dd>Presents a list of all active <a href="#todo-keywords">todo
+keywords</a> in your agenda files.</dd>
+<dt>m (Match)</dt>
+<dd>Allows you to search your agenda files for headlines
+with particular metadata (tags, properties, or TOD0s).
+<ul>
+<li>The simplest way to query your files is to enter the name of a
+tag, e.g., “@computer”.</li>
+<li>To construct more advanced queries, please <a href="https://orgmode.org/manual/Matching-tags-and-properties.html">consult the manual</a>.</li>
+</ul>
+</dd>
+<dt>L (Timeline for current buffer)</dt>
+<dd>Shows a chronological view of
+all items with dates in the file you are currently visiting.</dd>
+<dt>s (Search)</dt>
+<dd>Allows you to search entries in your agenda files for
+particular words or regular expressions.</dd>
+<dt>/ (multi-occur)</dt>
+<dd>Shows all lines in your agenda files matching a
+regular expression.</dd>
+<dt>&#x3C;</dt>
+<dd>Restricts the agenda view to the file you are currently
+visiting.</dd>
+<dt>&#x3C;&#x3C;</dt>
+<dd>Restricts the agenda view to the subtree you are currently
+visiting.</dd>
+</dl>
+<p>Within the agenda view, each item is linked to its location in your
+files, so you can jump directly to that location from the agenda (by
+pressing <code>TAB</code> or <code>RET</code>).</p>
+<h3 id="uses">Uses</h3>
+<p>The uses of the agenda are limitless!</p>
+<p>The agenda frees you from having to worry too much about the
+organization of your org-mode files. If you are new to org-mode,
+simply start by creating todos in your outlines and notes and
+(optionally) adding tags and scheduling information to them. Even if
+your file is cluttered with extraneous notes and ramblings, the agenda
+will find the relevant lines and display them in a clean and readable
+fashion.</p>
+<ul>
+<li>One use of the agenda is as a day planner system. If you prefer to
+schedule your tasks and to see a daily agenda of TODOs, you’ll
+probably be pressing <code>C-c a a</code> a lot.</li>
+<li>The agenda can also be used for a powerful GTD system. If you like
+to filter your “next actions” by context, then you’ll probably
+make frequent use of <code>C-c a t</code> to see a list of all your active
+TODOs and to filter them by tag/context.</li>
+<li>While the agenda is a powerful task management tool, it is also a
+fantastic research tool. If you keep a file full of reading notes,
+for instance, you can use the agenda to locate entries containing
+a particular word or labeled by a particular tag.</li>
+</ul>
+<p>There are many more possibilities of configuring the agenda with
+<a href="org-tutorials/org-custom-agenda-commands.org">custom agenda commands</a>.</p>
+<h2 id="agenda-files">Agenda files</h2>
+<h3 id="definition-1">Definition</h3>
+<p>These are the files that are used to generate your <a href="#agenda">agenda</a> views. When
+you call your agenda, the TODOs and scheduling information in your
+agenda files will be displayed.</p>
+<h3 id="details-1">Details</h3>
+<p>There are different ways to designate these files:</p>
+<ol>
+<li>Add a file manually with <code>C-c [</code> (<code>M-x
+     org-agenda-file-to-front</code>).
+<ul>
+<li>Remove with <code>C-c ]</code> (<code>M-x org-remove-file</code>).</li>
+</ul>
+</li>
+<li>Type <code>M-x customize-variable [RET] org-agenda-files</code> and enter
+the names of your agenda files.
+<ul>
+<li>If you enter a directory, all org files in that directory will
+be included in your agenda files.</li>
+</ul>
+</li>
+</ol>
+<h3 id="tips-organizing-agenda-files">Tips: Organizing agenda files</h3>
+<p>One of the most common questions for new (and seasoned) users of
+org-mode is how to organize agenda files. Should you put everything in
+one big file organized by project? Should you create a new file for
+each project? Or should you have separate “containers” for different
+types of data: i.e., one file (or subtree) for appointments, one for
+reference, one for todos, and so on.</p>
+<p>The short answer: it doesn’t matter. The agenda will be able to parse
+and organize your TODOs, appointments, and deadlines no matter how
+they are organized in your files.</p>
+<p>If you are using org-mode for the first time, the simplest approach
+may be to use a single file and to enter projects or todos as the
+appear. Then, whenever you review your file, reorganize your todos and
+projects into “groupings” (i.e., trees) that make sense to you. If a
+tree starts to get too big, then start a new file. Perhaps you’ll
+discover that you want to keep your “work” and “personal” tasks in
+different files.</p>
+<p>Perhaps the main consideration in organizing your files is to consider
+<a href="#inheritance">inheritance</a> and <a href="#file-restriction">restriction</a>. If you’d like a number of items to belong
+to the same category or to have the same tags for easy agenda
+filtering, then they probably belong in the same tree and/or file.</p>
+<p>An example:</p>
+<ul>
+<li>If you’d like all your appointments to belong to the <a href="#category">category</a>
+“appts”, then it probably doesn’t make sense to scatter them as
+first level headings among multiple files. It would make more
+sense to create an appointments file or heading with the category
+“appts”.</li>
+<li>On the other hand, if you’d prefer to organize your appointments
+by area of responsibility (e.g., work, personal, health, etc.),
+then it would make perfect sense to place them in separate trees
+and/or files.</li>
+</ul>
+<h2 id="archiving">Archiving</h2>
+<h3 id="definition-2">Definition</h3>
+<p>Archiving is a way of hiding and/or getting rid of old or unwanted
+items in your org files without deleting them altogether.</p>
+<h3 id="details-2">Details</h3>
+<p>Archiving works on <a href="#tree">subtrees</a> in your org-file by doing the following:</p>
+<ul>
+<li>Preventing them from opening when you cycle visibility with <code>TAB</code>
+or <code>Shift-TAB</code>. (They will stay closed unless you explictly open
+them with <code>Control-TAB</code>.)</li>
+<li>Keeping them out of your <a href="#agenda">agenda</a> views. (They will only be included
+if you type <code>v a</code> or <code>v A</code> in the agenda.)</li>
+</ul>
+<p>There are three different ways to archiving an item/tree:</p>
+<dl>
+<dt>C-c C-x a</dt>
+<dd>Mark the subtree as archived (i.e., give it an
+<code>:ARCHIVE:</code> tag) but leave it in its current location.
+<ul>
+<li>The headline remains visible in your org file but its contents
+will not open during cycling and it will not be included in
+the agenda.</li>
+</ul>
+</dd>
+<dt>C-c C-x A</dt>
+<dd>Move the subtree to a separate archive headline
+within the parent tree and/or file.
+<ul>
+<li>This is useful for maintaining a clean org-file, since it
+removes archived headlines from view.</li>
+</ul>
+</dd>
+<dt>C-c C-x C-s</dt>
+<dd>Move the subtree to a separate file. The default
+name of the file is <code>[filename].org_archive</code>.
+<ul>
+<li>This is useful for getting rid of subtrees altogether. You
+might want to use this when you finish a project.</li>
+<li>Since this is a relatively drastic action, org-mode offers an
+alternate version of the command (<code>C-u C-c C-x C-s</code>) that
+checks the subtree to make sure there are no active TODOs
+before archiving it.</li>
+</ul>
+</dd>
+</dl>
+<h3 id="uses-1">Uses</h3>
+<p>Archiving is very useful for keeping your org files free of clutter.
+But which type of archiving should you use?</p>
+<p>Here are a few ideas:</p>
+<ul>
+<li>Use <code>C-c C-x a</code> when you’d like to archive an entry/subtree but
+want to be reminded of its presence (e.g., to be reminded of a
+completed task) when you view your org file.</li>
+<li>Use <code>C-c C-x A</code> when you want to remove an entry/subtree from view but
+want it to remain together with its context (i.e., within the file
+or parent tree). This is often useful for archiving TODO items
+that are part of an incomplete project.</li>
+<li>Use <code>C-c C-x C-s</code> when you are sure you no longer require an
+entry/subtree except for reference. This is often useful for
+archiving completed projects.</li>
+</ul>
+<h2 id="Attachment">Attachment</h2>
+<h3 id="definition-3">Definition</h3>
+<p>Attachments allow the addition of arbitrary reference material (e.g. binary files, images, audio, etc.)
+to a node in an org file.</p>
+<h3 id="details-3">Details</h3>
+<p>Attachments are files located in a directory belonging to an outline
+node.  Org uses directories named by the unique ID of each entry
+and stored the ID as a special property of the node
+These directories are located in the `data’ directory which lives in
+the same directory where your Org file lives(1).  If you initialize
+this directory with `git init’, Org will automatically commit changes
+when it sees them.</p>
+<h3 id="uses-2">Uses</h3>
+<p>Attachments can be used essentially for the purposes as links, to allow
+access to documents related to a particular node. If there is a large number
+of such links, it may be more convenient to just put them in a directory
+and plant a link to the directory. Attachments provide a more convenient
+way to do this latter task.</p>
+<h2 id="category">Category</h2>
+<h3 id="definition-4">Definition</h3>
+<p>A category is the group an item belongs to.</p>
+<h3 id="details-4">Details</h3>
+<p>The category of an item is shown in the left hand column of the
+daily/weekly agenda view.</p>
+<pre><code>Day-agenda (W38):
+Wednesday  16 September 2009
+  badclient:  Scheduled:  TODO Call angry client to calm him down
+  appts:      Dinner at Julio's
+</code></pre>
+<p>By default an item’s category is the name of the file (minus the
+extension) to which it belongs.</p>
+<p>You can specify a different category for a file by placing the
+following line at the top of your org file:</p>
+<pre><code class="language-org">#+CATEGORY: CompanyABC
+</code></pre>
+<p>Or, you can set a category as the property of a <a href="#tree">tree</a>. All items in
+that tree will <a href="#inheritance">inherit</a> that category and be labeled with it in the
+agenda.</p>
+<pre><code class="language-org">* Birthdays
+  :PROPERTIES:
+  :CATEGORY: birthdays
+  :END:
+</code></pre>
+<h3 id="uses-3">Uses</h3>
+<p>The main purpose of a category is to increase visibility in the
+daily/weekly agenda — i.e., to allow you to see which “group” an
+item belongs to.</p>
+<p>Apart from visibility and compartmentalization, categories do not add
+much additional functionality to an item. It is certainly <strong>not</strong>
+necessary to set them for every file and/or heading.</p>
+<p>You can search for items by category in the agenda using the following
+key sequence:</p>
+<pre><code>C-c C-a m CATEGORY="birthdays"
+</code></pre>
+<p>In general, categories are <strong>not</strong> an efficient way of searching
+for and/or filtering tasks. It is much faster to use <a href="#tag">tags</a> or filetags
+for this.</p>
+<p>Here’s one way to distinguish between categories and tags: an entry
+can belong to only one category but it can have multiple tags.</p>
+<h2 id="deadline">DEADLINE</h2>
+<h3 id="definition-5">Definition</h3>
+<p>A deadline is a special timestamp for indicating items that should be
+performed by a certain time. Reminders about deadlines appear in your
+agenda a specified number of days before they due.</p>
+<h3 id="details-5">Details</h3>
+<p>You can add a deadline to a headline/entry by typing C-c C-d. You can
+remove a deadline by typing C-u C-c C-d.</p>
+<p>Here is the syntax for deadlines:</p>
+<pre><code class="language-org">* My big project
+  DEADLINE: &#x3C;2009-09-20 Sun>
+</code></pre>
+<p>You will be alerted of this deadline ahead of time when you select the
+daily/weekly agenda (<code>C-c C-a a</code>).</p>
+<pre><code> index:      In   3 d.:  My big project
+</code></pre>
+<p>How soon the warning appears in your agenda is controlled by the
+variable <code>org-deadline-warning-days</code>. The default number of days is 14.</p>
+<p>The deadline will remain in your agenda (as an overdue item) until it
+is marked done.</p>
+<p>You can change the a warning period for a particular headline by
+adding something like “-3d” (3 days) or “-2m” (two months) to the
+timestamp:</p>
+<pre><code class="language-org">* My big project
+  DEADLINE: &#x3C;2009-09-20 Sun -2m>
+</code></pre>
+<h3 id="uses-4">Uses</h3>
+<p>The obvious use of a deadline is to reminder yourself of tasks that
+need to be completed by a certain date.</p>
+<p>Deadlines can also be useful as an “advanced notice” system — e.g.,
+reminding yourself to prepare for an event or project.</p>
+<p>You can add both a deadline and a scheduling timestamp to the same
+entry.</p>
+<h2 id="docstring">Docstring</h2>
+<h3 id="definition-6">Definition</h3>
+<p>A <a href="https://en.wikipedia.org/wiki/Docstring">docstring</a> is the documentation written as part of a emacs lisp
+variable or a function. It is part of Emacs’ wonderful interactive
+help system.</p>
+<p>(Note: This definition is not org-mode specific, but is rather a more
+general org-mode/lisp/coding concept. It’s included here because
+mailing list posts often reference a “docstring,” an obscure phrase
+for anyone not familiar with coding lingo.)</p>
+<h3 id="details-and-uses">Details and uses</h3>
+<p>If you are wondering what a particular org-mode key combination,
+function, or variable does, the manual is not your only source of
+information. Carsten has also embedded a wealth of resources into the
+org-mode source code itself. These can be easily viewed using Emacs
+built-in help functions.</p>
+<p>For instance, let’s say you want to learn more about creating a clock
+report in org mode. One way to do this is to type <code>C-h k</code> or <code>M-x
+describe-key</code> and then to enter the relevant key combination (<code>C-c
+C-x-C-r</code>). This will provide the following very helpful information:</p>
+<pre><code>org-clock-report is an interactive compiled Lisp function in
+`org-clock.el'.
+
+It is bound to C-c C-x C-r, &#x3C;menu-bar> &#x3C;Org> &#x3C;Logging work> &#x3C;Create
+clock table>.
+
+(org-clock-report &#x26;optional arg)
+
+Create a table containing a report about clocked time.
+If the cursor is inside an existing clocktable block, then the table
+will be updated.  If not, a new clocktable will be inserted.
+When called with a prefix argument, move to the first clock table in the
+buffer and update it.
+
+[back]
+</code></pre>
+<p>If you happened to know the name of the function, you could also
+locate the same information using <code>C-h f</code> or <code>M-x describe-function</code>
+and entering <code>org-clock-report</code>. Or you could use <code>C-h a</code> or
+<code>apropos-command</code> to browse all functions that contain the words “org
+clock”.</p>
+<p>Finally, if you want to learn more about variables, you can read their
+docstrings by browsing the customize interface (<code>M-x customize-group
+[RET] org</code>) or by typing <code>C-h v</code> or <code>M-x describe-variable</code>).</p>
+<h2 id="drawer">Drawers</h2>
+<h3 id="definition-7">Definition</h3>
+<p>A drawer is a container that can hide information you don’t want to
+see during normal viewing and/or cycling of your outline.</p>
+<h3 id="details-6">Details</h3>
+<p>A drawer looks like this:</p>
+<pre><code class="language-org">* Daily sleep log
+  :LOGBOOK:
+  - Note taken on [2009-09-16 Wed 04:02] \\
+    Didn't sleep at all.
+  - Note taken on [2009-09-15 Tue 05:25] \\
+    Slept fitfully.
+  - Note taken on [2009-09-14 Mon 09:30] \\
+    Slept like a log.
+  :END:
+</code></pre>
+<p>When you cycle the visibility of your outline, the contents of the
+drawer will remain hidden.</p>
+<pre><code class="language-org">* Daily sleep log
+    :LOGBOOK:
+    :END:
+</code></pre>
+<p>The only way to view the contents is to press <code>TAB</code> directly on the
+drawer.</p>
+<p>If you want a new name for a drawer, such as :NOTES:, you must
+customize the variable “org-drawers”. Simply type =M-x
+customize-variable [RET] org-drawers” and add a new label.</p>
+<h3 id="uses-5">Uses</h3>
+<p>By default, org-mode uses drawers to hide a variety of information,
+such as <a href="#property">properties</a> and clocked times.</p>
+<p>But drawers are also quite useful for storing comments that you don’t
+want to see all the time. For instance, if you are writing a paper,
+you might add a <code>:NOTE:</code> drawer to the variable <code>org-drawers</code>. Then
+you can deposit any notes to yourself in such drawers. By default, the
+information you put in drawers will not be exported to HTML, LaTeX,
+etc.</p>
+<h2 id="entry">Entry</h2>
+<h3 id="definition-8">Definition</h3>
+<p>An entry is the basic unit of data in org-mode. It consists of a
+<a href="#headline">headline</a>, metadata (tags, todo keyword, properties, priority, etc.),
+and whatever other text it contains.</p>
+<h3 id="details-7">Details</h3>
+<p>An entry is to be distinguished from a <a href="#tree">tree</a>, which consists of all
+headlines and entries beneath a particular entry within the outline
+structure. Entries nested within other entries form a tree.</p>
+<p>Here is a sample entry with a lot of data:</p>
+<pre><code class="language-org">* TODO [#B] Headline                                                   :tags:
+   :PROPERTIES:
+   :DESCRIPTION: This is a sample property.
+   :CATEGORY: documentation
+   :CUSTOM_ID: an-extra-special-headline
+   :END:
+
+ And here is the text of an entry. You can put an unlimited amount of
+ text in an entry!
+
+ You can also add lists:
+
+  - First item
+
+  - Second item
+
+  - Third item
+
+ And tables:
+
+ | Meal      | Food            | Calories |
+ |-----------+-----------------+----------|
+ | Breakfast | Eggs            |      500 |
+ | Lunch     | Escargot        |      800 |
+ | Dinner    | Bread and Water |      200 |
+ |-----------+-----------------+----------|
+ | Total     |                 |     1500 |
+</code></pre>
+<h2 id="headline">Headline</h2>
+<h3 id="definition-9">Definition</h3>
+<p>A headline is the name for an outline heading in an org file.</p>
+<h3 id="details-8">Details</h3>
+<p>Headlines begin with one or more asterisks.</p>
+<pre><code class="language-org">* A headline
+</code></pre>
+<p>The “level” of a headline corresponds to the number of asterisks. The more asterisks,
+the deeper the level in the outline.</p>
+<pre><code class="language-org">***** A "level 5" outline heading
+</code></pre>
+<p>As are all outlines, org-files are organized hierarchically. Deeper
+headlines are “children” of higher-level “parent” headlines (and can
+“inherit” their properties). Headlines on the same level are known as
+siblings.</p>
+<pre><code class="language-org">* A parent
+** A child
+*** Sibling one (also a child of "A child")
+*** Sibling two
+*** Sibling three
+</code></pre>
+<p>You can move headlines (and their corresponding <a href="#entry">entries</a>) by using the
+cursor keys in conjunction with the <code>Meta</code> key.</p>
+<ul>
+<li><code>M-Left</code> and <code>M-Right</code> move the headline horizontally (i.e., change
+its level).
+<ul>
+<li>The org documentation often uses the terms “promote” and “demote”
+for this action.</li>
+</ul>
+</li>
+<li><code>M-Up</code> and <code>M-Down</code> move the headline vertically.</li>
+</ul>
+<p>You can easily jump to another headline using <code>M-x org-goto</code> (<code>C-c
+C-j</code>).</p>
+<p>You can easily “refile” a headline in a different location using <code>M-x
+org-refile</code> (<code>C-c C-w</code>).</p>
+<h3 id="uses-6">Uses</h3>
+<p>The basic use of headings, of course, is to distinguish separate
+sections within your outline and to organize them hierarchically.</p>
+<p>The other major use of headings is as TODO “items” that appear in your
+agenda.</p>
+<p>The power of org-mode lies in its treatment of headlines as
+“containers” of information to which you can attach all sorts of data
+(<a href="#todo-keywords">todo keywords</a>, <a href="#tag">tags</a>, priorities, timestamps, <a href="#property">properties</a>, and an
+unlimited amount of text). This turns org-mode’s deceptively simple
+outline structure into a powerful “database” of information, in which
+units of data can be nested within one another.</p>
+<h2 id="inheritance">Inheritance</h2>
+<h3 id="definition-10">Definition</h3>
+<p>Inheritance is a term used to describe the way in which <a href="#entry">entries</a> in a
+<a href="#tree">tree</a> can share the properties of their “parent” <a href="#headline">headlines</a>.</p>
+<h3 id="details-9">Details</h3>
+<p>Org-mode takes full advantage of the hierarchical structure of
+outlines by allowing lower level headlines to “inherit” (or share) the
+properties of their parents.</p>
+<p>The most common form of inheritance in org-mode is “<a href="https://orgmode.org/manual/Tag-inheritance.html">tag inheritance</a>”.
+This is controlled by the variable org-use-tag-inheritance (true by
+default). When turned on, lower level outline headings share the tags
+of their parents. Thus in the following tree, all the headlines have
+the tag “<code>:reading:</code>”, even though it is only explicitly set for the
+top level headline:</p>
+<pre id="tag-inheritance-example"><code class="language-org">* Summer reading list                                               :reading:
+  DEADLINE: &#x3C;1965-06-06 Sun>
+
+** /To Kill a Mockingbird/
+
+** /Catch 22/
+
+** /Herzog/
+</code></pre>
+<p>Some properties, such as <a href="#category">category</a>, are also inherited by default. See
+<a href="https://orgmode.org/manual/Property-inheritance.html">the manual</a> for more details.</p>
+<h3 id="uses-7">Uses</h3>
+<p>The most common use of tag inheritance is in agenda views and agenda
+filtering. For instance, if you searched for the tag “reading” in your
+agenda files, all of the headings in the <a href="#tag-inheritance-example">example above</a> would appear.</p>
+<p>As a result it is easy to add a tag and/or category to a whole subtree
+of items simply by adding a single tag to the parent headline.</p>
+<p>Let’s say for instance, that you want to designate a whole bunch of
+tasks as belonging to the project “topsecret”. By adding <code>:topsecret:</code>
+to the top headline of the group, you are in effect labeling all the
+items in the tree as “topsecret”. An agenda search for the TODOs with
+the tag “topsecret” (<code>C-c a M [RET] topsecret</code>) would then return any
+active TODOs in the entire tree.</p>
+<p>Another common use of inheritance is to allow a special setting (e.g.,
+logging or archive location) to apply to an entire subtree.</p>
+<p>Finally, inheritance plays an important role in org-mode’s column
+view.</p>
+<h2 id="property">Property</h2>
+<h3 id="definition-11">Definition</h3>
+<p>A property is an arbitrary piece of “metadata” you can attach to an
+entry. A property takes the form of a “data pair,” which consists of
+a key and its value.</p>
+<h3 id="details-10">Details</h3>
+<p>Properties are stored in <a href="#drawer">drawers</a> beneath a headline. Here is a sample
+property drawer:</p>
+<pre><code class="language-org">* Invoice for fixing the toilet
+   :PROPERTIES:
+   :LOGGING:  lognoterepeat
+   :BILLED: 102.13
+   :BILLING_DATE: 2009-09-11
+   :CLIENT:   ABC Company
+   :END:
+</code></pre>
+<p>Though org-mode reserves a handful of property keys for special uses
+(e.g., LOGGING in the example above), you are otherwise free to add
+whatever property keys and values you’d like.</p>
+<p>Though you can type properties by hand, the simplest way to add them
+is to type <code>C-c C-x p</code> or <code>M-x org-set-property</code>.</p>
+<h3 id="uses-8">Uses</h3>
+<p>For new org users, properties can seem a bit puzzling. What exactly
+are they for? Here are some of their uses:</p>
+<ol>
+<li>To specify settings for the local org-mode <a href="#tree">tree</a>.
+<ul>
+<li>For instance, though you may not normally want to be prompted
+for a note when you mark an item as DONE, you might want to
+make an exception for a particular task or project. To do so,
+you would set the LOGGING property to “lognotedone” in the
+relevant subtree.</li>
+</ul>
+</li>
+<li>To create a small database of information.
+<ul>
+<li>The manual offers an nice example of this: <a href="https://orgmode.org/manual/Property-syntax.html#Property-syntax">keeping track
+of a information about a CD collection</a>.</li>
+<li>Similarly, you might keep bibliographical information about
+books you’ve read in properties.</li>
+</ul>
+</li>
+<li>To enter data that can be viewed as a “spreadsheet” in column view.</li>
+<li>To create more specific labels for headlines than generic tags allow.
+<ul>
+<li>For instance, if you are keeping track of expenses, you could
+put the type of expense in a tag, but then it would be mixed
+up with your other tags. A solution would be to create a
+special property (e.g., EXPENSE_TYPE) to hold the information.</li>
+</ul>
+</li>
+<li>To label a particular tree with a unique ID so that it can be
+referenced easily via hyperlinks.</li>
+</ol>
+<h2 id="tag">Tag</h2>
+<h3 id="definition-12">Definition</h3>
+<p>A tag is a label (or piece of “metadata”) that is attached to a
+headline for easy identification and filtering later. Several tags can
+be attached to the same headline.</p>
+<h3 id="details-11">Details</h3>
+<p>Tags can be added to headlines with the key combination <code>C-c C-q</code> or
+<code>C-c C-c</code>.</p>
+<p>Tags have the following syntax:</p>
+<pre><code class="language-org">* A headline with tags                               :Richard:URGENT:errands:
+</code></pre>
+<p>You may be familiar with tags from blogs or sites like <a href="http://del.icio.us">del.icio.us</a>.
+Tags are a way of labeling information without having to rely on a
+rigid hierarchical structure. Unlike categories, you can give a
+headline/entry multiple tags. In many ways, org-mode offers the best
+of both worlds: the hierarchical organization of an outline and the
+impromptu labeling of tags.</p>
+<p>The entry above would appear in queries for any of the tags:
+“Richard”, “URGENT”, or “errands”.</p>
+<p>The syntax for searching tags via the <a href="#agenda">agenda</a> is quite simple. For
+instance, you could create a targeted agenda search for all items
+tagged “Richard” and “urgent”.</p>
+<pre><code>C-c a m Richard+URGENT
+</code></pre>
+<p>Or for items tagged Richard that are not urgent:</p>
+<pre><code>C-c a m Richard-URGENT
+</code></pre>
+<p>You can also use sparse view searches to display all tags within a
+particular org-file.</p>
+<p>If you find yourself commonly using certain tags, you can create a
+list of shortcuts for them by typing <code>M-x customize-variable [RET]
+org-tags-alist</code>. You can also set special tags for a particular file.
+See <a href="https://orgmode.org/manual/Setting-tags.html">the manual</a> for more details.</p>
+<h3 id="uses-9">Uses</h3>
+<p>One common use of tags is as <a href="https://en.wikipedia.org/wiki/Getting_Things_Done#GTD_methodology">GTD contexts</a>. You might, for instance,
+define a list of tags in org-tags-alist that correspond to the various
+contexts in a “next action” can be completed: @computer, @home,
+@errands, @work, and so on. Then you can quickly filter for these tags
+by pressing “<code>/</code>” in the agenda. See <a href="https://orgmode.org/manual/Agenda-commands.html#Agenda-commands">the manual</a> for more details.</p>
+<p>Another common use of a tag is to label a group of tasks as belonging
+to a particular project or area of responsibility. For instance, you
+might create a subtree in your file that contains all your house
+repair projects and tag it with “:houserepair:”. Let’s say that when
+Saturday rolls around, you decide to work exclusively on repairs.
+Thanks to <a href="#inheritance">inheritance</a>, you can quickly locate all your tasks that
+inherit the “:houserepair:” tag.</p>
+<p>Here’s what this would look like:</p>
+<pre><code class="language-org">* Tasks around the house                                        :houserepair:
+
+** TODO Fix sink
+
+** TODO Mow lawn
+
+** TODO Tear up carpet
+</code></pre>
+<p>Tags are also extremely useful for notetaking and research. You might,
+for instance, create a file of reading notes in which each entry is a
+snippet of information tagged with relevant keywords. The beauty of
+org-mode is that these snippets can be easily rearranged within the
+outline and yet remain easy to find via tags.</p>
+<h3 id="considerations-tags-vs-todo-keywords-vs-properties">Considerations: Tags vs. TODO keywords vs. Properties</h3>
+<p>One question that often emerges for new users of org mode is how to
+decide when tags, <a href="#todo-keywords">TODO keywords</a>, or <a href="#property">properties</a> are appropriate.</p>
+<p>For instance, should you define your projects by creating a special
+todo keyword for them (<code>PROJECT</code>) or by giving them a “<code>:project:</code>”
+tag? Similarly, should you create a TODO keyword for items that are
+waiting, or should you add a “<code>:waiting:</code>” tag?</p>
+<p>Either choice would be fine, of course, but here are a few
+considerations to keep in mind:</p>
+<ol>
+<li>Do you want quickly to filter for the item in the agenda view? If
+so, a tag is probably your best choice.
+<ul>
+<li>Note, you can add a setting to your .emacs that automatically
+adds a tag whenever you assign a particular TODO keyword. Type
+“<code>C-c v org-todo-state-tags-triggers</code>” for more information.</li>
+</ul>
+</li>
+<li>How visible do you want the keyword and/or tag to be? When viewing
+an org-mode file, TODO Keywords are highly visible, tags somewhat
+less so, and properties not at all.</li>
+<li>Is the keyword part of your workflow? Do you want to be able to log
+information (such as a timestamp and a note) when you add or remove
+the keyword? If so, then use a TODO keyword.
+<ul>
+<li>An example: While a “waiting” tag might make it easier to filter
+for items in your todo list that are waiting/pending, a <code>WAITING</code>
+todo keyword would allow you to keep track of when an item
+entered the “waiting” state and when it left it.</li>
+<li>Similarly, if you want to keep track of a sequence of actions on
+phone calls you receive, it would be relatively inefficient to
+add and remove tags to designate each stage. It would probably be
+better to set up a TODO sequence, such as ACT -> CALL -> MESSAGE
+-> FOLLOWUP -> etc.</li>
+</ul>
+</li>
+</ol>
+<h2 id="tree">Tree (subtree)</h2>
+<h3 id="definition-13">Definition</h3>
+<p>A tree is created by the structure of an outline. It consists of a
+heading and all subheadings/entries beneath it within the outline
+hierarchy.</p>
+<h3 id="details-12">Details</h3>
+<p>A tree is to be distinguished from an <a href="#entry">entry</a>. Whereas an entry
+indicates only a single headline and its data, a tree consists of
+multiple nested entries. And, of course, subtrees are nested within
+larger trees.</p>
+<h2 id="todo-keywords">Todo Keywords</h2>
+<h3 id="definition-14">Definition</h3>
+<p>A TODO keyword is a small keyword at the beginning of a headline that
+defines the TODO state of the entry.</p>
+<h3 id="details-13">Details</h3>
+<p>The default TODO keywords in org-mode are TODO and DONE. They are
+automatically given nice colors to make them stand out.</p>
+<pre><code class="language-org">* DONE Check cupboard to see if I'm out of bread
+  CLOSED: [2009-09-16 Wed 13:14]
+* TODO Buy bread at the store
+</code></pre>
+<p>Org mode distinguishes between two types of keywords, active and
+inactive (corresponding with the default TODO and DONE). By default,
+active TODOs will be shown in <a href="#agenda">agenda views</a>. Inactive todos will not be
+shown.</p>
+<p>You can select a TODO keyword by typing <code>C-c C-t</code> on an item. Or you
+can move sequentially through TODOs by typing <code>Shift-Left</code> or
+<code>Shift-Right</code>.</p>
+<p>While the default keywords TODO and DONE will suffice for many users,
+you can define your own TODO keywords (such as PROJECT, WAITING,
+etc.) by following the instructions in the manual:</p>
+<ul>
+<li><a href="https://orgmode.org/manual/TODO-items.html">https://orgmode.org/manual/TODO-items.html</a></li>
+</ul>
+<h3 id="uses-10">Uses</h3>
+<p>Not surprisingly, the most common use of TODO keywords is to indicate
+items in your outline files that require action. Where other task
+management systems often separate notes and todos, org-mode allows you
+to mark items in your notes as TODOs.</p>
+<p>Another common use of TODO keywords is to follow a single item through
+an extended workflow. For instance, you might create a special TODO
+keyword sequence for invoices by placing the following at the top of
+your org file:</p>
+<pre><code class="language-org">#+SEQ_TODO: INVOICE(i) MAIL(m) WAITING(w) FOLLOWUP(f) | RECEIVED(r)
+</code></pre>
+<p>Note: The ”|” separates active from inactive todos.</p>
+<p>You can combine such todo sequences with logging in order to keep a
+record of when each event in the sequence happened.</p>
+<h2 id="awaiting-definitions">Awaiting definitions</h2>
+<h3 id="agenda-filtering">Agenda filtering</h3>
+<h3 id="clock">CLOCK</h3>
+<h3 id="column-view">Column view</h3>
+<h3 id="cycling">Cycling</h3>
+<h3 id="effort-estimate">Effort estimate</h3>
+<h3 id="filetag">Filetag</h3>
+<h3 id="project">Project</h3>
+<h3 id="note">Note</h3>
+<h3 id="list">List</h3>
+<h3 id="level">Level</h3>
+<h3 id="logging">Logging</h3>
+<h3 id="scheduled">SCHEDULED</h3>
+<h3 id="file-restriction">Restriction lock</h3>
+<h3 id="table">Table</h3>
+<h3 id="timestamp">Timestamp</h3>

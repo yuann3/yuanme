@@ -1,0 +1,82 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(&format!(\"{name}.org\"), &text)"
+---
+warning[org/no-effect]: `-n` has no effect in yuanme
+  --> blocks.org:73:17
+   |
+73 | #+BEGIN_EXAMPLE -n
+   |                 ^^
+   |
+   = note: a code block's lines aren't numbered and its labels aren't rewritten
+   = note: run `yuanme docs org/no-effect` for more
+<p class="verse">Roses are red,<br>
+  violets are blue.<br>
+</p>
+<div class="org-center">
+<p>Centered.</p>
+</div>
+<div class="note wide" data-x="1">
+<p>A note.</p>
+</div>
+<dl>
+<dt>Org</dt>
+<dd>a mode</dd>
+<dt>Emacs</dt>
+<dd>an editor</dd>
+</dl>
+<p>Tasks:</p>
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" disabled data-partial> partly
+<ul class="contains-task-list">
+<li class="task-list-item"><input type="checkbox" checked disabled> one</li>
+<li class="task-list-item"><input type="checkbox" disabled> two</li>
+</ul>
+</li>
+<li class="task-list-item"><input type="checkbox" disabled> none</li>
+</ul>
+<p>Numbers:</p>
+<ol>
+<li>one</li>
+<li value="5">five</li>
+<li>six</li>
+</ol>
+<figure id="fig:cat">
+<img src="cat.png" alt="cat.png" width="300">
+<figcaption>A cat, sitting.</figcaption>
+</figure>
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="tbl:data" class="data"><caption>Some data.</caption><tbody><tr><td>a</td><td>b</td></tr><tr><td>1</td><td>2</td></tr></tbody></table>
+<figure id="src:hello">
+<figcaption>Hello in Python.</figcaption>
+<pre><code class="language-python">print("hello")
+</code></pre>
+</figure>
+<pre><code>hello
+</code></pre>
+<pre><code>results only
+</code></pre>
+<pre><code class="language-elisp">(message "no results shown")
+</code></pre>
+<pre><code>numbered in Emacs
+</code></pre>
+<p>A drawer’s contents.</p>
+<pre><code>fixed
+  width
+</code></pre>
+<code class="language-math math-display">\begin{equation}
+E = mc^2
+\end{equation}</code>
+<hr>
+<hr class="fancy">

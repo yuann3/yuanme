@@ -1,0 +1,3143 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
+ --> worg/org-faq.org:5:1
+  |
+5 | #+setupfile: macros.setupfile
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
+  = note: run `yuanme docs org/setupfile` for more
+error[org/unsupported-construct]: `info:` links aren't in the Org subset
+    --> worg/org-faq.org:1861:1
+     |
+1861 | [[info:emacs#Mail Methods][info "(emacs) Mail Methods"]].  Check that ~browse-url-mailto-function~
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: link to a URL, another Entry's file, or a heading in this one
+     = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `info:` links aren't in the Org subset
+    --> worg/org-faq.org:1890:19
+     |
+1890 | mailto links, see [[info:org#Adding Hyperlink Types][info "(org) Adding Hyperlink Types"]] for details.
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: link to a URL, another Entry's file, or a heading in this one
+     = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `info:` links aren't in the Org subset
+    --> worg/org-faq.org:1892:1
+     |
+1892 | [[info:emacs#Init File][Emacs init file]] (on Linux to avoid silent failures add
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: link to a URL, another Entry's file, or a heading in this one
+     = note: run `yuanme docs org/unsupported-construct` for more
+<p><em>You can also explore <a href="https://orgmode.org/worg/org-faq/">this FAQ from another interface</a>.</em></p>
+<h2 id="Already-faq">Is my question already a Frequently Asked Questions?</h2>
+<p>You can find answers by asking on the mailing list, but people will
+probably direct you here, so it is safer to start by checking this
+FAQ.</p>
+<h2 id="What-is-org-mode">What is org-mode?</h2>
+<h3 id="can-org-do-x">Can Org-mode do “x”? Does org have “x” feature?</h3>
+<p>In its default setup, Org-mode offers a simple outlining and task
+management environment. But it also has a huge number of features and
+settings “under the hood.” Advanced users have configured Org-mode for
+almost every conceivable use scenario.</p>
+<p>Org-mode has a very active community and rich and extensive
+documentation. Before emailing the mailing list to ask whether
+Org-mode has a particular feature or setting, please consult the
+following:</p>
+<ul>
+<li>
+<p>Read/search the manual.</p>
+<ul>
+<li>
+<p><a href="https://orgmode.org/manual/index.html">https://orgmode.org/manual/index.html</a></p>
+<ul>
+<li>Make sure to check out the following indexes:
+<ul>
+<li><a href="https://orgmode.org/manual/Main-Index.html#Main-Index">Main Index</a></li>
+<li><a href="https://orgmode.org/manual/Key-Index.html#Key-Index">Key Index</a></li>
+<li><a href="https://orgmode.org/manual/Variable-Index.html#Variable-Index">Variable Index</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>The manual is also easily available from within Emacs.</p>
+<p>Choose your favorite way to access the manual in Info mode in
+Emacs.  You can</p>
+<ul>
+<li>evaluate <code>(info "(org)")</code> within Emacs—i.e., type <code>C-x C-e</code>
+after the closing paren of the info expression above.</li>
+<li>type <code>M-x info</code> and navigate to “Org Mode”.</li>
+<li>type <code>M-x org-info</code>.</li>
+</ul>
+<p>Search the manual using Info mode:</p>
+<ul>
+<li>Type <code>C-s term</code> to search the entire manual.  Keep pressing
+<code>C-s</code> to cycle through the results.</li>
+<li>Press <code>i term RET</code> to jump to a term stored in the Info index.
+Press <code>,</code> to cycle through the results.</li>
+</ul>
+<p>Access the manual about Info mode with <code>M-x info m info RET</code> for
+more.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Search the mailing list archives at <a href="http://lists.gnu.org/archive/html/emacs-orgmode/">lists.gnu.org</a> or
+<a href="https://list.orgmode.org/">list.orgmode.org</a>.</p>
+<p>There is a good chance that the feature you are looking for has
+already been discussed (most likely several times).</p>
+</li>
+<li>
+<p>Check for features from within emacs.</p>
+<ul>
+<li>
+<p>Emacs has a wonderful built-in help system.</p>
+</li>
+<li>
+<p>You can browse (and change) most customization options by typing
+<code>M-x org-customize</code>.</p>
+</li>
+<li>
+<p>You can check for a feature by typing <code>M-x apropos [RET] [word]</code> or
+<code>C-h a word</code>. This will search for all functions and variables
+matching the term (or regexp) you enter.</p>
+</li>
+<li>
+<p>You can browse (and search for) org functions, variables, and
+faces by using <code>M-x describe-variable</code> (<code>C-h v</code>), <code>M-x
+     describe-function</code> (<code>C-h f</code>), or <code>M-x describe-face</code>.</p>
+<p>After invoking one of these commands, simply type <code>org-[TAB]</code> to
+see a full list of relevant functions or variables or faces. You
+can then drill down further: e.g., <code>org-export-[TAB]</code> for export
+features.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Checkout the <a href="org-tutorials/index.org">tutorials on Worg</a>.</p>
+<p>Several of these tutorials discuss advanced features (e.g.,
+searching, custom agenda commands, tables, publishing) of Org-mode
+in depth.</p>
+<p>There are many other resources on Worg as well:</p>
+<dl>
+<dt><a href="https://orgmode.org/worg/org-configs/index.html">Org Customization</a></dt>
+<dd>Includes a guide for beginners.</dd>
+<dt><a href="https://orgmode.org/worg/org-hacks.html">Org Hacks</a></dt>
+<dd>User-generated modifications and add-ons.</dd>
+<dt><a href="https://orgmode.org/worg/org-glossary.html">Org Glossary</a></dt>
+<dd>An explanation of basic Org-mode terms and
+concepts.</dd>
+</dl>
+</li>
+</ul>
+<h3 id="GTD-workflow-with-Org-mode">Can I implement a GTD workflow with Org-mode?</h3>
+<p>Yes, you can.  Check for discussions and pointers <a href="https://orgmode.org/worg/org-gtd-etc.html">here</a>.</p>
+<h3 id="Org-and-TaskPaper">What is the difference between Org and TaskPaper (or other &#x3C;put your own> todo app)?</h3>
+<p>There is really no difference.  Org is as <em>simple</em> as <a href="https://www.taskpaper.com/">TaskPaper</a> or
+other plain text-based note taker.  It is just that, when using Org
+within Emacs, it lets you do many things that you wouldn’t be able
+to do with more monolithic app.  Yes, traditional apps are
+fiddle-proof and people using Emacs tends to like fiddling (which is
+orthogonal to the idea of using todo-lists efficiently), but this is
+just a matter of discipline and common sense, not one of Org’s
+design.</p>
+<p>Read <a href="https://list.orgmode.org/0277B507-1486-4172-B1C6-1B73B84148DD@science.uva.nl">Carsten’s enlightening statement</a> on this.</p>
+<h3 id="unicorn">What is the meaning of the Unicorn on Org’s website?</h3>
+<p>The Unicorn is the logo of Org-mode because:</p>
+<ul>
+<li>Org-mode is the UNICs of ORgaNizers.</li>
+<li>Org-mode is an Emacs mode, so it makes sense to use an animal
+similar or related to the gnu used for GNU Emacs.</li>
+<li>Org-mode is meant to show you the way, and an animal with two horns
+can not do this very well, can it?</li>
+<li>Unicorn tears are said to reverse petrification, and wasn’t this how
+we all felt before getting to some degree of time and task
+management?</li>
+<li>It will take forever to learn everything there is to know about a
+unicorn.</li>
+<li>A unicorn is a fabulous creature.  Org-mode wants to be a fabulous
+creation.</li>
+</ul>
+<p>Using a unicorn was originally <em>Bastien Guerry’s</em> idea.  His friend,
+the french artist <a href="https://bataillon.ultra-book.com/accueil">Christophe Bataillon</a>, designed the logo for us, and
+<em>Greg Newman</em> gave it a refresh some time later.  Bastien writes why
+he chose a unicorn:</p>
+<blockquote>
+<p>The first reason is not linked to the animal, but to the sounding of the
+word “Unicorn” - because Org gives you a /uni/que way of producing files
+in several format (HTML, LaTeX, etc.).</p>
+<p>The second reason is that a Unicorn doesn’t really exist, it is just
+something you can dream about, and make others believe it does exist.
+Just like the perfect organizer.</p>
+</blockquote>
+<p>There was a <a href="https://list.orgmode.org/49A5BF02.1090400@rk-f.me">thread about unicorns</a> on the mailing list.  <a href="https://list.orgmode.org/49A5BF02.1090400@rk-f.me">Christopher
+Suckling</a> posted a link showing how to make a simple foldable unicorn
+(very appropriate for an outlining program!).</p>
+<p><a href="https://list.orgmode.org/18859.6342.338919.506488@nitrogen.rketburt">Tim Burt</a> made a very complicated one which is now a treasured
+possession of the Org-mode author.</p>
+<ul>
+<li>Official logo: <a href="https://orgmode.org/worg/images/orgmode/org-mode-unicorn.png">org-mode-unicorn.png</a> This logo is available in a
+number of different formats including Photoshop <em>.psd</em> and scaleable
+vector graphics <em>.svg</em> <a href="https://orgmode.org/worg/images/orgmode/">here</a>.</li>
+<li>An <a href="https://orgmode.org/worg/images/orgmode/nrocinu4.jpg">alternative version</a> from <a href="https://bataillon.ultra-book.com/accueil">Christophe Bataillon</a> ©.</li>
+<li><a href="https://list.orgmode.org/B7CC380355F946DF8DCA0392A362CDB6@CUBE">Chris Randle</a> made a <a href="https://orgmode.org/worg/images/orgmode/nrocinu.txt">text version</a> using the logo and <a href="http://glassgiant.com">glassgiant.com</a>:</li>
+<li><a href="https://list.orgmode.org/43B268EF-3DDC-439F-B0DB-85B09974B037@nf.mpg.de">Stefan Vollmar</a> made a <a href="https://orgmode.org/worg/images/orgmode/nrocinu.pdf">pdf version</a> (here in <a href="https://orgmode.org/worg/images/orgmode/nrocinu_pdf.png">png</a>) using “a simple
+threshold technique”.</li>
+<li><a href="https://list.orgmode.org/18859.6342.338919.506488@nitrogen.rketburt">Tim Burt</a> made a folded Unicorn to match the spirit of Org - see the
+whole set of pictures <a href="http://www.flickr.com/photos/tcburt/sets/72157614543357071/">on his flickr page</a>.</li>
+<li>Are unicorns real?  Answer <a href="https://list.orgmode.org/87ljrru3vc.fsf@rosslaird.info">here</a> by Ross Laird.</li>
+</ul>
+<h3 id="docs-in-org">Is Org’s documentation written in Org?</h3>
+<p>As of January 2018, yes.  You can access the <code>.org</code> source of the manual
+<a href="https://git.savannah.nongnu.org/cgit/org-mode.git/tree/doc/org-manual.org">on the repository</a>.</p>
+<p>Previously, Org mode documentation was written in TeXinfo, which is the
+standard format for Emacs documentation. Today, the Org mode documentation is exported to TeXinfo with the ox-texinfo exporter written by Jonathan Leech-Pepin and Nicolas Goaziou.</p>
+<h3 id="bibtex-entry-for-manual">Is there a bibtex entry for the Org manual?</h3>
+<p>Yes.  Please evaluate this function and run <code>M-x
+org-insert-manual-bibtex-citation-at-point RET</code>.</p>
+<pre><code class="language-emacs-lisp">(defun org-insert-manual-bibtex-citation-at-point ()
+  "Insert a BibTeX citation of the Org manual at point."
+  (interactive)
+  (insert
+  "@book{dominik10:_org_mode_refer_manual,
+  author =       {Carsten Dominik},
+  title =        {The Org-Mode 7 Reference Manual: Organize
+                  Your Life with GNU Emacs},
+  publisher =    {Network Theory},
+  year =         2010,
+  address =      {UK},
+  note =         {with contributions by David O'Toole, Bastien Guerry,
+                  Philip Rooke, Dan Davison, Eric Schulte, and Thomas
+                  Dye}
+}"
+  (message "Thanks for quoting the Org manual!")))
+</code></pre>
+<p>Please check <a href="org-papers.org">the Org papers page</a> for more references related to Org.</p>
+<h2 id="Mailing-list">Mailing list</h2>
+<h3 id="bug-reporting">I think my Org-mode is broken! How do I report a bug?</h3>
+<ol>
+<li>Make sure you are running <a href="#updating-org">the latest version of Org-mode</a>.</li>
+<li>Read <a href="https://orgmode.org/manual/Feedback.html">the Feedback section</a> of the manual.</li>
+<li>Provide a minimal example that duplicates the bug.
+<ul>
+<li>Create a minimal .emacs file and start emacs with that file as
+detailed in <a href="#minimal-emacs">these instructions</a>.</li>
+<li>Create a sample, minimal .org file that reliably reproduces the
+problem and post it to the mailing list.</li>
+<li>Some users call this an “<a href="#ecm">ECM</a>”, a French acronym that means a
+“minimal complete example”.</li>
+</ul>
+</li>
+</ol>
+<h3 id="ecm">What is an “ECM”?</h3>
+<p>This is a French acronym used by some mailing list members; it
+stands for “Exemple Complet Minimal”, or “Complete Minimal
+Example”. The term refers to test files that can reliably reproduce
+a bug with the minimal amount of code. When you report a bug to the
+mailing list, you should provide a minimal .org file (with no more
+text than necessary) that demonstrates the bug. See <a href="https://list.orgmode.org/80oc3s13rg.fsf@somewhere.org">this post</a> for
+more information.</p>
+<h3 id="when-to-contact-mailing-list">What should I do before contacting the mailing list?</h3>
+<p>The Org-mode mailing list is a high volume list, in which community
+members discuss use cases, configuration, bugs, and developments.</p>
+<p>If you are new to Org-mode, please read/search the excellent <a href="https://orgmode.org/manual/index.html">manual</a>
+(and pay special attention to the indexes) before asking your
+question.</p>
+<p>You should also search the mailing list at <a href="http://lists.gnu.org/archive/html/emacs-orgmode/">lists.gnu.org</a> or
+<a href="https://list.orgmode.org/">list.orgmode.org</a> to see if your issue has already been discussed.</p>
+<p>See <a href="#can-org-do-x">this faq</a> for more details.</p>
+<h3 id="ml-post-delay">Why hasn’t my email to the mailing list shown up yet?</h3>
+<p>The org-mode mailing list is moderated. Thus, if you are not
+subscribed to the mailing list, your mail will only appear on the
+list after it has been approved by a moderator. To ensure that your
+mail appears quickly, please <a href="http://lists.gnu.org/mailman/listinfo/emacs-orgmode">subscribe to the list</a>.</p>
+<h3 id="ml-subscription-and-gmane">I read the mailing list through gmane. Should I subscribe?</h3>
+<p>The org-mode mailing list is available via nntp at
+<code>news.gmane.io/gmane.emacs.orgmode</code> and
+<code>news.yhetil.org/yhetil.emacs.orgmode</code> (see the <a href="https://list.orgmode.org/_/text/mirror/">mirroring
+instructions</a>).</p>
+<p>Gmane also used to offer web archives, but these are no longer
+available.  If you have broken links to mailing-list messages at
+gmane, links using message-IDs can be easily updated from
+<code>http://mid.gmane.org/&#x3C;message-id></code> to
+<code>https://list.orgmode.org/&#x3C;message-id></code></p>
+<p>Many participants in the list prefer to read the list in a
+newsreader, such as Gnus, instead of receiving emails.  If you
+choose to read the list via nntp, you can still <a href="http://lists.gnu.org/mailman/listinfo/emacs-orgmode">subscribe</a> to the
+list and then opt not to receive any emails on the mailman settings
+page (see the “Mail Delivery” setting).</p>
+<p>This will ensure that your messages to the list get through
+quickly, reduce the work load of the mailing list moderators (who
+need to clear every mail from non-members), and provide more
+accurate information about the number of list readers.</p>
+<h2 id="Keeping-current">Keeping Org-mode up-to-date</h2>
+<h3 id="updating-org">My Emacs ships with an older version Org-mode! How do I upgrade?</h3>
+<p>Org-mode develops quickly, which means that versions of Org-mode
+shipped with Emacs are often older than the last stable release.  If
+you’d like to upgrade to the most recent version of org-mode, you have
+a number of options.</p>
+<ol>
+<li>Install Org from GNU ELPA and the Emacs package manager as
+<a href="#installing-via-elpa">explained in this FAQ</a>.</li>
+<li>Clone and install the development git repository as <a href="#keeping-current-with-Org-mode-development">explained
+here</a>.  If you don’t want to run the bleeding edge, you can still
+use git <a href="#using-stable-releases-only">to track the most recent stable releases</a>.</li>
+</ol>
+<p><em>Note</em>: Please also see <a href="#mixed-install">Is my Orgmode installation mixed?</a> for a common
+issue with mixed installations.</p>
+<h3 id="keeping-current-with-Org-mode-development">How do I keep current with bleeding edge development?</h3>
+<p>Org-mode is developed in <a href="https://en.wikipedia.org/wiki/Git_(software)">Git</a>. You can keep up-to-date with Org-mode
+developement by cloning the Org-mode repository and refreshing your
+copy with latest changes whenever you wish. You only need to use
+two Git commands (clone and pull.) Here are the steps in brief
+(assuming a POSIX compatible shell and please customize locations
+to suit your setup):</p>
+<ol>
+<li>
+<p>Select a location to house the Org-mode repository (approx. 40
+MB; includes documentation, compiled elisp files and history
+going all the way back to v4.12a)</p>
+<pre><code>$ mkdir $HOME/elisp &#x26;&#x26; cd $HOME/elisp
+</code></pre>
+</li>
+<li>
+<p>Clone the Org-mode Git repository.</p>
+<p>Recommended approach:</p>
+<pre><code>$ git clone  git://git.savannah.nongnu.org/org-mode.git
+</code></pre>
+<p>(See <a href="worg-about.org#contribute-to-worg">The first time you contribute to Worg</a> for how to gain access).</p>
+</li>
+<li>
+<p>Compile and install Org-mode and build documentation.</p>
+<pre><code>$ cd $HOME/elisp/org-mode &#x26;&#x26; make
+</code></pre>
+<p>Please note that you can choose to <em>not</em> compile at all and run
+using source <code>.el</code> files only (compiled files speed things up),
+but you will still need to generate the autoload files.</p>
+<pre><code>$ cd $HOME/elisp/org-mode &#x26;&#x26; make uncompiled
+</code></pre>
+<p>If you’d like to install org-mode someplace outside the source
+tree (private or system-wide), you should edit <code>local.mk</code> to
+point to the appropriate install location.  You may need
+administrator rights to do a system-wide installation.</p>
+<pre><code>$ cd $HOME/elisp/org-mode &#x26;&#x26; make install
+</code></pre>
+</li>
+<li>
+<p>This is where you configure Org-mode with Emacs.  Please refer
+to <a href="./org-tutorials/index.org">Org tutorials</a>.</p>
+</li>
+<li>
+<p>Keeping up-to-date.</p>
+<p>Cloning the repository is a one time activity.  From this point
+onwards you only need to <em>pull</em> the latest changes, which the
+Makefile is set up to do automatically for certain make targets.</p>
+<pre><code>$ cd $HOME/elisp/org-mode &#x26;&#x26; make update
+</code></pre>
+<p>or if you immediately want to install as well</p>
+<pre><code>$ cd $HOME/elisp/org-mode &#x26;&#x26; make update2
+</code></pre>
+<p>Actually in this case it is recommended to run the test suite
+before installation so that you don’t install a version that
+fails testing.</p>
+<pre><code>$ cd $HOME/elisp/org-mode &#x26;&#x26; make up2
+</code></pre>
+</li>
+<li>
+<p>You should reload Org-mode to have the changes take effect (if
+you are not restarting Emacs, which is recommended).  Also since
+the intention is to “keep up” with Org-mode, you should visit
+updated sections of documentation for latest updates (use <code>git
+      log</code>.)</p>
+</li>
+<li>
+<p>As you use your repository over time it will accumulate loose objects.
+You can reduce the total size of your git repository with</p>
+<pre><code>$ git gc
+</code></pre>
+<p>which will consolidate loose git objects into pack files.  This
+reduces the size of the repository and speeds up data access to
+the objects.</p>
+</li>
+</ol>
+<h3 id="update-info-manual-to-latest">How do I update the info manual pages to the latest org-mode version?</h3>
+<p><strong>This is not a problem if org-mode is installed system-wide, which
+automatically takes care of this issue!</strong> Since org-mode already
+ships with Emacs, a rather common problem among users is “How do I
+update the info documentation to the latest version of org-mode?”.
+There are three ways to achieve this if for whatever reason you
+can’t install into the standard, system-wide info directory:</p>
+<ol>
+<li>
+<p>You can set the <code>INFOPATH</code> environment variable in your login
+script like this:</p>
+<pre><code class="language-shell-script"># ~/.bash_profile
+export INFOPATH=/path/to/org-mode/info:$INFOPATH
+...
+</code></pre>
+<p><code>/path/to/org-mode/info</code> is wherever you install org-mode.</p>
+</li>
+<li>
+<p>You can achieve the same with elisp like this:</p>
+<pre><code class="language-emacs-lisp">;; Info directory
+(add-to-list 'Info-additional-directory-list
+             (expand-file-name "/path/to/org-mode/info"))
+</code></pre>
+</li>
+<li>
+<p>You should specify the same location in the Makefile while
+installing org-mode like this:</p>
+<pre><code class="language-makefile-gmake"># Where local software is found
+prefix=/path/to/emacs-root
+...
+# Where info files go.
+infodir = $(prefix)/share/info
+</code></pre>
+</li>
+</ol>
+<h3 id="keeping-local-changes-current-with-Org-mode-development">How can I keep local changes and still track Org-mode development?</h3>
+<p>There is no need to do this anymore for the purpose of adapting the
+build system to the local environment, since this can now be
+specified in <code>local.mk</code>.  However, there may be a need to make other
+local changes to Org.</p>
+<p>Say you want to make minor changes to the <code>org.el</code> or any other
+version controlled file from Org and you want to keep these changes
+on top of the <code>main</code> branch from Org.  Create a local branch for
+your changes on top of origin/main as follows:</p>
+<pre><code>$ git checkout -b local origin/main
+$ git config branch.local.rebase true
+# Make your changes to the sources and create a new commit
+$ git commit -am 'My local changes to Org'
+# Update to a newer version
+$ git pull
+</code></pre>
+<p>Now each time you pull new commits from the distribution repository
+your local commits will be rewound and replayed on top of the new
+<code>origin/main</code>.  You would normally work on your <code>local</code> branch which
+includes your custom commits; there’s no need to switch back to the
+<code>main</code> branch.</p>
+<p>If you get a conflict during a <code>git pull</code> (a change in Org and one
+of your local changes try to alter the same line of code) you will
+need to edit the file with the conflict to fix up the conflicting
+lines and then tell git that you have resolved the conflict:</p>
+<ol>
+<li><code>git pull</code> fails with a conflict</li>
+<li>edit the file: look for the conflict markers <code>>>>>>>></code> and
+<code>&#x3C;&#x3C;&#x3C;&#x3C;&#x3C;&#x3C;&#x3C;</code> and either keep one version or create a new one and
+remove all conflict markers while doing this.</li>
+<li><code>git add</code> the file to the index to mark the conflict resolved</li>
+<li><code>git rebase --continue</code></li>
+<li>lather, rinse, and repeat 2-4 as needed</li>
+</ol>
+<p>Note that it is possible to have silent conflicts when a change in
+Org and one of your local changes do not edit the same line of code,
+but are logically incompatible — for example Org might have changed
+to assume <em>roses are red</em> while you’ve made a local change that
+defines <em>my roses are yellow</em> in some other place.  Git will not
+warn you about such conflicts (it doesn’t understand what the code
+<span class="underline">does</span>, of course).</p>
+<p>At anytime during the rebase conflict resolution you can say “oops
+this is all wrong - put it back the way it was before I did a pull”
+using</p>
+<pre><code>$ git rebase --abort
+</code></pre>
+<h3 id="using-stable-releases-only">How can I use a stable release version instead of the bleeding edge main branch?</h3>
+<p>The <code>main</code> branch of the git repository always contains the bleeding
+edge development code.  This is important for Org’s fast development,
+because code on <code>main</code> gets checked out by many people daily and we
+quickly receive bug reports if something is wrong.  On rare occasions,
+this code may not function perfectly for a limited time while we are
+trying to fix things.  It is therefore recommended to keep a
+known-good version of org-mode installed outside the source tree and
+always run the full test suite before using a new version from <code>main</code>.</p>
+<p>Not everyone like to use this bleeding-edge code and face the danger
+to hit a surprising bug.  The branch <code>bugfix</code> is specifically for
+collecting only fixes for known bugs between releases.  If you don’t
+want to wait for a new release, but don’t want to live on the bleeding
+edge, consider using <code>bugfix</code>.</p>
+<p>From time to time, we make a release by merging all the new features
+from <code>main</code> into <code>bugfix</code>.  This typically happens when the
+maintainers feel that</p>
+<ol>
+<li>they have reached a good point in the development</li>
+<li>the code has a feature set that should stay and be supported in the
+future</li>
+</ol>
+<p>Stable releases are used as the basis for <a href="https://orgmode.org/index.html#sec-3_3">alternative distributions</a> of
+Org, and they are also the code that gets merged into the Emacs
+distribution. If you want to work only with stable releases, you can
+always download <a href="https://orgmode.org/index.html#sec-3">them here</a>, but you can also also use the git
+repository to keep automatically up-to-date with the most recent
+stable releases (and save bandwidth!). Here’s how to do so:</p>
+<dl>
+<dt>Run a specific stable release</dt>
+<dd>
+<p>In the repository, do</p>
+<pre><code>$ git fetch --tags
+$ git tag
+</code></pre>
+<p>To see which release tags are available.  Let’s say you decide to
+use <code>release_7.01f</code>.</p>
+<pre><code>$ git checkout release_7.01f
+</code></pre>
+<p>This set the working tree of the repository to the state of Org at
+the moment of release 7.01f.  You can then run Org from the
+repository be sure to use the stable release while development
+continues on the <code>main</code> branch.</p>
+<p>Later, when we release 7.02, you can switch to that using</p>
+<pre><code>$ git fetch --tags                   # to get all the new stuff
+$ git tag
+$ git checkout release_7.02
+</code></pre>
+</dd>
+<dt>Always run the most recent stable release</dt>
+<dd>
+<p>Alternatively, if you just want to always run whatever the latest
+stable release is, you can do</p>
+<pre><code>$ git checkout -b stable origin/bugfix
+</code></pre>
+<p>and then regularly update this branch by doing</p>
+<pre><code>$ git pull
+</code></pre>
+</dd>
+</dl>
+<h3 id="installing-org-without-make-tools">How can I install an up-to-date version of org-mode without “make” tools?</h3>
+<p>If you are using org-mode on a computer that lacks developer tools for
+compiling software, such as <a href="http://www.gnu.org/software/make/">GNU Make</a>, you will have to use a
+<strong>different</strong> installation method than <a href="https://orgmode.org/manual/Installation.html#Installation">the one outlined in the manual</a>.
+Please see this description for <a href="https://orgmode.org/worg/org-hacks.html#compiling-org-without-make">compiling org-mode without make</a> so you
+can install a recent version of org-mode without using the full build
+system.</p>
+<h3 id="I-dont-use-git">I don’t use git. Can I download bleeding edge archives?</h3>
+<p>Yes.  You can download the latest archive at
+<a href="https://elpa.gnu.org/devel/org.html">https://elpa.gnu.org/devel/org.html</a>.</p>
+<h3 id="installing-via-elpa">How do I install Org-mode through Emacs’ Package Manager?</h3>
+<p>Releases of Org-mode are distributed as GNU ELPA package.</p>
+<p>Steps for installing Org with package manager:</p>
+<ol>
+<li>
+<p>Do <code>M-x list-packages</code> to browse available packages.</p>
+</li>
+<li>
+<p>If you see <code>org</code> as an available package.</p>
+</li>
+<li>
+<p>Press <code>i</code> to mark the package for installation</p>
+</li>
+<li>
+<p>Press <code>x</code> to install</p>
+</li>
+<li>
+<p>Reload Emacs</p>
+</li>
+<li>
+<p>Use <code>M-x locate-library RET org</code>. If your installation is
+successful you would something like the following:</p>
+<p><code>Library is file ~/.emacs.d/elpa/org-20110403/org.elc</code></p>
+</li>
+</ol>
+<h2 id="Setup">Setup</h2>
+<h3 id="browse-all-Org-options">How can I quickly browse all Org options?</h3>
+<p><code>M-x org-customize RET</code></p>
+<p>See also <a href="org-tutorials/org-customize.org">Carsten’s Org customize tutorial</a> and <a href="org-configs/org-customization-guide.org">this customization guide</a>
+for details.</p>
+<h3 id="use-editing-features-in-other-modes">Can I use the editing features of org-mode in other modes?</h3>
+<p>Not really—but there are a few editing features you can use in
+other modes.</p>
+<ul>
+<li>For tables there is <code>orgtbl-mode</code> which implements the table
+editor as a minor mode. (To enable, type <code>M-x orgtbl-mode</code>)</li>
+<li>For ordered lists there is <code>orgstruct-mode</code> which allows for easy
+list editing as a minor mode. (To enable, type <code>M-x
+     orgstruct-mode</code>)</li>
+</ul>
+<p>You can activate these modes automatically by using hooks:</p>
+<pre><code>(add-hook 'mail-mode-hook 'turn-on-orgtbl)
+(add-hook 'mail-mode-hook 'turn-on-orgstruct)
+</code></pre>
+<p>For footnotes, there is the function <code>org-footnote-action</code>, which
+works in non-org buffers. This function is a powerful tool for
+creating and sorting footnotes. To use it globally, you can add the
+following keybinding to your <code>.emacs</code> file:</p>
+<pre><code>(global-set-key (kbd "C-c f") 'org-footnote-action)
+</code></pre>
+<p>For other features you need to switch to Org-mode temporarily, or
+prepare text in a different buffer.</p>
+<h3 id="making-sure-org-mode-is-up-to-date">Why isn’t feature “X” working the way it is described in the manual?</h3>
+<p>Org-mode develops very quickly. If you are using a version of Org-mode
+that shipped with emacs, there is a good chance that it is somewhat
+out of date.</p>
+<p>Many of the users on the Org-mode mailing list are using either a
+recent release of Org-mode or the
+<a href="https://orgmode.org/index.html#sec-3.2">development version of
+org-mode from the git repository</a>.</p>
+<p>If some settings and features aren’t working the way you expect, make
+sure that the version of the manual you are consulting matches the
+version of Org-mode you are using.</p>
+<ul>
+<li>You can check which version of Org-mode you are using by
+selection <code>Org --> Documentation --> Show Version</code> in the Emacs
+menu.</li>
+<li>The <a href="https://orgmode.org/manual/index.html">online manual</a> at <a href="https://orgmode.org">orgmode.org</a> corresponds to the most recent
+release.</li>
+<li>The <a href="http://www.gnu.org/software/emacs/manual/html_node/org/index.html">manual</a> at <a href="http://www.gnu.org">www.gnu.org</a> corresponds to the version of Org-mode
+released with the latest official Gnu Emacs release. Compared
+with the manual at the orgmode.org, the manual at www.gnu.org is
+somewhat out of date.</li>
+</ul>
+<p>For instructions on how to stay current with Org-mode, consult <a href="#keeping-current-with-Org-mode-development">this
+FAQ</a> or follow the instructions on <a href="https://orgmode.org">the official Org-mode site</a>.</p>
+<h3 id="use-visibility-cycling-in-emacs-lisp-mode">Can I get the visibility-cycling features in emacs-lisp-mode?</h3>
+<p>Yes.  This snippet in your <code>.emacs</code> will bind <code>C-M-]</code> and <code>M-]</code> to global
+and local cycling:</p>
+<pre><code class="language-emacs-lisp">(global-set-key (kbd "C-M-]") (lambda () (interactive) (org-cycle t)))
+(global-set-key (kbd "M-]") (lambda ()
+                              (interactive)
+                              (ignore-errors
+				(end-of-defun)
+				(beginning-of-defun))
+                              (org-cycle)))
+</code></pre>
+<h3 id="use-visibility-cycling-in-outline-mode">Can I get the visibility-cycling features in outline-mode and outline-minor-mode?</h3>
+<p>Since Emacs 28, you can customize <code>outline-minor-mode-cycle</code> to make <code>TAB</code>
+and <code>S-TAB</code> work in <code>outline-mode</code> and <code>outline-minor-mode</code>.</p>
+<h3 id="saving-visibility-state">Can I save and restore the visibility state of an org-mode buffer?</h3>
+<p>Well, no—at least not automatically. You can, however, control the
+visibility of an org-file or of individual trees by adding
+instructions to your org file. See <a href="https://orgmode.org/manual/Visibility-cycling.html#Visibility-cycling">this section of the manual</a> for more
+information.</p>
+<h3 id="track-of-changes-in-Org-files">How can I keep track of changes in my Org files?</h3>
+<p>Use git to track the history of the files, use a cronjob to check in
+changes regularly.  Such a setup is described by Bernt Hansen in
+<a href="https://list.orgmode.org/87tzilzgkv.fsf@gollum.intra.norang.ca">this message</a>.</p>
+<h3 id="Org-mode-as-default-mode">Can I use Org-mode as the default mode for all README files?</h3>
+<p>Add the following to your .emacs file:</p>
+<pre><code>(add-to-list 'auto-mode-alist '("README$" . org-mode))
+</code></pre>
+<p>You can even make it the default mode for any files with unspecified
+mode using</p>
+<pre><code>(setq default-major-mode 'org-mode)
+</code></pre>
+<h3 id="how-to-organize-org-mode-files">Should I use one big Org file or multiple files?</h3>
+<p>Org-mode is flexible enough to accomodate a variety of organizational
+and time management schemes.  Org’s <a href="https://orgmode.org/manual/Document-structure.html#Document-structure">outline cycling and convenient
+editing and navigation commands</a> make it possible to maintain all of
+your projects and notes in a single file.  But Org-mode’s <a href="https://orgmode.org/manual/Hyperlinks.html#Hyperlinks">quick and
+easy hyperlinks</a>, along with <a href="https://orgmode.org/manual/Refile-and-copy.html#Refile-and-copy">easy refiling of notes and todos</a>, also
+make it a delight to maintain a private “wiki” consisting of multiple
+files.</p>
+<p>No matter how you organize your Org files, Org-mode’s agenda commands
+make it easy to search all your notes and gather together crucial data
+in a single view.</p>
+<p><em>For more in-depth discussion, see <a href="topics/how-many-files.org">How many files?</a>.</em></p>
+<h3 id="setting-global-keybindings">Why doesn’t C-c a call the agenda? Why don’t some org keybindings work?</h3>
+<p>Org-mode has a few global keybindings that the user must set explicitly in
+an <code>.emacs</code> file.  These keybindings include the customary shortcut for
+calling the agenda (<code>C-c a</code>).  If nothing happens when you type <code>C-c a</code>,
+then make sure that the following lines are in your <code>.emacs</code> file:</p>
+<pre><code class="language-emacs-lisp">;; The following lines are always needed.  Choose your own keys.
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cb" 'org-switchb)
+</code></pre>
+<p>You may, of course, choose whatever keybindings work best for you
+and do not conflict with other modes.</p>
+<p>Please see <a href="https://orgmode.org/manual/Activation.html">this section of the manual</a> if you have additional
+questions.</p>
+<h3 id="load-org-after-setting-variables">Why aren’t some of the variables I’ve customized having an effect?</h3>
+<p>Some org variables have to be set before org.el is loaded or else they
+will not work. (An example is the variable
+<code>org-enforce-todo-dependencies</code>.)</p>
+<p>You should also make sure that you do not require any other <code>org-...</code>
+files in your <code>.emacs</code> file before you have set your org variables,
+since these will also cause org.el to be loaded. To be safe, load org
+files <strong>after</strong> you have set your variables.</p>
+<h3 id="timestamps-and-system-time-locale">How can I make sure that timestamps appear in English?</h3>
+<p>If your system’s locale is not set to English, but you would like the
+timestamps in your org-mode files to appear in English, you can set
+the following variable:</p>
+<pre><code class="language-emacs-lisp">(setq system-time-locale "C")
+</code></pre>
+<h3 id="minimal-emacs">What does a minimal Emacs init file look like?</h3>
+<p>Using a stripped down minimal init file eliminates custom settings as
+the potential cause of an issue and makes it easy to reproduce for
+other people.  The example below has system-specific paths that you’ll
+need to change for your own use.</p>
+<pre><code class="language-emacs-lisp">(add-to-list 'load-path (expand-file-name "~/git/org-mode/lisp"))
+(add-to-list 'auto-mode-alist '("\\.\\(org\\  |org_archive\\|txt\\)$" . org-mode))
+(setq org-agenda-files '("/tmp/test.org"))
+(require 'org)
+(require 'org-habit)
+
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cb" 'org-iswitchb)
+</code></pre>
+<p>You can save the minimal init file to <code>~/minimal.emacs</code>, add suspect
+configuration code to it, then start Emacs like this:</p>
+<pre><code class="language-sh">emacs -Q -l ~/minimal.emacs
+</code></pre>
+<p>On OS X, starting Emacs with minimal configuration might look
+something like this:</p>
+<pre><code class="language-sh">/Applications/emacs.app/Contents/MacOS/Emacs -Q -l ~/minimal.emacs
+</code></pre>
+<h3 id="indentation">What is the best setup for indenting?</h3>
+<p>Indentation, both appearance and behavior, is a matter of personal
+preferences.  You may try if the following adjustments suits better
+for you than the defaults.  Set <code>org-adapt-indentation</code> to have
+content aligned to headline titles.  Disable <code>electric-indent-mode</code> to
+avoid automatic indentation in response to <code>RET</code> key.</p>
+<p>In more details, <code>org-adapt-indentation</code> controls indentation with
+regards to previous element.  Apparent effect is increased indentation
+for content of deeper nested headings.  The variable accepts three
+values: <code>nil</code> (no special indentation), <code>t</code> (always indent relatively
+to the element above) and <code>headline-data</code> (only indent the
+<code>PROPERTIES/LOGBOOK</code> drawers relatively to the current level).  Value
+<code>t</code> is suitable for short entries especially if you plan to share your
+documents with someone who does not use Emacs.  If you just want to
+make heading level more prominent then consider adding visual left
+margin using <code>#+STARTUP: indent</code> as described in the <a href="https://orgmode.org/manual/Clean-View.html#Clean-View">Clean View</a>
+section of the manual.  The option works without adding extra spaces
+to the document text.</p>
+<p>Configured indentation may be applied in response to <code>RET</code> or to
+<code>C-j</code> depending on the state of <code>electric-indent-mode</code>.  The following
+tables summarizes the difference.  Version number is added to column
+header if it describes default settings.</p>
+<p>With <code>electric-indent-mode</code> enabled:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>org-adapt-indentation =></th><th>nil (Org >= 9.5)</th><th>t (Org 9.4)</th><th>headline-data</th></tr></thead><tbody><tr><td>RET after a headline</td><td>Do not indent</td><td>Indent</td><td>Do not indent</td></tr><tr><td>C-j after a headline</td><td>Do not indent</td><td>Do not indent</td><td>Do not indent</td></tr><tr><td>RET elsewhere</td><td>Indent wrt previous</td><td>Indent wrt previous</td><td>Indent wrt previous</td></tr><tr><td>C-j elsewhere</td><td>Do not indent wrt prev</td><td>Do not indent wrt previous</td><td>Do not indent wrt previous</td></tr><tr><td>Insert PROPERTIES/LOGBOOK</td><td>Do not indent</td><td>Indent wrt headline</td><td>Indent wrt headline</td></tr></tbody></table>
+<p>With <code>electric-indent-mode</code> disabled:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>org-adapt-indentation =></th><th>nil</th><th>t</th><th>headline-data (Org &#x3C; 9.4)</th></tr></thead><tbody><tr><td>RET after a headline</td><td>Do not indent</td><td>Do not indent</td><td>Do not indent</td></tr><tr><td>C-j after a headline</td><td>Do not indent</td><td>Indent</td><td>Do not indent</td></tr><tr><td>RET elsewhere</td><td>Do not indent</td><td>Do not indent wrt previous</td><td>Do not indent wrt previous</td></tr><tr><td>C-j elsewhere</td><td>Indent wrt previous</td><td>Indent wrt previous</td><td>Indent wrt previous</td></tr><tr><td>Insert PROPERTIES/LOGBOOK</td><td>Do not indent</td><td>Indent wrt headline</td><td>Indent wrt headline</td></tr></tbody></table>
+<p>Do not try to avoid or to ignore indentation of heading body or
+properties drawer determined by current state of
+<code>org-adapt-indentation</code> and <code>electric-indent-mode</code> by pressing <code>C-j</code>
+instead of <code>RET</code> (or vice versa). The result is transient and you will
+lose formatting when you refile heading or change its level (promote
+or demote it).</p>
+<p>You may have noticed recommendation to disable <code>electric-indent-mode</code>
+to restore behavior prior to Org 9.4.  In Org 9.5
+<code>org-adapt-indentation</code> default value changed to <code>nil</code> and, more
+importantly, a number of bugs related to indentation were fixed.
+Using <code>RET</code> with enabled <code>electric-indent-mode</code> should be convenient
+now.  Just customize <code>org-adapt-indentation</code> variable accordingly to
+you preferences.</p>
+<h2 id="Errors">Errors and general problems</h2>
+<h3 id="mixed-install">Is my Orgmode installation mixed?</h3>
+<p>Emacs is distributed with a version of Orgmode bundled with it.  A
+common problem among users who install a <a href="#updating-org">newer version</a> of Orgmode
+separately is a mixed install where Emacs loads some files from the
+bundled and the rest from the latest version.  This can lead to
+<em>unending</em> troubles in the future.  With a recent installation of
+Org mode <code>M-x org-version</code> will indicate if the installation is mixed.</p>
+<p>With somewhat older Org mode installations, the procedure is more
+involved and indeterminate. An easy first step is to look
+at the output of <code>M-x org-version</code>.</p>
+<dl>
+<dt>Good</dt>
+<dd><code>Org-mode version 7.8.11 (release_7.8.11-448-g1737d3 @
+             /path/to/org-mode/lisp/)</code></dd>
+<dt>Bad</dt>
+<dd><code>Org-mode version 6.33x (release_7.8.11.409.ga3778)</code></dd>
+</dl>
+<p>A second step is to go through the output of <code>list-load-path-shadows</code>
+line-by-line to get hints to what in your configuration is causing
+the issue.  Among the most common reasons is Orgmode gets loaded
+before the <code>load-path</code> variable is updated to include the
+installation directory of the latest Orgmode.  To avoid issues like
+this, it is recommended that the load path is updated very early on
+in your init file.</p>
+<p><em>Note:</em> The formatting of the version information, as shown in the
+examples above, will be different for older Org mode releases,
+e.g. <code>Org-mode version 7.8.02</code>.</p>
+<h3 id="external-application-launched-to-open-file-link">How can I control the application launched by Org-mode to open a certain file type like pdf, html…?</h3>
+<p>If you want special control about how Org-mode opens files, see
+<code>org-file-apps</code> variable.</p>
+<p><strong>However</strong>, normally it is best to just use the mechanism the
+operating-system provides:</p>
+<dl>
+<dt>GNU/Linux systems</dt>
+<dd>You you have to check your mailcap settings, find the files
+<code>/etc/mailcap</code> or <code>$HOME/.mailcap</code> and modify them accordingly. Please
+read their manual entry <code>man mailcap</code>.</dd>
+<dt>Windows systems</dt>
+<dd>
+<ol>
+<li>for html pages you may configure the <code>browse-url-</code> variables
+through the Customize interface,</li>
+<li>the pdf files are automatically opened with Acrobat Reader (if it
+is installed)</li>
+</ol>
+</dd>
+<dt>Mac OSX</dt>
+<dd>Change the application responsible for this file type by selecting
+such a file in the Finder, select <code>File->Get Info</code> from the menu and
+select the application to open this file with.  Then, to propagate
+the change to all files with the same extension, select the <code>Change
+  all</code> button.</dd>
+</dl>
+<h3 id="YASnippet">Org-mode takes over the TAB key.  I also want to use YASnippet, is there a way to fix this conflict?</h3>
+<p><a href="https://github.com/joaotavora/yasnippet">yasnippet</a> is yet another snippet expansion system for Emacs.  It is
+inspired by TextMate’s templating syntax.</p>
+<ul>
+<li>watch the <a href="https://www.youtube.com/watch?v=vOj7btx3ATg">video on YouTube</a></li>
+<li>see the <a href="https://joaotavora.github.io/yasnippet/">intro and tutorial</a></li>
+</ul>
+<p><strong>Note</strong>: yasnippet is not compatible with <code>org-indent-mode</code> currently
+there is no known way to use both successfully with <code>yas/trigger-key</code>
+set to <code>TAB</code> (or <code>[tab]</code> etc…)</p>
+<p>The way Org-mode binds the <code>TAB</code> key (binding to <code>[tab]</code> instead of
+<code>\t</code>) overrules yasnippets’ access to this key.  The following code
+fixes this problem:</p>
+<pre><code class="language-emacs-lisp">(add-hook 'org-mode-hook
+	  (lambda ()
+	    (org-set-local 'yas/trigger-key [tab])
+	    (define-key yas/keymap [tab] 'yas/next-field-group)))
+</code></pre>
+<p>If the above code doesn’t work (which it may not with later versions
+of yasnippet).  Then try the following</p>
+<pre><code class="language-emacs-lisp">(defun yas/org-very-safe-expand ()
+  (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            ;; yasnippet (using the new org-cycle hooks)
+            (make-variable-buffer-local 'yas/trigger-key)
+            (setq yas/trigger-key [tab])
+            (add-to-list 'org-tab-first-hook 'yas/org-very-safe-expand)
+            (define-key yas/keymap [tab] 'yas/next-field)))
+</code></pre>
+<p>Rick Moynihan maintains a <a href="http://github.com/RickMoynihan/yasnippet-org-mode">git repository</a> (or <a href="http://github.com/eschulte/yasnippet-org-mode">Eric’s fork of the same</a>)
+with YASnippets for Org-mode.</p>
+<h3 id="CUA-mode">Org-mode takes over the S-cursor keys.  I also want to use CUA-mode, is there a way to fix this conflict?</h3>
+<p>Yes, see the  <a href="https://orgmode.org/manual/Conflicts.html#Conflicts">Conflicts</a> section of the manual.</p>
+<h3 id="windmove.el">Org-mode takes over the S-cursor keys.  I also want to use windmove.el, is there a way to fix this conflict?</h3>
+<p>Yes, see the <a href="https://orgmode.org/manual/Conflicts.html#Conflicts">Conflicts</a> section of the manual.</p>
+<h3 id="loaded-old-org">Org behaves strangely: some keys don’t work, some features are missing, my settings have no effect, …</h3>
+<p>When this sort of things happen, it probably is because Emacs is
+loading an old version of Org-mode instead of the one you expected.
+Check it with <code>M-x org-version</code>.</p>
+<p>This happens because Emacs loads first the system org-mode (the one
+included with Emacs) before the one in your directory. Check the
+<code>load-path</code> variable; you might see that your org-mode appears <em>after</em>
+the system-wide path; this is bad.</p>
+<p>You should add your directories to the <code>load-path</code> at the beginning:</p>
+<pre><code> (add-to-list 'load-path "~/.emacs.d/org-mode/lisp")
+</code></pre>
+<p>Function <code>add-to-list</code> adds at the beginning. Don’t use <code>append</code> because
+it appends at the end.</p>
+<p>This wrong version loading may also happen if you have a byte-compiled
+<code>org.elc</code> from an old version together with a new <code>org.el</code>. Since
+Emacs prefers loading byte-compiled files (even if the <code>.el</code> is
+newer), it will load the old Org-mode.</p>
+<h3 id="org-batch-agenda-under-win32">Why doesn’t org-batch-agenda work under Win32?</h3>
+<p>When I run the example batch files to print my agenda to the console
+under Win32 I get the failure:</p>
+<pre><code>End of file during parsing
+</code></pre>
+<p>and no agenda is printed.</p>
+<p>The problem is the use of single quotes surrounding the eval in the
+emacs command-line. This gets confused under Win32. All string
+parameters with spaces must be surrounded in double quotes. This means
+that double quotes being passed to the eval must be escaped.</p>
+<p>Therefore, instead of the following:</p>
+<pre><code>&#x3C;path to emacs>\emacs.exe -batch -l ~/_emacs_org \
+    -eval '(org-batch-agenda "a")'
+</code></pre>
+<p>you need to use the following:</p>
+<pre><code> &#x3C;path to emacs>\emacs.exe -batch -l ~/_emacs_org \
+    -eval "(org-batch-agenda \"a\")"
+</code></pre>
+<p>(all on one line, of course).</p>
+<h3 id="slow-agenda">Org agenda seems very slow</h3>
+<p>If it takes a long time to generate or refresh the agenda, first make
+sure you are running a recent version of org-mode (you can check with
+<code>M-x org-version</code>).  Here are some other ideas for speeding up the
+agenda:</p>
+<ol>
+<li>
+<p>Use a one day agenda view (rather than a seven day view).</p>
+<p><code>(setq org-agenda-ndays 1)</code></p>
+</li>
+<li>
+<p>Archive inactive items to separate files.</p>
+<p><code>C-c C-x C-s</code> (org-archive-subtree)</p>
+</li>
+<li>
+<p>Make sure that your org files are byte-compiled.</p>
+<p>I.e., make sure there are files ending in <code>.elc</code> in your org
+installation directory.</p>
+</li>
+<li>
+<p>Limit your agenda files (<code>org-agenda-files</code>) to files that have
+active todos and or projects.</p>
+<p>If you have a number of older reference files—i.e., files you
+search only occasionally—in your agenda files list, consider
+removing them from your agenda files and adding them to
+<code>org-agenda-text-search-extra-files</code> instead. Similarly, you might
+consider searching some of your older reference files with <code>M-x
+   grep</code> so that Org-mode does not have to load them into memory when
+the agenda is called.</p>
+</li>
+</ol>
+<h3 id="hide-blocks-at-startup">Can I hide blocks at startup?</h3>
+<p>Yes:</p>
+<pre><code class="language-emacs-lisp">(setq org-hide-block-startup t)
+</code></pre>
+<p>Or use</p>
+<pre><code class="language-org">#+STARTUP: hideblocks
+</code></pre>
+<p>on a per-file basis.</p>
+<h3 id="invalid-function-error">After updating Org I get an error about an <code>invalid function</code></h3>
+<p>In almost all cases an <code>invalid function</code> error is caused by an
+unclean Org-mode source directory. Cleaning it up and recompiling
+should fix the problem</p>
+<pre><code>cd /path/to/orgmode
+make clean
+make
+</code></pre>
+<p>In some cases, bits and pieces of org are loaded from various places (previous
+installs, the built-in install of org that came with whatever emacs version you have)
+and things get very confused. In all cases, cleaning up every last bit of org installation
+from everywhere and reinstalling org from git should restore sanity. See also the <a href="id:facac2a6-3526-450d-ac42-8d36b16c6bab">next question</a>.</p>
+<h3 id="starter-kit-error">I use starter-kit and I get an error <code>(void-function org-pop-to-buffer-same-window)</code></h3>
+<p>This is a particular instance of the <a href="#invalid-function-error">previous question</a> but with some twists and turns,
+and a solution culled from various postings on the mailing list.</p>
+<p>starter-kit loads the site-file version of org (the one that came with
+your emacs install).  Then when you load your init file, the local
+version is added to the front of load-path, so it looks as if things
+are originating there, but the damage is already done: you have a
+“frankenstein” org.</p>
+<p>One possible solution is to add (package-initialize) to the primary init.el
+before starter-kit gets going. This will pick up the local install so
+that the built-in version never enters to muddy the picture.</p>
+<h3 id="filling-indenting-problems">(Filling a paragraph|Indenting a list|…) behaves strangely</h3>
+<p>Many filling/indenting problems have been reported on the mailing
+list: many of those were bugs (that have been fixed), but quite a lot
+are caused by people using the filladapt package, which is fundamentally
+incompatible with Org, which has its own facilities for these tasks. If you see
+strange behavior in this area, first check if you are using filladapt: visit an org
+file and check the modeline for “Filladapt”.</p>
+<p>If filladapt is on, you want to turn it off before investigating
+further. Anthony Lander suggested on the mailing list the following
+method to turn off filladapt mode when you visit org files:</p>
+<pre><code class="language-emacs-lisp">(add-hook 'org-mode-hook 'turn-off-filladapt-mode)
+</code></pre>
+<p>This should be placed in your .emacs (or other initialization file) after org
+is loaded.</p>
+<h2 id="Faces">Faces and highlighting</h2>
+<h3 id="customizing-org-faces">Org-mode has a lot of colors?  How can I change them?</h3>
+<p>This is a question that applies to Emacs as a whole, but it comes up
+quite frequently on the org-mode mailing list, so it is appropriate to
+discuss it here.</p>
+<p>If you would like to change the style of a face in org-mode (or any
+other Emacs mode), simply type <code>M-x customize-face [RET]</code> while the
+cursor is on the color/style you are interested in modifying. You will
+be given the opportunity to customize all the faces located at that
+point.</p>
+<p>If you would like an overview of all the faces in org-mode, you can
+type <code>C-u M-x list-faces-display [RET] org</code> and you will be shown all
+the faces defined by org-mode along with an illustration of their
+current settings.</p>
+<p>If you would like to customize org-faces and other aspects of
+org-appearance, type <code>M-x customize-group org-font-lock [RET]</code>.</p>
+<p>Finally, if you would like verbose information about the properties of
+the text under the cursor, you can type <code>C-u C-x =</code>.</p>
+<p>See the Worg page on <a href="org-tutorials/org-appearance.org">customizing Org appearance</a> for further information.</p>
+<h3 id="column-view-tiny-font">Why do I get a tiny font in column view when using emacs daemon?</h3>
+<p>When using emacs in daemon mode (<code>emacs --daemon</code>), client frames
+sometimes override the column view face settings, resulting in very
+small fonts. Here is a fix:</p>
+<pre><code class="language-emacs-lisp">(defun org-column-view-uses-fixed-width-face ()
+;; copy from org-faces.el
+(when (fboundp 'set-face-attribute)
+    ;; Make sure that a fixed-width face is used when we have a column
+    ;; table.
+    (set-face-attribute 'org-column nil
+                        :height (face-attribute 'default :height)
+                        :family (face-attribute 'default :family))))
+
+ (when (and (fboundp 'daemonp) (daemonp))
+  (add-hook 'org-mode-hook 'org-column-view-uses-fixed-width-face))
+</code></pre>
+<p>This fix was provided in the following mailing list post:</p>
+<p><a href="https://list.orgmode.org/loom.20100715T095418-84@post.gmane.org">https://list.orgmode.org/loom.20100715T095418-84@post.gmane.org</a></p>
+<h3 id="ratpoison-for-agenda-highlighting">How can I stop the mouse cursor from highlighting lines in the agenda?</h3>
+<p>You can add the following to your <code>.emacs</code>:</p>
+<pre><code class="language-emacs-lisp">(add-hook 'org-finalize-agenda-hook
+    (lambda () (remove-text-properties
+	       (point-min) (point-max) '(mouse-face t))))
+</code></pre>
+<h2 id="Outline">Outline</h2>
+<h3 id="closing-outline-sections">Can I close an outline section without starting a new section?</h3>
+<p>Can I have nested, closed outline sections, similar to xml? This
+question comes up quite frequently on the mailing list.</p>
+<p>See the following threads:</p>
+<ul>
+<li><a href="https://list.orgmode.org/20110327170251.58923564@hsdev.com">https://list.orgmode.org/20110327170251.58923564@hsdev.com</a></li>
+<li><a href="https://list.orgmode.org/AANLkTinaTdYWQTXLzCf2kJVOMv64OM_5tL_0JCYAssPr@mail.gmail.com">https://list.orgmode.org/AANLkTinaTdYWQTXLzCf2kJVOMv64OM_5tL_0JCYAssPr@mail.gmail.com</a></li>
+<li><a href="https://list.orgmode.org/q2sc8f5e1e41004151315v433bc7b7udb98e65771a15340@mail.gmail.com">https://list.orgmode.org/q2sc8f5e1e41004151315v433bc7b7udb98e65771a15340@mail.gmail.com</a></li>
+<li><a href="https://list.orgmode.org/49CE32EC.5060508@gmx.de">https://list.orgmode.org/49CE32EC.5060508@gmx.de</a></li>
+</ul>
+<p>The desired behavior looks something like this:</p>
+<pre><code class="language-org">* Section one
+
+Some text
+
+** Subsection one
+
+Some text
+
+** Subsection two
+
+Some text
+
+,# end Subsection Two
+
+Continue text in section one.
+</code></pre>
+<p>The short answer to the question is no. Org-mode adheres to the
+cascading logic of outlines, in which a section is closed only by
+another section that occupies an equal or greater level.</p>
+<p>Here are some workarounds:</p>
+<ol>
+<li>You can use inline tasks to create non-folding subsections. See the
+documentation in org-inlinetask.el, which is part of the org-mode
+distribution.</li>
+<li>You can create a temporary heading, such as ”** Continue main
+section” and then remove it when you are ready to export.</li>
+<li>You can create a separate outline heading (e.g., * ACTIONS),
+creating TODOs there with links to the relevant sections of your
+main text.</li>
+</ol>
+<h3 id="list-item-as-todo">Can I add a TODO to a list item?</h3>
+<p>No.  When generating agenda views, org-mode treats only headlines as TODO
+items.</p>
+<p>You can, however, use a status cookie together with checkboxes to
+monitor your progress on a series of subtasks:</p>
+<pre><code class="language-org">** TODO Big task [1/3]
+
+   - [X] Subtask 1
+   - [ ] Subtask 2
+   - [ ] Subtask 3
+</code></pre>
+<p>If you would like to embed a TODO within text without treating it as
+an outline heading, you can use inline tasks. Simply add…</p>
+<pre><code>(require 'org-inlinetask)
+</code></pre>
+<p>…to your <code>.emacs</code> and then type <code>C-c C-x t</code> to insert an inline task.</p>
+<h3 id="indirect-buffers">Can I have two windows on the same Org-mode file, with different outline visibilities?</h3>
+<p>You may use <em>indirect buffers</em> which do exactly this.  See the
+documentation on the command <code>make-indirect-buffer</code>.</p>
+<p>Org-mode has built-in commands that allow you create an indirect
+buffer from a subtree of an outline. To open a subtree in new
+window, type <code>C-c C-x b</code>. Any changes you make in the new window
+will be saved to the original file, but the visibility of both
+buffers will remain independent of one another.</p>
+<p>For multiple indirect buffers from the same file, you must use the
+prefix <code>C-u</code> when creating the second (or third) buffer. Otherwise
+the new indirect buffer will replace the old.</p>
+<p>You can also create an independent view of an outline subtree by
+typing <code>b</code> on an item in the agenda.</p>
+<h3 id="Emacs-outlines-are-unreadable">Emacs outlines are unreadable.  Can I get rid of all those stars?</h3>
+<p>See the section <a href="https://orgmode.org/manual/Clean-view.html#Clean-view">Clean outline view</a> in the manual.</p>
+<h3 id="C-k-is-killing-subtrees">C-k is killing whole subtrees!  I lost my work!</h3>
+<p><code>(setq org-ctrl-k-protect-subtree t)</code> before losing your work.</p>
+<p><code>(setq org-catch-invisible-edits 'show)</code> will also be helpful.  See the
+docstring of this option, as it allows more flexible options.</p>
+<h3 id="blank-line-after-headlines-and-list-items">Why is a blank line inserted after headlines and list items?</h3>
+<p>In org-mode, typing <code>M-RET</code> at the end of a headline will create a new
+headline of the same level on a new line. The same is true for plain
+lists. By default org-mode uses context to determine if a blank line should
+be inserted after each headline or plain list item when <code>M-RET</code> is
+pressed. For instance, if a there is a blank line before a headline, then
+typing <code>M-RET</code> at the end of the line will insert a blank line before the
+new headline. For instance, hitting <code>M-RET</code> at the end of “Headline Two”
+below inserts a new headline without a blank line:</p>
+<pre><code>** Headline One
+** Headline Two
+**
+</code></pre>
+<p>If there is a blank line between Headline One and Headline Two,
+however, the results will be as follows:</p>
+<pre><code>** Headline One
+
+** Headline Two
+
+**
+</code></pre>
+<p>If you do not like the default behavior you can change it with the
+variable <code>org-blank-before-new-entry</code>. You can set headings and/or
+plain lists to auto (the default setting), t (always), or nil (never).</p>
+<h3 id="demote-multiple-headlines">How can I promote or demote multiple headlines at once?</h3>
+<p>If you have a long list of first level headlines that you’d like to
+demote to second level headlines, you can select the headlines as a
+region and then hit <code>M-&#x3C;right></code> to demote all the headlines at once.</p>
+<p>Note: <code>M-S-&#x3C;right></code> will not work on a selected region. Its use is to
+demote a single subtree (i.e., a headline and all sub-headlines).</p>
+<h3 id="org-ellipses">What’s the deal with all the ellipses in my org outlines?</h3>
+<p>Org-mode uses ellipses to indicate folded (and thus hidden) text. Most
+commonly, ellispes occur at the end of headings with folded content:</p>
+<pre><code>* Heading ...
+</code></pre>
+<p>Or, for instance, they may indicate closed drawers:</p>
+<pre><code>:PROPERTIES: ...
+</code></pre>
+<p>Sometimes, as a result of editing and cycling an outline, ellipses may
+appear in unexpected places. You should <strong>never</strong> delete these ellipses,
+as you may accidentally delete hidden text. Instead, you can type <code>C-c
+C-r</code> (org-reveal) to display all hidden text in the vicinity. Or you
+may type <code>M-x RET show-all</code> to reveal all text in the org file.</p>
+<p>If you would prefer a symbol or face for indicating hidden text, you
+can customize the variable org-ellipses.</p>
+<h3 id="yank-indent-subtree">How do I yank a subtree so it’s indented according to the point’s location?</h3>
+<p>You can either use <code>C-c C-w</code> with a working <a href="https://orgmode.org/manual/Refile-and-copy.html#Refile-and-copy">refile-targets</a> setup.</p>
+<p>Or set <code>org-yank-adjusted-subtrees</code> to <code>t</code> which will adjust the
+yanked headline’s level correctly.</p>
+<p>Just use <code>C-k</code> and <code>C-y</code> as you would everywhere else in Emacs.</p>
+<h3 id="org-outlines-in-vim">Can I read org-mode outlines in vim?</h3>
+<p>Yes, there is a script that enables one to view and navigate folded
+outline/org files in vim (though without most of org-mode’s
+functionality, of course).</p>
+<ul>
+<li><a href="http://www.vim.org/scripts/script.php?script_id%3D1266">Emacs outline mode - Imitates Emacsen : vim online</a></li>
+</ul>
+<p>For instructions on how to set it up, please see <a href="http://list.orgmode.org/EA275862-B97A-4BAC-B879-177FD07A2D56@gaillourdet.net">this mailing list post</a>.</p>
+<p>Work is also underway on an org-mode clone for Vim. You can check it
+out on git hub:</p>
+<p><a href="https://github.com/hsitz/VimOrganizer">https://github.com/hsitz/VimOrganizer</a></p>
+<h3 id="character-to-start-headline">Can I use another character than ”*” to start a headline?</h3>
+<p>No.  The ”*” character is used in <code>outline-mode</code>, and Org is derived from
+<code>outline-mode</code>.</p>
+<p>If you are curious as to what other rationales there are for ”*”, check out
+<a href="https://list.orgmode.org/8739i7ke8i.fsf@gmail.com">this</a> mail and the thread it is in.</p>
+<p>Even if you cannot use another character, you can add an overlay on top of
+the ”*” characters and your buffer will look like the way you want.</p>
+<p>See the library <code>org-bullets.el</code> (by Evgeni Sabof) from the <code>contrib/</code>
+directory, or test this snippet shared by Jambunathan:</p>
+<pre><code class="language-emacs-lisp">(font-lock-add-keywords
+ 'org-mode `(("\\(?:^\\(?1:\\*+\\)[[:blank:]]\\)"
+              (0 (progn (compose-region
+                         (match-beginning 1) (match-end 1)
+                         (pcase (length (match-string 1))
+                           (1 ?\u2219)
+                           (2 ?\u2022)
+                           (3 ?\u25c9)
+                           (_ ?\u25CB)))
+                        nil)))))
+</code></pre>
+<h3 id="headline-inside-src-block">Why does ”*” inside source blocks create a new heading?</h3>
+<p>This is by design in Org markup.
+Headings are context-free and anything that looks like</p>
+<pre><code>* Heading
+</code></pre>
+<p><strong>always</strong> creates a heading.</p>
+<p>We could do it differently, but that would have other downsides like
+when one accidentally writes</p>
+<pre><code>#+begin_src
+foo bar
+&#x3C;not closed>
+
+* heading
+
+&#x3C;lots of text>
+
+#+begin_src
+
+#+end_src
+</code></pre>
+<p>Everything between the first <code>begin_src</code> and the last <code>#+end_src</code> would then
+be slurped into a source block.</p>
+<p>Org mode design prioritized headings.
+Alas, there is no silver bullet to avoid edge cases.</p>
+<p>To include <code>*</code> inside src blocks, use <code>,</code> as escape symbol. See
+<a href="https://orgmode.org/manual/Literal-Examples.html">https://orgmode.org/manual/Literal-Examples.html</a></p>
+<h2 id="Todos-and-Tags">Todos and Tags</h2>
+<h3 id="archive-canceled-tasks">How can I automatically archive canceled tasks?</h3>
+<pre><code class="language-emacs-lisp">(setq org-todo-state-tags-triggers '(("CANCELLED" ("ARCHIVE" . t))))
+</code></pre>
+<p>See <a href="https://list.orgmode.org/2013-01-18T11-28-57@devnull.Karl-Voit.at">https://list.orgmode.org/2013-01-18T11-28-57@devnull.Karl-Voit.at</a> – thanks to Victor
+Rosenfeld for sharing <a href="http://doc.norang.ca/org-mode.html">Bernt Hansen</a>’s solution.</p>
+<h3 id="cycle-TODO-keywords">How can I cycle through the TODO keyword of an entry?</h3>
+<p><code>C-c C-t</code> or <code>S-&#x3C;left/right></code> is what you need.</p>
+<h3 id="track-state-changes-for-tasks">How do I track state changes for tasks in Org?</h3>
+<p>Take a look at the <a href="https://list.orgmode.org/8763vfa9hl.fsf@legolas.norang.ca">post by Bernt Hansen</a> for setting up TODO keyword
+states and logging timestamps for task state changes.</p>
+<h3 id="select-TODO-keywords-with-tag-like-interface">Can I select the TODO keywords with a tag-like interface?</h3>
+<p>Yes.  Use <code>(setq org-use-fast-todo-selection t)</code></p>
+<p>If you want to set both your todos and your tags using a single
+interface, then check out the variable
+<code>org-fast-tag-selection-include-todo</code>.</p>
+<p>See <a href="https://orgmode.org/manual/Fast-access-to-TODO-states.html">this section of the manual</a> for more details.</p>
+<h3 id="quickly-set-tag-of-entry">How can I quickly set the tag of an entry?</h3>
+<p>Use <code>C-c C-c</code> or <code>C-c C-q</code> on the headline. <code>C-c C-q</code> is useful for
+setting tabs in a <code>Remember</code> buffer, since <code>C-c C-c</code> is the default
+keybinding for filing a note from the remember buffer.</p>
+<p>You can set tags even more quickly by setting one of the character
+shortcuts for <a href="https://orgmode.org/manual/Setting-tags.html#Setting-tags">fast tag selection</a>.</p>
+<p>To set tag shortcuts for all org buffers, put something like the
+following in your <code>.emacs</code> file (or create the same settings by
+typing <code>M-x customize-variable RET org-tag-alist</code>):</p>
+<pre><code>(setq org-tag-alist '(("computer" . ?c) ("office" . ?o) ("home" . ?h)))
+</code></pre>
+<p>To set tag shortcuts for a single buffer, put something like the
+following at the top of your org file:</p>
+<pre><code>#+TAGS: computer(c) office(o) home(h)
+</code></pre>
+<h3 id="change-keyword-colors">How can I change the colors of TODO keywords?</h3>
+<p>You can use the variable <code>org-todo-keyword-faces</code>.  Here are some sample
+settings:</p>
+<pre><code class="language-emacs-lisp">(setq org-todo-keyword-faces
+      '(
+	("TODO"  . (:foreground "firebrick2" :weight bold))
+	("WAITING"  . (:foreground "olivedrab" :weight bold))
+	("LATER"  . (:foreground "sienna" :weight bold))
+	("PROJECT"  . (:foreground "steelblue" :weight bold))
+	("DONE"  . (:foreground "forestgreen" :weight bold))
+	("MAYBE"  . (:foreground "dimgrey" :weight bold))
+	("CANCELED"  . shadow)
+	))
+</code></pre>
+<p>If you want to change the color of all active todos or all inactive todos,
+type:</p>
+<pre><code>M-x customize-face RET org-todo
+M-x customize-face RET org-done
+</code></pre>
+<p>You can also set values for each of these in your <code>.emacs</code> file:</p>
+<pre><code>(set-face-foreground 'org-todo "firebrick2")
+(set-face-foreground 'org-done "forestgreen")
+</code></pre>
+<h3 id="todo-keyword-characters">Can I use a arbitrary character in a TODO keyword?</h3>
+<p>Yes, provided you add it to the “word” syntax in Emacs.</p>
+<p>For example, to add the <code>\u25b6</code> and the <code>\u25b8</code> chars, just add this to
+your Emacs configuration:</p>
+<pre><code class="language-emacs-lisp">(add-hook 'org-mode-hook
+   (lambda ()
+     (modify-syntax-entry (string-to-char "\u25b6") "w")
+     (modify-syntax-entry (string-to-char "\u25b8") "w")))
+</code></pre>
+<h3 id="mark-done-when-all-checked">How do I arrange for an item to be automatically marked DONE when all checkboxes are checked?</h3>
+<p>This has arisen a couple of time
+(e.g. <a href="https://list.orgmode.org/87r5718ytv.fsf@sputnik.localhost">https://list.orgmode.org/87r5718ytv.fsf@sputnik.localhost</a> and
+<a href="https://list.orgmode.org/m2d3efqkl0.fsf@pluto.luannocracy.com">https://list.orgmode.org/m2d3efqkl0.fsf@pluto.luannocracy.com</a> in the mailing list.</p>
+<p>There is an <a href="https://orgmode.org/worg/org-hacks.html#mark-done-when-all-checkboxes-checked">org-hack</a> that describes a possible solution.</p>
+<h2 id="Hyperlinks">Hyperlinks</h2>
+<h3 id="confirm-shell/elisp-link">Why do I have to confirm the execution of each shell/elisp link?</h3>
+<p>The confirmation is there to protect you from unwantingly execute
+potentially dangerous commands.  For example, imagine a link</p>
+<pre><code>[[shell:rm -rf ~/*][Google Search]]
+</code></pre>
+<p>In an Org-mode buffer, this command would look like <em>Google Search</em>,
+but really it would remove your home directory.  If you wish, you can
+make it easier to respond to the query by setting</p>
+<pre><code>(setq org-confirm-shell-link-function 'y-or-n-p
+      org-confirm-elisp-link-function 'y-or-n-p).
+</code></pre>
+<p>Then a single keypress will be enough to confirm those links.  It is
+also possible to turn off this check entirely, but I strongly
+recommend against this.  Be warned.</p>
+<h3 id="RET-or-TAB-to-follow-link">Can I use RET or TAB to follow a link?</h3>
+<p>Yes, this is how:</p>
+<pre><code>(setq org-return-follows-link t)
+(setq org-tab-follows-link t)
+</code></pre>
+<h3 id="mouse-1-following-link">Can I keep mouse-1 clicks from following a link?</h3>
+<p>Activating links with <code>mouse-1</code>, to make link behavior similar to
+other applications like web browsers, is the default.  If you hold
+the mouse button down a bit longer, the cursor will be set without
+following the link.  If you cannot get used to this behavior, you
+can use <code>mouse-2</code> to follow links and turn off link activation for
+<code>mouse-1</code> with</p>
+<pre><code>(setq org-mouse-1-follows-link nil)
+</code></pre>
+<h3 id="completion-of-file-links">How can I get completion of file names when creating a link?</h3>
+<p>You can use org-insert-link with a prefix argument:</p>
+<pre><code>C-u C-c C-l
+</code></pre>
+<p>You will be greeted with prompt in the minibuffer that allows for file
+completion using your preferred Emacs method for finding files.</p>
+<h3 id="mailto-links">Org-mode is not opening mailto links in my default mail client</h3>
+<p>Org calls the <code>browse-url</code> function for <code>mailto:</code> links, so it should obey
+your Emacs configuration.  If something goes wrong then
+<a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/Browse_002dURL.html">info “(emacs) Browse-URL”</a>
+may be a good starting point.</p>
+<p>By default mail is composed in an Emacs buffer.  If you prefer some
+external application instead then set <code>browse-url-mailto-function</code> to
+<code>nil</code>, e.g. using
+<code>M-x customize-variable RET browse-url-mailto-function RET</code>
+and <code>mailto:</code> links will be opened according to the value of
+<code>browse-url-browser-function</code>.</p>
+<p>If you wish to compose messages in Emacs then consult
+.  Check that <code>browse-url-mailto-function</code>
+has its default value <code>browse-url-mail</code>.  Emacs has several mail
+packages and the active one is determined by the <code>mail-user-agent</code> variable,
+so the next step may be to configure it to, e.g., <code>gnus-user-agent</code> using
+<code>M-x customize-variable RET mail-user-agent RET</code>.</p>
+<p>If you prefer an external application that is <em>not</em> the one configured
+in your desktop environment, then you should write a custom URL
+handler function.  Be careful, try to avoid using the shell
+(e.g. <code>shell-command</code> function) since it is easy to mess up the
+escaping of the URL argument and allow execution of arbitrary code:
+some parts of links may be treated as shell specials.  Choosing a
+proper function to invoke an external application is a non-trivial
+task even for seasoned Emacs developers.  When possible use an option
+like double dash <code>--</code> before URLs that forces interpreting following
+as arguments even when a string resembles some option due to a leading
+dash.  For examples, consult the source code of <code>browse-url-xdg-open</code>,
+<code>browse-url-default-macosx-browser</code>, or
+<code>browse-url-default-windows-browser</code> for GNU/Linux,
+Mac OS X, or MS Windows platforms accordingly.</p>
+<p>When you are ready with a function launching your preferred handler
+for <code>mailto:</code> links, you should add it to <code>browse-url-handlers</code>
+associations list for Emacs-28.1 and newer or to
+<code>browse-url-browser-function</code> for earlier versions by customizing the
+suitable variable.</p>
+<p>If you are going to change handler just in Org mode in a way that does
+not affect rest of Emacs than you can adjust <code>:follow</code> handler for
+mailto links, see  for details.
+E.g. for Mac OS X add the following snippet to your
+(on Linux to avoid silent failures add
+<code>(process-connection-type nil)</code> to <code>let</code> variables or use
+<code>call-process</code> with <code>0</code> as the <code>DESTINATION</code> argument instead):</p>
+<pre><code class="language-elisp">(with-eval-after-load 'ol
+  (org-link-set-parameters
+   "mailto"
+   :follow (lambda (path)
+	     (let ((url (concat "mailto:" path)))
+	       ;; platform-specific choice of function
+	       (start-process (concat "open " url) nil
+			      "open" "-a" "Thunderbird" "--args" url)))))
+</code></pre>
+<p>In earlier versions Org had <code>org-link-mailto-program</code> variable, but it
+was removed, so its customization does not work any more.  Update your
+init file if you noticed this variable.</p>
+<h3 id="CamelCase-links">Can I use CamelCase links?</h3>
+<p>Yes, you can with the contributed package <code>org-wikinodes.el</code>.  Please
+consult the <a href="https://orgmode.org/worg/org-contrib/org-wikinodes.html">documentation</a>.</p>
+<h3 id="mid-url-handler">Can I create links to Thunderbirds emails?</h3>
+<p>Thunderbird-91 and later versions support <code>mid:</code> URI scheme proposed
+many years ago in
+<a href="https://www.rfc-editor.org/rfc/rfc2392.html">RFC 2392 - Content-ID and Message-ID Uniform Resource Locators</a>.
+To create a link you need to copy the value of the Message-ID header.
+It requires installing some add-on, see <code>cb_thunderlink</code> example below.
+Alternatively enable “Show all headers” in the customize dialog
+for the headers pane.  To access it, click the “More”
+(“v” down arrow head) button in the headers pane toolbar.
+Sometimes it may be not so easy to spot “Message-ID” while scrolling
+long list of headers.
+As the last resort you may obtain the identifier by opening message source
+(<code>Ctrl+U</code>).  You may use search (<code>/</code> or <code>Ctrl+F</code>) in the source window.
+Message-ID resembles email address but has a unique
+string in the local (user) part.  Remove angle brackets and prepend
+the inner part with <code>mid:</code> to create a link.  A command to open the
+referenced message would look like (do not forget to quote or to escape
+shell specials)</p>
+<pre><code>thunderbird 'mid:ka42mn$mn9$1@ger.gmane.org'
+</code></pre>
+<p>Your need to define “mid” link type in your Emacs init file:</p>
+<pre><code class="language-emacs-lisp">(with-eval-after-load 'ol
+  (org-link-set-parameters
+   "mid"
+   :follow (lambda (url &#x26;optional arg)
+	     (browse-url (concat "mid:" url) arg))))
+</code></pre>
+<p>Depending on your GNU/Linux distribution, <code>thuderbird.desktop</code> file
+may be shipped without mentioning the “mid” scheme in the list of
+supported MIME types.  As a workaround add the following lines
+(configuration sections may already exist) to
+<code>~/.config/mimeapps.list</code> or an equivalent global file:</p>
+<pre><code>[Added Associations]
+x-scheme-handler/mid=thunderbird.desktop;
+
+[Default Applications]
+x-scheme-handler/mid=thunderbird.desktop;
+</code></pre>
+<p>On Windows ensure that Thunderbird is installed as default handler
+for URL protocols related to mail (see “Settings” in Thunderbird menu).
+This approach allows to have
+uniform handler withing Emacs, including
+<a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/Goto-Address-mode.html"><code>goto-address-mode</code></a>.</p>
+<p>Instead of calling <code>browse-url</code> and setting up the scheme handler
+you may launch thunderbird directly.  It is a bit tricky in Emacs,
+see suggestions for configuring of the <a href="#mailto-links">mailto: link handler</a>.</p>
+<p>There is another way to open a particular message, but it is less
+convenient since moving the message to another folder invalidates
+the link:</p>
+<pre><code>thunderbird -mail 'imap-message://USER_NAME%40gmail.com@imap.googlemail.com/INBOX?messageId=ka42mn$mn9$1@ger.gmane.org'
+</code></pre>
+<p>There is
+<a href="https://addons.thunderbird.net/thunderbird/addon/cb_thunderlink/"><code>cb_thunderlink</code> Thunderbird add-on</a>
+that allows to generate links accordingly to configurable template, e.g.</p>
+<pre><code>[[mid:$msgid$][$author_name$: $subject$ ($date_iso$)]]
+</code></pre>
+<p>See the
+<a href="https://list.orgmode.org/63d01412.050a0220.9611.9c4d@mx.google.com/">discussion</a>
+on the emacs-orgmode mailing list.
+Additionally the extension may open messages using <code>thunderlink:</code>
+and <code>cbthunderlink:</code> protocols however it requires installing
+of a helper application.  These URI schemes may be registered in Org
+just as it is suggested for <code>mid:</code> links above.</p>
+<p>The ThunderLink add-on recommended earlier did not work since
+transition of Thunderbird-78 from XUL add-ons to WebExtensions,
+so the following recipe is obsolete:
+<a href="http://list.orgmode.org/ka42mn$mn9$1@ger.gmane.org">from Christoph Herzog: Re: Linking to Thunderbird (correction)</a>.
+To open earlier created <code>thunderlink:</code> links either
+install <code>cb_thunderlink</code> add-on or add to <code>browse-url-handlers</code> alist
+a function that extracts Message-ID and passes it to <code>mid:</code> protocol
+handler.</p>
+<p>See also how to use <a href="#link-gmail">Message-ID links with Gmail</a>.</p>
+<h2 id="Plain-Lists">Plain Lists</h2>
+<h3 id="empty-line-before-each-new-headline-but-not-item">How can I insert an empty line before each newly inserted headline, but not before each newly inserted plain-list item?</h3>
+<pre><code>(setq org-blank-before-new-entry
+      '((heading . t) (plain-list-item . nil))
+</code></pre>
+<p>See also <a href="id:2463F4D8-F686-4CF3-AA07-08976F8A4972">Why is a blank line inserted after headlines and list items?</a>.</p>
+<h3 id="convert-itemized-to-enumerated-lists">How can I convert itemized lists to enumerated lists?</h3>
+<p>You can use <code>C-c -</code> or <code>S-&#x3C;left>/&#x3C;right></code> to cycle through the various
+bullet headlines available for lists: <code>-, +, *, 1., 1)</code>.</p>
+<p>See <a href="https://orgmode.org/manual/Plain-lists.html#Plain-lists">this section of the manual</a> for more information.</p>
+<h3 id="convert-plain-lists-to-headlines">How can I convert plain lists to headlines and vice versa?</h3>
+<p>To convert a plain list item or line to a headline, type <code>C-c *</code> on
+the headline. This will make the line a subheading of the current
+headline.</p>
+<p>To convert a headline to a plain list item, type <code>C-c -</code> while the
+cursor is on the headline.</p>
+<p>To convert a headline to an unadorned line of text, type <code>C-c *</code> on
+the headline.</p>
+<p>You can use query replace to accomplish the same things, as Bernt
+Hansen explains in <a href="https://list.orgmode.org/871vvrym45.fsf@gollum.intra.norang.ca">this mailing list post</a>.</p>
+<h3 id="description-lists">Is there a good way to create a description list?</h3>
+<p>Yes, these are now built-in:</p>
+<pre><code>- item1 :: Description of this item 1
+- item2 :: Description of this item 2
+- item1 :: Description of this item 3
+      also in multiple lines
+</code></pre>
+<h3 id="alphabetical-lists">How can I export alphabetical lists to… alphabetical lists?</h3>
+<p><code>org-list-allow-alphabetical</code> allows you to use alphabetical lists in
+Org, but this is purely visual, there is no effect on how the list is
+exported.  It is simply exported as an <em>ordered</em> list, just like when
+you use numberes.  How the list will be represented in the export
+depends on the backend.  For example, the style file of a LaTeX
+document, or the CSS file for HTML documents set how ordered lists
+should be represented.  It is good style to adhere to these general
+settings because it keeps the overall document structure consistent.</p>
+<p>See <a href="http://list.orgmode.org/87mwq6qtjk.fsf@gmail.com">this thread</a> (and earlier ones) for a discussion about this.</p>
+<h2 id="Tables">Tables</h2>
+<h3 id="table-multiline-fields">Will there ever be support for multiple lines in a table field?</h3>
+<p>No.</p>
+<p>You can embed tables created with the <code>table.el</code> package in org-mode
+buffers, with mixed success when it comes to export and publishing.</p>
+<h3 id="table-alignment-asian-characters">How can I make table alignment work with Asian character sets</h3>
+<p>When table alignment fails, it usually has to do with character sets
+where some characters have non-integer width.  Org will deal correctly
+with characters that are one or two or three ASCII characters wide,
+but not with characters that are, for example, 1.5 ASCII characters
+wide.  To make table alignment work you need to switch to a different
+character set.</p>
+<h3 id="plotting-table-data">Can I plot data from a table?</h3>
+<p>Yes, you can, using org-plot.el written by Eric Schulte and now
+bundled with Org.  See <a href="https://orgmode.org/manual/Org-Plot.html">the manual section about this</a>.</p>
+<p>See also <a href="org-tutorials/org-plot.org">this excellent tutorial</a> by Eric Schulte.</p>
+<h3 id="fill-table-column-with-incremental-numbers">How can I fill a table column with incremental numbers?</h3>
+<p>Here is how: Use a field formula to set the first value in the column:</p>
+<pre><code class="language-org">| N   |   |
+|-----+---|
+| :=1 |   |
+|     |   |
+|     |   |
+|     |   |
+#+TBLFM: @2$1=1
+</code></pre>
+<p>Then define a column formula in the second field:</p>
+<pre><code class="language-org">| N        |   |
+|----------+---|
+| 1        |   |
+| =@-1 + 1 |   |
+|          |   |
+|          |   |
+#+TBLFM: @2$1=1
+</code></pre>
+<p>After recomputing the table, the column will be filled with
+incremental numbers:</p>
+<pre><code class="language-org">| N |   |
+|---+---|
+| 1 |   |
+| 2 |   |
+| 3 |   |
+| 4 |   |
+#+TBLFM: $1=@-1 + 1::@2$1=1
+</code></pre>
+<p>Note that you could use arbitrary starting values and column formulas.</p>
+<p>Alternatively, you can just start the table</p>
+<pre><code class="language-org">| N |   |
+|---+---|
+| 1 |   |
+</code></pre>
+<p>and with the cursor on the 1, use S-RET (bound to org-table-copy-down). That
+will add a row, incrementing the number as it goes. See the docstring for org-table-copy-down
+for more information and also see the next FAQ entry <a href="#S-RET-in-a-table-increases-copied-numbers">S-RET in a table keeps increasing the copied numbers.  How can I stop this?</a>
+if you don’t want this behavior.</p>
+<h3 id="S-RET-in-a-table-increases-copied-numbers"><code>S-RET</code> in a table keeps increasing the copied numbers.  How can I stop this?</h3>
+<p>Well, it is <em>supposed</em> to be a feature, to make it easy to create a
+column with increasing numbers.  If this gets into your way, turn it
+off with</p>
+<pre><code>(setq org-table-copy-increment nil)
+</code></pre>
+<h3 id="table-column-filled-with-ERROR">Why does my table column get filled with #ERROR?</h3>
+<p>Org-mode tried to compute the column from other fields using a
+formula stored in the <code>#+TBLFM:</code> line just below the table, and
+the evaluation of the formula fails.  Fix the fields used in the
+formula, or fix the formula, or remove it!</p>
+<h3 id="table-editor-creates-new-lines">How can I stop the table editor from creating new lines?</h3>
+<p>When I am in the last column of a table and just above a horizontal
+line in the table, pressing TAB creates a new table line before the
+horizontal line.  To move to the line below the
+horizontal line instead, do this:</p>
+<p>Press <code>down</code> (to get on the separator line) and then <code>TAB</code>.
+Or configure the variable</p>
+<pre><code>(setq org-table-tab-jumps-over-hlines t)
+</code></pre>
+<h3 id="table-fields-starting-with-=">How can I get table fields starting with ”=”?</h3>
+<p>With the setting</p>
+<pre><code>(setq org-table-formula-evaluate-inline nil)
+</code></pre>
+<p>this will no longer happen.  You can still use formulas using the
+commands <code>C-c =</code> and <code>C-u C-c =</code></p>
+<h3 id="table-fields-with-vertical-bar">How can I get a vertical bar ”|” inside a table field?</h3>
+<p>You can use <code>\vert</code> to put a vertical bar inside a table field.  This
+will be converted for export.  To use it inside a word use
+<code>abc\vert{}def</code>.  If you need something that looks like a bar in the Org
+mode buffer, you can use the unicode character brvbar which looks like
+this: ¦.</p>
+<h3 id="change-indentation-entire-table">How can I change the indentation of an entire table without fixing every line by hand?</h3>
+<p>The indentation of a table is set by the first line.  So just fix the
+indentation of the first line and realign with <code>TAB</code>.</p>
+<h3 id="table-realigning-after-TAB-takes-long">In my huge table the realigning after each TAB takes too long.  What can I do?</h3>
+<p>Either split the table into several by inserting an empty line every
+100 lines or so.  Or turn off the automatic re-align with</p>
+<pre><code>(setq org-table-automatic-realign nil)
+</code></pre>
+<p>After this the only way to realign a table is to press <code>C-c C-c</code>.  It
+will no longer happen automatically, removing the corresponding delays
+during editing.</p>
+<h3 id="Recalculation-of-my-table-takes-too-long">Recalculation of my table takes too long.  What can I do?</h3>
+<p>Nothing, really.  The spreadsheet in org is mostly done to make
+calculations possible, not so much to make them fast.  Since Org-mode is
+firmly committed to the ASCII format, nothing is stopping you from
+editing the table by hand.  Therefore, there is no internal
+representation of the data.  Each time Org-mode starts a computation, it
+must scan the table for special lines, find the fields etc.  This is
+slow.  Furthermore, Calc is slow compared to hardware computations.  To
+make this work with normal editing, recalculation is not happening
+automatically, or only for the current line, so that the long wait for a
+full table iteration only happens when you ask for it.</p>
+<p>So for really complex tables, moving to a “real” spreadsheet may
+still be the best option.</p>
+<p>That said, there are some ways to optimize things in Org-mode, and I
+have been thinking about moving a bit further down this line.
+However, for my applications this has so far not been an issue at
+all.  If you have a good case, you could try to convince me.</p>
+<h3 id="table-borders-in-html-export">When I export tables to HTML, they don’t have borders.</h3>
+<p>By default, Org-mode exports tables without borders.</p>
+<p>You can changed this by placing an <code>#+ATTR_HTML</code> line before the table:</p>
+<pre><code> #+ATTR_HTML: :border 2 :rules all :frame all
+</code></pre>
+<p>See <a href="https://orgmode.org/manual/Tables-in-HTML-export.html#Tables-in-HTML-export">the manual</a> for more details.</p>
+<h3 id="table-high-precision">Why does the Calc high precision (e. g. <code>p20</code>) not work like expected?</h3>
+<ul>
+<li>
+<p><strong>Short answer</strong></p>
+<p>Avoid</p>
+<pre><code>| 1 / 2 * 3 | 0.16666667000000 |
+#+TBLFM: $2 = $1; p20 %.14f
+</code></pre>
+<p>and use</p>
+<pre><code>| 1 / 2 * 3 | 0.16666666666667 |
+#+TBLFM: $2 = $1 +.0; p20 f-14
+</code></pre>
+</li>
+<li>
+<p><strong>Longer answer</strong></p>
+<p>It is important to distinguish between the precision of</p>
+<ol>
+<li><code>p20</code>: Calc internal calculation (<code>calc-internal-prec</code>)</li>
+<li><code>f-14</code>: Calc float formatting, unlimited in precision (<code>calc-float-format</code>)</li>
+<li><code>%.14f</code>: the <code>printf</code> reformatting, limited in precision</li>
+</ol>
+<p>See <a href="https://orgmode.org/manual/Formula-syntax-for-Calc.html#Formula-syntax-for-Calc">the Org manual</a> (org-version 6.35 or newer) for more details.</p>
+<p>Use <code>C-h v org-calc-default-modes RET</code> to check the Org default
+settings which are used if no format specifiers are added to a table
+formula.  The examples below have been made with the out-of-the-box
+Org defaults <code>calc-internal-prec = 12</code> and <code>calc-float-format = 8</code>.</p>
+<p>Remember the formula debugger, toggled with <code>C-c {</code>,
+to view the processing stages like:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th></th><th>formula debugger label</th><th>processing stage</th></tr><tr><th>/</th><th>&#x3C;</th><th>&#x3C;></th></tr></thead><tbody><tr><td></td><td>Result:</td><td>output of Calc</td></tr><tr><td></td><td>Format:</td><td>reformatting with <code>printf</code></td></tr></tbody></table>
+<p>Following are some examples to demonstrate
+the interaction of the three precisions.</p>
+<ul>
+<li><strong>display precision limitations for Calc formulas</strong>
+<ul>
+<li>
+<p>limited by Calc internal calculation precision from Org default
+(here <code>p12</code>)</p>
+<pre><code>| 0.16666666666700 |
+#+TBLFM: $1 = 1 / 2 * 3;     f-14
+</code></pre>
+<pre><code>| 0.1666666666670000000 |
+#+TBLFM: $1 = 1 / 2 * 3;     f-19
+</code></pre>
+</li>
+<li>
+<p>limited by Calc float format from Org default (here <code>f8</code>)</p>
+<pre><code>| 0.16666667 |
+#+TBLFM: $1 = 1 / 2 * 3
+</code></pre>
+<pre><code>| 0.16666667 |
+#+TBLFM: $1 = 1 / 2 * 3; p20
+</code></pre>
+<pre><code>| 0.16666667000000 |
+#+TBLFM: $1 = 1 / 2 * 3;          %.14f
+</code></pre>
+<pre><code>| 0.16666667000000 |
+#+TBLFM: $1 = 1 / 2 * 3; p20      %.14f
+</code></pre>
+</li>
+<li>
+<p>limited by Calc float format specified</p>
+<pre><code>| 0.166667 |
+#+TBLFM: $1 = 1 / 2 * 3;     f-6
+</code></pre>
+<pre><code>| 0.16666666666667 |
+#+TBLFM: $1 = 1 / 2 * 3; p20 f-14
+</code></pre>
+<pre><code>| 0.1666666666666666667 |
+#+TBLFM: $1 = 1 / 2 * 3; p20 f-19
+</code></pre>
+</li>
+<li>
+<p>limited by <code>printf</code> conversion to Emacs Lisp float</p>
+<pre><code>| 0.1666666699999999900 | the inaccuracy is platform dependent |
+#+TBLFM: $1 = 1 / 2 * 3;          %.19f
+</code></pre>
+<pre><code>| 0.1666666699999999900 | the inaccuracy is platform dependent |
+#+TBLFM: $1 = 1 / 2 * 3; p20      %.19f
+</code></pre>
+<pre><code>| 0.1666666666666666600 | the inaccuracy is platform dependent |
+#+TBLFM: $1 = 1 / 2 * 3; p20 f-20 %.19f
+</code></pre>
+</li>
+<li>
+<p>limited by <code>printf</code> format specified</p>
+<pre><code>| 0.166667 |
+#+TBLFM: $1 = 1 / 2 * 3;         %.6f
+</code></pre>
+</li>
+</ul>
+</li>
+<li><strong>display precision limitations for Emacs Lisp formulas</strong>
+<ul>
+<li>
+<p>limited by Emacs Lisp float</p>
+<pre><code>| 0.16666666666666666 |
+#+TBLFM: $1 = '(/ 1.0 (* 2 3))
+</code></pre>
+<pre><code>| 0.1666666666666666574 | the inaccuracy is platform dependent |
+#+TBLFM: $1 = '(/ 1.0 (* 2 3)); %.19f
+</code></pre>
+</li>
+<li>
+<p>limited by <code>printf</code> format specified</p>
+<pre><code>| 0.16666666666667 |
+#+TBLFM: $1 = '(/ 1.0 (* 2 3)); %.14f
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>This FAQ entry is based on this <a href="https://list.orgmode.org/4B882C11.90406@alumni.ethz.ch">mailing list thread</a>
+and is continued in the <a href="#table-float-fraction">next FAQ entry</a>.</p>
+<h3 id="table-float-fraction">Which float format shows the fraction part also when the latter is zero?</h3>
+<ul>
+<li>
+<p><strong>Short answer</strong></p>
+<p>Avoid</p>
+<pre><code>| 1 | 1 |
+#+TBLFM: $2 = $1; f-3
+</code></pre>
+<p>and use</p>
+<pre><code>| 1 | 1.000 |
+#+TBLFM: $2 = $1 +.0; f-3
+</code></pre>
+</li>
+<li>
+<p><strong>Longer answer</strong></p>
+<p>For <code>f3</code> and <code>f-3</code> see <code>`d f' (`calc-fix-notation')</code> in <a href="http://www.delorie.com/gnu/docs/calc/calc.html#SEC_Top">the Calc manual</a>
+in the section Mode Settings -> Display Modes -> Float Formats
+<a href="http://www.delorie.com/gnu/docs/calc/calc_163.html">found here as long as the section numbering is unchanged</a>.</p>
+<p>Remember the formula debugger, toggled with <code>C-c {</code>,
+to view the processing stages like:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th></th><th>formula debugger label</th><th>processing stage</th></tr><tr><th>/</th><th>&#x3C;</th><th>&#x3C;></th></tr></thead><tbody><tr><td></td><td>Result:</td><td>output of Calc</td></tr><tr><td></td><td>Format:</td><td>reformatting with <code>printf</code></td></tr></tbody></table>
+<p>Following are some examples to demonstrate different float formats.</p>
+<ul>
+<li>
+<p>normal precision</p>
+<pre><code>|-----------+---------+-------+---------+----------+-------|
+|    number |      f3 |   f-3 | +.0; f3 | +.0; f-3 |  %.3f |
+|-----------+---------+-------+---------+----------+-------|
+|         1 |       1 |     1 |   1.000 |    1.000 | 1.000 |
+|         0 |       0 |     0 |   0.000 |    0.000 | 0.000 |
+|-----------+---------+-------+---------+----------+-------|
+|       1.0 |   1.000 | 1.000 |   1.000 |    1.000 | 1.000 |
+|       0.0 |   0.000 | 0.000 |   0.000 |    0.000 | 0.000 |
+|-----------+---------+-------+---------+----------+-------|
+| 1.0001666 |   1.000 | 1.000 |   1.000 |    1.000 | 1.000 |
+| 0.0001666 | 1.67e-4 | 0.000 | 1.67e-4 |    0.000 | 0.000 |
+|-----------+---------+-------+---------+----------+-------|
+| 1.0016666 |   1.002 | 1.002 |   1.002 |    1.002 | 1.002 |
+| 0.0016666 |   0.002 | 0.002 |   0.002 |    0.002 | 0.002 |
+|-----------+---------+-------+---------+----------+-------|
+#+TBLFM: $2 = $1; f3 :: $3 = $1; f-3 :: $4 = $1 +.0; f3 :: $5 = $1 +.0; f-3 :: $6 = $1; %.3f
+</code></pre>
+</li>
+<li>
+<p>high precision</p>
+<pre><code>|----------------------+--------------------------+-----------------------|
+| number               |                      f19 |                  f-19 |
+|----------------------+--------------------------+-----------------------|
+| 1                    |                        1 |                     1 |
+| 0                    |                        0 |                     0 |
+|----------------------+--------------------------+-----------------------|
+| 1.0                  |    1.0000000000000000000 | 1.0000000000000000000 |
+| 0.0                  |    0.0000000000000000000 | 0.0000000000000000000 |
+|----------------------+--------------------------+-----------------------|
+| 1 + 1 / 2 * 3 * 1e19 |    1.0000000000000000000 | 1.0000000000000000000 |
+| 0 + 1 / 2 * 3 * 1e19 | 1.666666666666666667e-20 | 0.0000000000000000000 |
+|----------------------+--------------------------+-----------------------|
+| 1 + 1 / 2 * 3 * 1e18 |    1.0000000000000000002 | 1.0000000000000000002 |
+| 0 + 1 / 2 * 3 * 1e18 |    0.0000000000000000002 | 0.0000000000000000002 |
+|----------------------+--------------------------+-----------------------|
+#+TBLFM: $2 = $1; p20 f19 :: $3 = $1; p20 f-19
+</code></pre>
+<pre><code>|----------------------+--------------------------+-----------------------|
+| number               |                 +.0; f19 |             +.0; f-19 |
+|----------------------+--------------------------+-----------------------|
+| 1                    |    1.0000000000000000000 | 1.0000000000000000000 |
+| 0                    |    0.0000000000000000000 | 0.0000000000000000000 |
+|----------------------+--------------------------+-----------------------|
+| 1.0                  |    1.0000000000000000000 | 1.0000000000000000000 |
+| 0.0                  |    0.0000000000000000000 | 0.0000000000000000000 |
+|----------------------+--------------------------+-----------------------|
+| 1 + 1 / 2 * 3 * 1e19 |    1.0000000000000000000 | 1.0000000000000000000 |
+| 0 + 1 / 2 * 3 * 1e19 | 1.666666666666666667e-20 | 0.0000000000000000000 |
+|----------------------+--------------------------+-----------------------|
+| 1 + 1 / 2 * 3 * 1e18 |    1.0000000000000000002 | 1.0000000000000000002 |
+| 0 + 1 / 2 * 3 * 1e18 |    0.0000000000000000002 | 0.0000000000000000002 |
+|----------------------+--------------------------+-----------------------|
+#+TBLFM: $2 = $1 +.0; p20 f19 :: $3 = $1 +.0; p20 f-19
+</code></pre>
+<p>The <code>printf</code> reformatting (<code>%.19f</code>) cannot be used with high precision,
+see the <a href="#table-high-precision">previous FAQ entry</a>.</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="centered-tables-in-latex">How can I center tables in LaTeX output?</h3>
+<p>Set the <code>org-latex-tables-centered</code> to <code>t</code>:</p>
+<pre><code>(defcustom org-latex-tables-centered t
+  "When non-nil, tables are exported in a center environment."
+  :group 'org-export-latex
+  :type 'boolean)
+</code></pre>
+<h3 id="exclude-columns">Can I exclude columns from a table when exporting it?</h3>
+<p>No.</p>
+<h2 id="Footnotes">Markup</h2>
+<h3 id="footnote-auto-adjust">How can I get automatic renumbering of footnotes in org-mode?</h3>
+<p>You can add the following line to your .emacs file:</p>
+<pre><code>(setq org-footnote-auto-adjust t)
+</code></pre>
+<p>Or, if you prefer, you can turn this option on locally by placing the
+following line at the top of your org file:</p>
+<pre><code>#+STARTUP: fnadjust
+</code></pre>
+<p>When auto-adjust is turned on, footnotes in the file with numerical
+labels will be renumbered whenever a new footnote is added. Meanwhile,
+all footnotes, including those with custom labels such
+<code>[fn:custom-label ]</code>, will be sorted in the order of their appearance
+in the text.</p>
+<p>This emulates the footnote behavior that many users may be familiar
+with from word-processing programs or from the footnote-mode included
+with emacs.</p>
+<p>If you do not turn on org-footnote-auto-adjust, you sort and/or
+renumber footnotes at any time by calling org-footnote-action with a
+prefix argument.</p>
+<h3 id="why-no-default-auto-adjust">Why isn’t auto renumbering of footnotes turned on by default?</h3>
+<p>Org-mode has a very robust footnote mechanism allowing for a variety of
+types of footnotes. With some of the following footnote notations,
+auto-adjust may be either irrelevant or undesired:</p>
+<ul>
+<li>Automatically numbered</li>
+<li>Footnotes with custom labels</li>
+<li>Inline footnotes</li>
+</ul>
+<p>In addition, Org-mode can be customized to place footnotes either at
+the end of a document or at the end of the outline heading in which
+they appear. Users who change this setting while editing a document
+may be disconcerted to find all of their footnotes rearranged
+automatically.</p>
+<h3 id="auto-fill-and-unwanted-comments">I have auto-fill-mode set and org-mode is inserting unwanted comment markers!</h3>
+<p>If the following occurs:</p>
+<pre><code class="language-org">#+OPTIONS: toc:nil
+Some entered text.
+,# More entered tex.
+</code></pre>
+<p>Make sure that the variable comment-start is nil.</p>
+<h3 id="shortcuts-for-entering-source-blocks">Are there any shortcuts for entering source blocks and comment lines?</h3>
+<p>Org-mode has some <a href="https://orgmode.org/manual/Literal-examples.html#Literal-examples">very convenient markup</a> for including literal blocks and
+lines of code in a file.  (This is especially useful when exporting
+documents or using the contributed package <a href="org-contrib/babel/index.org">org-babel</a> for executing blocks
+of code.)</p>
+<pre><code class="language-org">#+begin_src perl
+print "Hello, world!\n";
+#+end_src
+</code></pre>
+<p>It can be tiresome to enter the block comment lines manually. There are
+several possible shortcuts you can use to enter them:</p>
+<ol>
+<li>Built-in expansion
+<ul>
+<li>Org-mode has a “secret” method of expanding source code blocks
+and comment lines.</li>
+<li>If you type “&#x3C;s” followed by <code>TAB</code> or <code>M-TAB</code>, a source block will
+magically appear.</li>
+<li>For a full list of expansions, type <code>M-x describe-variable
+     [RET] org-structure-template-alist</code>.</li>
+</ul>
+</li>
+<li><a href="https://orgmode.org/manual/Literal-examples.html#Literal-examples">Registers</a>
+<ul>
+<li>
+<p>Add the following line to your emacs file:</p>
+<p><code>(set-register ?p "#+begin_src\n\n#+end_src perl")</code></p>
+</li>
+<li>
+<p>Then type <code>C-x r i p</code> to insert the source block. Please note: if
+you save another value to the register “p” with <code>C-x r s p</code>, it
+will overwrite the setting above for the current emacs session.</p>
+</li>
+</ul>
+</li>
+<li><a href="https://orgmode.org/manual/Literal-examples.html#Literal-examples">Abbrevs</a>
+<ul>
+<li>Activate the abbrev minor-mode in org-mode:
+<ul>
+<li>M-x abbrev-mode</li>
+<li><em>Permanently</em>:
+<ul>
+<li><code>(add-hook 'org-mode-hook (lambda () (abbrev-mode 1)))</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>In org-mode, type “sbp” (a sample abbreviation for a perl source
+block).</li>
+<li>Immediately after “sbp” type <code>C-x a i l</code>.</li>
+<li>Enter the expansion:
+<ul>
+<li><code>#+begin_src perl[C-q C-j][C-q C-j]#+end_src</code></li>
+<li>Note: <code>C-q C-j</code> creates a new line in the minibuffer</li>
+</ul>
+</li>
+<li>Now, whenever, you type sbp followed by <code>SPACE</code> or <code>RET</code> in an
+org-mode buffer, the src block will magically appear.</li>
+<li>To review your list of abbrevs, type <code>M-x edit-abbrevs</code>.</li>
+</ul>
+</li>
+<li><a href="http://www.emacswiki.org/emacs/SkeletonMode">Skeletons</a>
+<ul>
+<li>
+<p>Skeletons offer a simple way of automatically entering text.
+Here’s a skeleton that queries for the type of block and wraps
+the active region inside it:</p>
+<pre><code class="language-elisp">     (define-skeleton skel-org-block
+"Insert an org block, querying for type."
+"Type: "
+"#+begin_" str "\n"
+_ - \n
+"#+end_" str "\n")
+</code></pre>
+</li>
+<li>
+<p>Simply type skel-org-block to insert the block.</p>
+<ul>
+<li>
+<p>You can bind this to a key.</p>
+</li>
+<li>
+<p>You can also create an abbrev that invokes this function:</p>
+<pre><code>(define-abbrev org-mode-abbrev-table "blk" "" 'skel-org-block)
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="http://code.google.com/p/yasnippet/">Yasnippet</a>
+<ul>
+<li>Several org-mode users install yasnippet for convenient, complex
+expansion.</li>
+<li>See Bernt Hansen’s <a href="http://doc.norang.ca/org-mode.html#Yasnippets">org-mode setup</a> for a good introduction to
+yasnippet.</li>
+</ul>
+</li>
+</ol>
+<h2 id="Capture">Capture</h2>
+<h3 id="variable-inside-capture-templates">Can I use a variable or a function inside the <code>org-capture-templates</code> variable?</h3>
+<p>Yes.  Use <a href="http://www.gnu.org/s/emacs/manual/html_node/elisp/Backquote.html">backquotes</a>.</p>
+<p>E.g. if you have a variable called <code>org-test-file</code> and you want the
+variable <code>org-capture-templates</code> to “understand” (i.e. evaluate)
+<code>org-test-file</code> when Emacs evaluates the <code>(setq org-capture-templates
+[...])</code> expression, use backquotes like this:</p>
+<pre><code class="language-emacs-lisp">(setq org-capture-templates
+      `(("t" "Todo" entry (file+headline ,org-test-file "Tasks")
+       "* TODO %?\n  %i\n  %a")
+      ("b" "Buy" item (file+olp ,org-test-file "Stuff to Buy" "House")
+       "")))
+</code></pre>
+<h3 id="use-remember-buffer-to-clock-phone-call">Can I use the remember buffer to clock a customer phone call?</h3>
+<p>Yes, you can.  Take a look at the <a href="https://list.orgmode.org/87tzkhoi45.fsf@gollum.intra.norang.ca">setup described by Bernt Hansen</a> and
+check out (in the same thread) what Nick Docos had to fix to make Bernt’s
+set-up work for him.</p>
+<h3 id="start-clock-when-opening-remember-template">Can I automatically start the clock when opening a capture template?</h3>
+<p>Yes, this is possible.
+You can add <code>:clock-in t</code> parameter to the capture template where you
+want to start the clock automatically.</p>
+<pre><code class="language-emacs-lisp">(require 'org-capture)
+(add-to-list
+ 'org-capture-templates
+ `("c" "Call" entry (file "~/Org/inbox.org")
+   "* Call with %?" :clock-in t :clock-resume t))
+</code></pre>
+<h2 id="Searches">Searches</h2>
+<h3 id="isearch-in-links">Isearch does not find string hidden in links.  What can I do?</h3>
+<p>M-x <code>visible-mode</code> will display the full link, making them searchable.</p>
+<h3 id="context-in-sparse-trees">How can I reduce the amount of context shown in sparse trees?</h3>
+<p>Take a look at <code>org-fold-show-context-detail</code> customization.  It
+gives command-dependent control over how much context is shown by a
+particular operation.</p>
+<h3 id="two-calls-to-org-occur">How can I combine the results of two calls to <code>org-occur</code>?</h3>
+<p>You can construct a regular expression that matches all targets you
+want.  Alternatively, use a <code>C-u</code> prefix with the second and any
+further calls to <code>org-occur</code> to keep the current visibility and
+highlighting in addition to the new ones.</p>
+<h2 id="Agenda">Agenda</h2>
+<h3 id="agenda-slow">My agenda commands are slow.  What to do?</h3>
+<p>See the dedicated page about <a href="agenda-optimization.org">agenda speed up and optimization</a>.</p>
+<h3 id="warning-period-for-deadlines">How can I change the advanced warning time for deadlines?</h3>
+<p>Deadline warnings appear in the daily agenda view a specified number
+of days before the deadline is due. The default setting is 14 days.
+You can change this with the variable <code>org-deadline-warning-days</code>.
+(See <a href="https://orgmode.org/manual/Deadlines-and-scheduling.html#Deadlines-and-scheduling">this section</a> of the manual.)</p>
+<p>For instance,</p>
+<pre><code>(setq org-deadline-warning-days 30)
+</code></pre>
+<p>would cause warnings for each deadline to appear 30 days in advance.</p>
+<p>Naturally, you might not want warnings for all of your deadlines to
+appear so far in advance. Thus, you can change the lead time for
+individual items as follows:</p>
+<pre><code>* TODO Get a gift for the party
+  DEADLINE: &#x3C;2009-01-16 Fri -2d>
+</code></pre>
+<p>The “-2d” above changes the lead time for this deadline warning to two
+days in advance. You can also use “w” for weeks and “m” for months.</p>
+<h3 id="deferring-tasks">How can I postpone a task until a certain date?</h3>
+<p>The easiest way to postpone a task is to schedule it in the future.  For
+instance, typing <code>C-c C-s +2w</code> on a headline will push a task two weeks
+into the future, so that it won’t show up on the daily agenda until two
+weeks from now.</p>
+<p>If you’d like to prevent the task from showing up on your global todo list,
+you have a couple of options.</p>
+<ol>
+<li>You can set the variable <code>org-agenda-todo-ignore-scheduled</code> to
+<code>t</code>.  This will exclude any scheduled items from your global list of
+active todos (<code>C-c a t</code>). (The variable
+<code>org-agenda-todo-ignore-with-date</code> will exclude both scheduled and
+deadline items from your todo list).</li>
+<li>You can remove the todo keyword from the item (C-c C-t &#x3C;SPC>). The item
+will still appear on your agenda two weeks from today, but it won’t show
+up on your todo lists.</li>
+</ol>
+<h3 id="email-containing-tasks-or-other-agenda-info">Can I send myself an email containing tasks or other agenda info?</h3>
+<p>Yes.  See <a href="https://list.orgmode.org/m3ve3d1596.fsf@richardriley.net">this thread</a> on the list.</p>
+<h3 id="limit-agenda-with-tag-filtering">How can I limit the agenda view to my “work” tasks?</h3>
+<p>It is often convenient to group org files into separate categories, such
+as “home” and “work” (or “personal” and “professional”). One of the main
+reasons for such classification is to create agenda views that are
+limited by type of work or area of responsibility.  For instance, while
+at work, one may want to see only professional tasks; while away from
+work, one may want to see only personal tasks.</p>
+<p>One way to categorize files and tasks is to use a ”#+FILETAGS”
+declaration at the top of each file, such as:</p>
+<pre><code>#+FILETAGS: work
+</code></pre>
+<p>As long as org-use-tag-inheritance is turned on, the filetags will
+be inherited by all tasks in the file. A file can have multiple
+filetags. And, of course, tags can be added to individual headings.</p>
+<p>Tasks can be quickly filtered by tag from within the agenda by
+typing ”/” and the name of the tag. The full key sequence to filter
+for work items in an agenda view would be:</p>
+<pre><code>C-c a a / work [or a tag shortcut]
+</code></pre>
+<h3 id="limit-agenda-with-category-match">How can I limit the agenda view to a particular category?</h3>
+<p>Another way to filter agenda views by type of work is to use a
+”#+CATEGORY” declaration at the top of each file, such as:</p>
+<pre><code>#+CATEGORY: work
+</code></pre>
+<p>Categories can also be added to individual headings within a file:</p>
+<pre><code>* Big project
+  :PROPERTIES:
+  :CATEGORY: work
+  :END:
+</code></pre>
+<p>All todos belonging to the category “work” can be found a with a
+simple tags-todo search:</p>
+<pre><code>C-c a M
+</code></pre>
+<p>At the prompt, type:</p>
+<pre><code>CATEGORY="work"
+</code></pre>
+<p>The same results can be achieved with custom agenda commands, such as:</p>
+<pre><code class="language-emacs-lisp">(setq org-agenda-custom-commands
+      '(("h" tags-todo "CATEGORY=\"home\"")
+	("w" tags-todo "CATEGORY=\"work\"")
+	;; other custom agenda commands here
+	))
+</code></pre>
+<h3 id="set-agenda-files-using-wildcards">How can include all org files in a directory in my agenda?</h3>
+<p>You can simply include the directory (as one of the items) in the value of
+the variable org-agenda-files:</p>
+<pre><code>(setq org-agenda-files '("/my/special/path/org/"))
+</code></pre>
+<p>There is another way of accomplishing the same end:</p>
+<pre><code>(setq org-agenda-files (file-expand-wildcards "/my/special/path/org/*.org"))
+</code></pre>
+<h3 id="removing-done-items-from-agenda">Why aren’t items disappearing from my agenda once they are marked done?</h3>
+<p>If items remain on your daily/weekly agenda after they are marked done,
+check the configuration of the following variables:</p>
+<pre><code>org-agenda-skip-scheduled-if-done
+org-agenda-skip-deadline-if-done
+org-agenda-skip-timestamp-if-done
+</code></pre>
+<p>For instance, type:</p>
+<pre><code>M-x customize-variable RET org-agenda-skip-scheduled-if-done
+</code></pre>
+<p>If this variable is turned off (<code>nil</code>), then scheduled items will
+remain on the agenda even after they are marked done.</p>
+<p>If the variable is turned on (<code>t</code>), then scheduled items will
+disappear from the agenda after they are marked done.</p>
+<p>If these settings seem not to behave the way you expect, then make
+sure you understand <a href="#scheduled-vs-deadline-vs-timestamp">the difference between SCHEDULED, DEADLINE, and
+timestamps</a>.</p>
+<h3 id="repeating-timestamps-show-once">How do I keep repeating timestamps from being displayed multiple times?</h3>
+<p>To show only the <em>current</em> instance of a repeating timestamp, put the
+following in your .emacs:</p>
+<pre><code class="language-emacs-lisp">(setq org-agenda-show-future-repeats nil)
+</code></pre>
+<h3 id="scheduled-vs-deadline-vs-timestamp">What is the difference between <code>DEADLINE</code>, <code>SCHEDULED</code>, and plain timestamps?</h3>
+<p><em>For more detailed discussion, see <a href="topics/planning-timestamps.org">Planning timestamps</a>.</em></p>
+<ol>
+<li>
+<p>Items with a <code>DEADLINE</code> timestamp (set with <code>C-c C-d</code>) appear on your agenda in advance of the when they are due and remain on your Agenda until they are done.  Add a <code>DEADLINE</code> to an item if you want to make sure to complete it by a certain date.  (The option <code>org-deadline-warning-days</code> determines how far in advance items with deadlines will show up in the agenda.  See <a href="#warning-period-for-deadlines">this FAQ</a> for more information.)</p>
+<p>For example:</p>
+<pre><code class="language-org">* TODO Item with a deadline
+DEADLINE: &#x3C;2009-01-20 Tue>
+</code></pre>
+</li>
+<li>
+<p><code>SCHEDULED</code> items (set with <code>C-c C-s</code>) will appear on your Agenda on the day they are scheduled and on every day thereafter until they are done.  Schedule a task if you want to be reminded to do something beginning on a certain day and until it is done.</p>
+<p>For example:</p>
+<pre><code class="language-org">* TODO Scheduled item
+SCHEDULED: &#x3C;2009-03-01 Sun>
+</code></pre>
+</li>
+<li>
+<p>An <em>active timestamp</em> (set with <code>C-c .</code>) will appear on your Agenda only on the day it is scheduled; it will appear in the time-grid at the given time, if any.  Use a timestamp for appointments or any reminders you want to show up only on a particular day.</p>
+<p>For example:</p>
+<pre><code class="language-org">* TODO Item with an active timestamp &#x3C;2009-04-18 Sat>
+</code></pre>
+<p>Or:</p>
+<pre><code class="language-org">* TODO Item with an active timestamp
+&#x3C;2009-04-18 Sat>
+</code></pre>
+</li>
+</ol>
+<p><strong>Note:</strong> Items with inactive timestamps (set with <code>C-c !</code> and marked by square brackets) will not show up in the agenda at all.</p>
+<h3 id="set-agenda-files-recursively">Can I add files recursively to my list of agenda files?</h3>
+<p>Yes, you can use the library <code>find-lisp</code>.</p>
+<pre><code>(load-library "find-lisp")
+(setq org-agenda-files (find-lisp-find-files "~/org" "\.org$"))
+</code></pre>
+<p>This will add all files ending in <code>org</code> in the directory ”~/org”
+and all of its subdirectories to your list of agenda files.</p>
+<p>If on a *nix machine, you can also use the find utility, which can be
+faster than the find-lisp library:</p>
+<pre><code>(setq org-agenda-files
+      (mapcar 'abbreviate-file-name
+              (split-string
+               (shell-command-to-string "find ~/org -name \"*.org\"") "\n")))
+</code></pre>
+<p>See <a href="https://list.orgmode.org/7b4bbp$11a9u8@dmzms99802.na.baesystems.com">this thread</a> on the mailing list for more information.</p>
+<h3 id="agenda-wrong-time-of-day">Why does an item appearing at the wrong time of day in my agenda?</h3>
+<p>When preparing the agenda view, org-mode scans each relevant headline for a
+time designation.  This approach is very nice for adding free-form
+timestamps to an item for scheduling.  Thus, either of the following work
+would work to schedule an item at 10:00am:</p>
+<pre><code class="language-org">** 10:00am Get dried ice at the magic store
+   SCHEDULED: &#x3C;2009-05-27 Wed>
+</code></pre>
+<pre><code class="language-org">** Get dried ice at the magic store
+   SCHEDULED: &#x3C;2009-05-27 Wed 10:00>
+</code></pre>
+<p>To enable this flexibility, org-mode scans the entire headline for time of
+day notation. A potential problem can arise if you use inactive timestamps
+in the headline to note when an item was created.  For example :</p>
+<pre><code class="language-org">** Get dried ice at the magic store [2009-05-26 Tue 12:58]
+   SCHEDULED: &#x3C;2009-05-27 Wed>
+</code></pre>
+<p>Org-mode would interpret the time in the inactive timestamp as a
+time-of-day indicator and the entry would appear in your agenda at
+12:58.</p>
+<p>If you would like to turn off the time-of-day search, you can configure the
+variable <code>org-agenda-search-headline-for-time</code> (requires org-mode >= 6.24).</p>
+<h3 id="cycling-visibility-from-agenda">How can I change the visibility of an item from the agenda?</h3>
+<p>You can add a keybinding as follows:</p>
+<pre><code class="language-emacs-lisp">(add-hook 'org-agenda-mode-hook
+   (lambda ()
+     (define-key org-agenda-mode-map " " 'org-agenda-cycle-show)))
+</code></pre>
+<p>Then, as you press SPACE on an item on the agenda, it will cycle the
+visibility of its original location.</p>
+<h3 id="tags-in-agenda">Is there any way to set org-mode so that tags don’t appear in the agenda view?</h3>
+<p>See the <code>org-agenda-remove-tags</code> variable.</p>
+<h3 id="org-extend-today-until">I work late at night! How can I extend my current day past midnight?</h3>
+<p>If you work past midnight, you may not want your daily agenda view to
+switch to the next day at 12 a.m. (the default). To extend your day, simply
+set the value of org-extend-today-until to a positive number corresponding
+to the number of hours you work past midnight. For example, the following
+setting will cause the current day to extend until 6 a.m.</p>
+<pre><code>(setq org-extend-today-until 6)
+</code></pre>
+<h3 id="repeat-task-until">How can I let a task repeat until a certain date?</h3>
+<p>Use <code>org-clone-subtree-with-time-shift</code> and read <a href="http://karl-voit.at/2017/01/15/org-clone-subtree-with-time-shift/">this blog post</a> for
+details.</p>
+<h2 id="Appointments/Diary">Appointments and Diary</h2>
+<h3 id="include-entries-from-org-mode-files-into-emacs-diary">Is it possible to include entries from org-mode files into my emacs diary?</h3>
+<p>Since the org-mode agenda is much more powerful and can contain the
+diary, you should think twice before deciding to do this.  If you
+insist, however, integrating Org-mode information into the diary is
+possible.  You need to turn on <em>fancy diary display</em> by setting in
+.emacs:</p>
+<pre><code>(add-hook 'diary-display-hook 'diary-fancy-display)
+</code></pre>
+<p>Then include the following line into your ~/diary file, in order to
+get the entries from all files listed in the variable
+<code>org-agenda-files</code></p>
+<pre><code>&#x26;%%(org-diary)
+</code></pre>
+<p>You may also select specific files with</p>
+<pre><code>&#x26;%%(org-diary) ~/path/to/some/org-file.org
+&#x26;%%(org-diary) ~/path/to/another/org-file.org
+</code></pre>
+<p>If you now launch the calendar and press <code>d</code> to display a diary, the
+headlines of entries containing a timestamp, date range, schedule,
+or deadline referring to the selected date will be listed.  Just
+like Org-mode’s agenda view, the diary for <em>today</em> contains
+additional entries for overdue deadlines and scheduled items.  See
+also the documentation of the <code>org-diary</code> function.  Under XEmacs, it
+is not possible to jump back from the diary to the org, this works
+only in the agenda buffer.</p>
+<h3 id="add-Org-scheduled/deadlined-entries-to-diary!">I want to add my Org scheduled/deadlined entries in my diary!</h3>
+<p>Put this in your ~/.diary:</p>
+<pre><code>&#x26;%%(org-diary :scheduled :timestamp :deadline)
+</code></pre>
+<h3 id="automatic-reminders">How can I set up automatic reminders based on Org information?</h3>
+<p>See <a href="https://list.orgmode.org/13222.1201471868@gamaville.dokosmarshall.org">this post</a> by N. Dokos on the list. See also Russell Adams’s hack
+in <a href="https://orgmode.org/worg/org-hacks.html#org-agenda-appt-zenity">org-hacks</a>.</p>
+<h3 id="appt-notice-my-Org-appointments">How can I make <code>appt</code> notice my Org appointments?</h3>
+<pre><code>M-x org-agenda-to-appt RET
+</code></pre>
+<h3 id="diary-sexp-in-org-files">How can I create more complex appointments in my org-files?</h3>
+<p>Org-mode’s active timestamps work very well for scheduling individual
+or recurring appointments, such as:</p>
+<pre><code class="language-org">* 8:00am Dentist appointment &#x3C;2009-01-16 Fri>
+</code></pre>
+<p>or</p>
+<pre><code class="language-org">* Vacation
+  &#x3C;2009-03-20 Fri>--&#x3C;2009-04-01 Wed>
+</code></pre>
+<p>or</p>
+<pre><code class="language-org">* Weekly meeting with boss
+  &#x3C;2009-01-20 Tue 14:00 +1w>
+</code></pre>
+<p>Sometimes, however, you need to set up more complicated recurring
+appointments.  Org-mode has built-in support for many of <a href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Sexp-Diary-Entries.html">the powerful
+sexp entries</a> that work in <a href="http://www.gnu.org/software/emacs/manual/html_node/emacs/Diary.html#Diary">Emacs diary</a>.</p>
+<p>Let’s say, for instance, that you teach a class that meets every
+Monday evening between February 16 and April 20, 2009. The way to
+enter this an org-mode file is:</p>
+<pre><code class="language-org">** Class 7:00pm-9:00pm
+   &#x3C;%%(and (= 1 (calendar-day-of-week date)) (diary-block 2 16 2009 4 20 2009))>
+</code></pre>
+<p>The expression above designates all Mondays that fall between February
+16 and April 20. How exactly does it work?</p>
+<dl>
+<dt>(and…</dt>
+<dd>Indicates that <strong>both</strong> of the conditions that follow have
+to be true.
+<dl>
+<dt>(= 1 (calendar-day-of-week date))</dt>
+<dd>Is the day of the week a
+Monday?
+<ul>
+<li>Note: the function calendar-day-of-week converts the date to the day of week
+expressed in numeric form, where 0 = Sunday, 1 = Monday, and so on.</li>
+</ul>
+</dd>
+<dt>(diary-block 2 16 2009 4 20 2009)</dt>
+<dd>Does the date fall between
+these two dates?</dd>
+</dl>
+</dd>
+</dl>
+<p>You can make a sexp as complex as you like. If you wanted to omit a
+week because of holidays, for instance, you could add another
+condition to the sexp:</p>
+<pre><code class="language-org">** Class 7:00pm-9:00pm
+   &#x3C;%%(unless (diary-block 3 9 2009 3 13 2009) (and (= 1 (calendar-day-of-week date)) (diary-block 2 16 2009 4 20 2009)))>
+</code></pre>
+<p>The sexp above would omit Monday during the week of March 9, 2009. For
+another way to accomplish the same thing, see <a href="#org-class">this FAQ</a>.</p>
+<p>Another diary function commonly used for more complex scheduling is
+diary-float. For instance,</p>
+<pre><code class="language-org">* Monthly meeting
+  &#x3C;%%(diary-float t 3 3)>
+</code></pre>
+<p>… would appear on the third Wednesday of every month.</p>
+<p>For more ideas on how to create diary special expressions, see <a href="http://www.emacswiki.org/cgi-bin/wiki/DiaryMode">this
+page on the Emacs wiki</a>.</p>
+<h3 id="org-class">How can I schedule a weekly class that lasts for a limited period of time?</h3>
+<p>Org-mode offers a convenient diary sexp function for setting up a recurring
+appointment that lasts for a certain period of time, such as a class. It is
+called org-class and it can be entered as follows:</p>
+<pre><code class="language-org">** Class 7:00pm-9:00pm
+   &#x3C;%%(org-class 2009 2 16 2009 4 20 1 10)>
+</code></pre>
+<p>The function above schedules an appointment for every Monday (1)
+between February 16 and April 20, 2009, except for ISO week 10 (March
+1 to March 7).</p>
+<p>If you would prefer not to place the timestamp in the headline, you can use
+the following format:</p>
+<pre><code class="language-org">** Class
+   &#x3C;%%(org-class 2009 2 16 2009 4 20 1 10)> 7:00pm-9:00pm Class
+</code></pre>
+<p>In this case, the string following the sexp will be displayed in the
+agenda.</p>
+<p>The function org-class has the following format:</p>
+<pre><code>(org-class Y1 M1 D1 Y2 M2 D2 DAYNAME &#x26;rest SKIP-WEEKS)
+</code></pre>
+<p>Y1/2, M1/2, and D1/2 indicate the beginning and ending dates. DAYNAME takes
+the form of a number indicating the day of the week (0 = Sunday, 1 =
+Monday, and so on…). In addition, one can add an optional argument
+SKIP-WEEKS to indicate weeks on the calendar that should be skipped. This
+argument should be expressed as an ISO week number. You can find the number
+by invoking emacs’ built-in calendar (<code>M-x calendar</code>), navigating to the
+appropriate week, and typing <code>p c (calendar-iso-print-date)</code>.  If one of
+the SKIP-WEEKS is the symbol <code>holidays</code>, then any holidays known to the
+calendar are also skipped.</p>
+<p>Here is an alternative method, shared by Paul Sexton on the org mailing
+list:</p>
+<p>Let’s say you are taking night classes in Spanish. The class is every
+Wednesday evening at 7pm, starting on 18 August, and runs for 8
+weeks.  Org-mode’s timestamps do not support limited occurrences of
+recurrent items – you have to schedule the item with infinite recurrences,
+then delete it when it finishes.</p>
+<p>To schedule the Spanish classes, put the following in your <code>.emacs</code>:</p>
+<pre><code class="language-emacs-lisp">(defun diary-limited-cyclic (recurrences interval m d y)
+  "For use in emacs diary. Cyclic item with limited number of recurrences.
+Occurs every INTERVAL days, starting on YYYY-MM-DD, for a total of
+RECURRENCES occasions."
+  (let ((startdate (calendar-absolute-from-gregorian (list m d y)))
+        (today (calendar-absolute-from-gregorian date)))
+    (and (not (minusp (- today startdate)))
+         (zerop (% (- today startdate) interval))
+         (&#x3C; (floor (- today startdate) interval) recurrences))))
+</code></pre>
+<p>The item in the org file looks like this:</p>
+<pre><code class="language-org">** 19:00-21:00 Spanish lessons
+   &#x3C;%%(diary-limited-cyclic 8 7 8 18 2010)>
+</code></pre>
+<h3 id="occur-except-day">How can I set an event to occur every day except Saturday and Sunday?</h3>
+<pre><code class="language-org">** Daily meeting
+   &#x3C;%%(memq (calendar-day-of-week date) '(1 2 3 4 5))>
+</code></pre>
+<h3 id="Easter">How do I schedule events relative to Easter Sunday?</h3>
+<p>Easter’s date moves around from year to year according to a complicated
+set of criteria which I do not claim to understand.  However the
+following code will allow you to schedule recurring events relative to
+Easter Sunday.</p>
+<p>Note: the function da-easter is from <a href="http://github.com/soren/elisp/blob/master/da-kalender.el">da-kalender.el</a>.</p>
+<p>Put the following in your .emacs:</p>
+<pre><code class="language-emacs-lisp">(defun da-easter (year)
+  "Calculate the date for Easter Sunday in YEAR. Returns the date in the
+Gregorian calendar, ie (MM DD YY) format."
+  (let* ((century (1+ (/ year 100)))
+         (shifted-epact (% (+ 14 (* 11 (% year 19))
+                              (- (/ (* 3 century) 4))
+                              (/ (+ 5 (* 8 century)) 25)
+                              (* 30 century))
+                           30))
+         (adjusted-epact (if (or (= shifted-epact 0)
+                                 (and (= shifted-epact 1)
+                                      (&#x3C; 10 (% year 19))))
+                             (1+ shifted-epact)
+                           shifted-epact))
+         (paschal-moon (- (calendar-absolute-from-gregorian
+                           (list 4 19 year))
+                          adjusted-epact)))
+    (calendar-dayname-on-or-before 0 (+ paschal-moon 7))))
+
+
+(defun da-easter-gregorian (year)
+  (calendar-gregorian-from-absolute (da-easter year)))
+
+(defun calendar-days-from-easter ()
+  "When used in a diary sexp, this function will calculate how many days
+are between the current date (DATE) and Easter Sunday."
+  (- (calendar-absolute-from-gregorian date)
+     (da-easter (calendar-extract-year date))))
+</code></pre>
+<p>Now we can schedule the public holidays associated with Easter as
+recurring events.  Good Friday is 2 days before “Easter”, Easter Monday
+is one day after.</p>
+<pre><code class="language-org">* Good Friday
+&#x3C;%%(= -2 (calendar-days-from-easter))>
+
+* Easter Sunday
+&#x3C;%%(= 0 (calendar-days-from-easter))>
+
+* Easter Monday
+&#x3C;%%(= 1 (calendar-days-from-easter))>
+</code></pre>
+<p>[Source: Posted by Paul Sexton on Org-mode mailing list.]</p>
+<h3 id="nearest-weekday">How to schedule public holiday that is “the nearest Monday to DATE”?</h3>
+<p>In New Zealand each regional capital has an “Anniversary Day”. The date
+of Auckland’s anniversary day is “the nearest Monday to 29 January”.</p>
+<p>Put this in your <code>.emacs</code>:</p>
+<pre><code class="language-emacs-lisp">(defun calendar-nearest-to (target-dayname target-day target-month)
+  "Recurring event that occurs in the nearest TARGET-DAYNAME to
+the date TARGET-DAY, TARGET-MONTH each year."
+  (interactive)
+  (let* ((dayname (calendar-day-of-week date))
+         (target-date (list target-month target-day (calendar-extract-year date)))
+         (days-diff (abs (- (calendar-day-number date)
+                            (calendar-day-number target-date)))))
+    (and (= dayname target-dayname)
+         (&#x3C; days-diff 4))))
+</code></pre>
+<p>Now we can schedule Auckland Anniversary Day. The first argument, 1,
+means Monday (days of the week are numbered starting with Sunday=0).</p>
+<p>[Source: Originally posted by Paul Sexton on Org-mode mailing list.]</p>
+<h3 id="nth-weekday-in-month">How to schedule public holiday on “the 4th Monday in October”?</h3>
+<p>This does not require any additions to <code>.emacs</code>:</p>
+<pre><code class="language-org">* Labour Day (NZ)
+  &#x3C;%%(diary-float 10 1 4)>
+</code></pre>
+<h3 id="multiple-timestamps-same-entry">Why isn’t the agenda showing all the times I put under a single entry?</h3>
+<p>Probably because you have not set the following variable:</p>
+<pre><code>org-agenda-skip-additional-timestamps-same-entry
+</code></pre>
+<p>The default value of this variable is t, which means that entries with
+multiple timestamps, such as the following…</p>
+<pre><code class="language-org">* Work really, really hard
+  &#x3C;2010-11-20 Sat 10:00>
+  &#x3C;2010-11-20 Sat 14:00>
+</code></pre>
+<p>… will only appear in the agenda at the time specified by the first
+timestamp. If you set <code>org-agenda-skip-additional-timestamps-same-entry</code> to
+nil, the item will appear will appear at all the times you specify.</p>
+<h3 id="import-iCal-from-Gnus">Can I import iCal events/appts from Gnus?</h3>
+<p>Yes.  Vagn Johansen wrote <a href="http://ozymandias.dk/emacs/org-import-calendar.el">org-import-calendar.el</a> which lets you do this.</p>
+<h2 id="Export">Export</h2>
+<h3 id="ignore-headline">How do I ignore a headline?</h3>
+<p>This is one of the most common FAQs on the Org mailing list.  The
+following export filter will allow headlines tagged <code>ignore</code> to be
+ignored during export, while their contents and children headlines
+are retained and children headlines are promoted to the level of
+the original headline.  Alternately, a more in depth discussion
+with a variety of alternate solutions is available in org-hacks
+<a href="org-hacks.org#ignoreheadline">here</a>.</p>
+<pre><code class="language-emacs-lisp">;; During export headlines which have the "ignore" tag are removed
+;; from the parse tree.  Their contents are retained (leading to a
+;; possibly invalid parse tree, which nevertheless appears to function
+;; correctly with most export backends) all children headlines are
+;; retained and are promoted to the level of the ignored parent
+;; headline.
+;;
+;; This makes it possible to add structure to the original Org-mode
+;; document which does not effect the exported version, such as in the
+;; following examples.
+;;
+;; Wrapping an abstract in a headline
+;;
+;;     * Abstract                        :ignore:
+;;     #+LaTeX: \begin{abstract}
+;;     #+HTML: &#x3C;div id="abstract">
+;;
+;;     ...
+;;
+;;     #+HTML: &#x3C;/div>
+;;     #+LaTeX: \end{abstract}
+;;
+;; Placing References under a headline (using ox-bibtex in contrib)
+;;
+;;     * References                     :ignore:
+;;     #+BIBLIOGRAPHY: dissertation plain
+;;
+;; Inserting an appendix for LaTeX using the appendix package.
+;;
+;;     * Appendix                       :ignore:
+;;     #+LaTeX: \begin{appendices}
+;;     ** Reproduction
+;;     ...
+;;     ** Definitions
+;;     #+LaTeX: \end{appendices}
+;;
+(defun org-export-ignore-headlines (data backend info)
+  "Remove headlines tagged \"ignore\" retaining contents and promoting children.
+Each headline tagged \"ignore\" will be removed retaining its
+contents and promoting any children headlines to the level of the
+parent."
+  (org-element-map data 'headline
+    (lambda (object)
+      (when (member "ignore" (org-element-property :tags object))
+        (let ((level-top (org-element-property :level object))
+              level-diff)
+          (mapc (lambda (el)
+                  ;; recursively promote all nested headlines
+                  (org-element-map el 'headline
+                    (lambda (el)
+                      (when (equal 'headline (org-element-type el))
+                        (unless level-diff
+                          (setq level-diff (- (org-element-property :level el)
+                                              level-top)))
+                        (org-element-put-property el
+                          :level (- (org-element-property :level el)
+                                    level-diff)))))
+                  ;; insert back into parse tree
+                  (org-element-insert-before el object))
+                (org-element-contents object)))
+        (org-element-extract-element object)))
+    info nil)
+  data)
+
+(add-hook 'org-export-filter-parse-tree-functions 'org-export-ignore-headlines)
+</code></pre>
+<h3 id="filter">How can I export &#x3C;my favourite element> as &#x3C;my favourite environment> or how can I transform the export output using filters</h3>
+<p>It is often useful to be able to make small tweaks to the export
+output by using filters.</p>
+<p>The Org mode manual has a dedicated section on this topic:
+<a href="https://orgmode.org/manual/Advanced-Export-Configuration.html">https://orgmode.org/manual/Advanced-Export-Configuration.html</a></p>
+<h3 id="export-TODO-items-as-lists">Can I get TODO items exported to HTML as lists, rather than as headlines?</h3>
+<p>If you plan to use ASCII or HTML export, make sure things you want to
+be exported as item lists are level 4 at least, even if that does
+mean there is a level jump.  For example:</p>
+<pre><code>* Todays top priorities
+**** TODO write a letter to xyz
+**** TODO Finish the paper
+**** Pick up kids at the school
+</code></pre>
+<p>Alternatively, if you need a specific value for the heading/item
+transition in a particular file, use the <code>#+OPTIONS</code> line to
+configure the H switch.</p>
+<pre><code>#+OPTIONS:   H:2; ...
+</code></pre>
+<h3 id="export-single-subtree">Can I export only a single subtree?</h3>
+<p>If you want to export a subtree, mark the subtree as region and then
+export. Marking can be done with <code>C-c @ C-x C-x</code>, for example.</p>
+<p>Alternatively, you can select option <code>C-s</code> in the org export dispatcher
+(e.g.., <code>C-c C-e C-s</code> to export the current subtree to html).</p>
+<p>By default, the title of the exported file will be set to the heading
+of the subtree. You can, however, <a href="#export-options-for-subtree">customize the title and other export
+options</a>.</p>
+<h3 id="export-options-for-subtree">How can I customize export options for a single subtree?</h3>
+<p>You can set unique export options for a <a href="#export-single-subtree">single subtree</a> by using
+properties. Relevant properties include:</p>
+<ul>
+<li><code>EXPORT_TITLE</code></li>
+<li><code>EXPORT_AUTHOR</code></li>
+<li><code>EXPORT_DATE</code></li>
+<li><code>EXPORT_FILE_NAME</code></li>
+<li><code>EXPORT_OPTIONS</code> (corresponds to the <code>#+OPTIONS:</code> <a href="https://orgmode.org/manual/Export-settings.html#Export-settings">configuration line</a>)</li>
+</ul>
+<h3 id="calendar-web-app">How can I tell my calendar web application about appointments in my agenda files?</h3>
+<p>Here is what you need to do:</p>
+<ol>
+<li>a script that calls Emacs in batch mode and produce a .ics file</li>
+<li>a script that uploads this .ics file somewhere on the web</li>
+<li>tell your webapp to fetch this .ics file on the web</li>
+</ol>
+<p>Here is the script I use for the first step:</p>
+<pre><code class="language-shell-script-mode">#!/bin/bash
+
+/usr/local/bin/emacs --batch --eval \
+"(progn (load-file \"~/install/git/org-mode/org.el\") \
+        (load-file \"~/elisp/config/org-batch-config.el\") \
+        (setq org-combined-agenda-icalendar-file \"~/org/cal/org.ics\")
+        (setq org-agenda-files (quote (\"~/org/bzg.org\"))))" \
+    -f org-export-icalendar-combine-agenda-files
+</code></pre>
+<p>Depending on your configuration, you might change the load sequence.</p>
+<p>Here is the script I use for the second step:</p>
+<pre><code class="language-shell-script-mode">#!/bin/bash
+/usr/bin/rsync -rtv ~/org/org.ics -e ssh me@my_server:/home/me/public_html/
+</code></pre>
+<p>Note: if you want to cron this rsync script, you will need to let
+<code>my_server</code> to know about your SSH public key.  Check <a href="http://troy.jdmz.net/rsync/index.html">this page</a> as a
+starter.</p>
+<p>Now you can cron the two scripts above and your webapp will always be
+up to date with your Org agendas.</p>
+<p>Also see <a href="https://orgmode.org/org.html#Exporting-Agenda-Views">Exporting agenda views</a> from Org manual.</p>
+<h3 id="iCal-import-ics-files-old">How can I get Mac OSX 10.3 iCal to import my org-exported .ics files?</h3>
+<p>When using iCal under Apple MacOS X Tiger, you can create a new C-e c=,
+see the variables <code>org-icalendar-combined-name</code> and
+<code>org-combined-agenda-icalendar-file</code>).  Then set Org-mode to overwrite
+the corresponding file <em>~/Library/Calendars/OrgMode.ics</em>.  You may even
+use AppleScript to make iCal re-read the calendar files each time a new
+version of <em>OrgMode.ics</em> is produced.  Here is the setup needed for
+this:</p>
+<pre><code>(setq org-combined-agenda-icalendar-file
+    "~/Library/Calendars/OrgMode.ics")
+(add-hook 'org-after-save-iCalendar-file-hook
+ (lambda ()
+  (shell-command
+   "osascript -e 'tell application \"iCal\" to reload calendars'")))
+</code></pre>
+<h3 id="iCal-import-ics-files-new">How can I get Mac OSX 10.4 or later iCal to import my Org-exported .ics files?</h3>
+<p>For Mac OS X 10.4, you need to write the ics file to
+<code>/Library/WebServer/Documents/</code> and then subscribe iCalendar to <code>http:
+   //localhost/orgmode.ics</code></p>
+<h3 id="export-options-remove-timestamps">How can I remove timestamps and todo keywords from my exported file?</h3>
+<p>You can place an options line at the top of your org file:</p>
+<pre><code>#+OPTIONS: &#x3C;:nil todo:nil
+</code></pre>
+<p>There is a whole host of export options you can set with an in-buffer
+options or via global variables. See <a href="https://orgmode.org/manual/Export-settings.html#Export-settings">this section</a> of the manual for a
+full list.</p>
+<h3 id="preserving-faces-during-batch-export">How can I preserve faces when I export an agenda from the command line?</h3>
+<p>Normally, when you export an agenda view from within Emacs, htmlize
+will convert your face definitions to direct color CSS styles inlined
+into each <code>&#x3C;span></code> object, resulting in an HTML output that preserves
+the general look of your Org buffers and agenda views.</p>
+<p>Let’s say you generate an export from the command line, such as the
+following:</p>
+<pre><code>emacs -batch -l ~/.emacs.d/init.el \
+-eval '(progn \
+        (org-agenda nil "a") \
+        (org-agenda-write "~/agenda.html"))'
+</code></pre>
+<p>In such an instance, the exported HTML will contain only very basic
+color styles. The reason is that when Emacs is run in batch mode, it
+does not have a display and therefore only rudimentary face
+definitions.  If you’d like to use more complex styles, you’ll have to
+supply custom CSS styles to make these classes look any way you like.
+To generate face definitions for a CSS file based on any faces you are
+currently using in Emacs, you can use the following command:</p>
+<pre><code class="language-emacs-lisp">(defun org-html-htmlize-generate-css-for-agenda ()
+  "Create the CSS for all font definitions in the current Emacs session.
+Unlike `org-html-htmlize-generate-css', do not prepend
+`org-html-htmlize-font-prefix' to face names."
+  (interactive)
+  (require 'ox-html)
+  (let ((org-html-htmlize-font-prefix ""))
+    (org-html-htmlize-generate-css)))
+</code></pre>
+<pre><code>M-x org-html-htmlize-generate-css-for-agenda RET
+</code></pre>
+<p>This will generate a <code>&#x3C;style>...&#x3C;/style></code> section, the content of
+which you can manually copy to your style file:</p>
+<pre><code>emacs -batch -l ~/.emacs.d/init.el \
+-eval '(let ((org-agenda-export-html-style \
+              "&#x3C;link rel=\"stylesheet\" type=\"text/css\" href=\"mystyles.css\">")) \
+        (org-agenda nil "a") \
+        (org-agenda-write "~/agenda.html"))'
+</code></pre>
+<h3 id="avoiding-dark-background-when-exporting-agenda">How can I avoid dark color background when exporting agenda to ps format?</h3>
+<p>Add this to your .emacs and evaluate it.</p>
+<pre><code class="language-emacs-lisp">(setq org-agenda-exporter-settings
+      '((ps-print-color-p 'black-white)))
+</code></pre>
+<h3 id="include-abstract-in-export-to-latex-and-html">How can I include e.g. an abstract in export to Latex and HTML?</h3>
+<p>Org does not currently have special markup for abstracts, but for
+export purposes, you can extend the block-level structural and
+semantic markup in Org with the contributed package <a href="org-contrib/org-special-blocks.org">org-special-blocks</a>
+(by Chris Gray). To turn it on, put this in your <code>.emacs</code>:</p>
+<pre><code>(require 'org-special-blocks)
+</code></pre>
+<p>Now, you can mark up the abstract of your article like this:</p>
+<pre><code>#+BEGIN_ABSTRACT
+Falling apples were observed and compared with pears. Newton's laws
+were confirmed at the 95% confidence level.
+#+END_ABSTRACT
+</code></pre>
+<p>Exporting to Latex wraps this in a
+<code>\begin{abstract}....\end{abstract}</code> environment, which just works.</p>
+<p>HTML export wraps it in a <code>&#x3C;div class="abstract">...&#x3C;/div></code>
+element. The HTML result won’t look like anything special until you
+style it. Here is some sample CSS to get you started; put these in
+your document header:</p>
+<pre><code>#+STYLE: &#x3C;style>.abstract {margin: 1em; padding: 1em; border: 1px solid black}
+#+STYLE: .abstract:before {content: "Abstract: "; font-weight: bold}&#x3C;/style>
+</code></pre>
+<p>Generally, <code>#+begin_foo</code> will work for any simple Latex <code>foo</code>
+environment not supported by existing Org markup.</p>
+<p>If you need to pass parameters, process the block content in some way,
+or support other exporters, you may want to consider whether you can
+customize it using Eric Schulte’s <a href="org-contrib/org-exp-blocks.org">org-exp-blocks</a> instead.</p>
+<h3 id="fontified_source_code_w_latex">How can I get colored source code when exporting to LaTeX?</h3>
+<p>As of Sun Aug 9 2009 the “current” version of Org-mode (see
+<a href="#keeping-current-with-Org-mode-development">How do I keep current with bleeding edge development?</a>) supports exporting source
+code to LaTeX using the listings package.</p>
+<p>To turn on listing export add the following to your Org-mode
+customization.</p>
+<pre><code class="language-emacs-lisp">;; requite org-latex so that the following variables are defined
+(require 'ox-latex)
+
+;; tell org to use listings
+(setq org-latex-listings t)
+
+;; you must include the listings package
+(add-to-list 'org-latex-packages-alist '("" "listings"))
+
+;; if you want colored source code then you need to include the color package
+(add-to-list 'org-latex-packages-alist '("" "color"))
+</code></pre>
+<p>The listings package will now be used to fontify source code in your
+LaTeX documents.  By default listings will not color any of your
+source code.  If you would like to set colors for keywords and
+comments in your latex documents you can do so using LaTeX directives
+like the following.</p>
+<pre><code class="language-latex">\lstset{keywordstyle=\color{blue},
+  commentstyle=\color{red},
+  stringstyle=\color{green}
+}
+</code></pre>
+<p>of if you want to get even fancier with your colors you can try
+something like the following</p>
+<pre><code class="language-latex">\definecolor{keywords}{RGB}{255,0,90}
+\definecolor{comments}{RGB}{60,179,113}
+\definecolor{fore}{RGB}{249,242,215}
+\definecolor{back}{RGB}{51,51,51}
+\lstset{
+  basicstyle=\color{fore},
+  keywordstyle=\color{keywords},
+  commentstyle=\color{comments},
+  backgroundcolor=\color{back}
+}
+</code></pre>
+<p>For more complex listings use cases consult the <a href="ftp://ftp.tex.ac.uk/tex-archive/macros/latex/contrib/listings/listings.pdf">listings manual</a>.</p>
+<h3 id="beamer">How can I export to Latex Beamer?</h3>
+<p>The latex <a href="https://ctan.org/pkg/beamer">Beamer Class</a> is a useful class for generating slide shows.
+Org mode supports Beamer export out of the box.  Check out <a href="https://orgmode.org/manual/Beamer-Export.html">the manual</a>.</p>
+<h3 id="using-xelatex-for-pdf-export">How can I use XeLaTeX for LaTeX export instead of pdfLaTeX?</h3>
+<p><a href="https://en.wikipedia.org/wiki/XeTeX">XeLaTeX</a> is an alternative to pdfLaTeX for typesetting LaTeX
+documents.  XeTeX can use any fonts installed in the operating system
+without configuring TeX font metrics, and can make direct use of advanced
+typographic features of OpenType and other font formats.  By default,
+org-mode exports <code>org</code> files to <code>pdf</code> via pdfLaTeX.</p>
+<p>To use XeLaTeX for LaTeX export, customize <code>org-latex-compiler</code> or add
+the following to Org file to be exported</p>
+<pre><code>#+LATEX_COMPILER: xelatex
+</code></pre>
+<p>An example <code>.org</code> file you want compiled with XeLaTeX might contain the
+following header:</p>
+<pre><code>#+TITLE: My Paper
+#+AUTHOR: Jane Doe
+#+DATE:
+#+OPTIONS: toc:nil num:nil
+#+LATEX_COMPILER: xelatex
+#+LATEX_HEADER: \setsansfont[Mapping=tex-text]{Unit-Bold}
+#+LATEX_HEADER: \setmonofont[Mapping=tex-text,Scale=MatchLowercase]{PragmataPro}
+#+LATEX_HEADER: \setromanfont[Mapping=tex-text,Numbers=OldStyle]{Minion Pro}
+</code></pre>
+<p>If you always want to have the same font setup in your xelatex documents,
+the <code>fontspec</code> commands setting the font choices can be put in the
+<code>org-latex-classes</code> setting instead.</p>
+<h3 id="unreadable-pdfs">Why is my exported PDF file almost unreadable?</h3>
+<p>Some PDF viewers (earlier versions (&#x3C; v6) of Acrobat Reader, Evince,
+possibly others) do not get along with Adobe Type3 fonts, producing almost
+unreadable screen output (printed output is OK). If you see this, first
+verify the fonts that your document uses: open it with Acrobat Reader or
+Evince, select “Properties” from the “File” menu and click on the “Fonts”
+tab; alternatively, you can use the pdffonts program (part of the
+xpdf-reader package) from the command line.  If that is indeed the problem,
+then either use a different viewer or install Type1 versions of the
+problematic fonts. For more details, see the “PDF export” section of
+<a href="./org-dependencies.org">org-dependencies</a>.</p>
+<h3 id="html-image-and-link-attributes">Can I add attributes to a link or an image in HTML export?</h3>
+<p>Yes.  Excerpt from <a href="https://orgmode.org/manual/Images-in-HTML-export.html#Images-in-HTML-export">Org’s manual</a>:</p>
+<p>If you need to add attributes to an inlined image, use a <code>#+ATTR_HTML</code>.
+In the example below we specify the <code>alt</code> and <code>title</code> attributes to
+support text viewers and accessibility, and align it to the right.</p>
+<pre><code> #+CAPTION: A black cat stalking a spider
+ #+ATTR_HTML: :alt cat/spider image :title Action! :align right
+ [[./img/a.jpg]]
+</code></pre>
+<p>and you could use <code>http</code> addresses just as well.</p>
+<h3 id="convert-to-open-office">How can I export an org file to rtf, odt (Open Office), or doc (Word)?</h3>
+<p>Orgmode exports natively to <code>OpenDocument</code> format using <code>org-odt</code> module.</p>
+<p>The key bindings for export are <code>C-c C-e o o</code> and <code>C-c C-e o O</code>.</p>
+<h3 id="zip">ODT export aborts on my Windows machine as I don’t have zip installed.  Where can I find a zip utility?</h3>
+<p>You can either use <a href="https://en.wikipedia.org/wiki/Info-ZIP">Info-ZIP</a> or zip package from Cygwin. Please customize
+<code>exec-path</code> to include the installation directory.</p>
+<h3 id="debugging-org-odt">I cannot open an exported <code>*.odt</code> file in LibreOffice because it is corrupt.  What do I do?</h3>
+<p>Typically the corruption of <code>odt</code> file happens when the XML emitted by
+Org is not well-formed according to <code>OpenDocument schema</code>.</p>
+<p>If you encounter corruption issues please identify the root cause
+using one of the methods described below:</p>
+<ul>
+<li>Use an Online validator
+<ul>
+<li>Pass the exported document through the <a href="https://odfvalidator.org/">ODF Validator</a> and note down
+the errors.</li>
+</ul>
+</li>
+<li>Use Emacs’ in-built validator
+<ol>
+<li>Switch to <code>*.odt</code> buffer <code>(C-x b whatever.odt)</code></li>
+<li>Open the <code>content.xml</code> file - <code>(Hit RET on content.xml)</code></li>
+<li>Do a <code>C-u C-c C-n</code> - <code>(M-x rng-first-error)</code></li>
+<li>Note the error message, the XML markup at the point of error and
+the surrounding context.</li>
+</ol>
+</li>
+</ul>
+<p>Once you have identified the error</p>
+<ol>
+<li>Create a minimal org file that reproduces the error.</li>
+<li>Post a bug-report to <code>emacs-orgmode@gnu.org</code>.</li>
+</ol>
+<h3 id="specify-odt-export-styles">How can I specify ODT export styles?</h3>
+<p>Check the variable <code>org-odt-styles-file</code>.  Here is its docstring:</p>
+<pre><code>org-odt-styles-file is a variable defined in `ox-odt.el'.
+Its value is nil
+
+Documentation:
+Default styles file for use with ODT export.
+Valid values are one of:
+1. nil
+2. path to a styles.xml file
+3. path to a *.odt or a *.ott file
+4. list of the form (ODT-OR-OTT-FILE (FILE-MEMBER-1 FILE-MEMBER-2
+...))
+
+[snip]
+
+Use "#+ODT_STYLES_FILE: ..." directive to set this variable on
+a per-file basis.  For example,
+
+#+ODT_STYLES_FILE: "/path/to/styles.xml" or
+#+ODT_STYLES_FILE: ("/path/to/file.ott" ("styles.xml" "image/hdr.png")).
+
+You can customize this variable.
+</code></pre>
+<h3 id="omit-title">Can I omit the title in the LaTeX export?</h3>
+<p>Yes: simply use a blank #+TITLE in your Org file.</p>
+<h3 id="custom-colors-in-export">How can I use arbitrary colors for words/sentences in HTML export?</h3>
+<p><a href="https://github.com/alhassy/org-special-block-extras">https://github.com/alhassy/org-special-block-extras</a> implements
+exporting custom colors during export.</p>
+<p>As alternative option, you can add the following to your Emacs config,</p>
+<pre><code class="language-emacs-lisp">;; -*- emacs-lisp -*-
+(org-link-set-parameters
+ "color"
+ :follow
+ (lambda (path)
+   (message (concat "color "
+                    (progn (add-text-properties
+                            0 (length path)
+                            (list 'face `((t (:foreground ,path))))
+                            path) path))))
+ :export
+ (lambda (path desc format)
+   (cond
+    ((org-export-derived-backend-p format 'html)
+     (format "&#x3C;span style=\"color:%s;\">%s&#x3C;/span>" path desc))
+    ((org-export-derived-backend-p format 'latex)
+     (format "{\\color{%s}%s}" path desc))))
+ :face
+  (lambda (path)
+    (list `(:foreground ,path))))
+</code></pre>
+<p>and then you can use</p>
+<pre><code>[[color:red][red]]
+</code></pre>
+<p>for colored export.</p>
+<p>This question has been raised <a href="https://list.orgmode.org/44B0EAE8544C834188E8790873CDE1CC226BF8F8@ARCEXCHANGE.arc.local">on the mailing list</a> by Jos’h Fuller and
+answered by Eric Schulte. The example code has been updated with the
+<code>:face</code> parameter to show the color in the buffer as well.</p>
+<h3 id="suppress-page-number">How can I suppress the page number in the footer of an exported PDF?</h3>
+<p>Use the following directive in your Org file:</p>
+<pre><code>#+LATEX: \thispagestyle{empty}
+</code></pre>
+<h3 id="inline-comments">Is it possible to add inline comments?</h3>
+<p>Org does not have a dedicated inline comment markup, just
+paragraph-level <a href="https://orgmode.org/manual/Comment-Lines.html">comments</a>. As a result,</p>
+<pre><code># a comment like this in the middle of a sentence
+</code></pre>
+<p>will break the paragraph into two, as Org treats the sequence
+paragraph-comment-paragraph as three separate entities.</p>
+<p>However, you can use inline export snippets with non-existing export
+backend (that is: not <code>html</code>, <code>latex</code>, or other export backends you use):<br>
+<code>@@comment: rewrite it @@</code> or even <code>@@c: be concise@@</code>.<br>
+Then, the containing sentence is not broken structurally.</p>
+<p>See also <a href="https://orgmode.org/quickstart.html#comments">Comments in <em>Getting started with Org-mode</em> (<em>Quickstart</em>)</a>.</p>
+<h2 id="backup">Backup</h2>
+<p>Since <code>org</code> files are so central to your life, you probably want to back
+them up in a safe place.</p>
+<p>If the <code>org</code> file you want to back up are in a single directory, the
+preferred method is to us a <code>RCS</code> (Revision Control System) – pick up your
+favorite (<a href="http://git-scm.com/">git</a>, <a href="https://www.mercurial-scm.org/">mercurial</a>, <a href="http://subversion.apache.org/">subversion</a>, <a href="http://www.nongnu.org/cvs/">cvs</a>, etc.).  Depending on the
+RCS you use and how you use it, you can have a <em>local</em> backup or sync it on
+a remote place.</p>
+<p>If you want to store all your <code>org</code> files from your <code>$HOME</code> to a single
+<code>~/org/backup/</code> folder, you can use this shell script (as <a href="https://list.orgmode.org/AANLkTimemfOeZFYajbpeW09OOJ87CVo-cTnarK-E=c3h@mail.gmail.com">suggested by
+Suvayu Ali</a>):</p>
+<pre><code class="language-sh">mkdir -p ~/org/backup &#x26;&#x26; \
+find $HOME -type f -name '*\.org' ! -path "$HOME/org/backup/*" \
+     -exec cp -t ~/org/backup/ \{\} \;
+</code></pre>
+<p>It will recursively search for <code>org</code> files in your <code>$HOME</code> directory
+(except those in <code>~/org/backup/</code>) and copy them to <code>~/org/backup/</code>.
+You can then use rsync to make sure <code>~/org/backup/</code> also lives on a
+remote and safe place.</p>
+<h2 id="Mobile-devices">Org-mode on mobile devices</h2>
+<h3 id="mobile-apps">What mobile apps for org-mode are available?</h3>
+<p>These are the most popular apps for keeping notes in org-mode format
+on mobile devices:</p>
+<ul>
+<li>MobileOrg for <strong>iOS</strong>, created by Richard Moreland.  Check out <a href="https://mobileorg.github.io">the project’s page</a>.</li>
+<li>Orgzly Revived for <strong>Android</strong>. See <a href="https://www.orgzlyrevived.com/">the project’s page</a>.</li>
+<li>Organice, a React-based <a href="https://en.wikipedia.org/wiki/Progressive_web_application">Progressive Web App (PWA)</a> for any device
+with a browser.  Syncs with Dropbox, Google Drive, and WebDAV.  Can
+be self-hosted, or simply use <a href="https://organice.200ok.ch/">the public instance</a>.  Check out <a href="https://organice.200ok.ch/documentation.html">the
+documentation</a> for more info.</li>
+<li><a href="https://codefloe.com/publicvoit/AndroidOrgdownCapture">Android Orgdown Capture</a> for capturing stuff from various sources
+into Orgdown files you may sync to your desktop and refile later.</li>
+</ul>
+<p>There is also an app called MobileOrg for <strong>Android</strong> which is now
+unmaintained and not fully compatible with recent versions of
+Android. See <a href="https://github.com/matburt/mobileorg-android">the project page</a>.</p>
+<h3 id="mobile-files">Can I use the same files on my mobile device as on my computer?</h3>
+<p>Absolutely! Depending on the mobile app and your preferences, a number
+of options are available.</p>
+<dl>
+<dt>Synchronizing using the MobileOrg protocol</dt>
+<dd>
+<p>Org-mode in Emacs has a builtin protocol for synchronizing and
+merging changes from the mobile device. This protocol is supported
+by MobileOrg for iOS and by the (unmaintained) MobileOrg for
+Android, but <strong>not</strong> by Orgzly. Synchronization is initiated from within
+Emacs, which needs to fetch a file containing only the changes in a
+MobileOrg-specific file format. The file can be retrieved:</p>
+<ul>
+<li>via <a href="http://www.dropbox.com/">Dropbox.com</a> (easier to set up, free accounts available)</li>
+<li>via <a href="https://syncthing.net/">Syncthing</a> (open source and self hosted, potentially more data privacy)</li>
+<li>via a <a href="https://en.wikipedia.org/wiki/WebDAV">WebDAV</a> server of your choice (potentially more data privacy)</li>
+</ul>
+<p><strong>How does synchronization via WebDAV work?</strong></p>
+<p>You need to create a dedicated directory on the WebDAV server for
+the communication between Emacs and MobileOrg.</p>
+<pre><code class="language-ditaa">+----------------------+           +----------------------+
+| desktop              |           | WebDAV server        |
++----------------------+           +----------------------+
+| emacs                |           | org-mobile-directory |
+|   + org-mode         |           | containing:          |
+|                      | scp (ssh) |                      |
+|   org-mobile-push ----------------->  *.org             |
+|   org-mobile-pull &#x3C;-----------------                    |
+|                      | via tramp |       ^              |
++----------------------+           +-------|--------------+
+                                           |
+              +----------------------+     |
+              | mobile device        |     | WebDAV
+              +----------------------+     |
+              |                      |     |
+              |    MobileOrg     &#x3C;---------+
+              |                      |
+              +----------------------+
+</code></pre>
+<p>If you can mount that directory locally so that Emacs can directly
+write to it, just set the variable <code>org-mobile-directory</code> to point to
+that directory.  Alternatively, by using the <a href="http://www.gnu.org/software/tramp/"><em>TRAMP</em></a> method,
+<code>org-mobile-directory</code> may point to a remote directory accessible
+through, for example, <em>ssh</em> and <em>scp</em>:</p>
+<pre><code class="language-emacs-lisp">(setq org-mobile-directory "/scpc:user@remote.host:org/webdav/")
+</code></pre>
+<div class="warningbox">
+<p>N.B. Since this configures <em>TRAMP</em> to connect via <em>ssh</em>, you will need
+to use your <em>ssh</em> password, not a WebDAV password.</p>
+<p>Also note that if you have configured ssh to use <code>ControlPersist</code>,
+due to <a href="https://lists.gnu.org/archive/html/tramp-devel/2012-03/msg00010.html">a bug with tramp and <code>ControlPersist</code></a> you may need to use
+<code>scpx</code> instead of <code>scp</code> as the <em>tramp</em> transfer method.</p>
+</div>
+<p><strong>Does Emacs have to use <em>TRAMP</em> to access the remote directory?</strong></p>
+<p>No, you can alternatively use a local directory for staging.  Other
+means must then be used to keep this directory in sync with the
+WebDAV directory.  In the following example, files are staged in
+<code>~/stage/</code>, and Org-mode hooks take care of moving files to and from
+the WebDAV directory using <em>scp</em>.</p>
+<pre><code class="language-emacs-lisp">(setq org-mobile-directory "~/stage/")
+(add-hook 'org-mobile-post-push-hook
+  (lambda () (shell-command "scp -r ~/stage/* user@wdhost:mobile/")))
+(add-hook 'org-mobile-pre-pull-hook
+  (lambda () (shell-command "scp user@wdhost:mobile/mobileorg.org ~/stage/ ")))
+(add-hook 'org-mobile-post-pull-hook
+  (lambda () (shell-command "scp ~/stage/mobileorg.org user@wdhost:mobile/")))
+</code></pre>
+<p>Alternatively you could write a simple script to synchronize from
+<code>~/stage/</code> to the remote directory via <em>rsync</em>.</p>
+</dd>
+<dt>Synchronizing with Syncthing or Dropbox directly</dt>
+<dd>
+<p>Among Orgzly users it is popular to synchronize the org files
+themselves (rather than just the changesets) with <a href="https://syncthing.net/">Syncthing</a> or
+<a href="http://www.dropbox.com/">Dropbox.com</a>. This method provides no way of merging parallel edits,
+so you must ensure that a synchronization is performed when
+switching device, or you’ll be in trouble. <a href="https://medium.com/@JosephKiran/replacing-cloud-based-to-do-apps-with-orgzly-and-syncthing-6a065419d61">This blog post</a> provides
+some details for using Orgzly with Syncthing.</p>
+</dd>
+<dt>Synchronizing with Git and a shell script</dt>
+<dd>
+<p>An option which is attractive if you already prefer to have your org
+files version controlled by git is to initiate synchronization from
+a shell script on the computer, and handle merge conflicts with git
+merges. Edits made in parallel will be visible as parallel branches
+in the git log, and most conflicts should be handled by the
+auto-merger. <a href="https://pantarei.xyz/posts/sync-org-mode-with-mobile/">This blog post</a> provides such a script with setup
+instructions.</p>
+</dd>
+</dl>
+<h2 id="Tips-and-tricks">Tips and Tricks</h2>
+<h3 id="link-gmail">Can I create an Org link from a gmail email?</h3>
+<p>There are two kinds of identifiers that may be used with Gmail:
+internal thread ID that is a sequence of letters and
+Message-ID email header that is similar to email address,
+but with random characters instead of user name.</p>
+<p>The base URL is <code>https://mail.google.com/mail/u/0/</code>.
+If you use multiple accounts than you should replace
+“0” with your email address.</p>
+<p>For internal thread ID the trick is the <code>#all/</code> label,
+so it should not matter if the conversation is still in your inbox
+or you have archived it.  A link should look like
+<code>https://mail.google.com/mail/u/0/#all/ABcdefGHIJKlmNOpqRsTuVWXYZabCdEF</code>
+Originally it was suggested in the mailing list thread started as
+<a href="https://list.orgmode.org/4E9F8A54.5070007@gmail.com">Torsten Wagner. direct link to mails in gmail. Thu, 20 Oct 2011 11:41:24 +0900</a>.</p>
+<p>For Message-ID it is possible to create URL that opens list with <code>#search/</code> results
+usually containing single message.  The search operator is “rfc822msgid:”,
+see the <a href="https://support.google.com/mail/answer/7190">Refine searches in Gmail</a> help article.
+In the provided example there are no angle brackets around Message-ID.
+Query should be percent-encoded, e.g. colon <code>:</code> as <code>%3A</code>, <code>@</code> as <code>%40</code>:</p>
+<pre><code class="language-elisp">(concat "https://mail.google.com/mail/u/0/#search/rfc822msgid%3A"
+	(url-hexify-string "4E9F8A54.5070007@gmail.com"))
+;; "https://mail.google.com/mail/u/0/#search/rfc822msgid%3A4E9F8A54.5070007%40gmail.com"
+</code></pre>
+<p>or in JavaScript</p>
+<pre><code class="language-js">"https://mail.google.com/mail/u/0/#search/"
+  + encodeURIComponent("rfc822msgid:" + "4E9F8A54.5070007@gmail.com")
+</code></pre>
+<p>With some glue code you may use <code>mid:</code> links in your Org documents
+and rewrite URLs at the <code>browse-url</code> level, see
+<a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/Browse_002dURL.html">info “(emacs) Browse-URL”</a>.</p>
+<p>To obtain Message-ID without using browser extensions or bookmarklets,
+you may use “Show original” message menu item.
+See also how to use <a href="#mid-url-handler">Message-ID links with Thunderbird</a>.</p>
+<h3 id="Problems-with-LaTeX-macros-with-#+latex-or-#+begin_latex">Problems with LaTeX macros with <code>#+latex</code> or <code>#+begin_latex</code></h3>
+<p>Org’s LaTeX exporter has a difficult job on its hands and even though it
+does a great job most of the time, there are times when it falls short. One
+situation that has arisen a few times in the past is when a macro
+definition or use includes an opening brace, but the corresponding closing
+brace is on a different line. That has caused LaTeX compilation problems or
+mysterious excisions of content - see for example the following two threads
+in the mailing list:</p>
+<ul>
+<li><a href="https://list.orgmode.org/87r5abi1tn.fsf@fastmail.fm">https://list.orgmode.org/87r5abi1tn.fsf@fastmail.fm</a></li>
+<li><a href="https://list.orgmode.org/BANLkTikRuyA7_sCC3pyVEHsJ0KXtP88_xw@mail.gmail.com">https://list.orgmode.org/BANLkTikRuyA7_sCC3pyVEHsJ0KXtP88_xw@mail.gmail.com</a></li>
+</ul>
+<p>In both cases, the exporter was getting confused by the opening brace which
+did not have a corresponding closing brace on the same line. Although the
+first of these cases is fixed in current Org, there might be more such
+cases or there might be a regression which causes the incorrect behavior
+again. While waiting for a fix, it’s worth trying out the simple workaround
+of including a fake closing brace on the same line as the opening brace but
+<strong>commenting it out</strong> so that LaTeX never sees it.  That is often enough to
+make the exporter behave properly. In other words, to take one of the
+examples above, instead of writing</p>
+<pre><code>#+latex: \custommacro {
+...
+#+latex: }
+</code></pre>
+<p>use the following idiom instead:</p>
+<pre><code>#+latex: \custommacro { % hide the closing brace in a LaTeX comment }
+...
+#+latex: }
+</code></pre>
+<p>I emphasize that this is a workaround, not a fix: if you do run into such
+a case and the workaround fixes it, at least you can continue working, but
+please submit a bug report so that it can be fixed properly.</p>
+<h3 id="Mairix-type-link">Inserting a Mairix type link when calling Orgmode capture in VM</h3>
+<p>See the “rather crude solution” posted in <a href="http://robert-adesam.blogspot.com/2011/07/orgmode-capture-to-insert-mairix-link.html">this blog entry</a> by Robert
+Adesam.</p>
+<h3 id="ispell-skip-src">Can I prevent ispell from checking source blocks?</h3>
+<p>Yes, use this:</p>
+<pre><code class="language-emacs-lisp">(add-to-list 'ispell-skip-region-alist '("#\\+begin_src". "#\\+end_src"))
+</code></pre>
+<h3 id="archive-subtree-hierarchy">Can I archive a subtree while keeping its hierarchy above?</h3>
+<p>Yes, you can check this <a href="https://gist.github.com/edgimar/072d99d8650abe81a9fe7c8687c0c993">code</a>.</p>

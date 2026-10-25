@@ -1,0 +1,10 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>this file has a link in it’s heading, which can cause problems</p>
+<h2 id="example"><a href="http://www.example.com">example</a></h2>
+<p>what a weird heading…</p>
+<pre><code class="language-emacs-lisp">;; a8b1d111-eca8-49f0-8930-56d4f0875155
+(message "my heading has a link")
+</code></pre>

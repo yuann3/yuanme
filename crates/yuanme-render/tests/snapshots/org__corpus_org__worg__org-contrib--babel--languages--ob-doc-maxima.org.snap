@@ -1,0 +1,323 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+  <div id="subtitle" style="float: center; text-align: center;">
+  <p>
+  Org Mode support for <a href="https://maxima.sourceforge.io/">Maxima</a>
+  </p>
+  <p>
+  <a href="https://maxima.sourceforge.io/">
+  <img width="20%" src="https://maxima.sourceforge.io/img/maxima.svg"/>
+  <img width="70%" src="https://maxima.sourceforge.io/img/maxima-banner.png"/>
+  </a>
+  </p>
+  </div>
+<h2 id="introduction">Introduction</h2>
+<p>Maxima is a computer algebra system descended from Macsyma, which was
+originally released in 1982.  It is released under the terms of the
+GNU General Public License.</p>
+<p>Maxima is written in Common Lisp.  It can be accessed and extended in
+Lisp.</p>
+<h2 id="requirements-and-setup">Requirements and Setup</h2>
+<p>Maxima binaries are available for Windows and Linux.  These either
+require a compatible Common Lisp or an executable Lisp image.  Mac OS
+X users can install via brew or MacPorts.  The combinations of
+operating system and Lisp implementation known to run Maxima can be
+found on <a href="http://maxima-project.org/wiki/index.php?title%3DMaxima_ports">the Maxima ports page</a>.</p>
+<p>There are several versions of Maxima, some with different names.  The
+variable <code>org-babel-maxima-command</code> can be set to the name of your
+Maxima executable.  The default value is “maxima”.</p>
+<p>Maxima ships with <code>Emacs</code> modes.  Instructions for configuring them
+can be found on <a href="http://emacswiki.org/emacs/MaximaMode">emacswiki</a>.  <code>imaxima</code> is an <code>Emacs</code> front end with
+image that displays fully typeset math in your <code>Emacs</code> window.</p>
+<p>You must activate Maxima by adding a line to
+<code>org-babel-load-languages</code>:</p>
+<pre><code class="language-emacs-lisp">(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((maxima . t))) ; this line activates maxima
+</code></pre>
+<h2 id="org-mode-features-for-maxima-source-code-blocks">Org Mode Features for Maxima Source Code Blocks</h2>
+<h3 id="header-arguments">Header Arguments</h3>
+<p>There are no Maxima-specific <em>default</em> header arguments.</p>
+<p>There are two Maxima-specific header arguments:</p>
+<dl>
+<dt><code>:batch</code></dt>
+<dd>This can be set to one of Maxima’s source-code loaders:
+<code>batch</code>, <code>load</code> or <code>batchload</code>.  The default loader is <code>batchload</code>.</dd>
+<dt><code>:graphics-pkg</code></dt>
+<dd>This can set to one of Maxima’s graphics
+packages: <code>draw</code> or <code>plot</code>.  The default package is <code>plot</code>.</dd>
+</dl>
+<p>If a <code>:file filename.ext</code> header argument is provided to a Maxima
+source block, in conjunction with a <code>:results graphics file</code> header
+argument, then the graphics device is determined from the file-ending
+<code>ext</code>. For the <code>plot</code> package, the following graphics devices (gnuplot
+terminals) are supported:</p>
+<pre><code>png, pdf, ps, svg.
+</code></pre>
+<p>The <code>draw</code> package supports these graphics devices:</p>
+<pre><code>png, jpg, gif, eps, svg, pdf.
+</code></pre>
+<p>The header argument, <code>:cmdline</code>, can be used to pass command line
+arguments to Maxima.</p>
+<h3 id="sessions">Sessions</h3>
+<p>Org-mode support for Maxima does not include sessions.</p>
+<h3 id="result-types">Result Types</h3>
+<p>Maxima produces the full range of result types.</p>
+<h2 id="examples-of-use">Examples of Use</h2>
+<h3 id="calculator">Calculator</h3>
+<p>The following source code block uses <code>maxima</code> as a calculator for
+powers of 12, where the powers are passed with a variable.</p>
+<pre><code>#+name: test-maxima
+#+header: :exports results
+#+header: :var x=1.3121254
+#+begin_src maxima
+  programmode: false;
+  print(12^x);
+#+end_src
+</code></pre>
+<p>HTML export of the result:</p>
+<pre><code>26.06280316745402
+</code></pre>
+<h3 id="solver">Solver</h3>
+<p>Of course, <code>maxima</code> is more than a calculator.</p>
+<pre><code>#+name: solve-maxima
+#+header: :exports results
+#+begin_src maxima :results output
+  programmode: false;
+  eq: x**2-16 = 0;
+  solution: solve(eq, x);
+  print(solution);
+#+end_src
+</code></pre>
+<p>HTML export of the result:</p>
+<pre><code>solve: solution:
+                                    x = - 4
+                                     x = 4
+[%t1, %t2]
+</code></pre>
+<h3 id="3d-plots">3D plots</h3>
+<p>With <code>gnuplot</code> installed (4.0 or higher), 3D graphics are possible.
+This example is from <a href="http://maxima.sourceforge.net/maxima-gnuplot.html">a tutorial on the maxima/gnuplot interface</a>.</p>
+<pre><code>#+name: 3d-maxima
+#+header: :file images/maxima-3d.png
+#+header: :exports results
+#+header: :results file graphics
+#+begin_src maxima
+  programmode: false;
+  plot3d(atan(-x^2+y^3/4),[x,-4,4],[y,-4,4],[grid,50,50],[gnuplot_pm3d,true]);
+#+end_src
+</code></pre>
+<p>HTML export of the Maxima code block result:</p>
+<p><img src="images/maxima-3d.png" alt="maxima-3d.png"></p>
+<h3 id="inline-display-of-maxima-latex-output">Inline Display of Maxima LaTeX Output</h3>
+<p><a href="http://maxima.sourceforge.net/">Maxima</a> code can be evaluated and displayed inline in Org mode
+through babel <sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup> as in the example below, based on RS initial
+example.</p>
+<pre><code>#+NAME: tex-maxima
+#+HEADER: :exports results
+#+BEGIN_SRC maxima :results raw
+  tex(exp(-x)/x);
+#+END_SRC
+</code></pre>
+<p>HTML export of the result:</p>
+<p><code class="language-math math-display">{{e^ {- x }}\over{x}}</code></p>
+<h3 id="the-batch-header-argument">The <code>:batch</code> header argument</h3>
+<p>Setting the <code>:batch</code> header argument to <code>batch</code>:</p>
+<ul>
+<li>allows the use of the <code>:lisp</code> reader;</li>
+<li>provides a more verbose output;</li>
+<li>allows one to typeset calculations in LaTeX.</li>
+</ul>
+<h4 id="an-example-with-the-lisp-reader">An example with the <code>:lisp</code> reader</h4>
+<p>Sample code block:</p>
+<pre id="batch-maxima.org"><code class="language-org">#+NAME: batch-maxima
+#+HEADER: :batch batch
+#+HEADER: :exports results
+#+HEADER: :results raw
+#+HEADER: :wrap example
+#+BEGIN_SRC maxima
+  (assume(z>0), integrate(t^z*exp(-t),t,0,inf));
+  :lisp $%
+#+END_SRC
+</code></pre>
+<p>The first line of input computes the integral <code class="language-math math-inline">\int_0^{\infty}
+t^z\,e^{-t}\,dt</code>, assuming that <code class="language-math math-inline">z</code> is positive.  The second input
+line uses the <code>:lisp</code> reader to print the internal representation of
+that result as a sexp.</p>
+<p>HTML export of results:</p>
+<pre><code>(assume(z > 0),integrate(t^z*exp(-t),t,0,inf))
+                                 gamma(z + 1)
+((%GAMMA SIMP) ((MPLUS SIMP) 1 $Z))
+</code></pre>
+<h4 id="an-example-with-line-numbering">An example with line numbering</h4>
+<p>By default, the command-line option <code>--very-quiet</code> is passed to the
+Maxima executable; this option suppresses the output of the start-up
+banner and input/output labels.  That can be modified by setting
+<code>:cmdline --quiet</code>, which allows printing of input/output labels.</p>
+<p>Sample code block:</p>
+<pre id="batch-quiet-maxima.org"><code class="language-org">#+NAME: batch-quiet-maxima
+#+HEADER: :batch batch
+#+HEADER: :exports results
+#+HEADER: :results raw
+#+HEADER: :wrap example
+#+HEADER: :cmdline --quiet
+#+BEGIN_SRC maxima
+  rat(1/(x+1) + x/(x-1));
+#+END_SRC
+</code></pre>
+<p>HTML export of results:</p>
+<pre><code>(%i1) rat(1/(x+1)+x/(x-1))
+                                  2
+                                 x  + 2 x - 1
+(%o1)/R/                         ------------
+                                     2
+                                    x  - 1
+</code></pre>
+<p>Maxima’s default is to print input in linear (or 1d) fashion, while
+output is printed in 2d.</p>
+<h4 id="latex-output">LaTeX output</h4>
+<p>To produce LaTeX output for an extended computation, one needs to
+set-up a LaTeX printer.  This example uses the <code>alt-display</code> package
+to do that.  To print output as LaTeX, Maxima’s 2d printer is replaced
+with <code>org_tex_display</code>; to ensure input lines are not echoed, its 1d
+printer is replaced with a sink, <code>org_no_display</code> (see also this
+<a href="#batch-note">Note</a>).</p>
+<p>Tangle this code block (<code>C-u C-c C-v t</code>):</p>
+<pre id="maxima-initialize.lisp.org"><code class="language-org">#+NAME: maxima-initialize.lisp
+#+HEADER: :tangle ./maxima-initialize.lisp
+#+HEADER: :exports none
+#+HEADER: :eval none
+#+begin_src maxima
+#$(load("alt-display.mac"),
+define_alt_display(org_no_display(output_form), ""),
+define_alt_display(org_tex_display(output_form),
+  block([],
+  printf(true,"~&#x26;#+begin_example~%(~a~d)~%",outchar,linenum),
+  printf(true,"~&#x26;#+end_example~%"),
+  tex(second(output_form)))),
+set_alt_display(2,org_tex_display),
+set_alt_display(1,org_no_display));#$
+#+end_src
+</code></pre>
+<p>Next, write a Maxima code block that sets the <code>:cmdline</code> header to
+read in the initialization code that was just tangled.</p>
+<pre id="batch-latex-maxima.org"><code class="language-org">#+NAME: batch-latex-maxima
+#+HEADER: :batch batch
+#+HEADER: :exports results
+#+HEADER: :results raw
+#+HEADER: :wrap maximablock
+#+HEADER: :cmdline --quiet --preload-lisp ./maxima-initialize.lisp
+#+BEGIN_SRC maxima
+  (assume(z>0), 'integrate(t^z*exp(-t),t,0,inf) = integrate(t^z*exp(-t),t,0,inf));
+  diff(%,z);
+#+END_SRC
+</code></pre>
+<p>HTML export of the results:</p>
+<div class="maximablock">
+<pre><code>(%o1)
+</code></pre>
+<p><code class="language-math math-display">\int_{0}^{\infty }{t^{z}\,e^ {- t }\;dt}=\Gamma\left(z+1\right)</code></p>
+<pre><code>(%o2)
+</code></pre>
+<p><code class="language-math math-display">\int_{0}^{\infty }{t^{z}\,e^ {- t }\,\log t\;dt}=\psi_{0}(z+1)\,
+ \Gamma\left(z+1\right)</code></p>
+</div>
+<h4 id="-note"><a id="batch-note"></a> Note</h4>
+<p>Prior to version <code>5.47</code>, Maxima could only pre-load a lisp
+file; to get around this constraint, the Maxima code is written into a
+lisp file, and the <code>#$</code> reader macro is used to read the Maxima code.
+In versions 5.47 and higher, the Maxima code can be put in a <code>.mac</code>
+file and pre-loaded without the need for such tricks.</p>
+<h3 id="the-graphics-pkg-header-argument">The <code>:graphics-pkg</code> header argument</h3>
+<p>The <code>:graphics-pkg</code> header argument can be set to use either Maxima’s
+built-in <code>plot</code> package (the default), or the <code>draw</code> package.</p>
+<h4 id="the-plot-package">The <code>plot</code> package</h4>
+<p>The <code>plot</code> package is the default package that provides a simplified
+interface to <code>gnuplot</code>. Here is an example that creates a <code>gif</code> file.</p>
+<pre id="graphics-pkg--plot.org"><code class="language-org">#+NAME: graphics-pkg--plot
+#+HEADER: :graphics-pkg plot
+#+HEADER: :file images/ob-maxima-plot.gif
+#+HEADER: :results graphics file
+#+HEADER: :exports both
+#+begin_src maxima
+plot2d( sin(x), [x,0,2*%pi]);
+#+end_src
+</code></pre>
+<p>HTML export of the results:</p>
+<figure>
+<img src="images/ob-maxima-plot.gif" alt="ob-maxima-plot.gif">
+<figcaption>The graph of <em>sin(x)</em> created with <code>plot</code>.</figcaption>
+</figure>
+<h4 id="the-draw-package">The <code>draw</code> package</h4>
+<p>The <code>draw</code> package has more features than <code>plot</code>, including an
+object-oriented interface to several graphics engines, including
+<code>gnuplot</code>. Here is an example that creates an <code>svg</code> file containing
+the graph of a discontinuous function.</p>
+<pre id="graphics-pkg--draw.org"><code class="language-org">#+NAME: graphics-pkg--draw
+#+HEADER: :graphics-pkg draw
+#+HEADER: :file images/ob-maxima-draw.svg
+#+HEADER: :results graphics file
+#+HEADER: :exports both
+#+begin_src maxima
+f(x) := if x>0 then cos(x) else if x&#x3C;0 then 0;
+draw2d(
+  line_width=2, grid=true, yrange=[-1.2,1.2],
+  explicit(f,x,0,%pi), explicit(f,x,-1,0),
+  fill_color=white, ellipse(0,0,0.05,0.05,0,360),
+  fill_color=blue , ellipse(0,1,0.05,0.05,0,360));
+#+end_src
+</code></pre>
+<p>HTML export of the results:</p>
+<figure>
+<img src="images/ob-maxima-draw.svg" alt="ob-maxima-draw.svg">
+<figcaption>A discontinuous function plotted with <code>draw</code>.</figcaption>
+</figure>
+<h5 id="note">Note</h5>
+<p>Internally, <code>ob-maxima</code> uses the function <code>set_draw_defaults</code>.
+Because this function <span class="underline">overwrites</span> the existing defaults, using it in
+code blocks with the <code>:graphics-pkg draw</code> header argument will cause
+the source block evaluation to fail silently.</p>
+<h2 id="additional-notes">Additional Notes</h2>
+<h3 id="toggle-inline-display-of-latex-code">Toggle inline display of latex code</h3>
+<p>Latex code in org mode can be displayed inline by ‘C-c C-x
+C-l’. To remove the inline display ‘C-c C-c’ is used. This is
+described further in the manual <sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup>.</p>
+<h3 id="set-scale-of-output">Set scale of output</h3>
+<p>If the inline display of the equations are illegible, the scale
+can be set by customising the variable ‘org-format-latex-options’,
+by setting the :scale variable to a value >1.</p>
+<h3 id="export">Export</h3>
+<p>This exports nicely to both html (C-c C-e h h) and pdf (C-c C-e l
+p). See <sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup> and <sup><a href="#user-content-fn-4" id="user-content-fnref-4" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup> in the manual.</p>
+<h3 id="noweb-expansion">Noweb expansion</h3>
+<p><span class="underline">NOTE:</span> I have not tested this yet, but as Eric Schulte noted on
+the mailing list: “Alternately, if you really want to get fancy
+you could use noweb expansion <sup><a href="#user-content-fn-5" id="user-content-fnref-5" data-footnote-ref="" aria-describedby="footnote-label">5</a></sup> to insert the results of the
+imaxima code block into a latex code block, and then use the
+existing latex code block functionality to convert the imaxima
+output to images of different types depending on the export
+target.” <sup><a href="#user-content-fn-6" id="user-content-fnref-6" data-footnote-ref="" aria-describedby="footnote-label">6</a></sup></p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>(info “(org)Library of Babel”) <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p>(info “(org)Previewing LaTeX fragments”) <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-3">
+<p>(info “(org)Exporting code blocks”) <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-4">
+<p>(info “(org)The export dispatcher”) <a href="#user-content-fnref-4" data-footnote-backref="" aria-label="Back to reference 4" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-5">
+<p>(info “(org)noweb”) <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 5" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-6">
+<p><a href="https://lists.gnu.org/archive/html/emacs-orgmode/2013-11/msg00893.html">Re: imaxima babel</a> <a href="#user-content-fnref-6" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

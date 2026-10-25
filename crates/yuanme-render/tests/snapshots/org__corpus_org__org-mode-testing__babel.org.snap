@@ -1,0 +1,514 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:134:1
+    |
+134 | #+call: echo(input="testing")
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:135:1
+    |
+135 | #+call: echo(input="testing") :results vector
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:136:1
+    |
+136 | #+call: echo[:var input="testing"]()
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:137:1
+    |
+137 | #+call: echo[:var input="testing"]() :results vector
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:138:1
+    |
+138 | #+call: echo("testing")
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:139:1
+    |
+139 | #+call: echo("testing") :results vector
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:140:24
+    |
+140 | This is an inline call call_echo(input="testing") embedded in prose.
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:141:24
+    |
+141 | This is an inline call call_echo(input="testing")[:results vector] embedded in prose.
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:142:1
+    |
+142 | #+call: lob-minus(8, 4)
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:143:1
+    |
+143 | call_echo("testing")
+    | ^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:144:1
+    |
+144 | call_concat(1,2,3)
+    | ^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:162:1
+    |
+162 | #+call: double(it=0)
+    | ^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:164:28
+    |
+164 | Now here is an inline call call_double(it=1) stuck in the middle of
+    |                            ^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:171:1
+    |
+171 | call_double(it=3) because sometimes inline blocks fold with a
+    | ^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:174:30
+    |
+174 | And, a call with raw results call_double(4)[:results raw] should not
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:177:19
+    |
+177 | The following 2*5=call_double(5) should export even when prefixed by
+    |                   ^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:184:27
+    |
+184 | Here is one in the middle src_sh{echo 1} of a line.
+    |                           ^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:185:35
+    |
+185 | Here is one at the end of a line. src_sh{echo 2}
+    |                                   ^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:186:1
+    |
+186 | src_sh{echo 3} Here is one at the beginning of a line.
+    | ^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:193:27
+    |
+193 | Here is one in the middle src_sh{echo 1} of a line.
+    |                           ^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:194:35
+    |
+194 | Here is one at the end of a line. src_sh{echo 2}
+    |                                   ^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:195:1
+    |
+195 | src_sh{echo 3} Here is one at the beginning of a line.
+    | ^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:196:37
+    |
+196 | Here is one that is also evaluated: src_sh[:exports both]{echo 4}
+    |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:319:7
+    |
+319 | Third src_emacs-lisp{(car (push 3 *evaluation-collector*))}
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:322:1
+    |
+322 | #+call: foo-for-order-of-evaluation(4)
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:333:1
+    |
+333 | #+call: double(8)
+    | ^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: macros aren't in the Org subset
+   --> org-mode-testing/babel.org:365:59
+    |
+365 | Note: Just export of a property can be done with a macro: {{{property(a)}}}.
+    |                                                           ^^^^^^^^^^^^^^^^^
+    |
+    = help: write the text the macro would expand to
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:367:1
+    |
+367 | / #+NAME: src_block_location_shell-sect-call
+368 | | #+CALL: src_block_location_shell()
+    | |__________________________________^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:370:1
+    |
+370 | / #+NAME: src_block_location_elisp-sect-call
+371 | | #+CALL: src_block_location_elisp()
+    | |__________________________________^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:373:15
+    |
+373 | - sect inline call_src_block_location_shell()[:results raw]
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:374:15
+    |
+374 | - sect inline call_src_block_location_elisp()[:results raw]
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:382:1
+    |
+382 | / #+NAME: src_block_location_shell-sub0-call
+383 | | #+CALL: src_block_location_shell()
+    | |__________________________________^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:385:1
+    |
+385 | / #+NAME: src_block_location_elisp-sub0-call
+386 | | #+CALL: src_block_location_elisp()
+    | |__________________________________^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:388:15
+    |
+388 | - sub0 inline call_src_block_location_shell()[:results raw]
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:389:15
+    |
+389 | - sub0 inline call_src_block_location_elisp()[:results raw]
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:391:1
+    |
+391 | / #+NAME: src_block_location_shell-sub1-call
+392 | | #+CALL: src_block_location_shell(c=5, e=6)
+    | |__________________________________________^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+   --> org-mode-testing/babel.org:394:1
+    |
+394 | / #+NAME: src_block_location_elisp-sub1-call
+395 | | #+CALL: src_block_location_elisp(c=5, e=6)
+    | |__________________________________________^
+    |
+    = help: yuanme never runs code; paste in the results the call wrote
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:397:15
+    |
+397 | - sub1 inline call_src_block_location_shell(c=5, e=6)[:results raw]
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+   --> org-mode-testing/babel.org:398:15
+    |
+398 | - sub1 inline call_src_block_location_elisp(c=5, e=6)[:results raw]
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+    = note: run `yuanme docs org/unsupported-construct` for more
+<h2 id="noweb-header-argument-expansion"><code>:noweb</code> header argument expansion</h2>
+<pre id="noweb-example"><code class="language-emacs-lisp">(message "expanded1")
+</code></pre>
+<pre id="noweb-example2"><code class="language-emacs-lisp">(message "expanded2")
+</code></pre>
+<pre><code class="language-emacs-lisp">;; noweb-1-yes-start
+  &#x3C;&#x3C;noweb-example>>
+</code></pre>
+<pre><code class="language-emacs-lisp">;; noweb-no-start
+  &#x3C;&#x3C;noweb-example1>>
+</code></pre>
+<pre><code class="language-emacs-lisp">;; noweb-2-yes-start
+  &#x3C;&#x3C;noweb-example2>>
+</code></pre>
+<pre><code class="language-emacs-lisp">;; noweb-tangle-start
+&#x3C;&#x3C;noweb-example1>>
+&#x3C;&#x3C;noweb-example2>>
+</code></pre>
+<h2 id="noweb-header-argument-expansion-using-exports-results"><code>:noweb</code> header argument expansion using :exports results</h2>
+<pre><code class="language-emacs-lisp">;; noweb-no-start
+  &#x3C;&#x3C;noweb-example1>>
+</code></pre>
+<pre><code class="language-emacs-lisp">&#x3C;&#x3C;noweb-example1>>
+&#x3C;&#x3C;noweb-example2>>
+</code></pre>
+<h2 id="excessive-id-links-on-tangling">excessive id links on tangling</h2>
+<h3 id="no-dont-give-me-an-id">no, don’t give me an ID</h3>
+<pre><code class="language-emacs-lisp">(message "not to be tangled")
+</code></pre>
+<h3 id="yes-id-love-an-id">yes, I’d love an ID</h3>
+<pre><code class="language-emacs-lisp">(message "for tangling")
+</code></pre>
+<h2 id="simple-named-code-block">simple named code block</h2>
+<pre id="i-have-a-name"><code class="language-emacs-lisp">42
+</code></pre>
+<pre><code>42
+</code></pre>
+<pre id="i-have-a-name"><code>42
+</code></pre>
+<h2 id="pascals-triangle--exports-both-test">Pascal’s Triangle – exports both test</h2>
+<pre id="pascals-triangle"><code class="language-emacs-lisp">(defun pascals-triangle (n)
+  (if (= n 0)
+      (list (list 1))
+    (let* ((prev-triangle (pascals-triangle (- n 1)))
+           (prev-row (car (reverse prev-triangle))))
+      (append prev-triangle
+              (list (cl-map 'list #'+
+                            (append prev-row '(0))
+                            (append '(0) prev-row)))))))
+
+(pascals-triangle n)
+</code></pre>
+<h2 id="executing-an-lob-call-line">executing an lob call line</h2>
+<p>This is an inline call  embedded in prose.
+This is an inline call  embedded in prose.</p>
+<p></p>
+<pre id="concat"><code class="language-emacs-lisp">(format "%S%S%S" a b c)
+</code></pre>
+<h2 id="exporting-an-lob-call-line">exporting an lob call line</h2>
+<pre id="double"><code class="language-emacs-lisp">(* 2 it)
+</code></pre>
+<p>The following exports as a normal call line</p>
+<p>Now here is an inline call  stuck in the middle of
+some prose.</p>
+<p>This one should not be exported <code>call_double(it=2)</code> because it is
+quoted.</p>
+<p>Finally this next one should export, even though it starts a line
+because sometimes inline blocks fold with a
+paragraph.</p>
+<p>And, a call with raw results  should not
+have quoted results.</p>
+<p>The following 2*5= should export even when prefixed by
+an = sign.</p>
+<h2 id="inline-source-block">inline source block</h2>
+<p>Here is one in the middle  of a line.
+Here is one at the end of a line.
+Here is one at the beginning of a line.</p>
+<h2 id="exported-inline-source-block">exported inline source block</h2>
+<p>Here is one in the middle  of a line.
+Here is one at the end of a line.
+Here is one at the beginning of a line.
+Here is one that is also evaluated:</p>
+<h2 id="mixed-blocks-with-exports-both">mixed blocks with exports both</h2>
+<ul id="a-list">
+<li>a</li>
+<li>b</li>
+<li>c</li>
+</ul>
+<pre><code class="language-emacs-lisp">"code block results"
+</code></pre>
+<pre><code class="language-emacs-lisp">(reverse lst)
+</code></pre>
+<h2 id="using-the-noweb-ref-header-argument">using the <code>:noweb-ref</code> header argument</h2>
+<pre><code class="language-sh">&#x3C;&#x3C;fullest-disk>>
+</code></pre>
+<h3 id="query-all-mounted-disks">query all mounted disks</h3>
+<pre><code class="language-sh">df
+</code></pre>
+<h3 id="strip-the-header-row">strip the header row</h3>
+<pre><code class="language-sh">|sed '1d'
+</code></pre>
+<h3 id="sort-by-the-percent-full">sort by the percent full</h3>
+<pre><code class="language-sh">|awk '{print $5 " " $6}'|sort -n |tail -1
+</code></pre>
+<h3 id="extract-the-mount-point">extract the mount point</h3>
+<pre><code class="language-sh">|awk '{print $2}'
+</code></pre>
+<h2 id="resolving-sub-trees-as-references">resolving sub-trees as references</h2>
+<pre><code class="language-emacs-lisp">(length text)
+</code></pre>
+<pre><code class="language-org">&#x3C;&#x3C;simple-subtree>>
+&#x3C;&#x3C;d4faa7b3-072b-4dcf-813c-dd7141c633f3>>
+</code></pre>
+<h3 id="simple-subtree">simple subtree with custom ID</h3>
+<p>this is simple</p>
+<h3 id="simple-subtree-with-global-id">simple subtree with global ID</h3>
+<p>has length 14</p>
+<h2 id="exporting-a-code-block-with-a-name">exporting a code block with a name</h2>
+<p>exporting a code block with a name</p>
+<pre id="qux"><code class="language-sh">echo bar
+</code></pre>
+<h2 id="noweb-no-export-and-exports-both">noweb no-export and exports both</h2>
+<p>Weird interaction.</p>
+<p>here is one block</p>
+<p>and another</p>
+<pre><code class="language-sh"># I am inside the code block
+&#x3C;&#x3C;noweb-no-export-and-exports-both-1>>
+</code></pre>
+<h2 id="in-order-evaluation-on-export">in order evaluation on export</h2>
+<p>First.</p>
+<pre id="foo-for-order-of-evaluation"><code class="language-emacs-lisp">(push it *evaluation-collector*)
+</code></pre>
+<p>Second</p>
+<pre><code class="language-emacs-lisp">(push 2 *evaluation-collector*)
+</code></pre>
+<p>Third</p>
+<p>Fourth</p>
+<p>Fifth</p>
+<pre><code class="language-emacs-lisp">(push 5 *evaluation-collector*)
+</code></pre>
+<h2 id="exporting-more-than-just-results-from-a-call-line">exporting more than just results from a call line</h2>
+<p>Here is a call line with more than just the results exported.</p>
+<h2 id="strip-noweb-references-on-export">strip noweb references on export</h2>
+<pre><code class="language-sh">&#x3C;&#x3C;strip-export-1>>
+echo "1$i"
+</code></pre>
+<h2 id="use-case-of-reading-entry-properties">use case of reading entry properties</h2>
+<p>Use case checked and documented with this test: During their
+evaluation the source blocks read values from properties from the
+entry where the call has been made unless the value is overridden with
+the optional argument of the caller.</p>
+<h3 id="section">section</h3>
+<p>Note: Just export of a property can be done with a macro: .</p>
+<ul>
+<li>sect inline</li>
+<li>sect inline</li>
+</ul>
+<h4 id="subsection">subsection</h4>
+<ul>
+<li>sub0 inline</li>
+<li>sub0 inline</li>
+</ul>
+<ul>
+<li>sub1 inline</li>
+<li>sub1 inline</li>
+</ul>
+<h5 id="function-definition">function definition</h5>
+<p>comments for “:var”:</p>
+<ul>
+<li>The “or” is to deal with a property not present.</li>
+<li>The t is to get property inheritance.</li>
+</ul>
+<h2 id="file-ext-and-output-dir-header-args"><code>:file-ext</code> and <code>:output-dir</code> header args</h2>
+<pre id="file-ext-basic"><code class="language-emacs-lisp">nil
+</code></pre>
+<pre id="file-ext-dir-relative"><code class="language-emacs-lisp">nil
+</code></pre>
+<pre id="file-ext-dir-relative-slash"><code class="language-emacs-lisp">nil
+</code></pre>
+<pre id="file-ext-dir-absolute"><code class="language-emacs-lisp">nil
+</code></pre>
+<pre id="file-ext-file-wins"><code class="language-emacs-lisp">nil
+</code></pre>
+<pre id="output-dir-and-file"><code class="language-emacs-lisp">nil
+</code></pre>
+<h2 id="detangle">detangle</h2>
+<h3 id="false-positive">false positive</h3>
+<p>The <code>[[</code> causes a false positive which <code>org-babel-detangle</code> should handle properly</p>
+<pre><code class="language-emacs-lisp">(string-match-p "^#[[:digit:]]+$" "#123")
+</code></pre>
+<h3 id="linked-content-to-detangle">linked content to detangle</h3>
+<pre><code class="language-emacs-lisp"></code></pre>

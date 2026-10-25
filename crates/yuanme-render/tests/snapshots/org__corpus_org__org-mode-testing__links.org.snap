@@ -1,0 +1,75 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: `id:` links aren't in the Org subset
+  --> org-mode-testing/links.org:16:3
+   |
+16 | - id:eaefc396-8943-4666-be6a-d5a1dbb05480
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: link to a URL, another Entry's file, or a heading in this one
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `info:` links aren't in the Org subset
+  --> org-mode-testing/links.org:23:3
+   |
+23 | - info:Org
+   |   ^^^^^^^^
+   |
+   = help: link to a URL, another Entry's file, or a heading in this one
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `info:` links aren't in the Org subset
+  --> org-mode-testing/links.org:24:3
+   |
+24 | - [[info:org:External links]]
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: link to a URL, another Entry's file, or a heading in this one
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `shell:` links aren't in the Org subset
+  --> org-mode-testing/links.org:25:3
+   |
+25 | - [[shell:ls -l]]
+   |   ^^^^^^^^^^^^^^^
+   |
+   = help: link to a URL, another Entry's file, or a heading in this one
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `elisp:` links aren't in the Org subset
+  --> org-mode-testing/links.org:26:3
+   |
+26 | - elisp:org-agenda
+   |   ^^^^^^^^^^^^^^^^
+   |
+   = help: link to a URL, another Entry's file, or a heading in this one
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `elisp:` links aren't in the Org subset
+  --> org-mode-testing/links.org:27:3
+   |
+27 | - [[elisp:(find-file-other-frame "normal.org")]]
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: link to a URL, another Entry's file, or a heading in this one
+   = note: run `yuanme docs org/unsupported-construct` for more
+<h2 id="plain-links">Plain links</h2>
+<ul>
+<li><a href="https://orgmode.org">https://orgmode.org</a></li>
+<li><a href="https://orgmode.org">Org mode website</a></li>
+<li><a href="mailto:bzg@gnu.org">mailto:bzg@gnu.org</a></li>
+</ul>
+<h2 id="links-to-files">Links to files</h2>
+<ul>
+<li><a href="/home/">///home/</a></li>
+<li><a href="normal.org">normal.org</a></li>
+<li><a href="normal.org::3">normal.org (third line)</a></li>
+<li><a href="normal.org::example">normal.org::example</a></li>
+<li><a href="normal.org">normal.org</a>::* top</li>
+<li></li>
+</ul>
+<h2 id="external-links">External links</h2>
+<ul>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+</ul>

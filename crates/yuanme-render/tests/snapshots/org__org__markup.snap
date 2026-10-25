@@ -1,0 +1,16 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(&format!(\"{name}.org\"), &text)"
+---
+<p>Text <span class="underline">underlined</span>, x<sub>i</sub> and a<sup>2</sup>, but snake_case and a^2 stay as they are.
+Entities: α, → and “"quoted"”; a soft­hyphen.
+Progress [2/3] and [50%].
+Dates <span class="timestamp-wrapper"><time class="timestamp" datetime="2025-12-12">&#x3C;2025-12-12 Fri></time></span>, <span class="timestamp-wrapper"><time class="timestamp" datetime="2025-12-12T10:00:00">[2025-12-12 Fri 10:00]</time></span>, <span class="timestamp-wrapper"><time class="timestamp" datetime="2025-12-12">&#x3C;2025-12-12 Fri>–&#x3C;2025-12-14 Sun></time></span>
+and <span class="timestamp-wrapper"><time class="timestamp">&#x3C;%%(diary-float t 4 2)></time></span>.
+A break<br>
+after it. Raw <kbd>Ctrl</kbd> and  dropped.
+Math <code class="language-math math-inline">x</code>, <code class="language-math math-inline">y</code>, <code class="language-math math-display">z</code>, <code class="language-math math-display">w</code> and <code class="language-math math-inline">\ref{eq:a}</code>; <code class="language-math math-inline">n</code>-th is text.</p>
+<h2 id="first-heading">First heading</h2>
+<p><a id="here"></a> is a target. See <a href="#here">here</a>, <a href="#here">the target</a>, <a href="#custom">Second heading</a>,
+<a href="#custom">Second heading</a> and <a href="#custom">by title</a>.</p>
+<h2 id="custom">Second heading</h2>

@@ -1,0 +1,574 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
+ --> alessandrostr95/org--CP2--markov_chains.org:4:1
+  |
+4 | #+setupfile: ../../org-template/appunti.org
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
+  = note: run `yuanme docs org/setupfile` for more
+<h2 id="catene-di-markov">Catene di Markov</h2>
+<p>Sia una <em>famiglia</em> di variabili aleatorie <code class="language-math math-inline">\lbrace X_t : t \in I \rbrace</code>, tale che tutte le variabili aleatorie sono definite su di un insieme
+<strong>discreto</strong> <code class="language-math math-inline">V</code>, e con <code class="language-math math-inline">t \in I \subseteq \mathbb{N}</code>.
+Tale famiglia è dette <strong>catena di Markov</strong> se vale che</p>
+<code class="language-math math-display">  \begin{equation}
+  P(X_t = j \vert X_{t-1} = i, X_{t-2} = i_{t-2}, ..., X_0 = i_0 ) = P(X_t = j \vert X_{t-1} = i) = p^{(t)}_{ij}
+  \end{equation}</code>
+<p>Possiamo quindi vedere una catena di Markov come un <strong>processo</strong>, nel quale una variabile <code class="language-math math-inline">X</code> cambia stato nel tempo, e dove <code class="language-math math-inline">X_t = j</code> sta ad indicare che lo stato di <code class="language-math math-inline">X</code> al tempo <code class="language-math math-inline">t</code> è <code class="language-math math-inline">j</code>.
+Perciò d’ora ci riferiremo a <code class="language-math math-inline">V</code> come l’<strong>insieme degli stati</strong>.<br>
+</p>
+<p>Un’osservazione intuitiva che si può fare riguardo la definizione di catena di Markov (vedi <a href="#eqn:1">eqn:1</a>) è che lo stato della catena al tempo <code class="language-math math-inline">t</code> dipende <strong>solamente</strong> dallo stato al tempo precedente <code class="language-math math-inline">t-1</code>.
+Questa proprietà è anche nota come <strong>mancanza di memoria</strong> di una catena di Markov, in quanto una volta arrivati in uno stato ci si “dimentica” di tutto ciò che è accaduto in precedenza,
+e lo stato successivo dipende solamente dallo stato in cui ci si trova.<br>
+</p>
+<p>Se i valori di <code class="language-math math-inline">p^{(t)}_{ij}</code> non dipendono da <code class="language-math math-inline">t</code>, allora si parla di catene di Markov <strong>omogenee</strong>.
+In tal caso scriveremo semplicemente <code class="language-math math-inline">p_{ij}</code>.
+Perciò <code class="language-math math-inline">p_{ij}</code> indica la probabilità di passare dallo stato <code class="language-math math-inline">i</code> allo stato <code class="language-math math-inline">j</code>.<br>
+</p>
+<p>D’ora in poi ci riferiremo <strong>solo</strong> a catene omogenee.</p>
+<h3 id="matrice-di-transazione">Matrice di Transazione</h3>
+<p>Consideriamo un insieme di stati <code class="language-math math-inline">V = \lbrace 1,2,..., n \rbrace</code> <strong>finito</strong>.
+Allora possiamo definire la <strong>matrice di transazione</strong> <code class="language-math math-inline">P \in \left[ 0,1 \right] </code></p>
+<code class="language-math math-display">   \begin{equation}
+   P = \left (
+   \begin{array}{ccccc}
+   p_{11} &#x26; ... &#x26; p_{1j} &#x26; ... &#x26; p_{1n} \\
+   \vdots     &#x26;     &#x26;  \ddots   &#x26;      &#x26; \vdots \\
+   p_{i1} &#x26; ... &#x26; p_{ij} &#x26; ... &#x26; p_{in}\\
+   \vdots     &#x26;     &#x26;  \ddots   &#x26;      &#x26; \vdots \\
+   p_{n1} &#x26; ... &#x26; p_{nj} &#x26; ... &#x26; p_{nn}
+   \end{array}
+   \right )
+   \end{equation}</code>
+<p>L’elemento in riga <code class="language-math math-inline">i</code> e colonna <code class="language-math math-inline">j</code> indica la probabilità di passare dallo stato <code class="language-math math-inline">i</code> allo stato <code class="language-math math-inline">j</code> (appunto <code class="language-math math-inline">p_{ij}</code>).
+Osservare che la somma degli elementi di una riga deve essere pari ad 1, infatti per ogni <code class="language-math math-inline">i \in V</code></p>
+<code class="language-math math-display">   \begin{align*}
+     \sum_{j \in V} p_{ij}
+     &#x26;= \sum_{j \in V} P(X_t = j \vert X_{t-1} = i)\\
+     &#x26;= P\bigg( \bigcup_{j \in V} \lbrace X_t = j \rbrace \vert X_{t-1} = i \bigg)\\
+     &#x26;= P(X_t \in V \vert X_{t-1} = i) = 1
+   \end{align*}</code>
+<h3 id="distribuzione-marginale">Distribuzione marginale</h3>
+<p>Per ogni tempo <code class="language-math math-inline">t \in I</code> indichiamo con <code class="language-math math-inline">p_i(t)</code> la probabilità che al tempo <code class="language-math math-inline">t</code> la catena si trovi esattamente nello stato <code class="language-math math-inline">i</code>, ovvero
+<code class="language-math math-display">
+   p_i(t) = P(X_t = i)
+   </code>
+Possiamo quindi definire una <strong>distribuzione marginale</strong> <code class="language-math math-inline">\overline{p}(t)</code> al tempo <code class="language-math math-inline">t</code> come il vettore
+<code class="language-math math-display">
+   \overline{p}(t) = (p_1(t), ..., p_i(t), ...)_{i \in V}
+   </code></p>
+<p>Osservare che essendo <code class="language-math math-inline">\overline{p}(t)</code> una <span class="underline">distribuzione</span> avremo che
+<code class="language-math math-display">
+   \sum_{i \in V} p_i(t) = 1
+   </code>
+infatti</p>
+<code class="language-math math-display">   \begin{align*}
+     \sum_{i \in V} p_i(t)
+     &#x26;= \sum_{i \in V} P(X_t = i)\\
+     &#x26;= P\bigg( \bigcup_{i \in V} \lbrace X_t = i \rbrace \bigg)\\
+     &#x26;= P(X_t \in V) = 1
+   \end{align*}</code>
+<p>Definire questa distribuzione è molto utile perché ci consente di calcolare in maniera ricorsiva lo stato di una catena al tempo <code class="language-math math-inline">t</code>.
+Infatti, per le probabilità totali abbiamo che
+<code class="language-math math-display">
+   \underbrace{P(X_t = j)}_{p_j(t)} = \sum_{i \in V} \underbrace{P(X_t = j \vert X_{t-1} = i)}_{p_{ij}} \underbrace{P(X_{t-1} = i)}_{p_i(t)}
+   </code>
+Perciò applicando l’uguaglianza <code class="language-math math-inline">p_j(t) = \sum_{i \in V} p_i(t)p_{ij}</code> ad ogni <code class="language-math math-inline">j \in V</code> otterremo la formula ricorsiva</p>
+<code class="language-math math-display">   \begin{equation}
+   \overline{p}(t) = \overline{p}(t-1) P
+   \end{equation}</code>
+<h3 id="matrice-di-transazione-ad-m-passi">Matrice di transazione ad <code class="language-math math-inline">m</code> passi</h3>
+<p>Sia un intermo <code class="language-math math-inline">m \geq 1</code>, e consideriamo la matrice <code class="language-math math-inline">P^{m}</code> costituita dalle probabilità</p>
+<code class="language-math math-display">   \begin{equation}
+   P^{(m)} = \left (
+   \begin{array}{ccccc}
+   p^{(m)}_{11} &#x26; ... &#x26; p^{(m)}_{1j} &#x26; ... &#x26; p^{(m)}_{1n} \\
+   \vdots     &#x26;     &#x26;  \ddots   &#x26;      &#x26; \vdots \\
+   p^{(m)}_{i1} &#x26; ... &#x26; p^{(m)}_{ij} &#x26; ... &#x26; p^{(m)}_{in}\\
+   \vdots     &#x26;     &#x26;  \ddots   &#x26;      &#x26; \vdots \\
+   p^{(m)}_{n1} &#x26; ... &#x26; p^{(m)}_{nj} &#x26; ... &#x26; p^{(m)}_{nn}
+   \end{array}
+   \right )
+   \end{equation}</code>
+<p><code class="language-math math-display">
+   p^{(m)}_{ij} = P(X_{t + m} = j \vert X_t = i)
+   </code></p>
+<p>Anche in questo caso avremo che ogni riga è una <em>distribuzione</em>, infatti per ogni riga <code class="language-math math-inline">i</code> avremo che</p>
+<code class="language-math math-display">   \begin{align*}
+     \sum_{j \in V} p^{(m)}_{ij}
+     &#x26;= \sum_{j \in V} P(X_{t + m} = j \vert X_t = i)\\
+     &#x26;= P\bigg( \bigcup_{j \in V} \lbrace X_{t + m} = j \rbrace \vert X_t = i \bigg)\\
+     &#x26;= P(X_{t + m} \in V \vert X_t = i) = 1
+   \end{align*}</code>
+<p>Abbiamo quiandi <em>generalizzato</em> la matrice di transazione <code class="language-math math-inline">P = P^{(1)}</code> semplicemente ponendo <code class="language-math math-inline">m = 1</code>.<br>
+</p>
+<p>Consideriamo ora un <code class="language-math math-inline">m \geq 2</code> ed una <strong>partizione degli eventi</strong> <code class="language-math math-inline">\lbrace \lbrace X_{t+m} = h \rbrace : h \in V \rbrace</code>
+ed applichiamo i seguenti calcoli</p>
+<code class="language-math math-display">   \begin{align*}
+     p^{(m)}_{ij}
+     &#x26;= P(X_{t+m} = j \vert X_t = i)\\
+     &#x26;= \sum_{h \in V} P(X_{t+m} = j, X_{t+m-1} = h \vert X_t = i)\\
+     &#x26;= \sum_{h \in V} \frac{P(X_{t+m} = j, X_{t+m-1} = h,  X_t = i)}{P(X_t = i)}\\
+     &#x26;= \sum_{h \in V} \frac{P(X_{t+m} = j, X_{t+m-1} = h,  X_t = i)}{P(X_t = i)} \cdot \overbrace{ \frac{P(X_{t+m-1} = h,  X_t = i)}{P(X_{t+m-1} = h,  X_t = i)} }^{= 1}\\
+     &#x26;= \sum_{h \in V} \frac{P(X_{t+m} = j, X_{t+m-1} = h,  X_t = i)}{P(X_{t+m-1} = h,  X_t = i)} \cdot \frac{P(X_{t+m-1} = h,  X_t = i)}{P(X_t = i)}\\
+     &#x26;= \sum_{h \in V} P(X_{t+m} = j \vert X_{t+m-1} = h, X_t = i)P(X_{t+m-1} = h \vert X_t = i)
+   \end{align*}</code>
+<p>A questo punto sfruttando la <em>mancanza di memoria</em> delle catene di Markov avremo che
+<code class="language-math math-display">
+   P(X_{t+m} = j \vert X_{t+m-1} = h, X_t = i) = P(X_{t+m} = j \vert X_{t+m-1} = h) = p_{hj}
+   </code>
+mentre per definizione matrice di transizione a <code class="language-math math-inline">m</code> passi
+<code class="language-math math-display">
+   P(X_{t+m-1} = h \vert X_t = i) = p^{(m-1)}_{ih}
+   </code></p>
+<p>Sostituendo quindi nell’espressione otteremo la seguente uguaglianza
+<code class="language-math math-display">
+   p^{(m)}_{ij} = \sum_{h \in V} p^{(m-1)}_{ih} p_{hj}
+   </code>
+per ogni coppia di <code class="language-math math-inline">i,j \in V</code>.<br>
+</p>
+<p>Al variare di <code class="language-math math-inline">i,j</code>, tale relazione ci consente di ricavare la seguente nuova relazione relazione
+<code class="language-math math-display">
+   P^{(m)} = P^{(m-1)}P
+   </code></p>
+<p>A questo punto, ponendo <code class="language-math math-inline">P = P^{(1)}</code> possiamo dire che per ogni <code class="language-math math-inline">m \geq 1</code> è vero che
+<code class="language-math math-display">
+   P^{(m)} = P^m
+   </code></p>
+<p>In conclusione, possiamo anche dare una <em>generalizzazione</em> della formula <a href="#eqn:2">eqn:2</a>.
+Infatti riapplicandola <code class="language-math math-inline">m</code> volte avremo che</p>
+<code class="language-math math-display">   \begin{align*}
+     \overline{p}(t)
+     &#x26;= \overline{p}(t-1) P = \overline{p}(t-2) PP\\
+     &#x26;\\
+     &#x26;= \; ... \; = \overline{p}(t-m) \underbrace{P...P}_{m \text{ volte}}\\
+     &#x26;\\
+     &#x26;= \overline{p}(t-m) P^m = \overline{p}(t-m) P^{(m)} 
+   \end{align*}</code>
+<h3 id="grafo-associato">Grafo associato</h3>
+<p>È possibile associare ad una catena di Markov <span class="underline">omogenea</span> un grafo diretto dove:</p>
+<ul>
+<li>l’insieme dei nodi corrisponde con l’insieme degli stati <code class="language-math math-inline">V</code>.</li>
+<li>per ogni coppia di nodi <code class="language-math math-inline">i,j</code> esiste l’arco <span class="underline">diretto</span> <code class="language-math math-inline">(i,j) \in E</code> se <code class="language-math math-inline">p_{ij} > 0</code>.</li>
+<li>ogni arco <code class="language-math math-inline">(i,j)</code> è pesato col valore <code class="language-math math-inline">p_{ij}</code>.</li>
+</ul>
+<p><strong>[mettere immagine]</strong></p>
+<h3 id="relazione-leftrightarrow-di-comunicazione-tra-stati">Relazione <code class="language-math math-inline">\leftrightarrow</code> di “comunicazione tra stati”</h3>
+<p>Dati due stati <code class="language-math math-inline">i,j \in V</code>, si dice che essi <strong>comunicano</strong> se esistono due interi <code class="language-math math-inline">n,m</code> tali che <code class="language-math math-inline">p^{(n)}_{ij} > 0</code> e <code class="language-math math-inline">p^{(m)}_{ji} > 0</code>.
+Ovvero sia la probabilità di raggiungere lo stato <code class="language-math math-inline">j</code> partendo da <code class="language-math math-inline">i</code>, sia la probabilità di raggiungere lo stato <code class="language-math math-inline">i</code> partendo dallo stato <code class="language-math math-inline">j</code>, sono <span class="underline">non nulle</span>.
+In simboli diremo che <code class="language-math math-inline">i \leftrightarrow j</code>.<br>
+</p>
+<p>Equivalentemente possiamo vedere questa relazione come la presenza di cammini che collegano <code class="language-math math-inline">i</code> e <code class="language-math math-inline">j</code> nel grafo associato alla catena.
+Ovvero <code class="language-math math-inline">i \leftrightarrow j</code> se e solo se nel grafo associato alla catena, <code class="language-math math-inline">i</code> e <code class="language-math math-inline">j</code> sono <strong>fortemente connessi</strong><sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.<br>
+</p>
+<p>Osservare che la relazione <code class="language-math math-inline">\leftrightarrow</code> è una relazione d’equivalenza, ovvero è <em>riflessiva</em>, <em>simmetrica</em> e <em>transitiva</em>.</p>
+<ul>
+<li>per la riflessività basta porre <code class="language-math math-inline">n = m = 0</code> e otteremo che <code class="language-math math-inline">p^{(0)}_{ii} = 1 > 0</code>.</li>
+<li>sicuramente se <code class="language-math math-inline">i \leftrightarrow j</code> allora è certamente vero <code class="language-math math-inline">j \leftrightarrow i</code>, infatti basta inverire i ruoli di <code class="language-math math-inline">n</code> ed <code class="language-math math-inline">m</code>.</li>
+<li>infine si vuole dimostrare che se <code class="language-math math-inline">i \leftrightarrow j</code> e <code class="language-math math-inline">j \leftrightarrow h</code> allora <code class="language-math math-inline">i \leftrightarrow h</code>.
+Se <code class="language-math math-inline">i \leftrightarrow j</code> e <code class="language-math math-inline">j \leftrightarrow h</code> sono veri, allora sicuramente esistono dei <code class="language-math math-inline">n_1, n_2, m_1, m_2</code> tali che ”<code class="language-math math-inline">p^{(n_1)}_{ij} > 0</code>, <code class="language-math math-inline">p^{(m_1)}_{ji} > 0</code>” e ”<code class="language-math math-inline">p^{(n_2)}_{jh} > 0</code>, <code class="language-math math-inline">p^{(m_2)}_{hj} > 0</code>”.
+Allora avremo che
+<code class="language-math math-display">
+     p^{(n_1 + n_2)}_{ih} = \sum_{r \in V} p^{(n_1)}_{ir}p^{(n_2)}_{rh} \geq \underbrace{p^{(n_1)}_{ij}}_{> 0} \underbrace{p^{(n_2)}_{jh}}_{> 0} > 0
+     </code>
+Simmetricamente per <code class="language-math math-inline">m_1, m_2</code>.</li>
+</ul>
+<h3 id="irriducibilità">Irriducibilità</h3>
+<p>Una matrice di Markov omogenea si dice <strong>irriducibile</strong> se <code class="language-math math-inline">V</code> risulta essere un una classe d’equivalenza rispetto a <code class="language-math math-inline">\leftrightarrow</code>.
+Analogamente, c’è irriducibilità se e solo se il grafo inerente risulta essere <strong>fortemente connesso</strong>.</p>
+<h3 id="stati-ricorrenti-e-transienti">Stati ricorrenti e transienti</h3>
+<p>Sia <code class="language-math math-inline">r^t_{ij}</code> la probabilità che partendo dallo stato <code class="language-math math-inline">i</code> si raggiunge per la prima volta lo stato <code class="language-math math-inline">j</code> dopo <code class="language-math math-inline">t</code> passi.
+<code class="language-math math-display">
+   r^t_{ij} := P(X_t=j, X_{t-1} \neq j, ..., X_1 \neq j \vert X_0 = i)
+   </code>
+Uno stato <code class="language-math math-inline">i \in V</code> si dice</p>
+<ul>
+<li><strong>ricorrente</strong> se <span class="underline">è certo</span> che una volta raggiunto <code class="language-math math-inline">i</code> <em>prima o poi</em> si ritransita da <code class="language-math math-inline">i</code>, ovvero se
+<code class="language-math math-display">
+     \sum_{t \geq 1} r^t_{ii} = 1
+     </code></li>
+<li><strong>transiente</strong> se <span class="underline">non è detto</span> che una volta raggiunto <code class="language-math math-inline">i</code> <em>prima o poi</em> si ritransita da <code class="language-math math-inline">i</code>, ovvero se
+<code class="language-math math-display">
+     \sum_{t \geq 1} r^t_{ii} &#x3C; 1
+     </code></li>
+</ul>
+<h3 id="lemma">Lemma</h3>
+<p>Gli stati di una classe di equivalenza di <code class="language-math math-inline">\leftrightarrow</code>, ovvero tutti i nodi di una stessa componente fortemente connessa nel grafo associato alla catena, sono tutti dello <strong>stesso tipo</strong>: o <em>transienti</em> o <em>ricorrenti</em>.<br>
+</p>
+<p><strong>Proof</strong><br>
+   Supponiamo <em>per assurdo</em>, che in una stessa classe di equivalenza di <code class="language-math math-inline">\leftrightarrow</code>, esista uno stato <code class="language-math math-inline">i</code> <span class="underline">transiente</span> e uno stato <code class="language-math math-inline">j</code> <span class="underline">ricorrente</span> (con <code class="language-math math-inline">i \neq j</code> ovviamente).
+Dato che <code class="language-math math-inline">i \leftrightarrow j</code> certamente esistono due <code class="language-math math-inline">n, m \geq 1</code> tali che <code class="language-math math-inline">p^{(n)}_{ij} > 0</code> e <code class="language-math math-inline">p^{(m)}_{ji} > 0</code>.
+Considerando ogni tempo <code class="language-math math-inline">t \geq 1</code>, lo stato <code class="language-math math-inline">i</code> verrà visitato un numero <strong>finito</strong> di volte (perché transiente) mentre <code class="language-math math-inline">j</code> un numero <strong>infinito</strong> (perché ricorrente).<br>
+</p>
+<p>A questo punto, ogni volta che la catena raggiunge lo stato <code class="language-math math-inline">j</code> si può pensare di effettuare un esperimento aleatorio Bernulliano con due risultati:</p>
+<dl>
+<dt>successo</dt>
+<dd>se dopo <code class="language-math math-inline">m</code> passi raggiungo lo stato <code class="language-math math-inline">i</code>, e ciò accade con probabilità <code class="language-math math-inline">p^{(m)}_{ji} > 0</code>.</dd>
+<dt>fallimento</dt>
+<dd>se dopo <code class="language-math math-inline">m</code> passi <span class="underline">non</span> raggiungo lo stato <code class="language-math math-inline">i</code>, e ciò accade con probabilità <code class="language-math math-inline">1 - p^{(m)}_{ji} > 0</code>.</dd>
+</dl>
+<p>Ripetendo questo esperimento ogni volta che la catena raggiunge <code class="language-math math-inline">j</code>, possiamo pensare ad un unico esperimento <strong>geometrico</strong>, con infiniti tentativi.
+Dati appunto gli infiniti tentativi, e dato che la probabilità di successo è <strong>non nulla</strong>, allora prima o poi si raggiungerà lo stato <code class="language-math math-inline">i</code>, ovvero la probabilità
+che da un certo istante in poi <code class="language-math math-inline">i</code> non venga più raggiunto è nulla.
+Lo stato <code class="language-math math-inline">i</code> quindi non può essere transiente se <code class="language-math math-inline">j</code> è ricorrente <code class="language-math math-inline">\square</code>.</p>
+<h3 id="tempo-medio-di-primo-arrivo">Tempo medio di primo arrivo</h3>
+<p>Sia <code class="language-math math-inline">h_{ij}</code> il <em>tempo medio di primo arrivo in <code class="language-math math-inline">j</code> partendo da $i$</em>.
+Esso è quindi definito come
+<code class="language-math math-display">
+   h_{ij} := \begin{cases}
+       \sum_{t \geq 1} t \cdot r^t_{ij} &#x26;\mbox{se } \sum_{t \geq 1} r^t_{ij} = 1\\
+       \infty &#x26;\mbox{se } \sum_{t \geq 1} r^t_{ij} &#x3C; 1
+   \end{cases}
+   </code>
+Se invece <code class="language-math math-inline">i = j</code> si parla di tempo di <em>primo ritorno in</em> <code class="language-math math-inline">i</code>.</p>
+<h3 id="stati-ricorrenti-positivi-e-ricorrenti-nulli">Stati ricorrenti positivi e ricorrenti nulli</h3>
+<p>Sia uno stato <code class="language-math math-inline">i \in V</code> <strong>ricorente</strong>.
+Allora <code class="language-math math-inline">i</code> si dice <strong>ricorrente positivo</strong> se <code class="language-math math-inline">h_{ii} &#x3C; \infty</code>, mentre si dice <strong>ricorrente nullo</strong> se <code class="language-math math-inline">h_{ii} = \infty</code>.</p>
+<h4 id="esempio-stato-ricorrente-nullo">Esempio stato ricorrente nullo</h4>
+<p>Sia <code class="language-math math-inline">V = \lbrace 1, 2, ... \rbrace</code> è consideriamo la seguente matrice di transizione.
+<code class="language-math math-display">
+    p_{ij} := \begin{cases}
+      \frac{i}{i+1} &#x26;\mbox{se } j = i + 1\\
+      \frac{1}{i+1} &#x26;\mbox{se } j = 1\\
+      0 &#x26;\mbox{altrimenti}
+    \end{cases}
+    </code></p>
+<figure>
+<img src="../images/markov2.png" alt="markov2.png" style="max-width:600px; width:100%">
+<figcaption>Grafo associato.</figcaption>
+</figure>
+<p>Il grafo è irriducibile, perciò sappiamo che gli stati sono tutti di uno stesso tipo: tutti ricorrenti o tutti transienti.
+Perciò, concentriamoci solamente sullo stato <code class="language-math math-inline">i = 1</code>, e calcoliamo il valore di <code class="language-math math-inline">r^t_{11}</code> la variare di <code class="language-math math-inline">t \geq 1</code>.<br>
+</p>
+<p>Per <code class="language-math math-inline">t = 1</code> avremo semplicemente che
+<code class="language-math math-display">
+    r^1_{11} = P(X_1 = 1 \vert X_0 = 1) = p_{11} =  \frac12
+    </code></p>
+<p>Consideriamo invece <code class="language-math math-inline">t \geq 2</code></p>
+<code class="language-math math-display">    \begin{align*}
+      r^t_{11}
+      &#x26;= P(X_t = 1, X_{t-1} = t, ..., X_2 = 3, X_1 = 2 \vert X_0 = 1)\\
+      &#x26;= \bigg( \prod_{i=1}^{t-1} p_{i,i+1} \bigg) \cdot p_{t1}\\
+      &#x26;= \bigg( \prod_{i=1}^{t-1} \frac{i}{i+1} \bigg) \cdot \frac{1}{t+1}\\
+      &#x26;= \frac{(t-1)!}{t!} \cdot \frac{1}{t+1}\\
+      &#x26;= \frac{(t-1)!}{(t+1)!} = \frac{1}{t(t+1)}
+    \end{align*}</code>
+<p>Osservare che la formula calcolata per <code class="language-math math-inline">t \geq 2</code> vale anche per <code class="language-math math-inline">t = 1</code>.
+Perciò possiamo affermare che
+<code class="language-math math-display">
+    r^t_{11} = \frac{1}{t(t+1)} \;\; \forall t \geq 1
+    </code>
+È possibile dimostrare che lo stato 1 è ricorrente, ovvero che <code class="language-math math-inline">\sum_{t \geq 1} r^t_{11} = 1</code>, infatti</p>
+<code class="language-math math-display">    \begin{align*}
+      \sum_{t \geq 1} r^t_{11}
+      &#x26;= \sum_{t \geq 1} \frac{1}{t(t+1)}\\
+      &#x26;= \lim_{n \to \infty} \sum_{t = 1}^{n} \frac{1}{t(t+1)}\\
+      &#x26;= \lim_{n \to \infty} \sum_{t = 1}^{n} \frac{1}{t} - \frac{1}{t+1}\\
+      &#x26;= \lim_{n \to \infty} \left( 1 - \frac{1}{2} + \frac{1}{2} - \frac{1}{3} + \frac{1}{3} - ... - \frac{1}{n} + \frac{1}{n} - \frac{1}{n+1} \right)\\
+      &#x26;= \lim_{n \to \infty} \left( 1 - \frac{1}{n+1} \right) = 1
+    \end{align*}</code>
+<p>Infine si può dimostrare che lo stato 1 è <strong>nullo</strong>, ovvero <code class="language-math math-inline">h_{11} = \infty</code>.
+Infatti
+<code class="language-math math-display">
+    h_{11} = \sum_{t \geq 1} t \cdot r^t_{11} = \sum_{t \geq 1} \frac{t}{t(t+1)} = \sum_{t \geq 1} \frac{1}{t+1} = \infty
+    </code></p>
+<h3 id="lemma-1">Lemma</h3>
+<p>Sia <code class="language-math math-inline">V</code> un insieme di stati <strong>finito</strong>.
+Allora avremo che:</p>
+<ol>
+<li><em>almeno uno</em> stato è ricorrente.</li>
+<li><em>tutti</em> gli stati ricorrenti sono ricorrenti <strong>positivi</strong>.</li>
+</ol>
+<h3 id="periodicità-e-aperiodicità-di-una-catena-di-markov">Periodicità e aperiodicità di una catena di Markov</h3>
+<p>Uno stato <code class="language-math math-inline">j</code> è detto <strong>periodico</strong> se esiste un <code class="language-math math-inline">\Delta_j > 1</code> tale che
+<code class="language-math math-display">
+   P(X_{t+s} = j \vert X_t = j) = 0 \implies \Delta_j \;\; \not\vert \;\; s\\
+   \Delta_j \;\; \vert \;\; s \implies P(X_{t+s} = j \vert X_t = j) > 0 
+   </code>
+In termini semplici, <code class="language-math math-inline">j</code> è periodico se:</p>
+<ol>
+<li>se la probabilità di ritornare in <code class="language-math math-inline">j</code> (partendo da $j$) dopo <code class="language-math math-inline">k \cdot \Delta_j</code> passi è non nulla (per ogni <code class="language-math math-inline">k \geq 1</code>)</li>
+<li>metre la probabilità di ritornare in <code class="language-math math-inline">j</code> dopo <code class="language-math math-inline">k \neq \Delta_j</code> passi è sempre nulla.<br>
+</li>
+</ol>
+<p>Un modo alternativo di vedere la periodicità di uno stato <code class="language-math math-inline">j</code> è la seguente:
+consideriamo un <code class="language-math math-inline">\Delta_j</code> definito come
+<code class="language-math math-display">
+   \Delta_j := M.C.D. \lbrace s \geq 1 : p^{(s)}_{jj} > 0 \rbrace
+   </code>
+Se <code class="language-math math-inline">\Delta_j = 1</code> allora <code class="language-math math-inline">j</code> è <strong>aperiodico</strong>, altrimenti è periodico di periodo <code class="language-math math-inline">\Delta_j</code>.<br>
+</p>
+<p>Una catena di Markov si dice periodica se <strong>tutti</strong> i suoi stati sono periodici.
+Contrariamente si dice aperiodica se anche <strong>un solo</strong> stato è aperiodico.</p>
+<h3 id="ergodicità">Ergodicità</h3>
+<p>Uno stato <code class="language-math math-inline">j</code> che è <span class="underline">aperiodico</span> e <span class="underline">ricorrente positivo</span> è detto <strong>ergodico</strong>.
+Analogamente una catena è detta ergodica se tutti i suoi stati sono ergodici.</p>
+<h3 id="corollario">Corollario</h3>
+<p>Sia <code class="language-math math-inline">V</code> un insieme di stati <strong>finito</strong>.
+Sia la catena omogenea <code class="language-math math-inline">\lbrace X_t : t \geq 1 \rbrace</code> definita su <code class="language-math math-inline">V</code>.
+Se tale catena <strong>irriducibile</strong> e <strong>aperiodica</strong> allora essa è anche <strong>ergodica</strong>.<br>
+</p>
+<p><strong>Proof:</strong>
+Per ipotesi di irriducibilità sappiamo che il grafo associato è fortemente connesso, perciò tutti gli stati appartengono alla stessa classe d’equivalenza.
+Siccome <code class="language-math math-inline">V</code> è finito sappiamo che esiste <em>almeno</em> uno stato ricorrente.
+Inoltre sappiamo che gli stati di una stessa componente sono <em>tutti dello stesso tipo</em>.
+Perciò abbiamo che tutti gli stati della catena sono ricorrenti.
+Inoltre, siccome gli stati sono finiti, avremo che sono <em>ricorrenti positivi</em>.
+Infine, dato che per ipotesi tutti gli stati sono aperiodici, avremo che tutti gli stati sono <strong>apreiodici</strong> e <strong>ricorrenti positivi</strong>:
+ergo tutti gli stati sono ergodici <code class="language-math math-inline">\square</code>.<br>
+</p>
+<h3 id="distribuzione-stazionaria-o-invariante">Distribuzione stazionaria (o invariante)</h3>
+<p>Consideriamo una catena di Markov <em>omogenea</em> definita sull’insieme di stati <code class="language-math math-inline">V</code>, e con matrice di transizione <code class="language-math math-inline">P</code>.
+Allora una distribuzione <code class="language-math math-inline">\overline{\pi} = (\pi_i)_{i \in V}</code> è detta <strong>stazionaria</strong> (o <strong>invariante</strong>) se <span class="underline">punto fisso</span> del seguente sistema
+<code class="language-math math-display">
+   \overline{\pi} = \overline{\pi}P
+   </code></p>
+<h3 id="teorema-77---convergenza-a-distribuzioni-stazionarie">Teorema 7.7 - Convergenza a distribuzioni stazionarie</h3>
+<p>Sia una catena di Markov <strong>irriducibile</strong> ed <strong>ergodica</strong>, definita su un insieme di stati <code class="language-math math-inline">V</code> <strong>finito</strong>.
+Allora:</p>
+<ol>
+<li>Esiste un’unica distribuzione stazionaria <code class="language-math math-inline">\overline{\pi} = (\pi_i)_{i \in V}</code>.</li>
+<li>Per ogni coppia di stati <code class="language-math math-inline">i,j \in V</code> esiste il limite
+<code class="language-math math-display">
+      \lim_{t \to \infty} p_{ji}^{(t)} = \pi_i = \frac{1}{h_{ii}}
+      </code></li>
+</ol>
+<p><strong>Oss:</strong> Quindi, sotto le ipotesi del teorema, la probabilità di essere in un certo stato <code class="language-math math-inline">i</code> pertempi grandi è un valore vicino a <code class="language-math math-inline">\pi_i</code> e non dipende dal punto di partenza della catena.</p>
+<h4 id="osservazioni-su-teorema-77">Osservazioni su teorema 7.7</h4>
+<ul>
+<li>Le condizioni del teorema equivalgono a richiedere l’ <strong>aperiodicità</strong> della catena.</li>
+<li>Dato che <code class="language-math math-inline">V</code> è finito, l’esistenza di <em>alemno</em> una distribuzione stazionaria è garantita in ogni caso.</li>
+<li>Dato che <code class="language-math math-inline">V</code> è finito, esiste <em>almeno</em> una classe d’equivalenza rispetto a <code class="language-math math-inline">\leftrightarrow</code> costituita da tutti stati ricorrenti.
+Inoltre, una volta che la catena raggiunge uno di questi stati, non ne uscirà mai più.
+Ognuna di queste classi consente di individuare una sottocatena irriducibile e con stati ricorrenti; quindi il <strong>Teorema 7.7</strong> si può applicare a ciascuna di queste sottocatene nei casi in cui si abbia aperiodicità.</li>
+<li>Supponiamo di avere una catena con stati finiti <code class="language-math math-inline">V</code> tale che
+<code class="language-math math-display">
+      V \equiv T \cup C_1 \cup ... \cup C_k
+      </code>
+dove <code class="language-math math-inline">T</code> è l’insieme di tutti gli stati <em>transienti</em>, mentre <code class="language-math math-inline">C_1, ..., C_k</code> sono le classi d’equivalenza rispetto a <code class="language-math math-inline">\leftrightarrow</code>, costituite da da soli stati <em>ricorrenti</em>.
+Quindi tali componenti non comunicano mai tra di loro.<br>
+      Ogni distribuzione stazionaria <code class="language-math math-inline">\overline{\pi} = (\pi_i)_{i \in V}</code> è una particolare <strong>combinazione lineare</strong> delle distribuzioni stazionarie sulle componenti <code class="language-math math-inline">C_1, ..., C_k</code>, e con 0 sugli stati di <code class="language-math math-inline">T</code>.
+Ovvero
+<code class="language-math math-display">
+      \overline{\pi} = \sum_{j = 1}^k \alpha_j \overline{\pi}^{(j)}
+      </code>
+dove:
+<ul>
+<li>
+<p><code class="language-math math-inline">\alpha_1, ..., \alpha_k \geq 0</code></p>
+</li>
+<li>
+<p><code class="language-math math-inline">\sum_{j=1}^k \alpha_j = 1</code></p>
+</li>
+<li>
+<p><code class="language-math math-inline">\overline{\pi}^{(j)} = (\pi^{(j)}_i)_{i \in V}</code> è l’unica distribuzione stazionaria della componente <code class="language-math math-inline">C_j</code>, e con <code class="language-math math-inline">\pi^{(j)}_i = 0</code> se <code class="language-math math-inline">i \not\in C_j</code>.</p>
+</li>
+<li>
+<p>Nelle ipotesi del teorema 7.7 possiamo dire che, qualunque sia la distribuzione iniziale <code class="language-math math-inline">\overline{p}(0)</code>, si ha che
+<code class="language-math math-display">
+	\lim_{t \to \infty} \mathbb{E}\left[ f(X_t) \right] = \sum_{i \in V} f(i) \pi_i
+	</code>
+qualunque sia la funzione <code class="language-math math-inline">f : V \to \mathbb{R}</code>.
+Infatti</p>
+<code class="language-math math-display">	\begin{align*}
+	  \mathbb{E}\left[ f(X_t) \right]
+	  &#x26;= \sum_{i,j \in V} f(i) P(X_0 = j, X_t = i)\\
+	  &#x26;= \sum_{i,j \in V} f(i) P(X_0 = j, X_t = i)\\
+	  &#x26;= \sum_{i,j \in V} f(i) P(X_t = i \vert X_0 = j)P(X_0 = j)\\
+	  &#x26;= \sum_{i,j \in V} f(i) p^{(t)}_{ji}p_j(0)\\
+	  &#x26;= \sum_{j \in V} p_j(0) \sum_{i \in V} f(i) p^{(t)}_{ji}
+	\end{align*}</code>
+<p>Essendo <code class="language-math math-inline">V</code> finito, possiamo scambiare l’ordine del limite da fuori le sommatorie a denstro, ottenedo così</p>
+<code class="language-math math-display">	\begin{align*}
+	  \lim_{t \to \infty} \mathbb{E}\left[ f(X_t) \right]
+	  &#x26;= \lim_{t \to \infty} \sum_{j \in V} p_j(0) \sum_{i \in V} f(i) p^{(t)}_{ji}\\
+	  &#x26;= \sum_{j \in V} p_j(0) \lim_{t \to \infty} \sum_{i \in V} f(i) p^{(t)}_{ji}\\
+	  &#x26;= \sum_{j \in V} p_j(0) \sum_{i \in V} f(i) \lim_{t \to \infty} p^{(t)}_{ji}\\
+	  &#x26;= \sum_{j \in V} p_j(0) \sum_{i \in V} f(i) \pi_i\\
+	  &#x26;= \sum_{i \in V} f(i) \pi_i
+	\end{align*}</code>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="esempi">Esempi</h3>
+<h4 id="es-1">ES. 1</h4>
+<p>Consideriamo la seguente catena di Markov omogenea definita su <code class="language-math math-inline">V = \lbrace 1,2 \rbrace</code>, con la seguente matrice di transizione</p>
+<code class="language-math math-display">    \begin{equation*}
+    P = \left (
+    \begin{array}{cc}
+      0 &#x26; 1 \\
+      1 &#x26; 0
+    \end{array}
+    \right )
+    \end{equation*}</code>
+<ol>
+<li>Verificare che <span class="underline">non</span> esiste <code class="language-math math-inline">\lim_{t \to \infty} p^{(t)}_{ji}</code>, per qualunque <code class="language-math math-inline">i,j \in V</code>.</li>
+<li>Verificare che la catena ha periodo 2.</li>
+</ol>
+<h5 id="soluzione-1">Soluzione 1</h5>
+<p>Consideriamo la matrice di transizione al variare di <code class="language-math math-inline">t</code></p>
+<code class="language-math math-display">     \begin{equation*}
+     P^{(2)} = P^2 = \left (
+     \begin{array}{cc}
+       0 &#x26; 1 \\
+       1 &#x26; 0
+     \end{array}
+     \right )
+     \left (
+     \begin{array}{cc}
+       0 &#x26; 1 \\
+       1 &#x26; 0
+     \end{array}
+     \right ) =
+     \left (
+     \begin{array}{cc}
+       1 &#x26; 0 \\
+       0 &#x26; 1
+     \end{array}
+     \right ) = I
+     \end{equation*}</code>
+<p><code class="language-math math-display">
+     P^{(3)} = P^3 = P^2P = IP = P
+     </code>
+<code class="language-math math-display">
+     P^{(4)} = P^4 = P^3P = PP = I
+     </code>
+Si può quindi dedurre che
+<code class="language-math math-display">
+     P^{(t)} = \begin{cases}
+       I &#x26;\mbox{se } t \mbox{ è pari}\\
+       P &#x26;\mbox{se } t \mbox{ è dispari}
+     \end{cases}
+     </code>
+da cui segue che
+<code class="language-math math-display">
+     p^{(t)}_{11} = p^{(t)}_{22} = \begin{cases}
+       1 &#x26;\mbox{se } t \mbox{ è pari}\\
+       0 &#x26;\mbox{se } t \mbox{ è dispari}
+     \end{cases}
+     </code>
+e
+<code class="language-math math-display">
+     p^{(t)}_{12} = p^{(t)}_{21} = \begin{cases}
+       0 &#x26;\mbox{se } t \mbox{ è pari}\\
+       1 &#x26;\mbox{se } t \mbox{ è dispari}
+     \end{cases}
+     </code>
+In conclusione il limite in questione non esiste, in quanto il valore di <code class="language-math math-inline">p^{(t)}_{ji}</code> oscilla sempre tra 0 e 1.</p>
+<h5 id="soluzione-2">Soluzione 2</h5>
+<p>Banalmente, se si osserva il grafo associato a <code class="language-math math-inline">P</code> si può osservare che partendo da 1 non è possibile ritornarci con un numero dispari di passi.
+Analogamente per lo stato 2.
+Ergo, la catena ha periodo 2.</p>
+<h4 id="es-2---distribuzione-stazionaria">ES. 2 - distribuzione stazionaria</h4>
+<p>Sia la catena definita su <code class="language-math math-inline">V = \lbrace 0,1 \rbrace</code> con</p>
+<code class="language-math math-display">    \begin{equation*}
+    P = \left (
+    \begin{array}{cc}
+      1-p &#x26; p \\
+      q &#x26; 1-q
+    \end{array}
+    \right )
+    \end{equation*}</code>
+<p>per qualche <code class="language-math math-inline">p,q \in (0,1)</code>.<br>
+</p>
+<p>Si vuole calcolare la distribuzione stazionaria per <code class="language-math math-inline">P</code>.</p>
+<h5 id="soluzione">Soluzione</h5>
+<p>Certamente <code class="language-math math-inline">\overline{\pi} = (\pi_0, \pi_1)</code> è stazionaria se</p>
+<code class="language-math math-display">     \begin{equation*}
+     (\pi_0, \pi_1) = (\pi_0, \pi_1) \left (
+     \begin{array}{cc}
+       1-p &#x26; p \\
+       q &#x26; 1-q
+     \end{array}
+     \right )
+     \end{equation*}</code>
+<p>e se
+<code class="language-math math-display">
+     \pi_0 + \pi_1 = 1
+     </code>
+Iniziamo quindi col risolvere il primo sistema</p>
+<code class="language-math math-display">     \begin{cases}
+       \pi_0 &#x26;= \pi_0 (1-p) + \pi_1 q\\
+       \pi_1 &#x26;= \pi_0 p + \pi_1 (1-q)
+     \end{cases}</code>
+<code class="language-math math-display">     \begin{cases}
+       \pi_0 p &#x26;= \pi_1 q\\
+       \pi_1 q &#x26;= \pi_0 p
+     \end{cases}</code>
+<code class="language-math math-display">     \begin{cases}
+       \pi_0 &#x26;= \frac{q}{p} \pi_1\\
+       \pi_1 &#x26;= \frac{p}{q} \pi_0
+     \end{cases}</code>
+<p>Ora è necessario verificare il vincolo <code class="language-math math-inline">\pi_0 + \pi_1 = 1</code></p>
+<code class="language-math math-display">     \begin{align*}
+       \pi_0 + \pi_1 &#x26;= 1\\
+       \frac{q}{p} \pi_1 + \pi_1 &#x26;= 1\\
+       \frac{q + p}{p} \pi_1 &#x26;= 1\\
+       \pi_1 &#x26;= \frac{p}{p + q}\\
+       \implies \pi_0 &#x26;= \frac{q}{p + q}
+     \end{align*}</code>
+<h3 id="es-3---matrice-bistocastica">ES. 3 - matrice bistocastica</h3>
+<p>Una matrice <code class="language-math math-inline">A</code> è detta bistocastica se la somma degli elementi per ogni riga e per ogni colonna è sempre 1.
+Nel caso delle matrici di transizione <code class="language-math math-inline">P</code> è necessario che solo le somme degli elementi per colonna sia pari ad 1, in quanto per definizione le righe sono delle distribuzioni.
+Sia un insieme di stati <code class="language-math math-inline">V</code> <strong>finito</strong> e consideriamo la distribuzione uniforme
+<code class="language-math math-display">
+   \pi_i = \frac{1}{\vert V \vert} \;\; \forall i \in V
+   </code>
+Dimostrare che <code class="language-math math-inline">\overline{\pi} = (\pi_i)_{i \in V}</code> è stazionaria.</p>
+<h5 id="soluzione-3">Soluzione</h5>
+<p>Si vuole dimostrare che <code class="language-math math-inline">\overline{\pi} = \overline{\pi}P</code>.
+Consideriamo il solo elemento <code class="language-math math-inline">i</code>-esimo.
+Se <code class="language-math math-inline">\overline{\pi}</code> è stazionaria allora è vero che</p>
+<code class="language-math math-display">     \begin{align*}
+       \pi_i
+       &#x26;= \sum_{j \in V} \pi_j p_{ji}\\
+       &#x26;= \sum_{j \in V} \frac{1}{\vert V \vert} p_{ji}\\
+       &#x26;= \frac{1}{\vert V \vert} \underbrace{\sum_{j \in V} p_{ji}}_{= 1}\\
+       &#x26;= \frac{1}{\vert V \vert} = \pi_i \;\;\; \square
+     \end{align*}</code>
+<h3 id="teorema-710---distribuzioni-reversibili">Teorema 7.10 - distribuzioni reversibili</h3>
+<p>Sia <code class="language-math math-inline">\overline{\pi} = (\pi_i)_{i \in V}</code> una distribuzione su <code class="language-math math-inline">V</code>, e supponiamo che sia anche <strong>reversibile</strong>, ovvero che
+<code class="language-math math-display">
+   \pi_i p_{ij} = \pi_j p_{ji} \;\; \forall i,j \in V
+   </code>
+Allora <code class="language-math math-inline">\overline{\pi}</code> è anche <em>stazionaria</em>.</p>
+<p><strong>Proof:</strong></p>
+<code class="language-math math-display">   \begin{align*}
+     \pi_i
+     &#x26;= \sum_{j \in V} \pi_j p_{ji}\\
+     &#x26;= \sum_{j \in V} \pi_i p_{ij}\\
+     &#x26;= \pi_i \underbrace{\sum_{j \in V} p_{ij}}_{= 1} = \pi_i \;\;\; \square
+   \end{align*}</code>
+<h3 id="teorema-711">Teorema 7.11</h3>
+<p>Supponiamo di avere una catena irriducibile e aperiodica.
+Allora vale che:</p>
+<ol>
+<li>Nel caso di <code class="language-math math-inline">V</code> <span class="underline">finito</span> vale che:
+<ul>
+<li>c’è <strong>ergodicità</strong>.</li>
+<li>per ogni <code class="language-math math-inline">i,j \in V</code> esiste <code class="language-math math-inline">\lim_{t \to \infty} p^{(t)}_{ji}</code> <strong>indipendente</strong> da <code class="language-math math-inline">j</code>.</li>
+<li>si ha un’<strong>unica</strong> distribuzione stazionaria <code class="language-math math-inline">\overline{\pi}</code>.</li>
+<li>per ogni <code class="language-math math-inline">i,j \in V</code> avremo che <code class="language-math math-inline">\lim_{t \to \infty} p^{(t)}_{ji} = \pi_i > 0</code>.</li>
+</ul>
+</li>
+<li>Nel caso di <code class="language-math math-inline">V</code> <span class="underline">infinito</span> vale che:
+<ul>
+<li>non esistono stati ricorrenti positivi.</li>
+<li>per ogni <code class="language-math math-inline">i,j \in V</code> si ha <code class="language-math math-inline">\lim_{t \to \infty} p^{(t)}_{ji} = 0</code>.</li>
+<li>non esiste distribuzione stazionaria.</li>
+</ul>
+</li>
+</ol>
+<p><em>Dimostrazione omessa</em>.</p>
+<hr>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>esiste un cammino che da <code class="language-math math-inline">i</code> arriva a <code class="language-math math-inline">j</code>, e ne esiste un altro che da <code class="language-math math-inline">j</code> arriva ad <code class="language-math math-inline">i</code>. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

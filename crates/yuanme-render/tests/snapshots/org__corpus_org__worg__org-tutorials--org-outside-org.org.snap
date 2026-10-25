@@ -1,0 +1,972 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="introduction">Introduction</h2>
+<p>Once one gets used to Org-mode, it’s hard to live without it. Even its most
+basic feature, the hierarchical tree-like structuring of files, can be
+missed badly when editing files in other GNU Emacs major-modes, not to
+mention the convenient navigation, structure-editing and visibility-cycling
+functionality Org-mode offers for these tree-like structures.</p>
+<p>One especially important case where Org-mode users might miss Org-mode
+functionality is their <code>.emacs</code> configuration file. These Emacs Lisp files
+might become huge, for example <a href="http://www.mygooglest.com/fni/dot-emacs.html">Fabrice Niessen’s .emacs</a> has some 9720 lines,
+and structuring them only using Emacs Lisp comments (<code>;</code>) easily becomes a
+creative nightmare (many approaches for structuring a .emacs file can be
+found on <a href="http://www.dotemacs.de/index.html">the very unofficial dotemacs home</a> page).</p>
+<p>Another typical case where Org-mode’s editing facilities are missing is
+writing the comment-header sections of Emacs Lisp source code files. These
+sections often contain extensive explanations of the development-history,
+installation-process and usage of the library, but are just that - Emacs
+Lisp comment-sections. Sometimes even the comment-strings of important and
+complex Emacs Lisp functions contain long and complicated text parts that
+are not easy to edit as comments.</p>
+<p>Last not least, anybody who has used <code>C-c C-j (org-goto)</code> for looking up a
+different location in the current org-file, keeping current visibility,
+might have wondered if a kind of ‘remote-buffer-control’ via an associated
+read-only buffer might not be a generally useful idea.</p>
+<h2 id="org-mode-everywhere">Org-mode everywhere</h2>
+<h3 id="file-structuring">File Structuring</h3>
+<h4 id="orgstruct-minor-mode">Orgstruct</h4>
+<div class="infobox">
+<p>Orgstruct mode is obsolete. It was removed from Org in version 9.2
+for reasons outlined <a href="https://lists.gnu.org/archive/html/emacs-orgmode/2017-08/msg00482.html">here</a>. This section has been abridged to provide
+background for users who come across references to it.</p>
+</div>
+<p><em>Orgstruct minor mode</em> sought to let Emacs users enjoy Org-mode’s
+structure-editing and list-formatting facilities outside Org-mode
+buffers. While it was still being maintained, the Org-mode manual had
+this to say:</p>
+<pre><code>If you like the intuitive way the Org mode structure editing and list
+formatting works, you might want to use these commands in other modes like
+Text mode or Mail mode as well. The minor mode orgstruct-mode makes this
+possible. [...]
+
+When this mode is active and the cursor is on a line that looks to Org like a
+headline or the first line of a list item, most structure editing commands
+will work, even if the same keys normally have different functionality in
+the major mode you are using. If the cursor is not in one of those special
+lines, Orgstruct mode lurks silently in the shadows. When you use
+orgstruct++-mode, Org will also export indentation and autofill settings
+into that mode, and detect item context after the first line of an item.
+</code></pre>
+<p>Unlike <em>outshine</em> (see below), <em>orgstruct</em> did not work with <em>outorg</em>
+and <em>navi-mode</em> (see belows).</p>
+<h4 id="outline-with-outshine">Outline with Outshine</h4>
+<h5 id="history-and-credits">History and Credits</h5>
+<p><strong>outshine</strong> is a merge and extension of older extensions for
+<em>outline-minor-mode</em>. More exactly, <em>outshine</em> developed out of the now
+obsolete <code>outxxtra.el</code>, <em>Thorsten Jolitz’s</em> modified extension of <em>Per
+Abrahamsen’s</em> <code>out-xtra.el</code>. With the blessing of it’s (well-known) author
+<em>Carsten Dominik</em>, <em>Thorsten Jolitz</em> could merge the (slightly modified)
+<code>outline-magic.el</code> with <code>outxxtra.el</code> and extend them into the new
+<code>outshine.el</code> library. Thus, if you use outline with outshine, you don’t need
+outline-magic and out-xtra anymore. However, outshine does not make either of
+these two obsolete libraries, since it has a more specialized approach and
+might not be able to replace them in all cases.</p>
+<p>Furthermore, `outshine.el’ includes functions and keybindings from
+<a href="http://emacswiki.org/emacs/OutlineMinorMode">outline-mode-easy-bindings</a>. Unfortunately, no author is given for that
+library, so I cannot credit the person who wrote it.</p>
+<p>So what is <em>outshine</em>? It’s an extension library for outline-minor-mode that
+gives buffers in different major-modes the ‘look-and-feel’ of Org-mode buffers
+and enables the use of <em>outorg</em> and <em>navi-mode</em> on them.</p>
+<p>To sum it up in one sentence:</p>
+<p class="verse"> Outline with Outshine outshines Outline<br>
+</p>
+<h5 id="outshine-installation">Installation</h5>
+<p>Download <code>outshine.el</code> (or clone the github-repo) and copy it to a location
+where Emacs can find it:</p>
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td><a href="https://github.com/tj64/outshine">https://github.com/tj64/outshine</a></td></tr><tr><td>git clone git@github.com:tj64/outshine.git</td></tr></tbody></table>
+<p>Use this in your ‘.emacs’ to get started:</p>
+<pre><code class="language-emacs-lisp">(require 'outshine)
+(add-hook 'outline-minor-mode-hook 'outshine-hook-function)
+</code></pre>
+<p>If you like the functions and keybindings for ‘M -<a id="arrow-key"></a>’ navigation
+and visibility cycling copied from `outline-mode-easy-bindings’, you might
+want to put the following code into your Emacs init file to have the same
+functionality/keybindings available in Org-mode too, overriding the less
+frequently used commands for moving and promoting/demoting subtrees (but
+clashing with ‘org-table’ keybindings):</p>
+<pre><code class="language-emacs-lisp">(when (require 'outshine nil 'NOERROR)
+  (add-hook 'org-mode-hook
+            (lambda ()
+              ;; Redefine arrow keys, since promoting/demoting and moving
+              ;; subtrees up and down are less frequent tasks then
+              ;; navigation and visibility cycling
+                (org-defkey org-mode-map
+                            (kbd "M-&#x3C;left>") 'outline-hide-more)
+                (org-defkey org-mode-map
+                            (kbd "M-&#x3C;right>") 'outline-show-more)
+                (org-defkey org-mode-map
+                            (kbd "M-&#x3C;up>") 'outline-previous-visible-heading)
+                (org-defkey org-mode-map
+                            (kbd "M-&#x3C;down>") 'outline-next-visible-heading))
+            'append))
+</code></pre>
+<p>Add this if you (e.g.) always want outline/outshine for emacs-lisp buffers
+(recommended):</p>
+<pre><code class="language-emacs-lisp">(add-hook 'emacs-lisp-mode-hook 'outline-minor-mode)  
+</code></pre>
+<p>If you want a different prefix key for outline-minor-mode, insert first
+(e.g.):</p>
+<pre><code class="language-emacs-lisp">(defvar outline-minor-mode-prefix "\C-c") 
+</code></pre>
+<p>or whatever you like best to replace the (quite unusable) original prefix
+“<code class="language-math math-inline">\C</code>-c @”. The prefix can only be changed before outline (minor) mode is
+loaded.</p>
+<h5 id="fundamental-idea">Outshine’s fundamental idea</h5>
+<p><em>outshine</em> is based on a very simple yet powerful idea, that enables its use
+in any Emacs major-mode (in theory at least):</p>
+<p class="verse">Outshine headlines are Org-mode headlines out-commented with <code>comment-region</code><br>
+</p>
+<p>Thus, the file at hand must be outline-structured ‘the outshine way’, i.e.
+with the headlines being proper Org-mode headlines, marked and outcommented
+with <code>comment-region</code>. As an example, to generate a 3rd level
+outshine-headline in an Emacs Lisp file, write down</p>
+<pre><code>,-----------------------
+| *** Third Level Header 
+`-----------------------
+</code></pre>
+<p>mark the header line, and apply <code>comment-region</code> on it:</p>
+<pre><code>,-----------------------
+| ;; *** Third Level Header 
+`-----------------------
+</code></pre>
+<p>In a LaTeX file, an adequate header will look like this:</p>
+<pre><code>,-----------------------
+| % *** Third Level Header 
+`-----------------------
+</code></pre>
+<p>and in a PicoLisp file like this (always depending of the major-mode specific
+values of <code>comment-start</code>, <code>comment-end</code>, <code>comment-add</code> and
+<code>comment-padding</code>):</p>
+<pre><code>,-----------------------
+| ## *** Third Level Header 
+`-----------------------
+</code></pre>
+<p><code>outshine.el</code>, <code>outorg.el</code> and <code>navi-mode.el</code> are all examples of how to
+structure emacs-lisp source files with outshine-style headlines.</p>
+<h5 id="fontification-navigation-and-structure-editing">Fontification, Navigation and Structure Editing</h5>
+<p>After structuring a source code file the ‘outshine-way’ and loading
+outline-minor-mode with outshine-extensions, the file will have a very
+Org-mode like ‘look-and-feel’. The headlines (up to level 8) are fontified the
+same way Org-mode headlines are fontified, and the very specific navigation
+and structure editing commands of outline-minor-mode as well as their more
+general Org-mode style counterparts are available:</p>
+<p><code>outline-minor-mode</code> Minor Mode Bindings:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>binding</th></tr></thead><tbody><tr><td>C-c</td><td>PrefixCommand</td></tr><tr><td>&#x3C;M-down></td><td>outline-next-visible-heading</td></tr><tr><td>&#x3C;M-left></td><td>outline-hide-more</td></tr><tr><td>&#x3C;M-right></td><td>outline-show-more</td></tr><tr><td>&#x3C;M-up></td><td>outline-previous-visible-heading</td></tr><tr><td>&#x3C;tab></td><td>outshine-cycle-subtree</td></tr><tr><td>&#x3C;backtab></td><td>outshine-cycle-buffer</td></tr><tr><td>C-c C-a</td><td>show-all</td></tr><tr><td>C-c C-b</td><td>outline-backward-same-level</td></tr><tr><td>C-c C-c</td><td>hide-entry</td></tr><tr><td>C-c C-d</td><td>hide-subtree</td></tr><tr><td>C-c C-e</td><td>show-entry</td></tr><tr><td>C-c C-f</td><td>outline-forward-same-level</td></tr><tr><td>C-c TAB</td><td>show-children</td></tr><tr><td>C-c C-k</td><td>show-branches</td></tr><tr><td>C-c C-l</td><td>hide-leaves</td></tr><tr><td>C-c RET</td><td>outline-insert-heading</td></tr><tr><td>C-c C-n</td><td>outline-next-visible-heading</td></tr><tr><td>C-c C-o</td><td>outline-hide-other</td></tr><tr><td>C-c C-p</td><td>outline-previous-visible-heading</td></tr><tr><td>C-c C-q</td><td>outline-hide-sublevels</td></tr><tr><td>C-c C-s</td><td>show-subtree</td></tr><tr><td>C-c C-t</td><td>hide-body</td></tr><tr><td>C-c C-u</td><td>outline-up-heading</td></tr><tr><td>C-c C-v</td><td>outline-move-subtree-down</td></tr><tr><td>C-c C-^</td><td>outline-move-subtree-up</td></tr><tr><td>C-c ‘</td><td>outorg-edit-as-org</td></tr><tr><td>C-c @</td><td>outline-mark-subtree</td></tr><tr><td>C-c I</td><td>outline-previous-visible-heading</td></tr><tr><td>C-c J</td><td>outline-hide-more</td></tr><tr><td>C-c K</td><td>outline-next-visible-heading</td></tr><tr><td>C-c L</td><td>outline-show-more</td></tr><tr><td>C-c C-&#x3C;</td><td>outline-promote</td></tr><tr><td>C-c C-></td><td>outline-demote</td></tr></tbody></table>
+<h3 id="comment-editing">Subtree and Comment Editing</h3>
+<h4 id="comment-editing-introduction">Introduction</h4>
+<p>Once a (outshine) source code buffer looks and behaves like an Org-mode
+buffer, it would be nice to have the full editing power of Org-mode
+available when editing the (comment) text parts or overall structure of
+the buffer.</p>
+<p>Think “reverse Org-Babel”: editing of comment-sections or entire subtrees
+from source code files in temporary Org-mode buffers instead of editing of
+Org-mode source-blocks in temporary source-code buffers.</p>
+<p>There are two new libraries available for editing with Org-mode in other
+major-modes, <em>outorg</em> and <em>poporg</em>. Although developed independently with
+very different implementations, both libraries complement each other very
+well in their functionality.</p>
+<h4 id="outorg">Outorg</h4>
+<h5 id="outorg-introduction-and-installation">Introduction and Installation</h5>
+<p><strong>outorg</strong> is a library written by <em>Thorsten Jolitz</em> on top of his <em>outshine</em>
+library. Thus, <em>outorg</em> needs <em>outshine</em>, and files that are structured with
+outshine-style headers, otherwise it won’t work (note that ‘oldschool’ Emacs
+Lisp files with headers matched by <code>^;;;+</code> are a special case where outorg
+works too).</p>
+<p>You can download the file (or clone the github-repo) here:</p>
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td><a href="https://github.com/tj64/outorg">https://github.com/tj64/outorg</a></td></tr><tr><td>git clone git@github.com:tj64/outorg.git</td></tr></tbody></table>
+<p><em>outorg</em> requires Org-mode too, thus should be loaded after Org-mode. Insert</p>
+<pre><code class="language-emacs-lisp">(require 'outorg)
+</code></pre>
+<p>in your .emacs and you are done.</p>
+<h5 id="outorg-usage">Usage</h5>
+<p><em>outorg’s</em> main command is</p>
+<pre><code> ,---------------------------
+ | C-c ' (outorg-edit-as-org)
+ `---------------------------
+</code></pre>
+<p>used in source-code buffers where `outline-minor-mode’ is activated with
+`outshine’ extensions. The Org-mode edit-buffer popped up by this command
+has `outorg-edit-minor-mode’ activated, a minor-mode with only 2 commands:</p>
+<pre><code>,----------------------------------------
+| M-# (outorg-copy-edits-and-exit)
+| C-x C-s (outorg-save-edits-to-tmp-file)
+`----------------------------------------
+</code></pre>
+<p>If you want to insert Org-mode source-code or example blocks in
+comment-sections, simply outcomment them in the outorg-edit buffer before
+calling `outorg-copy-edits-and-exit’.</p>
+<p>Thus, with point inside a subtree or on a subtree header, pressing <code>C-c '
+(outorg-edit-as-org)</code> will open this subtree in a temporary Org-mode edit
+buffer, with all out-commented parts in the original buffer uncommented, and
+all source code parts enclosed in Org-mode source blocks.</p>
+<p>When <code>outorg-edit-as-org</code> is called with a prefix <code>C-u</code>, the whole source-code
+buffer will be transformed into Org-mode and offered for editing in a
+temporary Org-mode buffer, all headlines folded except the subtree where point
+was in.</p>
+<p>If the original-buffer was read-only, the user is asked if he wants to make it
+writable for the Org-mode editing. If he answers yes, the buffer can be
+edited, but will be set back to read-only again after editing is finished.</p>
+<p>To avoid accidental loss of edits, the temporary outorg-edit-buffer is backed
+up in the OS <code>/tmp</code> directory. During editing, the outorg-edit-buffer can be
+saved as usual with <code>save-buffer</code> via  <code>C-x C-s</code>. Even when killed by
+accident, that last state of the outorg-edit-buffer will be saved and can be
+recovered.</p>
+<p>When done with editing in Org-mode, <code>M-# (Meta-key and #)</code> is used to call
+<code>outorg-copy-edits-and-exit</code>, a command that orderly exits the edit-buffer by
+converting the (modified) comment-sections back to comments and extracting the
+source-code parts out of the Org-mode source-code blocks.</p>
+<p>Please note: <em>outorg</em> is line-based, it only works with ‘one-line’ comments,
+i.e. with comment-sections like those produced by `comment-region’ (a command
+that comments or uncomments each line in the region). Those special multi-line
+comments found in many programming languages are not recognized and lead to
+undefined behaviour.</p>
+<h5 id="outorg-vs-poporg">Outorg vs Poporg</h5>
+<p><em>outorg</em> works on subtrees (or whole buffers).</p>
+<p>One advantage of this is that there is always a complete subtree (-hierarchy)
+in the outorg-edit-buffer, thus not only the Orgmode editing functionality can
+be applied, but also its export facilities and many other commands that act on
+headlines or subtrees. As an example, in order to produce the nice README.txt
+files for the github-repos of <em>outshine</em>, <em>outorg</em> and <em>navi-mode</em>, I simply
+called <code>outorg-edit-as-org</code> on the first 1st-level-headline of the source-code
+files (the file header comment-sections) and exported the subtree to ASCII.</p>
+<p>One disadvantage of this is that comment-strings of (e.g. emacs-lips)
+functions cannot be edited comfortably, since after transformation of the
+source-code buffer they end up inside Org-mode source-code blocks - as
+comment-strings, just like before.</p>
+<p>Enters <em>poporg</em>. It will be described in much detail in the next section, but
+it can already be mentioned here that it does exactly what <em>outorg</em> cannot do
+well - Org-mode editing of atomic, isolated comment-strings, no matter where
+they are found in the source code buffer. And it is, in contrast to <em>outorg</em>,
+completely independent from outline structuring with e.g. <em>outshine</em> or
+<em>orgstruct</em>.</p>
+<h4 id="poporg">Poporg</h4>
+<p>[NOTE: This section of the tutorial is copied from
+<a href="https://github.com/QBobWatson/poporg">https://github.com/QBobWatson/poporg</a>, where you can find the <code>poporg.el</code> file too,
+and only slightly modified]</p>
+<h5 id="poporg-introcuction">Introduction</h5>
+<p><strong>poporg</strong> is a small Emacs lisp project written by <em>François Pinard</em> to
+help editing program strings and comments using Org mode (or any other
+major mode).  This can be useful as it is often more convenient to
+edit large pieces of text, like Emacs lisp or Python docstrings, in an
+org-mode buffer instead of in a comment or a string.</p>
+<p>Emacs does not easily handle multiple major modes in a single buffer.
+So far many solutions have been implemented, with varying degrees of
+success, but none is perfect.  The <strong>poporg</strong> approach avoids the problem
+by extracting the text from the comment or the string from a buffer
+using a major programming mode, into a separate buffer to be edited in
+a text mode, but containing only that comment or that string.  Once
+the edit is completed, the modified comment or string gets
+re-integrated in the buffer containing the program, replacing the
+original contents.</p>
+<p>The main utility of this package is its ability to handle prefixes
+automatically.  For comments, it finds all contiguous nonempty
+comments on their own line, and strips the common prefix before
+inserting into the editing buffer (see <code>poporg-comment-skip-regexp</code>).
+For strings, it checks if there is consistent indentation for the
+whole string (the opening delimiter of the string can only have
+whitespace before it), and uses that as the common prefix.  For
+regions, it just uses a naive common prefix.  When placing the edited
+text back in context, it adds the common prefix again, potentially
+stripping any trailing whitespace (see
+<code>poporg-delete-trailing-whitespace</code>).  It can even adjust the fill
+column in the editing buffer to account for indentation (see
+<code>poporg-adjust-fill-column</code>).</p>
+<h5 id="poporg-installation">Installation</h5>
+<p>To install <strong>poporg</strong>, move file <code>poporg.el</code> to a place where Emacs will
+find it.  You might byte-compile the file if you want.  There are also
+<a href="https://github.com/dimitri/el-get">El-Get</a> and <a href="http://melpa.milkbox.net/">MELPA</a> recipes.</p>
+<p>To use <strong>poporg</strong>, you need to pick some unused keybinding and add a few
+lines to your <code>~/.emacs</code> file, such as:</p>
+<pre><code class="language-emacs-lisp">(autoload 'poporg-dwim "poporg" nil t)
+(global-set-key (kbd "C-c \"") 'poporg-dwim)
+</code></pre>
+<p>It is important that this be a global keybinding, or at least that the
+command <code>poporg-dwim</code> be available from both the programming and the
+text editing buffers.</p>
+<h5 id="poporg-usage">Usage</h5>
+<p>The command <code>poporg-dwim</code> searches for a nearby comment or string (see
+<code>poporg-find-string-or-comment</code>) and, upon finding one, it opens an
+empty buffer in a new window with its contents available for editing.
+If the region is active then <code>poporg-dwim</code> inserts the region into the
+buffer instead.  The original text is grayed out and set read-only to
+prevent editing in two places at once.  After editing, running
+<code>poporg-dwim</code> again from the editing buffer kills the editing buffer and
+inserts the edited text back into its original context.</p>
+<p>Hopefully <code>poporg-dwim</code> will do what you expect in most situations.  It
+uses the buffer’s syntax table for parsing, so it should adapt well to
+most modes (including sextuple-quoted strings in Python).  If you run
+<code>poporg-dwim</code> in the vicinity of a grayed-out region that you are
+editing in another buffer, it pops to that buffer.  It has the
+following caveats:</p>
+<ol>
+<li>It does not understand empty strings.</li>
+<li>It cannot deal very well with comments with ending delimiters.</li>
+</ol>
+<p>For example, in c-mode, comments start with <code>/*</code> and end with <code>*/</code>.  This
+is a problem because poporg needs a common prefix for all lines.  In
+order to make poporg understand these comments, write them on separate
+lines like this:</p>
+<pre><code class="language-c">/*
+ * Comments go here.  Not on a line with the opening delimiter or the
+ * closing delimiter.
+ */
+</code></pre>
+<p>In this situation poporg will ignore the first and last lines because
+they are empty except for comment delimiters, and detect the common
+prefix <code>__</code> or <code>__*_</code> for the middle lines, depending on whether the <code>*</code>
+character is matched by <code>poporg-comment-skip-regexp</code>.</p>
+<p>You will probably want to customize <code>poporg-edit-hook</code>, since that is
+where the major mode of the edit buffer is set.  The minor mode
+<code>poporg-mode</code> is activated in the edit buffer.  It has one keybinding by
+default, which remaps <code>save-buffer</code> (C-x C-s) to <code>poporg-edit-exit</code>.  You
+can add additional keybindings to <code>poporg-mode-map</code>.  To save an edit,
+from the editing buffer run <code>poporg-edit-exit</code> or <code>poporg-dwim</code>; to abort
+the edit simply kill the buffer.</p>
+<h3 id="remote-buffer-control">Remote Buffer Control</h3>
+<p>While visibility-cycling and outline-navigation commands make it very
+convenient to work even with big Org-mode or outshine buffers, it can’t be
+denied that a read-only “twin-buffer” with one-key command-bindings,
+exclusively for navigation and high-level structure editing of the associated
+original-buffer, can be even more convenient.</p>
+<p>Enters <em>navi-mode</em>, a major-mode by <em>Thorsten Jolitz</em> derived from and
+inspired by <em>occur-mode</em> (and, to a certain extend, the <code>org-goto</code> command).
+Just like <em>outorg</em>, <em>navi-mode</em> depends on <em>outshine</em> and works only with
+source-code files structured with ‘outshine-style’ outline-headers. It does
+work with Org-mode files and ‘oldschool’ Emacs Lisp files too, though.</p>
+<p>A <em>navi-buffer</em> is a kind of “remote-control” for its associated
+<em>original-buffer</em>. It offers a vast amount of views on the <em>original-buffer</em>
+via predefined occur-searches that combine headlines and
+(programming-language specific) keywords. It further allows many frequent
+actions on the subtree at point to be triggered directly from the
+<em>navi-buffer</em>, without (visibly) switching to the <em>original-buffer</em> where the
+actions take place.</p>
+<p>A special feature of <em>navi-mode</em> is its customizability. It predefines all
+ASCII printing characters as keybindings for the <code>navi-generic-command</code>, and
+users can therefore map their user-defined regexp-searches (customizable
+variable <code>navi-keywords</code>) to any of the many free one-key bindings (in
+customizable variable <code>navi-key-mappings</code>). These customizations are made by
+programming-language, thus the Emacs community could work out default
+‘alists’ for many languages that then may be used and modified by the users.</p>
+<p><em>navi-mode’s</em> author <em>Thorsten Jolitz</em> already worked out two configurations,
+one for Emacs Lisp and the other for PicoLisp. You could use them as
+inspiration for a configuration of your favorite programming language - and
+send these ‘alists’ to him so that he can include them in the library. The
+more predefined sets of keyword searches there are, the easier to use
+<em>navi-mode</em> with many languages.</p>
+<h4 id="navi-mode">Navi-mode</h4>
+<h5 id="about-navi-mode">About navi-mode</h5>
+<p><em>navi-mode</em> implements extensions for occur-mode. You can think of a
+navi-buffer as a kind of ‘remote-control’ for an (adequately)
+outline-structured original-buffer. It enables quick navigation and basic
+structure editing in the original-buffer without (necessarily) leaving the
+navi-buffer. When switching to the original-buffer and coming back after some
+modifications, the navi-buffer is always reverted (thus up-to-date).</p>
+<p>Besides the fundamental outline-heading-searches (8 outline-levels) and the 5
+basic keyword-searches (:FUN, :VAR, :DB, :OBJ and :ALL), all languages can
+have their own set of searches and keybindings (see <code>navi-key-mappings</code> and
+<code>navi-keywords</code>). Heading-searches and keyword-searches can be combined,
+offering a vast amount of possible ‘views’ at the original-buffer.</p>
+<h5 id="installation">Installation</h5>
+<p>Download (or clone the github-repos of) the three required libraries</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td>`navi-mode.el’</td><td><a href="https://github.com/tj64/navi">https://github.com/tj64/navi</a></td></tr><tr><td></td><td>git clone git@github.com:tj64/navi.git</td></tr><tr><td>`outshine.el’</td><td><a href="https://github.com/tj64/outshine">https://github.com/tj64/outshine</a></td></tr><tr><td>`outorg.el’</td><td><a href="https://github.com/tj64/outorg">https://github.com/tj64/outorg</a></td></tr></tbody></table>
+<p>and put them in a place where Emacs can find them (on the Emacs ‘load-path’).
+Follow the installation instructions in <code>outshine.el</code> and <code>outorg.el</code>.</p>
+<p>Install <code>navi-mode.el</code> by adding</p>
+<pre><code class="language-emacs-lisp">(require 'navi-mode)
+</code></pre>
+<p>to your .emacs file.</p>
+<h5 id="navi-mode-usage">Usage</h5>
+<p>For <em>navi-mode</em> to work, the original-buffer must be outline-structured ‘the
+outshine way’, i.e. with the headlines being proper Org-mode headlines, marked
+and outcommented with <em>comment-region</em> (but oldschool Emacs Lisp headers like
+<code>;;; header level 1</code> work too) .</p>
+<p>The second assumption is that <em>outline-minor-mode</em> is activated in the
+original-buffer and <em>outshine.el</em> loaded like described in its installation
+instructions (except for Org-mode files).</p>
+<p>When these pre-conditions are fulfilled (<em>outorg.el</em> must be loaded too), you
+can use <code>M-s n (navi-search-and-switch)</code> to open a <em>navi-buffer</em> and
+immediately switch to it. The new navi-buffer will show the first-level
+headings of the <em>original-buffer</em>, with point at the first entry.</p>
+<p>You can then:</p>
+<ul>
+<li>Show headlines (up-to) different levels:</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>command</th><th>function-name</th></tr></thead><tbody><tr><td>1 … 8</td><td>show levels 1 to 8</td><td>navi-generic-command</td></tr></tbody></table>
+<ul>
+<li>Navigate up and down in the search results shown in the navi-buffer:</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>command</th><th>function-name</th></tr></thead><tbody><tr><td>p</td><td>previous</td><td>occur-prev</td></tr><tr><td>n</td><td>next</td><td>occur-next</td></tr><tr><td>DEL</td><td>down page</td><td>scroll-down-command</td></tr><tr><td>SPC</td><td>up page</td><td>scroll-up-command</td></tr></tbody></table>
+<ul>
+<li>Revert the navi-buffer (seldom necessary), show help for the user-defined
+keyword-searches, and quit the navi-buffer and switch-back to the
+original-buffer:</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>command</th><th>function-name</th></tr></thead><tbody><tr><td>g</td><td>revert buffer</td><td>navi-revert-function</td></tr><tr><td>h</td><td>show help</td><td>navi-show-help</td></tr><tr><td>q</td><td>quit navi-mode and switch</td><td>navi-quit-and-switch</td></tr></tbody></table>
+<ul>
+<li>Switch to the original-buffer and back to the navi-buffer, display an
+occurrence in the original-buffer or go to the occurrence:</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>command</th><th>function-name</th></tr></thead><tbody><tr><td>M-s n</td><td>launch navi-buffer</td><td>navi-search-and-switch</td></tr><tr><td>M-s s</td><td>switch to other buffer</td><td>navi-switch-to-twin-buffer</td></tr><tr><td>M-s M-s</td><td></td><td></td></tr><tr><td>s</td><td></td><td></td></tr><tr><td>d</td><td>display occurrence</td><td>occur-mode-display-occurrence</td></tr><tr><td>o</td><td>goto occurrence</td><td>navi-goto-occurrence-other-window</td></tr></tbody></table>
+<ul>
+<li>Structure editing on subtrees and visibility cycling</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>command</th><th>function-name</th></tr></thead><tbody><tr><td>TAB</td><td>cycle subtrees</td><td>navi-cycle-subtree</td></tr><tr><td>&#x3C;backtab></td><td>cycle buffer</td><td>navi-cycle-buffer</td></tr><tr><td>+</td><td>Demote Subtree</td><td>navi-demote-subtree</td></tr><tr><td>-</td><td>promote subtree</td><td>navi-promote-subtree</td></tr><tr><td>\^</td><td>move up subtree (same level)</td><td>navi-move-up-subtree</td></tr><tr><td>&#x3C;</td><td>move down subtree (same level)</td><td>navi-move-down-subtree</td></tr></tbody></table>
+<ul>
+<li>Miscellaneous actions on subtrees</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>command</th><th>function-name</th></tr></thead><tbody><tr><td>m</td><td>mark subtree</td><td>navi-mark-subtree-and-switch</td></tr><tr><td>c</td><td>copy subtree</td><td>navi-copy-subtree-to-register-s</td></tr><tr><td>k</td><td>kill subtree</td><td>navi-kill-subtree</td></tr><tr><td>y</td><td>yank killed/copied subtree</td><td>navi-yank-subtree-from-register-s</td></tr><tr><td>u</td><td>undo last change</td><td>navi-undo</td></tr><tr><td>r</td><td>narrow to subtree</td><td>navi-narrow-to-subtree</td></tr><tr><td>w</td><td>widen</td><td>navi-widen</td></tr><tr><td>l</td><td>query-replace</td><td>navi-query-replace</td></tr><tr><td>i</td><td>isearch</td><td>navi-isearch</td></tr><tr><td>e</td><td>edit as org (outorg)</td><td>navi-edit-as-org</td></tr></tbody></table>
+<ul>
+<li>Furthermore, there are five (semantically) predefined keyword-searches:</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>keyword-symbol</th><th>searches for</th></tr></thead><tbody><tr><td>f</td><td>:FUN</td><td>functions, macros etc.</td></tr><tr><td>v</td><td>:VAR</td><td>vars, consts, customs etc.</td></tr><tr><td>x</td><td>:OBJ</td><td>OOP (classes, methods etc)</td></tr><tr><td>b</td><td>:DB</td><td>DB (store and select)</td></tr><tr><td>a</td><td>:ALL</td><td>all</td></tr></tbody></table>
+<ul>
+<li>And (potentially) many more user-defined keyword-searches</li>
+</ul>
+<p>(example Emacs Lisp):</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>key</th><th>keyword-symbol</th><th>searches for</th></tr></thead><tbody><tr><td>F</td><td>:defun</td><td>(defun</td></tr><tr><td>V</td><td>:defvar</td><td>(defvar</td></tr><tr><td>C</td><td>:defconst</td><td>(defconst</td></tr><tr><td>G</td><td>:defgroup</td><td>(defgroup</td></tr><tr><td>U</td><td>:defcustom</td><td>(defcustom</td></tr><tr><td>A</td><td>:defadvice</td><td>(defadvice</td></tr><tr><td>M</td><td>:defmacro</td><td>(defmacro</td></tr><tr><td>E</td><td>:defface</td><td>(defface</td></tr><tr><td>S</td><td>:defstruct</td><td>(defstruct</td></tr><tr><td>L</td><td>:defclass</td><td>(defclass</td></tr></tbody></table>
+<ul>
+<li>Headline-searches and keyword-searches can be combined, e.g.</li>
+</ul>
+<pre><code>,------
+| C-2 f 
+`------
+</code></pre>
+<p>in a <em>navi-buffer</em> associated to an Emacs Lisp source file shows all headlines
+up-to level 2 as well as all function, macro and advice definitions in the
+original-buffer,</p>
+<pre><code>,------
+| C-5 a 
+`------
+</code></pre>
+<p>shows all headlines up-to level 5 as well as all functions, variables,
+classes, methods, objects, and database-related definitions. The exact meaning
+of the standard keyword-searches ‘f’ and ‘a’ must be defined with a regexp in
+the customizable variable `navi-keywords’ (just like the user-defined
+keyword-searches).</p>
+<h2 id="screencasts">Screencasts</h2>
+<p>There are some screencasts on Youtube that show the libraries mentioned in
+this article in action:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>topic</th><th>url</th></tr></thead><tbody><tr><td>Modern conventions for Emacs Lisp files</td><td><a href="https://www.youtube.com/watch?v=nqE6YxlY0rw">https://www.youtube.com/watch?v=nqE6YxlY0rw</a></td></tr><tr><td>Exploring Bernt Hansen’s Org-mode tutorial with ‘navi-mode’</td><td><a href="https://www.youtube.com/watch?v=nqE6YxlY0rw">https://www.youtube.com/watch?v=nqE6YxlY0rw</a></td></tr><tr><td>Exploring my dot emacs file with ‘navi-mode’</td><td><a href="https://www.youtube.com/watch?v=nqE6YxlY0rw">https://www.youtube.com/watch?v=nqE6YxlY0rw</a></td></tr><tr><td>Exploring a PicoLisp source file with GNU Emacs navi-mode</td><td><a href="https://www.youtube.com/watch?v=MYJvQ-5dvK8">https://www.youtube.com/watch?v=MYJvQ-5dvK8</a></td></tr></tbody></table>
+<p>‘Modern conventions for Emacs Lisp files’ is probably the video you should
+watch first, it explores ‘navi-mode.el’ itself as an Emacs Lisp library
+structured the ‘outshine way’, and shows the use of outline-minor-mode,
+outorg, poporg and navi-mode on such a file. And is has the best background
+music.</p>

@@ -1,0 +1,11 @@
+Not shown: there is a select tag.
+* Parent
+Shown, as an ancestor.
+** Chosen :export:
+Shown.
+*** Child
+Shown, as a descendant.
+** Sibling
+Not shown.
+* Other
+Not shown.

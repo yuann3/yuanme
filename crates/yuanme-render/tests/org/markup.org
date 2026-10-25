@@ -1,0 +1,17 @@
+Text _underlined_, x_{i} and a^{2}, but snake_case and a^2 stay as they are.
+Entities: \alpha, \rarr{} and "\quot{}quoted\quot{}"; a soft\-hyphen.
+Progress [2/3] and [50%].
+Dates <2025-12-12 Fri>, [2025-12-12 Fri 10:00], <2025-12-12 Fri>--<2025-12-14 Sun>
+and <%%(diary-float t 4 2)>.
+A break\\
+after it. Raw @@html:<kbd>Ctrl</kbd>@@ and @@latex:\LaTeX@@ dropped.
+Math $x$, \(y\), \[z\], $$w$$ and \ref{eq:a}; $n$-th is text.
+
+* First heading
+<<here>> is a target. See [[here]], [[here][the target]], [[*Second heading]],
+[[#custom]] and [[Second heading][by title]].
+
+* Second heading
+:PROPERTIES:
+:CUSTOM_ID: custom
+:END:

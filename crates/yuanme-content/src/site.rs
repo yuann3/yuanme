@@ -13,7 +13,7 @@ use crate::document::{Document, Kind, Links};
 use crate::entry::{self, Entry};
 use crate::fields::{Cx, Value, compare};
 use crate::slug;
-use crate::{data, markdown};
+use crate::{data, markdown, org};
 
 #[derive(Debug)]
 pub struct Site {
@@ -210,15 +210,22 @@ pub fn resolve(
                 is_file: project.is_file,
             };
             if path.ends_with(".org") {
-                cx.push(
-                    cx.error(
-                        &codes::ORG_NOT_YET_SUPPORTED,
-                        "yuanme can't read Org Entries yet".into(),
-                        0..0,
-                    )
-                    .note("Org support arrives with the Org subset, before the first release"),
+                let read = org::read(text, *file);
+                cx.diagnostics.extend(read.diagnostics);
+                // A file that didn't parse has no keywords to check.
+                read.document.as_ref()?;
+                let head = org::head(
+                    &read.keywords,
+                    read.preamble,
+                    text.len(),
+                    c,
+                    &taxonomies,
+                    &mut cx,
                 );
-                return None;
+                // A body or keyword with an error fails the Entry, once its
+                // fields are checked too.
+                let document = read.document.filter(|_| !has_errors(cx.diagnostics));
+                return entry::read((collection, c), &taxonomies, head, document, path, &mut cx);
             }
             let head = entry::front_matter(text, &mut cx)?;
             let document = markdown::parse(text, head.body.clone(), &mut cx);

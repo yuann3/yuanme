@@ -1,0 +1,125 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[link/unresolved]: nothing here is called `cite:&kitchin-2015-examp-effec`: no `<<target>>`, `#+NAME` or headline title
+  --> org-ref/examples--basic.org:21:11
+   |
+21 | - cite :: [[cite:&kitchin-2015-examp-effec]]
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `citeauthor:&kitchin-2015-examp-effec`: no `<<target>>`, `#+NAME` or headline title
+  --> org-ref/examples--basic.org:22:18
+   |
+22 | - citeauthor ::  [[citeauthor:&kitchin-2015-examp-effec]]
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `citenum:&kitchin-2015-examp-effec`: no `<<target>>`, `#+NAME` or headline title
+  --> org-ref/examples--basic.org:23:15
+   |
+23 | - citenum ::  [[citenum:&kitchin-2015-examp-effec]]
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `list-of-tables:`: no `<<target>>`, `#+NAME` or headline title
+  --> org-ref/examples--basic.org:76:1
+   |
+76 | [[list-of-tables:]]
+   | ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `list-of-figures:`: no `<<target>>`, `#+NAME` or headline title
+  --> org-ref/examples--basic.org:78:1
+   |
+78 | [[list-of-figures:]]
+   | ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `printindex:`: no `<<target>>`, `#+NAME` or headline title
+  --> org-ref/examples--basic.org:80:1
+   |
+80 | [[printindex:]]
+   | ^^^^^^^^^^^^^^^
+   |
+   = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `bibliographystyle:authordate1`: no `<<target>>`, `#+NAME` or headline title
+  --> org-ref/examples--basic.org:82:1
+   |
+82 | [[bibliographystyle:authordate1]]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: run `yuanme docs link/unresolved` for more
+<p><code class="language-math math-inline">\maketitle</code>
+<code class="language-math math-inline">\tableofcontents</code></p>
+<h2 id="introduction">Introduction <a id="sec-intro"></a></h2>
+<p>This is a basic example. The section uses a target label. The next section (Sec. ref:sec-citations uses a <code>CUSTOM_ID</code>).</p>
+<h3 id="sec-citations">Citations</h3>
+<p>index:citations</p>
+<p>Here are a few typical</p>
+<dl>
+<dt>cite</dt>
+<dd><a href=""></a></dd>
+<dt>citeauthor</dt>
+<dd><a href=""></a></dd>
+<dt>citenum</dt>
+<dd><a href=""></a></dd>
+</dl>
+<p>index:label!table</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="tab-data"><caption>some tabular data.</caption><tbody><tr><td>x</td><td>y</td></tr><tr><td>0</td><td>1</td></tr></tbody></table>
+<p>index:label!figure</p>
+<figure id="fig-cos">
+<img src="./fig.png" alt="fig.png">
+<figcaption>You need a caption.</figcaption>
+</figure>
+<p>Here is an equation using a latex label inside it.:</p>
+<p><code class="language-math math-inline">\begin{equation}</code><code class="language-math math-inline">\label{eq-int}</code>
+∫_0^1 e^x dx
+<code class="language-math math-inline">\end{equation}</code></p>
+<h3 id="cross-references">cross-references <a id="sec-cr"></a></h3>
+<p>index:cross-references</p>
+<p>See section ref:sec-intro. The data is shown in Table ref:tab-data.</p>
+<p>Here are some alternate kinds of refs.</p>
+<dl>
+<dt>page</dt>
+<dd>Fig. ref:fig-cos is on page  pageref:fig-cos</dd>
+<dt>name</dt>
+<dd>nameref:fig-cos (uses the caption)</dd>
+<dt>equation</dt>
+<dd>Eq. eqref:eq-int</dd>
+</dl>
+<p>If you use <a href="https://ctan.org/pkg/cleveref?lang=en">cleveref</a>, these cross-references will be modified at compile time so they have a descriptor in front of each label:</p>
+<ul>
+<li>cref:sec-intro</li>
+<li>cref:tab-data</li>
+<li>cref:fig-cos</li>
+<li>cref:eq-int</li>
+</ul>
+<p>These are capitalized versions.</p>
+<ul>
+<li>Cref:sec-intro</li>
+<li>Cref:tab-data</li>
+<li>Cref:fig-cos</li>
+<li>Cref:eq-int</li>
+</ul>
+<p>You can also put several together  Cref:sec-intro,tab-data,fig-cos,eq-int</p>
+<p>And for numerically sequential sequences, they will be collapsed when compiled to a range: cref:sec-cr,sec-misc,sec-citations. How this is done is customized in LaTeX, see the <code>cleveref</code> documentation.</p>
+<h3 id="miscellaneous-links">miscellaneous links <a id="sec-misc"></a></h3>
+<p><a href=""></a></p>
+<p><a href=""></a></p>
+<p><a href=""></a></p>
+<p><a href=""></a>
+bibliography:basic.bib</p>

@@ -1,0 +1,20 @@
+#+SETUPFILE: "../setup.org"
+#+INCLUDE: "other.org"
+#+MACRO: date 2025
+#+CALL: f()
+
+Built {{{date}}}, src_python{1 + 1} and call_f(), [cite:@knuth].
+A <<<radio>>> target, [[elisp:(beep)]], [[(ref)]] and [[nowhere]] and [[other.org]].
+A note[fn:missing].
+
+#+BEGIN: clocktable
+| a |
+#+END:
+
+#+ATTR_HTML: class=wide
+[[file:cat.png]]
+
+* Heading
+:PROPERTIES:
+:EXPORT_FILE_NAME: heading
+:END:

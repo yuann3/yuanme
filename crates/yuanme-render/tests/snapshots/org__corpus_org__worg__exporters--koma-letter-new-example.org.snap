@@ -1,0 +1,36 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="to-address-of-the-lovely-juliet">To-address of the lovely Juliet</h2>
+<p>Juliet
+House of Capulet
+Verona</p>
+<h2 id="from">From</h2>
+<p>House of Montague
+Verona</p>
+<h2 id="location">Location</h2>
+<div class="org-center">
+<p><strong>Montague</strong></p>
+</div>
+<h2 id="dear-juliet">Dear Juliet,</h2>
+<p class="verse">Then plainly know my heart’s dear love is set<br>
+On the fair daughter of rich Capulet:<br>
+As mine on hers, so hers is set on mine;<br>
+And all combin’d, save what thou must combine<br>
+By holy marriage: when, and where, and how<br>
+We met, we woo’d, and made exchange of vow,<br>
+I’ll tell thee as we pass; but this I pray,<br>
+That thou consent to marry us to-day.<br>
+</p>
+<h2 id="yours-truly">Yours truly,</h2>
+<p>Romeo of House Montague</p>
+<h2 id="some-arbitrary-latex-code">some arbitrary LaTeX code</h2>
+<h2 id="ps">PS</h2>
+<p>PS: “PS” is not typeset automatically by KOMA-Script</p>
+<p>PPS: This is a feature!</p>
+<h2 id="cc">CC</h2>
+<p>Paris and Lawrence.</p>
+<h2 id="encl">ENCL</h2>
+<p>See also <a href="https://en.wikisource.org/wiki/The_Tragedy_of_Romeo_and_Juliet">The Tragedy of Romeo and Juliet</a></p>
+<h2 id="some-more-arbitrary-latex-code">some more arbitrary LaTeX code</h2>

@@ -1,0 +1,120 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p><a href="../index.org">{Worg’s index}</a> > <a href="index.org">{Org-tutorials}</a></p>
+<h2 id="introduction">Introduction</h2>
+<p>This tutorial summarizes one specific method which defines (process)
+elements within tables in order to generate a simple work flow
+diagram using <a href="https://code.google.com/p/pydot/">dot</a>.</p>
+<p>An alternative way of accomplishing the task would be using <a href="http://plantuml.com/">PlantUML</a>
+(a wrapper to <a href="http://www.graphviz.org/">Graphviz</a>) which can be <a href="http://plantuml.com/emacs">integrated to Emacs</a> as well.</p>
+<p>We first demonstrate a compact version for one-time usage (tables and
+code snippet). Then, we show how to re-use this method for multiple
+sets of tables in an efficient way.</p>
+<h2 id="defining-the-process-elements">Defining the Process Elements</h2>
+<p>We are using tables to define our work-flow. The first table holds
+the node identifiers (internal names), node labels, optional shape
+definitions, and optional fill colors:</p>
+<pre><code>#+name: example-node-table
+| *node*     | *label*        | *shape* | *fillcolor* |
+|------------+----------------+---------+-------------|
+| S_start    | start          | ellipse | green       |
+| S_fill     | fill form      |         |             |
+| S_send     | send form      |         |             |
+| S_complete | form complete? | diamond | yellow      |
+| S_do       | do task        |         | red         |
+| S_end      | end            | ellipse |             |
+</code></pre>
+<p>The second table contains information about connections between nodes
+(using node identifiers) and optional labels:</p>
+<pre><code>#+name: example-graph
+| from       | to         | label |
+|------------+------------+-------|
+| S_start    | S_fill     |       |
+| S_fill     | S_send     |       |
+| S_send     | S_complete |       |
+| S_complete | S_fill     | N     |
+| S_complete | S_do       | Y     |
+| S_do       | S_end      |       |
+</code></pre>
+<h2 id="elisp-code-snippet-for-generating-the-diagram-using-dot">ELISP code snippet for generating the diagram using dot</h2>
+<p>In the next step, we are going to generate the diagram file (in PNG
+format) using <a href="https://code.google.com/p/pydot/">dot</a>. You should make sure that you have a working dot
+installation and probably tried out <a href="https://orgmode.org/worg/org-contrib/babel/languages/ob-doc-dot.html">a tutorial about using dot within
+Org-mode</a>.</p>
+<p>The author of this code is <a href="https://list.orgmode.org/4c174089656ce0b08177f464325c4bf9@mail.rickster.com">Rick Frankel</a>. It is written in Emacs LISP
+which directly executes the generated dot script:</p>
+<pre><code>#+name: graph-from-tables
+#+HEADER: :var nodes=example-node-table graph=example-graph
+#+BEGIN_SRC emacs-lisp :file ~/example-diagram.png :colnames yes :exports results
+    (org-babel-execute:dot
+     (concat
+          "digraph {\n"
+          "//rankdir=LR;\n" ;; remove comment characters '//' for horizontal layout; add for vertical layout
+          (mapconcat
+           (lambda (x)
+             (format "%s [label=\"%s\" shape=%s style=\"filled\" fillcolor=\"%s\"]"
+                             (car x)
+                             (nth 1 x)
+                             (if (string= "" (nth 2 x)) "box" (nth 2 x))
+                             (if (string= "" (nth 3 x)) "none" (nth 3 x))
+                             )) nodes "\n")
+          "\n"
+          (mapconcat
+           (lambda (x)
+             (format "%s -> %s [taillabel=\"%s\"]"
+                             (car x) (nth 1 x) (nth 2 x))) graph "\n")
+          "}\n") params)
+#+END_SRC
+</code></pre>
+<p>As you can see, the node table and the graph table are being defined
+in the header using the <code>:var</code> argument for babel. The resulting PNG
+file name is defined as <code>:file</code> argument below.</p>
+<p>By executing the babel script (e.g., <code>C-c C-c</code>) the PNG file gets
+created.</p>
+<p>You can remove the dot-comment (<code>//</code>) in front of <code>rankdir</code> in order
+to switch to a horizontal layout of the diagram.</p>
+<p><img src="../images/org-dot/example-diagram.png" alt="example-diagram.png"></p>
+<h2 id="re-using-the-code-snippet-with-call-statements">Re-using the code snippet with call-statements</h2>
+<p>When you are generating multiple diagrams within one single Org-mode
+file, you might want to re-use the ELISP code for all of your
+diagrams. However, you want to use different definition tables and a
+different output file name. The ELISP code is the same for all of
+them.</p>
+<p>This can be achieved by using <a href="https://orgmode.org/manual/Evaluating-Code-Blocks.html">the <code>call</code> command</a>. In this example, we
+are re-using the ELISP code from above with two newly created tables
+of the very important process 42 (please notice also the differences
+in the <code>name</code> arguments of the tables):</p>
+<pre><code>#+name: process42-node-table
+| *node*  | *label*             | *shape* | *fillcolor* |
+|---------+---------------------+---------+-------------|
+| mystart | start               | ellipse | yellow      |
+| mywatch | is Bob here?        | diamond |             |
+| mywait  | wait for 10 minutes |         | red         |
+| mytalk  | talk to Bob         |         |             |
+| myend   | end                 | ellipse | green       |
+</code></pre>
+<p>The second table contains information about connections between nodes
+(using node identifiers) and optional labels:</p>
+<pre><code>#+name: process42-graph
+| from    | to      | label |
+|---------+---------+-------|
+| mystart | mywatch |       |
+| mywatch | mywait  | N     |
+| mywait  | mywatch |       |
+| mywatch | mytalk  | Y     |
+| mytalk  | myend   |       |
+</code></pre>
+<p>The <code>call</code> statement consists of the name of the code
+(<code>graph-from-tables</code>), an insider header argument for the new file
+name, and arguments which defines the input tables. For <a href="https://list.orgmode.org/5e6cbdf1d1de558009527836766630b7@mail.rickster.com">technical
+reasons</a>, we have to add table ranges as well (<code>[2:-1]</code>):</p>
+<pre><code>#+call: graph-from-tables[:file ~/diagram-process42.png](nodes=process42-node-table[2:-1],graph=process42-graph[2:-1]) :results file
+</code></pre>
+<p>By invoking the call statement (place the cursor on it and use the
+usual <code>C-c C-c</code> command to execute), you generate the diagram for our
+process 42:</p>
+<p><img src="../images/org-dot/diagram-process42.png" alt="diagram-process42.png"></p>
+<p>That’s it.</p>
+<p>Pretty handy for generating (simple) process diagrams.</p>

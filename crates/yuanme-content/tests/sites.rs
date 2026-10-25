@@ -282,6 +282,51 @@ fn a_blog_resolves_into_routes_lists_and_terms() {
 }
 
 #[test]
+fn org_keywords_for_emacs_alone_warn_and_the_entry_still_builds() {
+    let files = "=== content/posts/a.org\n#+TITLE: A\n#+AUTHOR: Yuan\n#+DATE: [2025-12-12 Mon]\n#+OPTIONS: toc:nil num:t\n";
+    let (sources, site, diagnostics) = resolve(&fixture(files), false);
+    assert!(site.is_some(), "{diagnostics:#?}");
+    let got: Vec<_> = diagnostics
+        .iter()
+        .map(|d| {
+            let at = d.primary();
+            (
+                d.code.name,
+                d.level,
+                &sources.text(at.file)[at.range.clone()],
+            )
+        })
+        .collect();
+    use yuanme_diag::Level::Warning;
+    assert_eq!(
+        got,
+        [
+            ("org/no-effect", Warning, "AUTHOR"),
+            ("org/wrong-weekday", Warning, "Mon"),
+            ("org/no-effect", Warning, "num:t"),
+        ]
+    );
+}
+
+/// Lists nested this deep stop the parse; how they stop depends on the
+/// build's frame sizes, so either code is right.
+#[test]
+fn org_nested_too_deeply_fails_at_its_opener() {
+    let list: String = (0..200)
+        .map(|i| format!("{}- a\n", " ".repeat(i)))
+        .collect();
+    let files = format!("=== content/posts/a.org\n#+TITLE: A\n\n{list}");
+    let (sources, site, diagnostics) = resolve(&fixture(&files), false);
+    assert!(site.is_none());
+    let [d] = diagnostics.as_slice() else {
+        panic!("{diagnostics:#?}")
+    };
+    assert!(["org/too-deep", "org/out-of-fuel"].contains(&d.code.name));
+    let at = d.primary();
+    assert!(sources.text(at.file)[at.range.clone()].starts_with("- a\n - a\n"));
+}
+
+#[test]
 fn drafts_are_listed_only_when_shown() {
     let (_, site, _) = resolve(BLOG, true);
     let site = site.expect("no errors");
@@ -536,10 +581,97 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "a = 1\n",
     ),
     (
-        "org/not-yet-supported",
-        "=== content/posts/a.org\n#+title: A\n",
+        "org/unsupported-construct",
+        "=== content/posts/a.org\n#+TITLE: A\n\nBuilt {{{date}}}.\n",
+        "content/posts/a.org",
+        "{{{date}}}",
+    ),
+    (
+        "org/setupfile",
+        "=== content/posts/a.org\n#+TITLE: A\n#+SETUPFILE: setup.org\n",
+        "content/posts/a.org",
+        "#+SETUPFILE: setup.org",
+    ),
+    // Upstream organic's fuel runs out on a few hundred empty drawers
+    // (#49), and that is an error at the first, not a hang.
+    (
+        "org/out-of-fuel",
+        concat!("=== content/posts/a.org\n#+TITLE: A\n\n", x256!(":X:\n\n")),
+        "content/posts/a.org",
+        ":X:",
+    ),
+    (
+        "org/undefined-footnote",
+        "=== content/posts/a.org\n#+TITLE: A\n\nA note[fn:1].\n",
+        "content/posts/a.org",
+        "[fn:1]",
+    ),
+    (
+        "org/invalid-attribute",
+        "=== content/posts/a.org\n#+TITLE: A\n\n#+ATTR_HTML: class=x\n[[file:a.png]]\n",
+        "content/posts/a.org",
+        "class=x",
+    ),
+    (
+        "org/misplaced-keyword",
+        "=== content/posts/a.org\n#+TITLE: A\n\nText.\n#+DATE: 2025-01-01\n",
+        "content/posts/a.org",
+        "DATE",
+    ),
+    (
+        "org/unknown-option",
+        "=== content/posts/a.org\n#+TITLE: A\n#+OPTIONS: tco:nil\n",
+        "content/posts/a.org",
+        "tco:nil",
+    ),
+    // Org would join them (Org divergence 5).
+    (
+        "entry/duplicate-key",
+        "=== content/posts/a.org\n#+TITLE: A\n#+title: B\n",
+        "content/posts/a.org",
+        "title",
+    ),
+    (
+        "entry/unknown-key",
+        "=== content/posts/a.org\n#+TITLE: A\n#+TITEL: B\n",
+        "content/posts/a.org",
+        "TITEL",
+    ),
+    (
+        "entry/unknown-key",
+        "=== content/posts/a.org\n#+TITLE: A\n#+TAGS: a b\n",
+        "content/posts/a.org",
+        "TAGS",
+    ),
+    (
+        "entry/unknown-key",
+        "=== content/posts/a.org\n#+TITLE: A\n#+HUGO_TAGS: a\n",
+        "content/posts/a.org",
+        "HUGO_TAGS",
+    ),
+    (
+        "entry/wrong-type",
+        "=== content/posts/a.org\n#+TITLE: A\n#+DRAFT: t\n",
+        "content/posts/a.org",
+        "t",
+    ),
+    (
+        "entry/invalid-date",
+        "=== content/posts/a.org\n#+TITLE: A\n#+DATE: <2025-12-12 Fri 10:00>\n",
+        "content/posts/a.org",
+        "<2025-12-12 Fri 10:00>",
+    ),
+    (
+        "entry/missing-field",
+        "=== content/posts/a.org\nText.\n",
         "content/posts/a.org",
         "",
+    ),
+    (
+        "link/unresolved",
+        "=== content/posts/a.org\n#+TITLE: A\n\nSee [[nowhere]].\n",
+        "content/posts/a.org",
+        "[[nowhere]]",
     ),
     (
         "markdown/empty-directive",
@@ -655,7 +787,12 @@ fn every_entry_code_has_a_case_here() {
         .iter()
         .map(|c| c.0)
         .filter(|c| !c.starts_with("config/"))
-        .chain(["markdown/no-effect"])
+        .chain([
+            "markdown/no-effect",
+            "org/no-effect",
+            "org/wrong-weekday",
+            "org/too-deep",
+        ])
         .collect();
     let all: BTreeSet<&str> = codes::ALL
         .iter()

@@ -1,0 +1,516 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
+  --> worg/org-tutorials--images-and-xhtml-export.org:10:1
+   |
+10 | #+SETUPFILE:  ../macros.setupfile
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
+   = note: run `yuanme docs org/setupfile` for more
+error[org/unsupported-construct]: macros aren't in the Org subset
+  --> worg/org-tutorials--images-and-xhtml-export.org:11:1
+   |
+11 | #+MACRO: imageurl /worg/images/orgmode/org-mode-unicorn.png
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: write the text the macro would expand to
+   = note: run `yuanme docs org/unsupported-construct` for more
+<h2 id="image-basics">Image basics</h2>
+<p>Images are inserted into an Org file as links:</p>
+<pre><code>[[file:../images/orgmode/org-mode-unicorn.png]]
+</code></pre>
+<p>The <code>file:</code> prefix is optional, as long as the link is
+recognized. Org-mode recognizes images by the file name
+suffix. Recognized suffixes are all the members of
+<code>org-html-inline-image-rules</code> which defaults to <code>jpeg</code>, <code>jpg</code>, <code>png</code>, <code>gif</code>,
+and <code>tif</code> images.</p>
+<p>That said, the images above could as well be included using this
+link:</p>
+<pre><code>[[../[[images/orgmode/org-mode-unicorn.png]]][[[images/orgmode/org-mode-unicorn.png][Monocerus glaucus]]]]
+</code></pre>
+<p>The special form</p>
+<pre><code> [[images/orgmode/org-mode-unicorn.png][Monocerus glaucus]]
+</code></pre>
+<p>exports to a link to the image:</p>
+<pre><code class="language-html">&#x3C;a href="/worg/images/orgmode/org-mode-unicorn.png">Monocerus glaucus&#x3C;/a>
+</code></pre>
+<p>For this tutorial, we assume the variable <code>org-html-inline-images</code> is
+unchanged from its standard setting, i.e. <code>t</code>. Images are shown in
+the exported page this way. And we will talk about visible images
+only.</p>
+<p>Don’t be afraid.  Most of the text in this little tutorial is just
+blind text (and in gray color therefor).</p>
+<p>Read the basics about images in XHTML export in the Org-mode manual,
+<a href="https://orgmode.org/manual/Images-in-HTML-export.html#Images-in-HTML-export">Section Images</a> (e.g. show a thumbnail, that links to a high
+resolution image…).</p>
+<h2 id="a-simple-image">A simple image</h2>
+<p>Let’s simply put an image inside a paragraph like this</p>
+<pre><code>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh
+[[../images/orgmode/org-mode-unicorn.png]]
+euismod  tincidunt ut laoreet dolore magna aliquam erat volutpat.
+</code></pre>
+<div class="warningbox">
+<p>Note, that <strong>empty lines are crucial</strong>. The exporter
+will start a new paragraph, if you add an empty line before or after
+the image. You can easily try that yourself, simply by adding an
+empty line before and/or after the image and export
+again.</p>
+</div>
+<p>To see the result, export your Org file to HTML (press <code>C-x C-e b</code>)
+and see the results. Note, that the image is displayed just where
+you placed it.</p>
+<div class="minipage">
+<p></p>
+<div class="blindtext">
+<p></p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
+nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi
+enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis
+nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in
+hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu
+feugiat nulla facilisis at vero et accumsan et iusto odio dignissim qui
+blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla
+facilisi.</p>
+</div>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png"></p>
+<div class="blindtext">
+<p></p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
+nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi
+enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis
+nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in
+hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu
+feugiat nulla facilisis at vero et accumsan et iusto odio dignissim qui
+blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla
+facilisi.</p>
+</div>
+</div>
+<h2 id="image-attributes">Image attributes</h2>
+<p>Org-mode allows us to add HTML attributes to the exported
+image. There are several useful attributes, some of which are
+mandatory, as the <code>src</code> and <code>alt</code> attributes. Org-mode adds an empty <code>alt</code>
+attribute for you, if not supplied. You can add additional
+attributes using a special syntax. E.g. you could change the value
+of the <code>alt</code> attribute this way:</p>
+<pre><code>#+ATTR_HTML: :alt My fancy value for the alt attribute
+[[../images/orgmode/org-mode-unicorn.png]]
+</code></pre>
+<p>You may add more attributes to an <code>#+ATTR_HTML:</code> line. More than one
+<code>#+ATTR_HTML:</code> line is allowed for readability. Example:</p>
+<pre><code>#+ATTR_HTML: :alt Zoomed image.
+#+ATTR_HTML: :width 300 :style border:2px solid black;
+[[../images/orgmode/org-mode-unicorn.png]]
+</code></pre>
+<p>A full list of valid attributes can be found on
+<a href="http://www.w3schools.com/tags/tag_img.asp">http://www.w3schools.com/tags/tag_img.asp</a>.</p>
+<h2 id="align-images">Align images</h2>
+<p>If you want text to flow around your images, the <code>style</code> attribute
+comes handy.  To place the image on the left, and let the text flow
+around the image on the right, use this code:</p>
+<pre><code>#+ATTR_HTML: :style float:left;
+</code></pre>
+<p>Possible values for the <code>float:</code> CSS attribute are <code>left</code>, <code>right</code> and
+<code>none</code> (the default). <code>left</code> causes the image to show up on the left of
+the text succeeding the image, <code>right</code> will place the image on the
+right side of the text succeeding the image.</p>
+<p>You can control the gap between image and surrounding text, using
+the <code>margin:</code> CSS attribute like so:</p>
+<pre><code>#+ATTR_HTML: :style float:left;margin:20px 20px 20px 0px;
+</code></pre>
+<p>The order of the values given, are the distances in the north east
+south, and west.</p>
+<p>Again: <strong>Please avoid empty lines before and after</strong> the image, if you
+want to achieve the effect shown in this example: one paragraph of
+text that flows around two images. The exporter adds a <code>&#x3C;p></code> element
+for empty lines otherwise.</p>
+<p>This code shows, how we can add attributes to the <code>&#x3C;img ... /></code> tag in Org-mode:</p>
+<pre><code>#+ATTR_HTML: :style float:right;margin:0px 0px 20px 20px;
+[[../images/orgmode/org-mode-unicorn.png]]
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
+#+ATTR_HTML: :style float:left;margin:20px 20px 20px 0px;
+[[../images/orgmode/org-mode-unicorn.png]]
+euismod  tincidunt ut laoreet dolore magna aliquam erat volutpat.
+</code></pre>
+<div class="infobox">
+<p></p>
+<p><strong>Note:</strong> The <code>#+ATTR_HTML:</code> line as well as the image definition have to
+be on a single line respectively. Don’t put <span class="underline">any</span> additional text on
+those lines or the attributes will not be added to the image tag on
+export!</p>
+</div>
+<div class="minipage">
+<p></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="float:right;margin:0px 0px 20px 20px;"></p>
+<p>This text is directly succeeds the first image, which is right
+aligned. Because of the alignment, placing the image after the first few
+lines would make no difference.</p>
+<div class="blindtext">
+<p></p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy
+nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi
+enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis
+nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in
+hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu
+feugiat nulla facilisis at vero et accumsan et iusto odio dignissim qui
+blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla
+facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat.</p>
+</div>
+<p>Text before the second image ends here.</p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="float:left;margin:20px 20px 20px 0px;"></p>
+<p>This text is directly following the second image. No empty lines are added.
+Neither before, nor after the image. We therefor see one big paragraph with
+two images. Note, that browsers will place this second image where ever they
+see fit. Browsers will not interrupt the text flow, just to place the image
+add the exact point between two words.</p>
+<div class="blindtext">
+<p></p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo
+consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate
+velit esse molestie consequat, vel illum dolore eu feugiat nulla
+facilisis at vero et accumsan et iusto odio dignissim qui blandit
+praesent luptatum zzril delenit augue duis dolore te feugait nulla
+facilisi.</p>
+</div>
+</div>
+<h3 id="images-in-a-row">Images in a row</h3>
+<p>And here is how to fill the width of your display with images and let the
+lines break automatically. Just add <code>display:inline;</code> to the <code>style</code> attributes.</p>
+<pre><code>#+ATTR_HTML: :style display:inline;margin:10px;
+[[../images/orgmode/org-mode-unicorn.png]]
+#+ATTR_HTML: :style display:inline;margin:10px;
+[[../images/orgmode/org-mode-unicorn.png]]
+#+ATTR_HTML: :style display:inline;margin:10px;
+[[../images/orgmode/org-mode-unicorn.png]]
+#+ATTR_HTML: :style display:inline;margin:10px;
+[[../images/orgmode/org-mode-unicorn.png]]
+</code></pre>
+<p>results in:</p>
+<div class="minipage">
+<p></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="display:inline;margin:10px;"></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="display:inline;margin:10px;"></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="display:inline;margin:10px;"></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="display:inline;margin:10px;"></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="display:inline;margin:10px;"></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="display:inline;margin:10px;"></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="display:inline;margin:10px;"></p>
+<p><img src="../images/orgmode/org-mode-unicorn.png" alt="org-mode-unicorn.png" style="display:inline;margin:10px;"></p>
+</div>
+<h2 id="images-with-captions">Images with Captions</h2>
+<p>You might want to attach a caption to your images. You can do so using this
+code:</p>
+<pre><code>#+CAPTION: Monocerus glaucus
+#+ATTR_HTML: :alt Monocerus glaucus
+[[[[../images/orgmode/org-mode-unicorn.png]]]]
+</code></pre>
+<div class="infobox">
+<p>In this case, empty lines before and after the image make no difference since
+the exporter ends paragraphs and restarts them below the image.</p>
+</div>
+<div class="minipage">
+<p></p>
+<figure>
+<img src="../images/orgmode/org-mode-unicorn.png" alt="Monocerus glaucus">
+<figcaption>Monocerus glaucus</figcaption>
+</figure>
+<div class="blindtext">
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat.</p>
+</div>
+</div>
+<h3 id="captions-and-floating">Captions and floating</h3>
+<p>There is no <em>figure</em> element in XHTML and captions are not supported
+at all. But the exporter wraps the <code>&#x3C;img..../></code> tag in certain
+containers to add the caption for you:</p>
+<pre><code class="language-html">&#x3C;div class="figure">
+&#x3C;p>&#x3C;img src="path/to/img.png" alt="Monocerus glaucus" />&#x3C;/p>
+&#x3C;p>Monocerus glaucus&#x3C;/p>
+&#x3C;/div>
+</code></pre>
+<p>To make text flow around your image, you need to adjust the styles
+for the special HTML elements that wrap images with captions. The
+exporter puts the default styles in the <code>&#x3C;head></code> section of your
+XHTML files. This is, what they look like:</p>
+<pre><code>div.figure { padding: 0.5em; }
+div.figure p { text-align: center; }
+</code></pre>
+<p>To achive the floating, add this to the top of the Org-file:</p>
+<pre><code>#+STYLE: &#x3C;style type="text/css">
+#+STYLE:&#x3C;!--/*-->&#x3C;![CDATA[/*>&#x3C;!--*/
+#+STYLE: div.figure { float:left; }
+#+STYLE: /*]]>*/-->
+#+STYLE: &#x3C;/style>
+</code></pre>
+<p>The crucial attribute is <code>float:left;</code>. Choose <code>float:right;</code> to place
+the images on the right edge of your paragraphs. The styles will
+apply to <span class="underline">all</span> images with captions in your file.</p>
+<div class="infobox">
+<p></p>
+<p><strong>Note (again):</strong> In this case, empty lines before and after the image
+make no difference since the exporter ends paragraphs and restarts
+them below the image. This said, a floating image with a caption
+will always sit on the top left/right of the following paragraph.</p>
+</div>
+<p>Result:</p>
+<div class="minipage">
+<p></p>
+<div class="blindtext">
+<p></p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo
+consequat.</p>
+</div>
+<p>This text
+directly preceeds the image and ends here.</p>
+<div class="figure" style="float:left;">
+<p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" hspace="20" vspace="20" /></p>
+<p>Equus Unicorn Viridis</p>
+</div>
+<p>This text directly follows the image. No empty are inserted before or after
+the image. Note, that a new paragraph has started nonetheless.</p>
+<div class="blindtext">
+<p></p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo
+consequat. Duis autem vel eum iriure dolor in hendrerit in
+vulputate velit esse molestie consequat, vel illum dolore eu
+feugiat nulla facilisis at vero et accumsan et iusto odio dignissim
+qui blandit praesent luptatum zzril delenit augue duis dolore te
+feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer
+adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet
+dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam,
+quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut
+aliquip ex ea commodo.</p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo
+consequat. Duis autem vel eum iriure dolor in hendrerit in
+vulputate velit esse molestie consequat, vel illum dolore eu
+feugiat nulla facilisis at vero et accumsan et iusto odio dignissim
+qui blandit praesent luptatum zzril delenit augue duis dolore te
+feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer
+adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet
+dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam,
+quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut
+aliquip ex ea commodo…</p>
+</div>
+</div>
+<h4 id="problems-with-captions-and-float">Problems with captions and float</h4>
+<p>The <code>float:left;</code> style causes following blocks to show up on the right of
+your image. So did the following paragraph in the previous example.
+Inevitably, this will happen against your will. In that case, put this after
+the image:</p>
+<pre><code>#+begin_export html
+ &#x3C;br style="clear:both;" />
+#+end_export
+</code></pre>
+<p>Or you could use the less obtrusive syntax:</p>
+<pre><code>@&#x3C;br style="clear:both;" />
+</code></pre>
+<h3 id="captions-in-a-row">Captions in a row</h3>
+<p>In addition, <code>float:left;</code> changes the alignment of several images with caption
+in a row. They now fill a row on the display, until the screen width is
+filled with images. They now behave like simple text.</p>
+<pre><code class="language-org">#+CAPTION: Michael
+#+ATTR_HTML::alt image
+[[../images/orgmode/org-mode-unicorn.png]]
+#+CAPTION: Steve
+#+ATTR_HTML::alt image
+[[../images/orgmode/org-mode-unicorn.png]]
+#+CAPTION: Carla
+#+ATTR_HTML::alt image
+[[../images/orgmode/org-mode-unicorn.png]]
+#+CAPTION: Pete
+#+ATTR_HTML::alt image
+[[../images/orgmode/org-mode-unicorn.png]]
+
+... etc. - many more ...
+</code></pre>
+<p>results in:</p>
+<div class="minipage">
+<p></p>
+    <div class="figure" style="float:left;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" /></p>
+    <p>Michael</p>
+    </div>
+
+    <div class="figure" style="float:left;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" /></p>
+    <p>Steve</p>
+    </div>
+
+    <div class="figure" style="float:left;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" /></p>
+    <p>Carla</p>
+    </div>
+
+    <div class="figure" style="float:left;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" /></p>
+    <p>Pete</p>
+    </div>
+
+    <div class="figure" style="float:left;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" /></p>
+    <p>Paul</p>
+    </div>
+
+    <div class="figure" style="float:left;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" /></p>
+    <p>Alice</p>
+    </div>
+
+    <div class="figure" style="float:left;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" /></p>
+    <p>Maria</p>
+    </div>
+
+    <div class="figure" style="float:left;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" /></p>
+    <p>Lucien</p>
+    </div>
+    <br style="clear:both;" />
+</div>
+<h3 id="italic-captions">Italic captions</h3>
+<p>Captions are often printed in italics. To do so, go to the top of your
+Org-file again, and edit the styles again:</p>
+<pre><code>#+STYLE: &#x3C;style type="text/css">
+#+STYLE:&#x3C;!--/*-->&#x3C;![CDATA[/*>&#x3C;!--*/
+#+STYLE: div.figure p { font-style:italic; }
+#+STYLE: /*]]>*/-->
+#+STYLE: &#x3C;/style>
+</code></pre>
+<div class="minipage">
+<p></p>
+    <div class="figure" style="float:right;">
+    <p><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="Save the unicorns" /></p>
+    <p style="font-style:italic;">Save the unicorns</p>
+    </div>
+<div class="blindtext">
+<p></p>
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo
+consequat. Duis autem vel eum iriure dolor in hendrerit in
+vulputate velit esse molestie consequat, vel illum dolore eu
+feugiat nulla facilisis at vero et accumsan et iusto odio dignissim
+qui blandit praesent luptatum zzril delenit augue duis dolore te
+feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer
+adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet
+dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam,
+quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut
+aliquip ex ea commodo.  Lorem ipsum dolor sit amet, consectetuer
+adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet
+dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam,
+quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut
+aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in
+hendrerit in vulputate velit esse molestie consequat, vel illum
+dolore eu feugiat nulla facilisis at vero et accumsan et iusto odio
+dignissim qui blandit praesent luptatum zzril delenit augue duis
+dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet,
+consectetuer adipiscing elit, sed diam nonummy nibh euismod
+tincidunt ut laoreet dolore magna aliquam erat volutpat.  Lorem
+ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo
+consequat. Duis autem vel eum iriure dolor in hendrerit in
+vulputate velit esse molestie consequat, vel illum dolore eu
+feugiat nulla facilisis at vero et accumsan et iusto odio dignissim
+qui blandit praesent luptatum zzril delenit augue duis dolore te
+feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer
+adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet
+dolore magna aliquam erat volutpat.</p>
+</div>
+</div>
+<h3 id="final-captions-example">Final captions example</h3>
+<p>Here is a last weird example of what styles can do for you. Let’s
+put the caption to the right of an image.</p>
+<pre><code>#+STYLE: &#x3C;style type="text/css">
+#+STYLE:&#x3C;!--/*-->&#x3C;![CDATA[/*>&#x3C;!--*/
+#+STYLE: div.figure {
+#+STYLE:  width:235px; /* ensure the same width for each. */
+#+STYLE:  float:left;
+#+STYLE:  margin:5px;
+#+STYLE: }
+#+STYLE: div.figure p {
+#+STYLE:  display:inline;
+#+STYLE:  font-style:italic;
+#+STYLE: }
+#+STYLE: /*]]>*/-->
+#+STYLE: &#x3C;/style>
+</code></pre>
+<div class="minipage">
+<p></p>
+    <div class="figure" style="width:235px;float:left;margin:5px;">
+    <p style="display:inline;"><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" style="vertical-align:middle;" /></p>
+    <p style="display:inline;font-style:italic;">Michael</p>
+    </div>
+
+    <div class="figure" style="width:235px;float:left;margin:5px;">
+    <p style="display:inline;"><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" style="vertical-align:middle;" /></p>
+    <p style="display:inline;font-style:italic;">Steve</p>
+    </div>
+
+    <div class="figure" style="width:235px;float:left;margin:5px;">
+    <p style="display:inline;"><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" style="vertical-align:middle;" /></p>
+    <p style="display:inline;font-style:italic;">Carla</p>
+    </div>
+    <br style="clear:both;" />
+    <div class="figure" style="width:235px;float:left;margin:5px;">
+    <p style="display:inline;"><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" style="vertical-align:middle;" /></p>
+    <p style="display:inline;font-style:italic;">Pete</p>
+    </div>
+
+    <div class="figure" style="width:235px;float:left;margin:5px;">
+    <p style="display:inline;"><img src="/worg/images/orgmode/org-mode-unicorn.png" alt="image" style="vertical-align:middle;" /></p>
+    <p style="display:inline;font-style:italic;">Paul</p>
+    </div>
+<p>If the sum of three <code>div.figure</code>’s widths and margins were so wide,
+that three Monoceri wouldn’t fit in one row, this text would start
+on the very top of this mini page.</p>
+<p>Let’s add another little paragraph here, to show how <code>float</code>
+works. How to get out of here?</p>
+<pre><code>=@&#x3C;br style="clear:both;"/>=
+</code></pre>
+<p>…did the trick. It’s advisable, to add this after the third image
+above since the first paragraph starts with very short words.</p>
+</div>
+<h2 id="summary">Summary</h2>
+<ol>
+<li>Images are referenced using Org-mode’s link syntax.</li>
+<li>As for simple links, the <code>file:</code> prefix is optional, as long as the
+suffix is a member of <code>org-html-inline-image-rules</code>.</li>
+<li>We can add HTML attributes to images
+<ul>
+<li>using <code>#+ATTR_HTML:</code></li>
+<li>Both, the <code>#+ATTR_HTML:</code> line and the image have to be on their own line.</li>
+</ul>
+</li>
+<li>We prefer the <code>style</code> attribute to align images. The most important CSS
+attributes are <code>float:</code> and <code>margin:</code>.</li>
+<li>We can add a caption to images, even though (X)HTML doesn’t
+support this. We use the special <code>#+CAPTION:</code> line to supply a
+caption. This has to be on a single line, too.</li>
+<li>The exporter wraps the image and the caption into a <code>&#x3C;div
+     class=</code>”<code>figure"></code> and two <code>&#x3C;p></code> elements. The first <code>&#x3C;p></code> element
+contains our image, the second one the caption.</li>
+<li>By adding special styles for those elements to the top of our
+Org-file (<code>#+STYLE:</code>), we can align images with captions, too.</li>
+<li>Styles added for images with captions apply to all images with
+captions in the file.</li>
+</ol>

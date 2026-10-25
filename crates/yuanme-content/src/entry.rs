@@ -73,7 +73,7 @@ impl Entry {
 }
 
 /// An Entry's fields as its file writes them: front matter's keys and YAML
-/// values, or, from #49, an Org file's keywords.
+/// values, or an Org file's keywords.
 pub(crate) struct Head {
     pub fields: Vec<(Key, Node)>,
     /// Where the fields are written, for a missing field.
@@ -243,16 +243,19 @@ pub(crate) fn read(
                         .split('.')
                         .next()
                         .unwrap_or("");
-                    let insert = format!("---\ntitle: {title}\n---\n\n");
+                    let (insert, what) = if path.ends_with(".org") {
+                        (format!("#+TITLE: {title}\n"), "add a `#+TITLE`")
+                    } else {
+                        (
+                            format!("---\ntitle: {title}\n---\n\n"),
+                            "add front matter with a title",
+                        )
+                    };
                     let edit = Edit {
                         span: cx.span(0..0),
                         replacement: insert,
                     };
-                    d = d.suggest(
-                        "add front matter with a title",
-                        Applicability::HasPlaceholders,
-                        vec![edit],
-                    );
+                    d = d.suggest(what, Applicability::HasPlaceholders, vec![edit]);
                 }
                 cx.push(d);
                 ok = false;

@@ -1,0 +1,636 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
+ --> alessandrostr95/org--AR--04.org:4:1
+  |
+4 | #+setupfile: ../../org-template/appunti.org
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
+  = note: run `yuanme docs org/setupfile` for more
+<h2 id="grafi-geometrici-aleatori-e-reti-wireless">Grafi geometrici aleatori e reti wireless</h2>
+<p>I modelli fin’ora visti (Erdős–Rényi e rich-get-richer) sono tutti modelli di tipo <em>virtuale</em>, ovvero
+descrivono le <em>connessioni logiche</em> tra i nodi, trascurando del tutto l’implementazione fisica della rete.
+Spesso però si necessita di modellare reti che debbano essere poi <em>implementate fisicamente</em>.
+Quando si affronta un problema reale bisogna sempre considerare due fattori:</p>
+<ol>
+<li>la <strong>fattibilità</strong></li>
+<li>le <strong>risorse necessarie</strong></li>
+</ol>
+<p>Infatti, non basta sapere che è fisicamente possibile costruire una rete che è stata precedentemente modellizzata,
+ma bisogna sempre tener conto del costo in termine di risorse.
+Supponendo che non si disponga di risorse infite, quello che generalmente si desidera è sempre <em>minimizzare i costi</em>.<br>
+  In ogni caso, quando bisogna implementare una rete fisica, bisogna sempre considerare la <strong>struttura geometrica</strong> che dovrà avere
+e lo <strong>spazio</strong> in cui dovrà essere costruita.</p>
+<h3 id="grafo-geometrico">Grafo Geometrico</h3>
+<p>Siano uno <strong>spazio metrico</strong> <code class="language-math math-inline">(\mathbb{R}^d, \Vert \cdot \Vert )</code> di dimensione <code class="language-math math-inline">d \geq 1</code>, e una costante <code class="language-math math-inline">r > 0</code> detto <strong>raggio</strong>.
+Un <em>grafo geometrico</em> <code class="language-math math-inline">G</code> è composto dai seguenti insiemi:</p>
+<ol>
+<li><code class="language-math math-inline">V \subseteq \mathbb{R}^d</code></li>
+<li><code class="language-math math-inline">E := \lbrace (a,b) \in V^2 : \Vert a-b \Vert \leq r \rbrace</code></li>
+</ol>
+<p>La maggior parte delle volte ci si trova a considerare uno spazio bidimensionale <code class="language-math math-inline">\mathbb{R}^2</code>, con <em>norma euclidea</em>
+e raggio unitario <code class="language-math math-inline">r = 1</code>.
+In questo caso esiste un arco tra due nodi <code class="language-math math-inline">a,b</code> solo se <code class="language-math math-inline">\sqrt{(x_1 - x_b)^2 + (y_1 - y_b)^2} \leq 1</code>.
+Questo modello è anche noto come <strong>unique disk graph</strong>.</p>
+<h3 id="grafo-geometrico-aleatorio">Grafo Geometrico Aleatorio</h3>
+<p>Siano due costanti <code class="language-math math-inline">n \in \mathbb{N}</code> ed <code class="language-math math-inline">0 &#x3C; r \leq \sqrt{2}</code>.
+Un <strong>grafo geometrico aleatorio</strong> <code class="language-math math-inline">G(n,r)</code> è un particolare tipo di grafo aleatorio in cui vengono scelti <code class="language-math math-inline">n</code> nodi <em>u.a.r.</em>
+nell’insieme <code class="language-math math-inline">\left[ 0,1 \right] \times \left[ 0,1 \right]</code>.<br>
+</p>
+<p>Notare che per <code class="language-math math-inline">r \rightarrow 0</code> il grafo diventa sempre più sparso, mentre per <code class="language-math math-inline">r = \sqrt{2}</code> il grafo risultate sarà <em>completo</em><sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.
+L’ultima affermazione è vera perché scegliendo i nodi in quadrato di lato 1, due nodi possono essere distanti <span class="underline">al più</span> <code class="language-math math-inline">\sqrt{2}</code>, ovvero
+la lunghezza della diagonale di una quadrato.<br>
+</p>
+<p><code>*inserire immagine*</code></p>
+<p>Questo particolare modello può avere numerosi riscontri pratici.
+Per esempio consideriamo una situazione in cui si hanno a disposizione <code class="language-math math-inline">n</code> sensori ambientali per l’acquisizione di dati utili allo studio di
+fenomi atmosferici, e di doverli disporre in una vasta area di 10 <code class="language-math math-inline">km^2</code>.
+Prima di spargere i sensori è possibile impostare un raggio <code class="language-math math-inline">r</code> di trasmissione, utile ai sensori per scambiarsi informazioni.
+Ovviamente maggiore è il raggio di trasmissione <code class="language-math math-inline">r</code>, maggiore sarà il cunsumo di batteria dei sensori.
+Questi sensori inoltre verranno rilasciati nell’ambiente in maniera casuale lanciandoli da un aereo che sorvolerà l’area.<br>
+   Si vuole quindi trovare il più piccolo valore di <code class="language-math math-inline">r</code> in relazione ad <code class="language-math math-inline">n</code> (che d’ora in poi chiameremo $r(n)$) tale che con <em>buona probabilità</em><sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup>
+la rete di sonsori <code class="language-math math-inline">G(n, r(n))</code> risulti connessa, usando così meno batteria possibile.</p>
+<h3 id="reti-wireless-ad-hoc">Reti Wireless ad-hoc</h3>
+<p>Quello precedentemente descritto è un caso di <strong>reti wireless ad-hoc</strong>.
+In questo contesto si considera un insieme di <code class="language-math math-inline">n</code> dispositivi (calcolatori, sensori, ecc…) dislocati in una data area, e ognuno dei quali dotato
+un trasmettitore wireless con un fissato <em>raggio di trasmissione</em>.
+Come prima, più è ampio il raggio di trasmissione maggiore sarà il consumo di batteria del dispositivo.
+Ongi dispositivo <code class="language-math math-inline">x</code> può trasmettere i messaggi solamente ai dispositivi situati <em>entro</em> il suo raggio di trasmissione <code class="language-math math-inline">r_x</code>.
+Notare che non è detto che se un dispositivo <code class="language-math math-inline">y</code> è dentro il raggio di <code class="language-math math-inline">x</code>, necessariamente <code class="language-math math-inline">y</code> sia in grado di trasmettere ad <code class="language-math math-inline">x</code>.<br>
+</p>
+<p>Si può quindi modellare questo tipo di rete con un <strong>grafo di comunicazione</strong> (<strong>diretto</strong>) dove l’insieme dei nodi corrisponde a quello dei
+dispositivi, mentre esiste l’arco diretto <code class="language-math math-inline">(x,y)</code> se e solo se <code class="language-math math-inline">\Vert x - y \Vert \leq r_x</code>.</p>
+<figure>
+<img src="../images/ar-lesson04-img1.png" alt="ar-lesson04-img1.png" style="max-width: 250px">
+<figcaption>Esempio di rete wireless</figcaption>
+</figure>
+<figure>
+<img src="../images/ar-lesson04-img2.png" alt="ar-lesson04-img2.png" style="max-width: 250px">
+<figcaption>Grafo delle comunicazioni associato</figcaption>
+</figure>
+<p>In questo modello è possibile anche mandare messaggi a nodi non direttamente connessi, a patto che siano nelle relative componenti connesse.
+Per esempio, se il nodo <code class="language-math math-inline">v_1</code> volesse mandare un messagio al nodo <code class="language-math math-inline">v_4</code> potrebbe farlo tramite il <em>cammino</em> <code class="language-math math-inline">\langle (v_1,v_2), (v_2,v_3), (v_3,v_4) \rangle</code>.
+Notare però che queste comunicazioni <strong>multi-hop</strong> non sono simmetriche, in quanto nel grafo delle comunicazioni non esiste alcun cammino diretto che parte da <code class="language-math math-inline">v_4</code>
+e termina in <code class="language-math math-inline">v_1</code>.<br>
+</p>
+<p>Perciò se si vuole che ogni nodo sia in grado di comunicare con tutti gli altri è necessario che i raggi trasmissione siano scelti in modo tale che
+il grafo delle comunicazioni sia <strong>fortemente connesso</strong><sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup>.
+Banalmente questo si può ottenere ponendo il raggio di ogni nodo pari alla distanza con il nodo ad esso più lontano, ovvero
+<code class="language-math math-display">
+   r_v = \max_{x \in V \setminus \lbrace v \rbrace}{\lbrace \Vert v - x \Vert \rbrace}
+   </code>
+Questo approccio potrebbe risultare però parecchio dispendioso in termini di utilizzo di batteria dei dispositivi.
+Sarebbe preferibile scegliere dei raggi di trasmissione tali che minimizzino il più possibile lo spreco di batteria.<br>
+</p>
+<p>Possiamo modellizzare questo problema come nell’esempio della precedente sezione, ovvero assumendo che tutti i nodi abbiano uno stesso
+raggio di trasmissione <code class="language-math math-inline">r</code>, e senza perdere di generalità che la regione in cui distribuire i nodi sia un quadrato normalizzato <code class="language-math math-inline">Q \equiv \left[ 0,1 \right]^2</code>.
+Ovviamente <code class="language-math math-inline">r</code> deve essere una funzione di <code class="language-math math-inline">n</code>, in quanto se <code class="language-math math-inline">r</code> fosse fissato la densità del grafo geometrico aleatorio risultante dipnderebbe da <code class="language-math math-inline">n</code>.
+Invece si vuole che al variare di <code class="language-math math-inline">n</code> il grafo <code class="language-math math-inline">G(n,r(n))</code> sia sempre fortemente connesso (con buona probabilità).<br>
+</p>
+<p>Osservare che se <code class="language-math math-inline">r</code> è uguale per tutti i nodi allora non ha senso parlare di grafo diretto, in quanto se un nodo <code class="language-math math-inline">x</code> riesce a trasmettere direttamente a un nodo
+<code class="language-math math-inline">y</code> allora anche <code class="language-math math-inline">y</code> può trasmettere in modo diretto a <code class="language-math math-inline">x</code>.<br>
+</p>
+<p>Formalmente la domanda alla quale si vuole dare una risposta è:</p>
+<blockquote>
+<p>dati <code class="language-math math-inline">n</code> punti distribuiti uniformemente a caso nel quadrato unitario <code class="language-math math-inline">Q</code>, calcolare il valore <span class="underline">minimo</span> di <code class="language-math math-inline">r(n)</code> tale che <code class="language-math math-inline">G(n, r(n))</code> risulti connesso con buona probabilità</p>
+</blockquote>
+<h3 id="connettività-di-gn-rn">Connettività di <code class="language-math math-inline">G(n, r(n))</code></h3>
+<p>In questa sezione verrà dimostrato la seguente affermazione:</p>
+<blockquote>
+<p>Sia <code class="language-math math-inline">r^{\star}(n)</code> il minimo valore di <code class="language-math math-inline">r(n)</code> tale che garantisce con ragionevole probabilità la connettività di <code class="language-math math-inline">G(n,r(n))</code>.
+Allora <code class="language-math math-inline">r^{\star}(n) \in \Theta\left( \sqrt{\frac{\ln{n}}{n}} \right)</code>.</p>
+</blockquote>
+<p>Per dimostrare la precedente affermazione è necessario dimostrare due teoremi che mostrano rispettivamente una limitazione <em>superiore</em> ed una <em>inferiore</em>
+per il minimo raggio di trasmissione <code class="language-math math-inline">r^{\star}(n)</code>.</p>
+<h4 id="teorema-1---delimitazione-superiore">Teorema 1 - delimitazione superiore</h4>
+<p><strong>Enunciato:</strong> esiste una costante <code class="language-math math-inline">\gamma_1 > 0</code> tale che se <code class="language-math math-inline">r(n) \geq \gamma_1\left( \sqrt{\frac{\ln{n}}{n}} \right)</code>,
+allora <code class="language-math math-inline">G(n, r(n))</code> è connesso con alta probabilità<sup><a href="#user-content-fn-4" id="user-content-fnref-4" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup>.<br>
+</p>
+<p><strong>Proof:</strong> definiamo una quantità <code class="language-math math-inline">k(n)</code> (dipendente da $n$), e partizioniamo il quadrato unitario <code class="language-math math-inline">Q</code> in <code class="language-math math-inline">\left(k(n)\right)^2</code>
+celle ciascuna di lato <code class="language-math math-inline">\frac{1}{k(n)}</code>.<br>
+    Poniamo <code class="language-math math-inline">r(n)</code> pari alla lunghezza della diagonale di un rettangolo composto da due celle adiacenti, ovvero
+<code class="language-math math-display">
+    r(n) = \sqrt{\left(\frac{1}{k(n)}\right)^2 + \left(\frac{2}{k(n)}\right)^2} = \frac{\sqrt{5}}{k(n)}
+    </code></p>
+<figure>
+<img src="../images/ar-lesson04-img3.png" alt="ar-lesson04-img3.png" style="max-width: 250px">
+<figcaption>Immagine esplicativa</figcaption>
+</figure>
+<p>In questa maniera, ciascun nodo sarà certamente collegato a <span class="underline">tutti</span> i nodi nelle celle adiacenti alla sua.</p>
+<p><img src="../images/ar-lesson04-img4.png" alt="ar-lesson04-img4.png" style="max-width: 250px"></p>
+<p>Se <em>con alta probabilità</em> ciascuna cella ha <span class="underline">almeno</span> un nodo allora è anche vero che con alta probabilità <code class="language-math math-inline">G(n,r(n))</code> è connesso.<br>
+</p>
+<p>Dimostriamo quindi che è possibile scegliere un <code class="language-math math-inline">k(n)</code> tale che <em>w.h.p.</em> nessuna cella di <code class="language-math math-inline">Q</code> è vuota.
+Per calcolare questa probabilità è più semplice partire dal calcolo dell’<em>evento complementare</em>, ovvero calcolare la probabilità dell’evento
+che esiste <span class="underline">almeno</span> una cella vuota.<br>
+</p>
+<p>Sia <code class="language-math math-inline">C</code> una cella: iniziamo col calcolare una <em>delimitazione superiore</em> alla probabilità che essa sia vuota <code class="language-math math-inline">\mathcal{P}(C = \emptyset)</code>.
+L’evento "<code class="language-math math-inline">C = \emptyset</code>" può essere espresso come l’instersezione degli eventi <code class="language-math math-inline">\lbrace i \not\in C \rbrace_{i \in \left[ n \right]}</code>, ovvero
+<code class="language-math math-display">
+    \mathcal{P}(C = \emptyset) = \mathcal{P}\left( \bigcap_{1 \leq i \leq n} i \not\in C \right)
+    </code>
+Dato che ogni nodo è posizionato in maniera totalmente indipendente dagli altri, e dato che la probabilità dell’intersezione di eventi indipendenti
+è pari al prodotto dei singoli, è vero che
+<code class="language-math math-display">
+    \mathcal{P}\left( \bigcap_{1 \leq i \leq n} i \not\in C \right) = \prod_{1 \leq i \leq n} \mathcal{P}\left( i \not\in C \right)
+    </code></p>
+<p>Non resta che calcolare la probabilità <code class="language-math math-inline">\mathcal{P}\left( i \not\in C \right)</code> che un nodo <code class="language-math math-inline">i</code> non “cada” nella cella <code class="language-math math-inline">C</code>.
+Osserviamo che la probabilità dell’evento complementare, ovvero la probabilità dell’evento che <code class="language-math math-inline">i</code> cada in <code class="language-math math-inline">C</code> può essere ricavata semplicemente
+con la regola <em>“casi favorevoli fratto casi possibili”</em>, che in questo caso si traduce come <em>“area di <code class="language-math math-inline">C</code> fratto area di <code class="language-math math-inline">Q</code>”</em>, ovvero
+<code class="language-math math-display"> \mathcal{P}\left( i \in C \right) = \frac{|C|}{|Q|} = \frac{1}{(k(n))^2}</code>
+Di conseguenza <code class="language-math math-inline">\mathcal{P}\left( i \not\in C \right) = 1 - \mathcal{P}\left( i \in C \right) = 1 - \frac{1}{(k(n))^2}</code>.
+Perciò
+<code class="language-math math-display">
+    \mathcal{P}(C = \emptyset) = \mathcal{P}\left( \bigcap_{1 \leq i \leq n} i \not\in C \right)
+    = \prod_{1 \leq i \leq n} \mathcal{P}\left( i \not\in C \right)
+    = \left(  1 - \frac{1}{(k(n))^2} \right)^n
+    </code></p>
+<p>Calcolata la probabilità che la cella <code class="language-math math-inline">C</code> sia vuota, si vuole ora calcolare la probabilità dell’evento che esista <span class="underline">almeno</span> una cella vuota, ovvero
+<code class="language-math math-display">
+    \mathcal{P}(\exists C : C = \emptyset) =
+    \mathcal{P}(\bigcup_{C \in Q} \lbrace C = \emptyset \rbrace )
+    </code>
+Rimarcando il concetto di <strong>Union Bound</strong> che dice che la probabilità dell’unione di eventi è minore o uguale della somma delle loro probabilità
+possiamo dare la seguente delimitazione superiore
+<code class="language-math math-display">
+    \mathcal{P}(\exists C : C = \emptyset) \leq
+    \sum_{C \in Q} \mathcal{P}(C = \emptyset ) =
+    (k(n))^2 \left(  1 - \frac{1}{(k(n))^2} \right)^n
+    </code></p>
+<p>Ricordando che <code class="language-math math-inline">r(n) = \frac{\sqrt{5}}{k(n)}</code>, possiamo sostituire <code class="language-math math-inline">k(n)</code> con <code class="language-math math-inline">\frac{\sqrt{5}}{r(n)}</code>, ottenendo
+<code class="language-math math-display">
+    \mathcal{P}(\exists C : C = \emptyset) \leq
+    \frac{5}{(r(n))^2} \left(  1 - \frac{(r(n))^2}{5} \right)^n
+    </code></p>
+<p>A questo punto poniamo <code class="language-math math-inline">r(n) = \gamma_1\left( \sqrt{\frac{\ln{n}}{n}} \right)</code>, ottenendo che
+<code class="language-math math-display">
+    \mathcal{P}(\exists C : C = \emptyset) \leq
+    \frac{5n}{\gamma^2_1 \ln{n}} \left(  1 - \frac{\gamma^2_1 \ln{n}}{5n} \right)^n
+    </code></p>
+<p>Prima di procedere (e concludere) con la dimostrazione della delimitazione superiore è necessario enunciare e dimostrare un <em>lemma tecnico</em></p>
+<blockquote>
+<p><strong>Lemma:</strong> <code class="language-math math-inline">\forall x \in \mathbb{R}</code> vale la disuguaglianza <code class="language-math math-inline">1 - x \leq e^{-x}</code>.
+Inoltre se <code class="language-math math-inline">x \neq 0</code> allora la disuguaglianza è stretta, ovvero <code class="language-math math-inline">1 - x &#x3C; e^{-x}</code>.<br>
+</p>
+<p><strong>Proof:</strong>
+Sia la funzione <code class="language-math math-inline">G(x) = 1 - x - e^{-x}</code>.
+Calcoliamo la derivata prima di <code class="language-math math-inline">G</code>, ovvero <code class="language-math math-inline">G'(x) = e^{-x} - 1</code>.
+Studiando il segno di <code class="language-math math-inline">G'</code> si nota che
+<code class="language-math math-display">e^{-x} - 1 \geq 0 \implies e^{-x} \geq 1 \implies e^{-x} \geq e^0</code>
+ovvero che <code class="language-math math-inline">G'(x) \geq 0</code> per <code class="language-math math-inline">x \leq 0</code>.<br>
+    Inoltre poiché <code class="language-math math-inline">G'</code> si annulla solamente per <code class="language-math math-inline">x=0</code>, allora possiamo affermare che <code class="language-math math-inline">x=0</code> è il punto di massimo globale di <code class="language-math math-inline">G</code>.<br>
+</p>
+<p>Infine, dato che <code class="language-math math-inline">G(0) = 0</code> (e questo è il punto di massimo), possiamo affermare che <code class="language-math math-inline">1-x \leq e^{-x}</code> per ogni <code class="language-math math-inline">x \in \mathbb{R}</code>.
+<code class="language-math math-display">G(x) \leq G(0) \implies 1 - x - e^{-x} \leq 0 \implies 1 - x \leq e^{-x}</code>
+<code class="language-math math-inline">\square</code></p>
+</blockquote>
+<p>In virtù del precedente Lemma, poniamo <code class="language-math math-inline">x = \frac{\gamma^2_1 \ln{n}}{5n}</code>, e dato che <code class="language-math math-inline">\frac{\gamma^2_1 \ln{n}}{5n} \neq 0</code>, avremo che
+<code class="language-math math-display">
+    1 - \frac{\gamma^2_1 \ln{n}}{5n} &#x3C; e^{-\frac{\gamma^2_1 \ln{n}}{5n}}
+    </code>
+A questo punto non resta che eseguire qualche passaggio algebrico</p>
+<code class="language-math math-display">    \begin{align*}
+      \mathcal{P}(\exists C : C = \emptyset)
+      &#x26;\leq \frac{5n}{\gamma^2_1 \ln{n}} \left(  1 - \frac{\gamma^2_1 \ln{n}}{5n} \right)^n\\
+      &#x26;&#x3C; \frac{5n}{\gamma^2_1 \ln{n}} \left( e^{-\frac{\gamma^2_1 \ln{n}}{5n}} \right)^n\\
+      &#x26;= \frac{5n}{\gamma^2_1 \ln{n}} e^{-\frac{\gamma^2_1 \ln{n}}{5}}\\
+      &#x26;= \frac{5n}{\gamma^2_1 \ln{n}} n^{-\frac{\gamma^2_1}{5}}\\
+      &#x26;&#x3C; \frac{5n}{\gamma^2_1} n^{-\frac{\gamma^2_1}{5}}\\
+      &#x26;= \frac{5}{\gamma^2_1} n^{1-\frac{\gamma^2_1}{5}}
+    \end{align*}</code>
+<p>Osserviamo ora che l’esponente <code class="language-math math-inline">1-\frac{\gamma^2_1}{5} &#x3C; 0</code> per <code class="language-math math-inline">\gamma_1 > \sqrt{5}</code>.<br>
+</p>
+<p>In conclusione, scegliendo un qualsiasi <code class="language-math math-inline">\gamma_1 > \sqrt{5}</code> e ponendo <code class="language-math math-inline">b = \frac{5}{\gamma^2_1}</code> e <code class="language-math math-inline">c = - \left( 1-\frac{\gamma^2_1}{5} \right) = \frac{\gamma^2_1}{5} - 1</code>,
+avremo che la probabilità che esista almeno una cella vuota è
+<code class="language-math math-display">
+    \mathcal{P}(\exists C : C = \emptyset) &#x3C; \frac{b}{n^c} \in \left( \frac{1}{n} \right)^{\Omega(1)}
+    </code>
+e che quindi con alta probabilità non ci sono celle vuote
+<code class="language-math math-display">
+    \mathcal{P}\left( \forall C \subseteq Q \; \exists x \in V : x \in Q \right) > 1 - \left( \frac{1}{n} \right)^{\Omega(1)}
+    </code>
+<code class="language-math math-inline">\square</code>.</p>
+<h4 id="teorema-2---delimitazione-inferiore">Teorema 2 - delimitazione inferiore</h4>
+<p><strong>Enunciato:</strong> per ogni costante <code class="language-math math-inline">c>0</code>,
+<code class="language-math math-display">
+    r(n) \leq \sqrt{ \frac{\ln{(n)} + c}{n \pi} }
+    \implies
+    \lim_{n \rightarrow \infty} \mathcal{P}\Big( G(n,r(n)) \mbox{ non è connesso} \Big) > 0
+    </code></p>
+<p>Per brevità, d’ora in poi si farà riferimento a <code class="language-math math-inline">G(n,r(n))</code> con <code class="language-math math-inline">G</code>, e a <code class="language-math math-inline">r(n)</code> con <code class="language-math math-inline">r</code>.<br>
+</p>
+<p><strong>Proof:</strong>
+Si vuole dare una delimitazione inferiore alla probabilità che <code class="language-math math-inline">G(n,r(n))</code> <strong>non</strong> sia connesso.
+Per iniziare definiamo le seguenti famiglie di eventi:</p>
+<ul>
+<li><code class="language-math math-inline">\mathcal{E}_{\geq 1}</code> = <code class="language-math math-inline">G</code> contiene <strong>almeno</strong> un nodo isolato.</li>
+<li><code class="language-math math-inline">\mathcal{E}_{i_1,i_2,...,i_h}</code> = i nodi <code class="language-math math-inline">i_1,i_2,...,i_h \in \left[ n \right]</code> sono <strong>tutti</strong> isolati in <code class="language-math math-inline">G</code>.</li>
+<li><code class="language-math math-inline">\mathcal{E}_{i!}</code> = <code class="language-math math-inline">i \in \left[ n \right]</code> è l’<strong>unico</strong> nodo isolato in <code class="language-math math-inline">G</code>.</li>
+</ul>
+<p>Facciamo le seguenti osservazioni:</p>
+<ul>
+<li><strong>OSS. 1:</strong> se <code class="language-math math-inline">G</code> contiene almeno un nodo isolato allora certamente <code class="language-math math-inline">G</code> è disconnesso. In termini logici possiamo scrivere come
+<code class="language-math math-inline">\mathcal{E}_{\geq 1} \implies G \mbox{ disconnesso}</code>. In termini insiemistici invece l’implicazione si può tradurre come
+operatore di <em>sottoinsieme</em>, ovvero <code class="language-math math-inline">\mathcal{E}_{\geq 1} \subseteq G \mbox{ disconnesso}</code>.
+Perciò avremo che <code class="language-math math-inline">\mathcal{P}\Big(G \mbox{ disconnesso}\Big) \geq \mathcal{P}(\mathcal{E}_{\geq 1})</code>.</li>
+<li><strong>OSS. 2:</strong> se il nodo 1 è l’unico isolato, oppure se il nodo 2 è l’unico isolato, oppure …, oppure il nodo <code class="language-math math-inline">n</code> è l’unico isolato
+allora certamente deve essere vero che <code class="language-math math-inline">G</code> ha <em>almeno</em> un nodo isolato.
+Perciò come per la precedente osservazione avremo che
+<code class="language-math math-display">
+      \bigcup_{i \in \left[ n \right]} \mathcal{E}_{i!} \subseteq \mathcal{E}_{\geq 1}
+      </code>
+e quindi in termini probabilistici
+<code class="language-math math-display">
+      \mathcal{P}\left( \mathcal{E}_{\geq 1} \right) \geq \mathcal{P}\left( \bigcup_{i \in \left[ n \right]} \mathcal{E}_{i!} \right)
+      </code></li>
+<li><strong>OSS. 3:</strong> dato che <code class="language-math math-inline">\mathcal{E}_{1!}, \mathcal{E}_{2!}, ..., \mathcal{E}_{n!}</code> sono tutti eventi <strong>disgiunti</strong> (ovvero ne può capitare solo uno tra tutti)
+allora avremo che
+<code class="language-math math-display">
+      \mathcal{P}\left( \bigcup_{i \in \left[ n \right]} \mathcal{E}_{i!} \right) =
+      \sum_{i \in \left[ n \right]} \mathcal{P}\left( \mathcal{E}_{i!} \right)
+      </code></li>
+</ul>
+<p>Dalle osservazioni 1-2-3 possiamo dare una prima delimitazione inferiore alla probabilità che <code class="language-math math-inline">G</code> non sia connesso
+<code class="language-math math-display">
+    \mathcal{P}\Big(G \mbox{ disconnesso}\Big) \geq \sum_{i \in \left[ n \right]} \mathcal{P}\left( \mathcal{E}_{i!} \right)
+    </code></p>
+<p>A questo punto non resta che calcolare <code class="language-math math-inline">\mathcal{P}\left( \mathcal{E}_{i!} \right)</code>.
+In realtà non è propriamente semplice calcolare questa probabilità in menira diretta, perciò anche in questo caso cercheremo di <em>minorarla</em><sup><a href="#user-content-fn-5" id="user-content-fnref-5" data-footnote-ref="" aria-describedby="footnote-label">5</a></sup>.
+Notiamo che <code class="language-math math-inline">i</code> è l’<strong>unico</strong> nodo isolato in <code class="language-math math-inline">G</code> se e solo se si verificano i seguenti eventi:</p>
+<ol>
+<li><code class="language-math math-inline">i</code> è un nodo isolato in <code class="language-math math-inline">G</code></li>
+<li>comunque scegliamo un altro nodo <code class="language-math math-inline">j</code>, avremo che <code class="language-math math-inline">i</code> e <code class="language-math math-inline">j</code> <em>non</em> sono enrambi isolati in <code class="language-math math-inline">G</code>, ovvero
+<code class="language-math math-display">
+       \mathcal{E}_{i!} \equiv
+       \mathcal{E}_{i} \bigcap_{j \in \left[ n \right] \setminus \lbrace i \rbrace} \overline{\mathcal{E}_{i,j}} \equiv
+       \mathcal{E}_{i} \setminus \left( \bigcup_{j \in \left[ n \right] \setminus \lbrace i \rbrace} \mathcal{E}_{i,j} \right)
+       </code>
+dove l’ultima uguaglianza è data dalla <em>legge di De Morgan</em><sup><a href="#user-content-fn-6" id="user-content-fnref-6" data-footnote-ref="" aria-describedby="footnote-label">6</a></sup>.</li>
+</ol>
+<p>Da cui otteniamo la seguente minorazione</p>
+<code class="language-math math-display">    \begin{align*}
+      \mathcal{P}\left( \mathcal{E}_{i!} \right)
+      &#x26;= \mathcal{P}\left( \mathcal{E}_{i} \setminus \bigcup_{j \in \left[ n \right] \setminus \lbrace i \rbrace} \mathcal{E}_{i,j} \right)\\
+      &#x26;\geq \mathcal{P}\left( \mathcal{E}_{i} \right) - \mathcal{P}\left( \bigcup_{j \in \left[ n \right] \setminus \lbrace i \rbrace} \mathcal{E}_{i,j} \right)\\
+      &#x26;\geq \mathcal{P}\left( \mathcal{E}_{i} \right) - \sum_{j \in \left[ n \right] \setminus \lbrace i \rbrace} \mathcal{P}\left( \mathcal{E}_{i,j} \right)
+    \end{align*}</code>
+<p>Per calcolare quest’ultima probabilità dobbiamo ancora una volta ricavare delle limitazioni.
+Più precisamente, se si vuole minorare, dobbiamo:</p>
+<ol>
+<li>trovare una <strong>minorazione</strong> per <code class="language-math math-inline">\mathcal{P}\left( \mathcal{E}_{i} \right)</code></li>
+<li>trovare una <strong>maggiorazione</strong> per <code class="language-math math-inline">\sum_{j \in \left[ n \right] \setminus \lbrace i \rbrace} \mathcal{P}\left( \mathcal{E}_{i,j} \right)</code></li>
+</ol>
+<h5 id="minorazione-per-mathcalpleft-mathcale_i-right"><strong>Minorazione per</strong> <code class="language-math math-inline">\mathcal{P}\left( \mathcal{E}_{i} \right)</code></h5>
+<p>Sia <code class="language-math math-inline">t_i</code> il <em>punto</em> di <code class="language-math math-inline">Q</code> in cui si trova il nodo <code class="language-math math-inline">i</code>, e sia <code class="language-math math-inline">C_r(t_i)</code> la circonferenza di raggio <code class="language-math math-inline">r</code> centrata in <code class="language-math math-inline">t_i</code>.
+L’evento <code class="language-math math-inline">\mathcal{E}_i</code> si verifica solo se per ogni nodo <code class="language-math math-inline">j \neq i</code> è vero che <code class="language-math math-inline">j \not\in C_r(t_i)</code>.<br>
+     Quindi fissati <code class="language-math math-inline">j</code> e <code class="language-math math-inline">t_i</code> avremo che
+<code class="language-math math-display">
+     \mathcal{P}\left( j \not\in C_r(t_i) \right) = \frac{|Q - C_r(t_i)|}{|Q|} \geq \frac{|Q| - |C_r(t_i)|}{|Q|} = 1 - \pi r^2
+     </code>
+Il <em>maggiore o uguale</em> è dato perché la circonferenza <code class="language-math math-inline">C_r(t_i)</code> potrebbe essere posizionata ai bordi, e quindi non rientrare in <code class="language-math math-inline">Q</code>.<br>
+</p>
+<p>Perciò, <strong>fissato</strong> un <code class="language-math math-inline">t_i</code> avremo che
+<code class="language-math math-display">
+     \mathcal{P}\left(j \not\in C_r(t_i) \; \forall j \neq i \right) \geq \left( 1 - \pi r^2 \right)^{n-1}
+     </code>
+La precedente probabilità è relativa a un dato <code class="language-math math-inline">t_i</code> fissato.
+Ciò che serve a noi però è dare una stima per un qualsiasi <code class="language-math math-inline">i</code>.
+Però, visto che <code class="language-math math-inline">t_i</code> è scelto uniformemente a caso in un intervallo <strong>continuo</strong>, allora la funzione di densità della scelta u.a.r. in <code class="language-math math-inline">Q</code> sarà <code class="language-math math-inline">f(t) = \frac{1}{|Q|} = 1</code>.
+Perciò la delimitazione inferiore che cerchiamo è</p>
+<code class="language-math math-display">     \begin{align*}
+     \mathcal{P}(\mathcal{E}_i)
+     &#x26;\geq \int_{t_i \in Q} f(t_i) \left( 1 - \pi r^2 \right)^{n-1} \,dt_i\\
+     &#x26;= \left( 1 - \pi r^2 \right)^{n-1} \int_{t_i \in Q} \,dt_i\\
+     &#x26;= \left( 1 - \pi r^2 \right)^{n-1} \cdot |Q|\\
+     &#x26;= \left( 1 - \pi r^2 \right)^{n-1}
+     \end{align*}</code>
+<h5 id="maggiorazione-per-sum_j-in-left-n-right-setminus-lbrace-i-rbrace-mathcalpleft-mathcale_ij-right"><strong>Maggiorazione per</strong> <code class="language-math math-inline">\sum_{j \in \left[ n \right] \setminus \lbrace i \rbrace} \mathcal{P}\left( \mathcal{E}_{i,j} \right)</code></h5>
+<p>Banalmente per maggiorare <code class="language-math math-inline">\sum_{j \in \left[ n \right] \setminus \lbrace i \rbrace} \mathcal{P}\left( \mathcal{E}_{i,j} \right)</code>
+conviene maggiorare i singoli <code class="language-math math-inline">\mathcal{P}\left( \mathcal{E}_{i,j} \right)</code>.
+Osserviamo quindi che l’evento <code class="language-math math-inline">\mathcal{E}_{i,j}</code> occore se e solo se <strong>fissato</strong> un <code class="language-math math-inline">t_i</code> occorono le seguenti eventi:</p>
+<ol>
+<li><code class="language-math math-inline">j \not\in C_r(t_i)</code></li>
+<li><code class="language-math math-inline">h \not\in C_r(t_i) \cup C_r(t_j)</code> <code class="language-math math-inline">\forall h \in \left[ n \right] \setminus \lbrace i,j \rbrace</code></li>
+</ol>
+<p>Per calcolare <code class="language-math math-inline">\mathcal{P}\left( \mathcal{E}_{i,j} \right)</code> consideriamo la seguente immagine</p>
+<p><img src="../images/ar-lesson04-img5.png" alt="ar-lesson04-img5.png" style="width:100%;max-width:400px"></p>
+<p>Certamente finché <code class="language-math math-inline">j</code> si trova al di fuori del cerchio <em>rosso</em> ($C_r(t_i)$) allora <code class="language-math math-inline">i,j</code> non saranno direttamente connessi.
+A questo punto possono accadere due situazioni:</p>
+<ol>
+<li>
+<p><code class="language-math math-inline">j</code> si trova fuori dal cerchio <code class="language-math math-inline">C_{2r}(t_i)</code>, e quindi l’area di <code class="language-math math-inline">C_r(t_i) \cup C_r(t_j)</code> sarà esattamente la somma delle due aree, ovvero
+<code class="language-math math-display">|C_r(t_i) \cup C_r(t_j)| = |C_r(t_i)| + |C_r(t_j)|</code></p>
+<p><img src="../images/ar-lesson04-img6.png" alt="ar-lesson04-img6.png" style="width:100%;max-width:400px"></p>
+</li>
+<li>
+<p><code class="language-math math-inline">j</code> si trova nell’anello <em>blu</em>, ovvero in <code class="language-math math-inline">C_{2r}(t_i) \setminus C_r(t_i)</code>, e quindi l’area di <code class="language-math math-inline">C_r(t_i) \cup C_r(t_j)</code> è <strong>minore o uguale</strong> della
+somma delle aree <code class="language-math math-inline">|C_r(t_i)|</code> e <code class="language-math math-inline">|C_r(t_j)|</code>, ovvero
+<code class="language-math math-display">|C_r(t_i) \cup C_r(t_j)| = |C_r(t_i)| + |C_r(t_j)| - |C_r(t_i) \cap C_r(t_j)| \leq |C_r(t_i)| + |C_r(t_j)| </code></p>
+<p><img src="../images/ar-lesson04-img7.png" alt="ar-lesson04-img7.png" style="width:100%;max-width:400px"></p>
+</li>
+</ol>
+<p>Certamente si sta semplificando il tutto non considerando i casi in cui le circonferenze escano dai bori, però la limitazione non cambia.</p>
+<p>A questo punto possiamo riscrivere l’evento <code class="language-math math-inline">\mathcal{E}_{i,j}</code> come l’unione di due eventi <em>mutuamente esclusivi</em><sup><a href="#user-content-fn-7" id="user-content-fnref-7" data-footnote-ref="" aria-describedby="footnote-label">7</a></sup>:</p>
+<ul>
+<li><code class="language-math math-inline">\mathcal{E}^1_{i,j} \equiv t_j \not\in C_{2r}(t_i) \land \forall h \in \left[ n \right] \setminus \lbrace i,j \rbrace \Big[ h \not\in C_r(t_i) \cup C_r(t_j) \Big]</code></li>
+<li><code class="language-math math-inline">\mathcal{E}^2_{i,j} \equiv t_j \in C_{2r}(t_i) \setminus C_r(t_i)  \land \forall h \in \left[ n \right] \setminus \lbrace i,j \rbrace \Big[ h \not\in C_r(t_i) \cup C_r(t_j) \Big]</code></li>
+</ul>
+<p>Dato che i due eventi sono disgiunti possiamo dire che
+<code class="language-math math-display">
+     \mathcal{P}(\mathcal{E}_{i,j}) = \mathcal{P}(\mathcal{E}^1_{i,j} \cup \mathcal{E}^2_{i,j}) = \mathcal{P}(\mathcal{E}^1_{i,j}) + \mathcal{P}(\mathcal{E}^2_{i,j})
+     </code></p>
+<p>Calcoliamo quindi le due probabilità.
+Per quanto riguarda <code class="language-math math-inline">\mathcal{P}(\mathcal{E}^1_{i,j})</code> è abbastanza semplice, in quanto la probabilità che un singolo <code class="language-math math-inline">h</code> <strong>non</strong> appartenga all’area
+<code class="language-math math-inline">C_r(t_i) \cup C_r(t_j)</code> è pari all’area di <code class="language-math math-inline">Q</code> meno l’area dei due cerchi <code class="language-math math-inline">C_r(t_i)</code> e <code class="language-math math-inline">C_r(t_j)</code>.
+<code class="language-math math-display">
+     \mathcal{P}(\mathcal{E}^1_{i,j}) = |Q| - |C_r(t_i) \cup C_r(t_j)| =  |Q| - |C_r(t_i)| - |C_r(t_j)| = 1 - 2\pi r^2
+     </code>
+Perciò, dato che ogni nodo viene collocato in <code class="language-math math-inline">Q</code> in maniera del tutto <strong>indipendente</strong> dagli altri nodi, possiamo affermare che fissati <code class="language-math math-inline">t_i</code> e <code class="language-math math-inline">t_j</code>
+<code class="language-math math-display">
+     \mathcal{P}\left(\bigcap_{h \neq i,j} h \not\in C_r(t_i) \cup  C_r(t_i) \right)
+     = \prod_{h \neq i,j} \mathcal{P}\left(h \not\in C_r(t_i) \cup  C_r(t_i) \right)
+     = \left( 1 - 2\pi r^2 \right)^{n-2}
+     </code>
+Fissando un <code class="language-math math-inline">t_i</code>, avremo che al variare di <code class="language-math math-inline">t_j</code> al di fuori della circonferenza <em>blu</em> <code class="language-math math-inline">C_{2r}(t_i)</code>, la probabilità che tutti gli altri nodi <code class="language-math math-inline">h \neq i, j</code>
+“cadano” al di fuori delle rispettive circonferenze sarà pari a
+<code class="language-math math-display">\int_{t_j \in Q \setminus C_{2r}(t_i)} f(t_j)\left( 1 - 2\pi r^2 \right)^{n-2} \,dt_j</code></p>
+<p>Infine, calcolando tale probabilità al variare anche di <code class="language-math math-inline">t_i</code>, risulterà che</p>
+<code class="language-math math-display">     \begin{align*}
+       \mathcal{P}(\mathcal{E}^1_{i,j})
+       &#x26;= \mathcal{P}\left( t_j \not\in C_{2r}(t_i) \land \forall h \in \left[ n \right] \setminus \lbrace i,j \rbrace \Big[ h \not\in C_r(t_i) \cup C_r(t_j) \Big] \right)\\
+       &#x26;= \int_{t_i \in Q} f(t_i) \int_{t_j \in Q \setminus C_{2r}(t_i)} f(t_j)\left( 1 - 2\pi r^2 \right)^{n-2} \,dt_j \,dt_i\\
+       &#x26;= \int_{t_i \in Q} \int_{t_j \in Q \setminus C_{2r}(t_i)} \left( 1 - 2\pi r^2 \right)^{n-2} \,dt_j \,dt_i\\
+       &#x26;= \int_{t_i \in Q} \left( 1 - 4\pi r^2 \right) \left( 1 - 2\pi r^2 \right)^{n-2} \,dt_i\\
+       &#x26;= \left( 1 - 4\pi r^2 \right) \left( 1 - 2\pi r^2 \right)^{n-2}
+     \end{align*}</code>
+<p>Dove <code class="language-math math-inline">f(t_i) = \frac{1}{|Q|} = 1</code> ricordiamo essere la funzione di densità riguardo la scelta di un punto uniformemente a caso in <code class="language-math math-inline">Q</code>.
+Invece la quantità <code class="language-math math-inline">\left( 1 - 4\pi r^2 \right)</code> è il risultato dell’integrale <code class="language-math math-inline">\int_{t_j \in Q \setminus C_{2r}(t_i)} \,dt_{j}</code>,
+ovvero l’area di <code class="language-math math-inline">Q</code> meno l’area del cerchio <code class="language-math math-inline">C_{2r}(t_i)</code>.<br>
+</p>
+<p>Più articolato è invece il calcolo di <code class="language-math math-inline">\mathcal{P}(\mathcal{E}^2_{i,j})</code>.
+Osserviamo che, fissato un <code class="language-math math-inline">t_i</code>, la probobailità che un nodo <code class="language-math math-inline">h \neq i,j</code> finisca <em>fuori</em> dall’area <code class="language-math math-inline">|C_r(t_i) \cup C_r(t_j)|</code> dipende
+da come è posizionato <code class="language-math math-inline">t_j</code> nell’anello <em>blu</em> <code class="language-math math-inline">C_{2r}(t_i) \setminus C_r(t_i)</code>.</p>
+<p><img src="../images/ar-lesson04-img7.png" alt="ar-lesson04-img7.png" style="width:100%;max-width:400px"></p>
+<p>Più precisamente, la probabilità che <code class="language-math math-inline">h</code> non finisca in <code class="language-math math-inline">C_r(t_i) \cup C_r(t_j)</code> è pari ad <code class="language-math math-inline">1 - |C_r(t_i) \cup C_r(t_j)|</code>.
+A questo l’area di <code class="language-math math-inline">|C_r(t_i) \cup C_r(t_j)|</code> sarà
+<code class="language-math math-inline">\begin{align*}</code></p>
+
+
+
+
+
+
+
+<table><tbody><tr><td>C_r(t_i) ∪ C_r(t_j)</td></tr></tbody></table>
+<p>&#x26;= |C_r(t_i)| + |C_r(t_j)| - |C_r(t_i) ∩ C_r(t_j)|<br>
+       &#x26;= 2π r^2 - |C_r(t_i) ∩ C_r(t_j)|
+<code class="language-math math-inline">\end{align*}</code>
+Notare che ai fini della dimostrazione vogliamo che quest’ultima quantità sia <em>minima</em>, e questo accade quando l’area dell’intersezione
+<code class="language-math math-inline">|C_r(t_i) \cap C_r(t_j)|</code> è <em>massima</em>.
+Geometricamente si può intuire che questo accade quando <code class="language-math math-inline">t_j</code> risiede esattamente sul perimetro del cerchio <code class="language-math math-inline">C_r(t_i)</code>.</p>
+<p><img src="../images/ar-lesson04-img8.png" alt="ar-lesson04-img8.png" style="width:100%;max-width:400px"></p>
+<p>Per calcolare tale area consideriamo la seguente immagine</p>
+<figure>
+<img src="../images/ar-lesson04-img9.png" alt="ar-lesson04-img9.png" style="width:100%;max-width:400px">
+<figcaption>Intersezione tra <code class="language-math math-inline">C_r(t_i)</code> e <code class="language-math math-inline">C_r(t_j)</code>.</figcaption>
+</figure>
+<p>Per calcolare l’intersezione tra <code class="language-math math-inline">C_r(t_i)</code> e <code class="language-math math-inline">C_r(t_j)</code> basta calcolare l’area <em>verde</em> in figura e moltiplicarla per 2.
+Notare che i triangoli <code class="language-math math-inline">\overset{\triangle}{t_i B t_j}</code> e <code class="language-math math-inline">\overset{\triangle}{t_i A t_j}</code> sono triangoli <strong>equilateri</strong> di lato <code class="language-math math-inline">r</code>,
+e di conseguenza con angoli di 60°.
+Perciò l’agolo di <code class="language-math math-inline">\widehat{A t_j B}</code> sarà <code class="language-math math-inline">\theta = 120° = \frac{2\pi}{3}</code>.
+La lunghezza dell’arco <code class="language-math math-inline">AB</code> è invece pari a <code class="language-math math-inline">L = \theta r = \frac{2\pi}{3} r</code>.</p>
+<figure>
+<img src="../images/ar-lesson04-img10.png" alt="ar-lesson04-img10.png" style="width:100%;max-width:400px">
+<figcaption>Formula lunghezza di un arco di circonferenza</figcaption>
+</figure>
+<p>Invece, l’area dello spicchio formato dall’area <em>verde</em> e dall’area <em>gialla</em> può essere calcolato con la formula <code class="language-math math-inline">\frac{L \times r}{2}</code>.</p>
+<figure>
+<img src="../images/ar-lesson04-img11.png" alt="ar-lesson04-img11.png" style="width:100%;max-width:250px">
+<figcaption>In viola l’area <code class="language-math math-inline">L \times r</code>.</figcaption>
+</figure>
+<p>In fine bisogna sottrarre l’area del triangolo <em>giallo</em>.
+Per fare ciò bisogna calolcare la lungezza del segmento <code class="language-math math-inline">\overline{CB}</code>, e questo si può fare semplicemente col <em>teorema di Pitagora</em></p>
+<code class="language-math math-display">     \begin{align*}
+     \overline{CB}
+     &#x26;= \sqrt{ \overline{t_i B}^2 - \overline{t_i C}^2 }\\
+     &#x26;= \sqrt{ r^2 - \left(\frac{r}{2}\right)^2 }\\
+     &#x26;= \sqrt{ r^2 \left( 1 - \frac{1}{4} \right) }\\
+     &#x26;= \sqrt{ r^2 \left( 1 - \frac{1}{4} \right) }\\
+     &#x26;= \sqrt{ \frac{3}{4}r^2}\\
+     &#x26;= \frac{\sqrt{3}}{2}r 
+     \end{align*}</code>
+<p>Perciò l’area del triangolo giallo sarà
+<code class="language-math math-display">
+     2\overline{CB} \times \frac{r}{2} \times \frac{1}{2} = \frac{\sqrt{3}}{4}r^2
+     </code></p>
+<p>In conclusione l’area dell’intersezione <code class="language-math math-inline">C_r(t_i) \cap C_r(t_j)</code> sarà pari a
+<code class="language-math math-inline">\begin{align*}</code></p>
+
+
+
+
+
+
+
+<table><tbody><tr><td>C_r(t_i) ∩ C_r(t_j)</td></tr></tbody></table>
+<p>&#x26;= 2 × <code class="language-math math-inline">\left</code>( <code class="language-math math-inline">\frac{L \times r}{2}</code> - <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\sqrt{3}</code>}{4}r^2 <code class="language-math math-inline">\right</code>)<br>
+       &#x26;= 2 × <code class="language-math math-inline">\left</code>( <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\frac{2\pi}{3}</code> r × r}{2} - <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\sqrt{3}</code>}{4}r^2 <code class="language-math math-inline">\right</code>)<br>
+       &#x26;= <code class="language-math math-inline">\frac{2\pi}{3}</code>r^2 - <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\sqrt{3}</code>}{2}r^2<br>
+       &#x26;= 2r^2 <code class="language-math math-inline">\left</code>( <code class="language-math math-inline">\frac{\pi}{3}</code> - <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\sqrt{3}</code>}{4} <code class="language-math math-inline">\right</code>)
+<code class="language-math math-inline">\end{align*}</code></p>
+<p>Ritornando quindi alla formula da massimizzare
+<code class="language-math math-inline">\begin{align*}</code></p>
+
+
+
+
+
+
+
+<table><tbody><tr><td>C_r(t_i) ∪ C_r(t_j)</td></tr></tbody></table>
+<p>&#x26;= 2π r^2 - |C_r(t_i) ∩ C_r(t_j)|<br>
+       &#x26;≥ 2π r^2 - 2r^2 <code class="language-math math-inline">\left</code>( <code class="language-math math-inline">\frac{\pi}{3}</code> - <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\sqrt{3}</code>}{4} <code class="language-math math-inline">\right</code>)<br>
+       &#x26;= 2π r^2 - <code class="language-math math-inline">\frac{2}{3}</code>π r^2 + <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\sqrt{3}</code>}{2}r^2<br>
+       &#x26;= <code class="language-math math-inline">\frac{4}{3}</code>π r^2 + <code class="language-math math-inline">\frac{\pi}{\pi}</code> ⋅ <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\sqrt{3}</code>}{2}r^2<br>
+       &#x26;= π r^2 <code class="language-math math-inline">\left</code>(<code class="language-math math-inline">\frac{4}{3}</code> +  <code class="language-math math-inline">\frac</code>{<code class="language-math math-inline">\sqrt{3}</code>}{2 π}<code class="language-math math-inline">\right</code>)<br>
+       &#x26;> <code class="language-math math-inline">\frac{8}{5}</code>π r^2
+<code class="language-math math-inline">\end{align*}</code></p>
+<p>In conclusione, fissati <code class="language-math math-inline">t_i</code> e <code class="language-math math-inline">t_j</code> come descritto dall’evento <code class="language-math math-inline">\mathcal{E}^2_{i,j}</code>, la probabilità che
+un nodo <code class="language-math math-inline">h</code> finisca al di fuori di <code class="language-math math-inline">C_r(t_i) \cup C_r(t_j)</code> sarà <code class="language-math math-inline">&#x3C; 1 - \frac{8}{5}\pi r^2</code>.
+Se estendiamo questa probabilità a tutti i nodi <code class="language-math math-inline">h \neq i,j</code> essa sarà <code class="language-math math-inline">&#x3C; \left(1 - \frac{8}{5}\pi r^2\right)^{n-2}</code>.<br>
+</p>
+<p>Generalizzando, fissato un <code class="language-math math-inline">t_i</code>, la probabilità che scegliendo un <code class="language-math math-inline">t_j \in C_{2r}(t_i) \setminus C_r(t_i)</code> tutti i restanti nodi non
+“finiscano” in <code class="language-math math-inline">C_r(t_i) \cup C_r(t_j)</code> sarà <strong>minore</strong> di
+<code class="language-math math-display">
+     \int_{t_j \in C_{2r}(t_i) \setminus C_r(t_i)} f(t_j) \left(1 - \frac{8}{5}\pi r^2\right)^{n-2} \,dt_j
+     </code></p>
+<p>Infine generalizzando anche per <code class="language-math math-inline">t_i</code> avremo che</p>
+<code class="language-math math-display">     \begin{align*}
+       \mathcal{P}(\mathcal{E}^2_{i,j})
+       &#x26;&#x3C; \int_{t_i \in Q} f(t_i)  \int_{t_j \in C_{2r}(t_i) \setminus C_r(t_i)} f(t_j) \left(1 - \frac{8}{5}\pi r^2\right)^{n-2} \,dt_j \,dt_i\\
+       &#x26;= \int_{t_i \in Q} \int_{t_j \in C_{2r}(t_i) \setminus C_r(t_i)}\left(1 - \frac{8}{5}\pi r^2\right)^{n-2} \,dt_j \,dt_i\\
+       &#x26;= \int_{t_i \in Q} |C_{2r}(t_i) \setminus C_r(t_i)| \left(1 - \frac{8}{5}\pi r^2\right)^{n-2} \,dt_i\\
+       &#x26;\overset{?}{=} \int_{t_i \in Q} \left( 4\pi r^2 - \pi r^2  \right) \left(1 - \frac{8}{5}\pi r^2\right)^{n-2} \,dt_i\\
+       &#x26;= |Q| \cdot 3\pi r^2 \left(1 - \frac{8}{5}\pi r^2\right)^{n-2}
+       = 3\pi r^2 \left(1 - \frac{8}{5}\pi r^2\right)^{n-2}
+     \end{align*}</code>
+<p>Finalmente, trovate delle maggiorazioni alle probabilità di <code class="language-math math-inline">\mathcal{E}^1_{i,j}</code> e <code class="language-math math-inline">\mathcal{E}^2_{i,j}</code> possiamo maggiorare anche la
+probabilità di <code class="language-math math-inline">\mathcal{E}_{i,j}</code></p>
+<code class="language-math math-display">     \begin{align*}
+       \mathcal{P}(\mathcal{E}_{i,j})
+       &#x26;= \mathcal{P}(\mathcal{E}^1_{i,j}) + \mathcal{P}(\mathcal{E}^2_{i,j})\\
+       &#x26;&#x3C; \left( 1 - 4\pi r^2 \right) \left( 1 - 2\pi r^2 \right)^{n-2} + 3\pi r^2 \left(1 - \frac{8}{5}\pi r^2\right)^{n-2}\\
+       &#x26;&#x3C; \left( 1 - 2\pi r^2 \right)^{n-2} + 3\pi r^2 \left(1 - \frac{8}{5}\pi r^2\right)^{n-2}
+     \end{align*}</code>
+<p>Sostituendo <code class="language-math math-inline">r</code> con <code class="language-math math-inline">\sqrt{ \frac{\ln{(n)} + c}{n\pi} }</code> otterremo</p>
+<code class="language-math math-display">     \begin{align*}
+       \mathcal{P}(\mathcal{E}_{i,j})
+       &#x26;&#x3C; \left( 1 - 2\frac{\ln{(n)} + c}{n} \right)^{n-2} + 3\frac{\ln{(n)} + c}{n} \left(1 - \frac{8}{5}\frac{\ln{(n)} + c}{n} \right)^{n-2}\\
+       \textbf{(1)} &#x26;&#x3C; e^{- 2\frac{\ln{(n)} + c}{n} (n-2)} + 3\frac{\ln{(n)} + c}{n} \cdot e^{- \frac{8}{5}\frac{\ln{(n)} + c}{n} (n-2)}\\
+       \textbf{(2)} &#x26;= e^{- 2\frac{\ln{(n)} + c}{n} (n-2)} + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} }\cdot n^{ -\frac{2}{5} } \cdot e^{- \frac{8}{5}\frac{\ln{(n)} + c}{n} (n-2)}\\
+       &#x26;= e^{- 2\frac{n-2}{n}\ln{(n)} } \cdot e^{- 2c\frac{n-2}{n} } + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} }\cdot n^{ -\frac{2}{5} } \cdot e^{- \frac{8}{5}\frac{n-2}{n}\ln{(n)} } \cdot e^{- \frac{8}{5}c\frac{n-2}{n} }\\
+       &#x26;= e^{- 2\frac{n-2}{n}\ln{(n)} } \cdot e^{- 2c\frac{n-2}{n} } + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} }\cdot e^{ -\frac{2}{5}\ln{(n)} } \cdot e^{- \frac{8}{5}\frac{n-2}{n}\ln{(n)} } \cdot e^{- \frac{8}{5}c\frac{n-2}{n} }\\
+       \textbf{(3)} &#x26;&#x3C; e^{- 2\frac{n-2}{n}\ln{(n)} } \cdot e^{- 2c\frac{n-2}{n} } + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} }\cdot e^{ -\frac{2}{5}\frac{n-2}{n}\ln{(n)} } \cdot e^{- \frac{8}{5}\frac{n-2}{n}\ln{(n)} } \cdot e^{- \frac{8}{5}c\frac{n-2}{n} }\\
+       &#x26;= n^{- 2\frac{n-2}{n} } \cdot e^{- 2c\frac{n-2}{n} } + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} }\cdot e^{ -\frac{10}{5}\frac{n-2}{n}\ln{(n)} } \cdot e^{- \frac{8}{5}c\frac{n-2}{n} }\\
+       &#x26;= n^{- 2\frac{n-2}{n} } \cdot e^{- 2c\frac{n-2}{n} } + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} }\cdot n^{ -2\frac{n-2}{n} } \cdot e^{- \frac{8}{5}c\frac{n-2}{n} }\\
+       &#x26;= n^{- 2\frac{n-2}{n} } \cdot e^{- 2c\frac{n-2}{n} } \cdot \left[ 1 + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} } \cdot e^{ \frac{2}{5}c\frac{n-2}{n} } \right]
+     \end{align*}</code>
+<p>dove:</p>
+<ul>
+<li><strong>(1)</strong> perché <code class="language-math math-inline">1-x &#x3C; e^{-x}</code> per ogni <code class="language-math math-inline">x \neq 0</code>.</li>
+<li><strong>(2)</strong> perché <code class="language-math math-inline">\frac{1}{n} = \frac{1}{n^{3/5 + 2/5}} = \frac{1}{n^{3/5} \cdot n^{2/5}} = \frac{1}{n^{3/5}} \cdot n^{-2/5}</code>.</li>
+<li><strong>(3)</strong> perché viene moltiplicato <code class="language-math math-inline">e^{-\frac{2}{5}\ln{(n)}}</code> per <code class="language-math math-inline">e^{\frac{n-2}{n}}</code>.</li>
+</ul>
+<hr>
+<p>Riassumendo abbiamo visto che</p>
+<code class="language-math math-display">    \begin{align*}
+      \mathcal{P}( G \mbox{ disconnesso} ) &#x26;\geq \sum_{i \in \left[ n \right]}  \mathcal{P}( \mathcal{E}_{i!} )\\
+      &#x26;= \sum_{i \in \left[ n \right]} \left[ \mathcal{P}( \mathcal{E}_{i} ) - \sum_{j \in \left[ n \right] - \lbrace i \rbrace } \mathcal{P}( \mathcal{E}_{i,j} ) \right]
+    \end{align*}</code>
+<p>con</p>
+<ul>
+<li><code class="language-math math-inline">\mathcal{P}(\mathcal{E}_{i}) \geq \left(1 - \pi r^2 \right)^{n-1}</code></li>
+<li><code class="language-math math-inline">\mathcal{P}(\mathcal{E}_{ij}) &#x3C; n^{- 2\frac{n-2}{n} } \cdot e^{- 2c\frac{n-2}{n} } \cdot \left[ 1 + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} } \cdot e^{ \frac{2}{5}c\frac{n-2}{n} } \right]</code></li>
+</ul>
+<p>perciò avremo che il limite inferiore alla probabilità che <code class="language-math math-inline">G</code> sia <strong>non connesso</strong> è
+<code class="language-math math-display">
+    \mathcal{P}(G \mbox{ disconnesso}) >
+    n\left(1 - \pi r^2 \right)^{n-1} -
+    n(n-1)n^{- 2\frac{n-2}{n} } \cdot e^{- 2c\frac{n-2}{n} } \cdot \left[ 1 + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} } \cdot e^{ \frac{2}{5}c\frac{n-2}{n} } \right]
+    </code></p>
+<p>A questo punto è utile vedere che per <code class="language-math math-inline">n \rightarrow \infty</code>
+<code class="language-math math-display">
+    \lim_{n \rightarrow \infty} n(n-1)n^{- 2\frac{n-2}{n} } \cdot e^{- 2c\frac{n-2}{n} } \cdot \left[ 1 + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} } \cdot e^{ \frac{2}{5}c\frac{n-2}{n} } \right] = e^{-2c}
+    </code>
+perché</p>
+<ul>
+<li><code class="language-math math-inline">\lim_{n \rightarrow \infty} n(n-1)n^{- 2\frac{n-2}{n} } = 1</code></li>
+<li><code class="language-math math-inline">\lim_{n \rightarrow \infty} e^{- 2c\frac{n-2}{n} } = e^{-2c}</code></li>
+<li><code class="language-math math-inline">\lim_{n \rightarrow \infty} 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} } \cdot e^{ \frac{2}{5}c\frac{n-2}{n} } = 0</code></li>
+</ul>
+<p>Dato che questo limite approccia <code class="language-math math-inline">e^{-2c}</code> dall’<em>alto</em>, vul dire che per ogni <code class="language-math math-inline">\varepsilon > 0</code> esisterà un <code class="language-math math-inline">n_{\varepsilon} > 0</code> tale che per
+<code class="language-math math-inline">n \geq n_{\varepsilon}</code> è vero che
+<code class="language-math math-display">
+    n(n-1)n^{- 2\frac{n-2}{n} } \cdot e^{- 2c\frac{n-2}{n} } \cdot \left[ 1 + 3\frac{\ln{(n)} + c}{ n^{\frac{3}{5}} } \cdot e^{ \frac{2}{5}c\frac{n-2}{n} } \right] &#x3C; ( 1 + \varepsilon )e^{-2c}
+    </code></p>
+<p>Perciò
+<code class="language-math math-display">
+    \mathcal{P}(G \mbox{ disconnesso}) > n\left(1 - \pi r^2 \right)^{n-1} - ( 1 + \varepsilon )e^{-2c}
+    </code></p>
+<p>Per dimostrare che <code class="language-math math-inline">\lim_{n \rightarrow \infty} \mathcal{P}(G \mbox{ disconnesso}) > 0</code> basta dimostrare che da un certo <code class="language-math math-inline">n</code> in poi <code class="language-math math-inline">n\left(1 - \pi r^2 \right)^{n-1} - ( 1 + \varepsilon )e^{-2c} > 0</code>.
+La precedente affermazione equivale a dimostrare che da un certo <code class="language-math math-inline">n</code> in poi <code class="language-math math-inline">n\left(1 - \pi r^2 \right)^{n-1} > ( 1 + \varepsilon )e^{-2c}</code>.
+Iniziamo col calcolare il <em>logaritmo naturale</em> di entrambi i membri.
+Partendo dal primo (a sinistra)</p>
+<code class="language-math math-display">    \begin{align*}
+	\ln{ \left( n\left(1 - \pi r^2 \right)^{n-1} \right) }
+	&#x26;= \ln{ (n) } + \ln{ \left(\left(1 - \pi r^2 \right)^{n-1} \right) }\\
+	&#x26;= \ln{ (n) } + (n-1)\ln{ \left(\left(1 - \pi r^2 \right) \right) }\\
+	\textbf{(1)} &#x26;= \ln{ (n) } - (n-1)\sum_{k=1}^{\infty} \frac{\left(\pi r^2\right)^k}{k}
+    \end{align*}</code>
+<p>dove <strong>(1)</strong> perché per <code class="language-math math-inline">x &#x3C; 1</code> vale che <code class="language-math math-inline">\ln{(1-x)} = - \sum_{k=1}^{\infty} \frac{x^k}{k}</code><br>
+</p>
+<p>Poniamo dunque <code class="language-math math-inline">r = \sqrt{ \frac{\ln{(n)} + c}{n\pi} }</code> e <code class="language-math math-inline">\delta(n)</code> la serie precedente che parte da 3 e va <code class="language-math math-inline">\infty</code>.
+Otterremo che</p>
+<code class="language-math math-display">    \begin{align*}
+      \ln{ \left( n\left(1 - \pi r^2 \right)^{n-1} \right) }
+      &#x26;= \ln{ (n) } - (n-1)\sum_{k=1}^{\infty} \frac{\left(\ln{(n)} + c\right)^k}{kn^k}\\
+      &#x26;= \ln{ (n) } - (n-1)\sum_{k=1}^{2} \frac{\left(\ln{(n)} + c\right)^k}{kn^k} + \delta(n)\\
+      &#x26;= \ln{ (n) } - (n-1) \left[ \frac{\ln{(n)} + c}{n} + \frac{\left(\ln{(n)} + c\right)^2}{2n^2} + \delta(n) \right]
+    \end{align*}</code>
+<p>Non resta che stimare <code class="language-math math-inline">\delta(n)</code>.</p>
+<code class="language-math math-display">    \begin{align*}
+      \delta(n)
+      &#x26;= \sum_{k=3}^{\infty} \frac{\left(\ln{(n)} + c\right)^k}{kn^k}\\
+      &#x26;\leq \sum_{k=3}^{\infty} \frac{\left(\ln{(n)} + c\right)^k}{3n^k} = \frac{1}{3} \sum_{k=3}^{\infty} \left( \frac{\ln{(n)} + c}{n} \right)^k \\
+      &#x26;\leq \frac{1}{3} \int_{2}^{\infty} \left( \frac{\ln{(n)} + c}{n} \right)^x \,dx\\
+      &#x26;= \lim_{h \rightarrow \infty} \frac{1}{3} \int_{2}^{h} \left( \frac{\ln{(n)} + c}{n} \right)^x \,dx\\
+      &#x26;= \lim_{h \rightarrow \infty} \frac{1}{3} \int_{2}^{h} e^{x\left( \frac{\ln{(n)} + c}{n} \right)} \,dx\\
+      &#x26;= \lim_{h \rightarrow \infty} \left[ \frac{1}{3} \frac{1}{ \ln{ \left( \frac{\ln{(n)} + c}{n} \right) } } e^{x\left( \frac{\ln{(n)} + c}{n} \right)} \right]_2^h\\
+      &#x26;= \lim_{h \rightarrow \infty} \left[ \frac{1}{3} \frac{1}{ \ln{ \left( \frac{\ln{(n)} + c}{n} \right) } } \left( \frac{\ln{(n)} + c}{n} \right)^x \right]_2^h\\
+      \textbf{(a)} &#x26;= - \frac{1}{3} \frac{1}{ \ln{ \left( \frac{\ln{(n)} + c}{n} \right) } } \left( \frac{\ln{(n)} + c}{n} \right)^2\\
+      \textbf{(b)} &#x26;= \frac{1}{3} \frac{1}{ \ln{ \left( \frac{n}{\ln{(n)} + c} \right) } } \left( \frac{\ln{(n)} + c}{n} \right)^2
+    \end{align*}</code>
+<p>dove <strong>(a)</strong> perché <code class="language-math math-inline">\lim_{h \rightarrow \infty} \left( \frac{\ln{(n)} + c}{n} \right)^h = 0</code> perché <code class="language-math math-inline">\frac{\ln{(n)} + c}{n} &#x3C; 1</code> per <code class="language-math math-inline">n</code> abbastanza grande,
+mentre <strong>(b)</strong> perché viene spostato il simbolo negativo su <code class="language-math math-inline">\ln{ \left( \frac{\ln{(n)} + c}{n} \right) }</code> trasformandolo in <code class="language-math math-inline">\ln{ \left( \frac{n}{\ln{(n)} + c} \right) }</code>.
+Infine poiché <code class="language-math math-inline">\ln{ \left( \frac{n}{\ln{(n)} + c} \right) } &#x3C; 1</code> per <code class="language-math math-inline">n</code> sufficentemente grande, avremo che
+<code class="language-math math-display">
+    \delta(n) &#x3C; \frac{1}{3} \frac{ \left( \ln{(n)} + c \right)^2 }{n^2}
+    </code></p>
+<p>Unendo i pezzi abbiamo che per valori di <code class="language-math math-inline">n</code> abbastanza grandi</p>
+<code class="language-math math-display">    \begin{align*}
+      \ln{ \left( n\left(1 - \pi r^2 \right)^{n-1} \right) }
+      &#x26;= \ln{ (n) } - (n-1) \left[ \frac{\ln{(n)} + c}{n} + \frac{\left(\ln{(n)} + c\right)^2}{2n^2} + \delta(n) \right]\\
+      &#x26;> \ln{ (n) } - (n-1) \left[ \frac{\ln{(n)} + c}{n} + \frac{\left(\ln{(n)} + c\right)^2}{2n^2} +  \frac{1}{3} \frac{ \left( \ln{(n)} + c \right)^2 }{n^2} \right]\\
+      &#x26;= \ln{ (n) } - (n-1) \left[ \frac{\ln{(n)} + c}{n} + \frac{5}{6} \frac{ \left( \ln{(n)} + c \right)^2 }{n^2} \right]\\
+      &#x26;= \ln{ (n) } - \frac{(n-1)}{n}\left( \ln{(n)} + c \right) - \frac{5}{6} \frac{(n-1)\left( \ln{(n)} + c \right)^2 }{n^2}\\
+      \textbf{(c)} &#x26;> \ln{ (n) } - \left( \ln{(n)} + c \right) - \frac{5}{6} \frac{(n-1)\left( \ln{(n)} + c \right)^2 }{n^2}\\
+      &#x26;= - c - \frac{5}{6} \frac{(n-1)\left( \ln{(n)} + c \right)^2 }{n^2}
+    \end{align*}</code>
+<p>dove <strong>(c)</strong> perché <code class="language-math math-inline">\frac{(n-1)}{n} &#x3C; 1</code>.<br>
+</p>
+<p>Per <code class="language-math math-inline">n \rightarrow \infty</code> si ha che <code class="language-math math-inline">\frac{5}{6} \frac{(n-1)\left( \ln{(n)} + c \right)^2 }{n^2} \approx 0</code>, allora per ogni <code class="language-math math-inline">\omega > 0</code> esiste sempre
+un <code class="language-math math-inline">n_{\omega} \geq n_{\varepsilon}</code>  tale che per <code class="language-math math-inline">n \geq n_{\omega}</code> vale la seguente disuguaglianza
+<code class="language-math math-display">
+    \frac{5}{6} \frac{(n-1)\left( \ln{(n)} + c \right)^2 }{n^2} &#x3C; \omega
+    </code>
+e ciò implica che per <code class="language-math math-inline">n</code> abbastanza grande <code class="language-math math-inline">\ln{ \left( n\left(1 - \pi r^2 \right)^{n-1} \right) } > - c - \omega</code>,
+e dunque (elevando a potenza) <code class="language-math math-inline">n\left(1 - \pi r^2 \right)^{n-1} > e^{- c - \omega} </code>.<br>
+</p>
+<p>Ponendo <code class="language-math math-inline">\omega = c - \ln{( 1 + \varepsilon )}</code> verrà verificata la disuguaglianza voluta
+<code class="language-math math-display">
+    n\left(1 - \pi r^2 \right)^{n-1} > e^{- c - c + \ln{( 1 + \varepsilon )}} = e^{-2c}e^{\ln{( 1 + \varepsilon )}} = ( 1 + \varepsilon )e^{-2c} 
+    </code></p>
+<p>dimostrando così la tesi del teorema
+<code class="language-math math-display">
+    \mathcal{P}(G \mbox{ disconnesso}) > n\left(1 - \pi r^2 \right)^{n-1} - ( 1 + \varepsilon )e^{-2c} > ( 1 + \varepsilon )e^{-2c} - ( 1 + \varepsilon )e^{-2c} = 0
+    </code>
+<code class="language-math math-inline">\square</code>.</p>
+<hr>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>ovvero una <em>clique</em> di <code class="language-math math-inline">n</code> nodi. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p>perché <code class="language-math math-inline">G(n, r(n))</code> è un evento aleatorio, e quindi si possono solo fare previsioni probabilistiche. <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-3">
+<p>ovvero che per ogni coppia di nodi <code class="language-math math-inline">x,y</code> esista un cammino diretto da <code class="language-math math-inline">x</code> ad <code class="language-math math-inline">y</code> e un cammino diretto da <code class="language-math math-inline">y</code> ad <code class="language-math math-inline">x</code>. <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-4">
+<p>con probabilità <span class="underline">almeno</span> <code class="language-math math-inline">1 - \left(\frac{1}{n}\right)^{\Omega(1)}</code>. <a href="#user-content-fnref-4" data-footnote-backref="" aria-label="Back to reference 4" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-5">
+<p>trovare un’ulteriore delimitazione inferiore. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 5" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-6">
+<p><code class="language-math math-inline">\overline{A} \cap \overline{B} \equiv \overline{A \cup B}</code> <a href="#user-content-fnref-6" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-7">
+<p>ovvero <em>disgiunti</em>. <a href="#user-content-fnref-7" data-footnote-backref="" aria-label="Back to reference 7" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

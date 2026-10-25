@@ -1,0 +1,519 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: `#+INCLUDE` keywords aren't in the Org subset
+   --> worg/exporters--koma-letter-export.org:100:1
+    |
+100 | #+INCLUDE: koma-letter-new-example.org src org
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: copy the text in, or link to the other file
+    = note: run `yuanme docs org/unsupported-construct` for more
+<p>This tutorial describes the necessary steps to produce beautiful
+letters using the Org-mode LaTeX exporter and the KOMA-Script
+<code>scrlttr2</code> letter class.</p>
+<h2 id="quick-start-guide">Quick start guide</h2>
+<h3 id="requirements">Requirements</h3>
+<p>The code in this tutorial depends on the following:</p>
+<ul>
+<li>org-mode version 8.0 or greater (part of Emacs 24.4);</li>
+<li>a LaTeX installation including <a href="http://www.ctan.org/pkg/koma-script">KOMA-Script</a>, e.g., <a href="http://www.tug.org/texlive/">TeX Live</a>.</li>
+</ul>
+<p><strong>Note</strong>: The information in this tutorial depends on functionality that
+has not yet been released and it not part of Emacs. You can either <a href="https://orgmode.org/worg/org-faq.html#keeping-current-with-Org-mode-development">use
+the latest development version from the Org-mode git repository</a> or
+<a href="https://git.savannah.nongnu.org/cgit/org-mode.git/tree/lisp/ox-koma-letter.el">download a current version of the KOMA-Script letter exporter</a> and
+install it in your <code>load-path</code>, e.g. <code>contrib/lisp</code> in the Org-tree or
+<code>~/.emacs.d/lisp</code>. It is also strongly recommended to read the
+comments at the beginning of <a href="https://git.savannah.nongnu.org/cgit/org-mode.git/tree/lisp/ox-koma-letter.el">the file</a> for information or changes that
+have not yet been documented here.</p>
+<h3 id="minimal-configuration-of-the-koma-script-letter-exporter">Minimal configuration of the KOMA-Script letter exporter</h3>
+<p>To use the KOMA-Script letter exporter, you have to add it to Emacs’s
+load path, activate it, and optionally configure a LaTeX class for the
+LaTeX exporter (the KOMA-Script letter exporter uses the LaTeX
+exporter internally).</p>
+<ol>
+<li>
+<p>Add the path containing <code>ox-koma-letter.el</code> to the Emacs
+<code>load-path</code>. For example, add the following to your Emacs
+configuration:</p>
+<pre><code class="language-emacs-lisp">(add-to-list 'load-path "/path/to/org-mode/lisp")
+</code></pre>
+</li>
+<li>
+<p>Activate the KOMA-Script letter exporter by adding the following to
+your Emacs configuration:</p>
+<pre><code class="language-emacs-lisp">(eval-after-load 'ox '(require 'ox-koma-letter))
+</code></pre>
+</li>
+<li>
+<p><a id="letter-class-definition"></a> The KOMA-Script exporter comes with
+minimal latex class <code>default-koma-letter</code> that is enabled by
+default.  You may add your own customized class, <code>my-letter</code>, as
+follows:</p>
+<pre><code class="language-emacs-lisp">(eval-after-load 'ox-koma-letter
+  '(progn
+     (add-to-list 'org-latex-classes
+                  '("my-letter"
+                    "\\documentclass\{scrlttr2\}
+     \\usepackage[english]{babel}
+     \\setkomavar{frombank}{(1234)\\,567\\,890}
+     \[DEFAULT-PACKAGES]
+     \[PACKAGES]
+     \[EXTRA]"))
+
+     (setq org-koma-letter-default-class "my-letter")))
+</code></pre>
+<p>A more complicated example is presented in the commentary section
+of <a href="https://git.savannah.nongnu.org/cgit/org-mode.git/tree/lisp/ox-koma-letter.el"><code>ox-koma-script.el</code></a>.</p>
+<p>Note that you may have to add the LaTeX Babel package to you
+preamble, e.g., as</p>
+<pre><code class="language-emacs-lisp">(eval-after-load 'ox-latex
+  '(add-to-list 'org-latex-packages-alist '("AUTO" "babel" t) t))
+</code></pre>
+<p>For more information about this step, refer to the documentation of
+the variables <a href="https://orgmode.org/worg/doc.html#org-latex-classes">org-latex-classes</a>, <a href="https://orgmode.org/worg/doc.html#org-latex-default-packages-alist">org-latex-default-packages-alist</a>,
+and <a href="https://orgmode.org/worg/doc.html#org-latex-packages-alist">org-latex-packages-alist</a>.</p>
+</li>
+</ol>
+<h3 id="a-simple-letter-example">A simple letter example</h3>
+<p>Printed below is a minimal Org file that can be exported as a
+KOMA-Script letter. In this file, press <code>C-c C-e</code> to bring up the
+exporter dispatcher and then press <code>k o</code> to export the Org file to a
+PDF file. For your convenience, you can <a href="https://git.sr.ht/~bzg/worg/tree/master/exporters/koma-letter-new-example.org">download the KOMA letter
+example</a> and you can also <a href="https://git.sr.ht/~bzg/worg/tree/master/item/exporters/koma-letter-new-example.pdf">download the example PDF letter</a>.</p>
+<p>Since no <code>LaTeX_CLASS</code> has been specified the default class will be
+used.  The first block of lines specify title, subject and date.
+<code>PLACE</code> specify the closing sentence and the place from which the
+letter is send.</p>
+<p>The address of the receiver is specified in the <a href="#special-headings">special heading</a>  with
+the <code>:to:</code> tag.  Note that the headline text is arbitrary and ignored.</p>
+<p>The main letter is the first non-special heading<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.  Notice that
+the text of this headline also serves as the opening of the letter.
+The closing of the letter is set via the closing special heading.
+Note that closing statement is the headline title and the signature is
+the content.</p>
+<p>Finally, the ‘backmatter’ printed after the signature are defined in
+the tree special heading with the tags <code>ps</code>, <code>cc</code> and <code>encl</code>.  With
+the <code>OPTION</code> <code>after-closing-order</code> we can reorder the ordering of the
+‘backmatter’.  The content of the <code>after_letter</code> heading is inserted
+after <code>\end{letter}</code>.  This is useful executing arbitrary latex
+commands.  For instance, we may want to include PDFs via the
+<a href="http://www.ctan.org/pkg/pdfpages"><code>pdfpages</code></a> package.</p>
+<p><code>ox-koma-letter.el</code> also supports an alternative syntax that relies
+less on headings as illustrated by the example in this <a href="https://git.sr.ht/~bzg/worg/tree/master/item/exporters/koma-letter-example.org">Org-file</a> and
+the corresponding <a href="https://orgmode.org/worg/images/ox-koma-letter/koma-letter-example.pdf">pdf</a>.</p>
+<p>When composing new letters it may be useful to start with template
+by typing <code>C-c C-e #</code> and choosing <code>koma-letter</code>.</p>
+<h3 id="learning-more-about-koma-script-letter">Learning more about KOMA-Script Letter</h3>
+<p><code>org-koma-letter.el</code> exports a LaTeX document utilizing the <code>scrlttr2</code>
+class of KOMA-Script.  The document class is described in great
+details in chapter 4 of the <a href="http://mirrors.ctan.org/macros/latex/contrib/koma-script/doc/scrguien.pdf">KOMA-Script manual</a>.  If you have TeXLive
+you can open the manual with the command <code>texdoc KOMA-Script</code> and with
+MiKTeX one might call <code>mthelp KOMA-Script</code>.</p>
+<p>Elements such as the address-field is automatically typeset using
+user-provided <em>metadata</em>, or <em>variables</em>, such as address, sender name
+etc.  A full list of variables are available in table 4.1 and an
+illustration of placement of variables is shown in figure 4.9, both
+the in KOMA-Script manual.  A subset of these are supported directly
+by <code>ox-koma-letter.el</code>.</p>
+<p>Placement of elements is typically defined by a LCO file.  If, for
+instance, the <code>DIN</code> LCO file is loaded, letters are typeset to fit
+German DIN envelopes.  See table 4.18 in the KOMA-Script manual for
+default classes.</p>
+<p>You can customize the look of your letter by writing your own LCO
+files and including them with the <code>#+LCO:</code> keyword.  See <a href="#setting-letter-metadata-in-lco-files">Setting letter metadata in LCO files</a>.</p>
+<h2 id="configuration-guide">Configuration guide</h2>
+<p>In addition to the actual content a typical letter also contains
+additional information, such as the sender’s and recipient’s
+addresses, a date, and so on. From now on we refer to this additional
+data as <em>letter metadata</em>.</p>
+<p>A special group of letter metadata controls the appearance of the
+letter, such as the presence of foldmarks or a back address. These are
+called <em>letter options</em>.</p>
+<h3 id="setting-letter-metadata-and-letter-options">Setting letter metadata and letter options</h3>
+<p>Letter metadata can be configured in one of four ways, listed below
+from the most specific to the most general:</p>
+<ol>
+<li>using Org option lines, as show in the <a href="#a-simple-letter-example">simple letter example</a> above,</li>
+<li>by using separate Org LaTeX classes,</li>
+<li>by setting Emacs variables, or</li>
+<li>in a KOMA-Script Letter Class Option file (LCO file).</li>
+</ol>
+<p>We cover these in turn.</p>
+<h4 id="multiple-latex-classes">Multiple LaTeX Classes</h4>
+<p>It is possible to define multiple LaTeX classes for different
+types of letters using the method used <a href="#letter-class-definition">above</a>.  For example one could
+add a special Org LaTeX class, say <code>foo-copr</code>, for sending letters to
+the stakeholders of Foo Corp, that loads the Foo Logo, specifies the
+footer and so forth.  The class is then loaded by inserting
+<code>#+LATEX_CLASS: foo-corp</code>.</p>
+<h4 id="setting-letter-metadata-in-org-option-lines">Setting letter metadata in Org option lines</h4>
+<p>A simple way to set letter metadata on-the-fly is by using Org option
+lines as used in the <a href="#a-simple-letter-example">simple letter example</a> above where we used both
+special headings and keywords.</p>
+<p>Some letter options are set using an <code>#+OPTIONS:</code> line in the same
+manner as other <a href="https://orgmode.org/manual/Export-settings.html">Org mode export options</a>.</p>
+<p>A <a href="#metadata">list of KOMA letter metadata settings</a> is provided below.</p>
+<p>Metadata set in the file takes the highest priority. Thus, you can set
+default letter metadata using Emacs variables or in an LCO file (see
+below).  Then, you can tweak your letter options in the file itself.</p>
+<p>If you write a letter as a subtree of an Org heading, you must use Org
+properties inside a <code>:PROPERTIES:</code> drawer and prefix every option
+property with the string <code>EXPORT_</code>. See the <a href="https://orgmode.org/manual/Export-settings.html">chapter Export options in
+the Org manual</a> for details.</p>
+<h4 id="setting-letter-metadata-in-emacs-variables">Setting letter metadata in Emacs variables</h4>
+<p>Letter metadata can also be set using Emacs variables, e.g., in your
+init-file. For example, the Emacs Lisp snippet below sets the letter’s
+closing line and the location.</p>
+<pre><code class="language-emacs-lisp">(setq org-koma-letter-closing "See you soon,"
+      org-koma-letter-from-address "Verona")
+</code></pre>
+<p>A <a href="#settings">list of KOMA letter metadata settings</a> is provided below.</p>
+<h4 id="setting-letter-metadata-in-lco-files">Setting letter metadata in LCO files</h4>
+<p>A third way, letter metadata can be set in so-called letter class
+option files (LCO files).  LCO files are regular TeX files which are
+included in the TeX source of the letter. Consequently, one has access
+to the entirety of KOMA-Script options in LCO files and can also
+include other LaTeX code.  For more information about LCO files, see
+the <a href="http://www.ctan.org/pkg/koma-script">KOMA-Script documentation</a>.</p>
+<p>LCO files are set by the <code>#+LCO: LCO1 LCO2</code> option line or the Emacs
+variable <code>org-koma-letter-class-option-file</code>.  KOMA-Script comes with
+a variety of pre-made LCO files, such as <code>DIN</code> for German letters,
+<code>NF</code> for French letters, or <code>UScommercial9</code> for US-American letters.</p>
+<p>Letter metadata set in LCO files overwrites <a href="#setting-letter-metadata-in-emacs-variables">letter metadata set in
+Emacs variables</a> but not <a href="#setting-letter-metadata-in-org-option-lines">letter metadata set in the Org file</a>.</p>
+<p>LCO files are convenient as modules that can be loaded to access
+particular setups across letters.  Examples include the sender’s
+address, the first footer and header, banking information, or the
+inclusion of a scanned signature.  A particularly useful LaTeX command
+is <code>\ifkomavarempty{KOMAVAR}{TRUE}{FALSE}</code> that can be used to
+condition the printed output depending on whether <code>KOMAVAR</code> is set or
+not.  See the example under <code>\setkomavar{frombank}</code> in the KOMA-Script
+manual (currently page 183).</p>
+<p>The following LCO file, called <code>DefaultAddress.lco</code>, sets the default
+address. It can loaded using the Org option line <code>#+LCO: DefaultAddress</code>
+(without the <code>.lco</code> extension).</p>
+<pre><code class="language-latex">% Default letter configuration file
+\ProvidesFile{DefaultAddress.lco}
+
+% Default address
+\setkomavar{fromname}{Jane Doe}
+\setkomavar{fromaddress}{Some Street 1\\12345 Some City}
+\setkomavar{fromemail}{jane.doe@email.com}
+\setkomavar{fromphone}{(555) 526-3363}
+\setkomavar{signature}{\usekomavar{fromname}}
+</code></pre>
+<p>The following LCO file, called <code>Banking.lco</code>, configures a footer with
+banking information. To load it together with the default address
+defined above one can use the Org option line <code>#+LCO: DefaultAddress
+Banking</code>.</p>
+<pre><code class="language-latex">% Banking information configuration file
+\ProvidesFile{Banking.lco}
+
+% Banking information in the footer
+\setkomavar{frombank}{Jane Doe\\Account number: 12\,345\,678\\Somebank\\Bank code number: 876\,543\,21}
+\setkomavar{firstfoot}{%
+  \footnotesize
+  \parbox[b]{\linewidth}{\centering\usekomavar{frombank}}}
+</code></pre>
+<p>Custom LCO files must be placed in a directory where LaTeX will find
+them. On GNU/Linux, this defaults to <code>~/texmf/tex/latex</code>. On OS X, use
+<code>~/Library/texmf/tex/latex</code>.  In TeX Live, these paths can be
+configured using the following command:</p>
+<pre><code class="language-sh">tlmgr conf texmf TEXMFHOME ~/some/path
+</code></pre>
+<p>You can test whether <code>foo.lco</code> is recognized by TeX Live by running
+the command <code>kpsewhich foo.lco</code>. After adding a file to the TeX Live
+path you may have to run <code>mktexlsr</code>.</p>
+<h3 id="settings">List of KOMA-Script letter metadata settings</h3>
+<p>This section tries to list all Org option lines, Emacs variables, and
+the corresponding <code>ox-koma-letter</code> variables or options that control
+the behavior of the KOMA-Script letter exporter.</p>
+<p>To get a complete list of variables please use the Customize
+interface, e.g. by typing</p>
+<pre><code>M-x custromize-group org-export-koma-letter
+</code></pre>
+<h4 id="metadata">List of <code>ox-koma-letter</code> letter metadata</h4>
+<p>The following letter metadata can be set by respective Org option
+lines. In general, they correspond to a LaTeX command such as:</p>
+<pre><code class="language-latex">\setkomavar{&#x3C;KOMA variable>}{&#x3C;value>}
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Option line</th><th>Emacs variable</th><th>KOMA-Script variable</th><th>Description</th></tr></thead><tbody><tr><td><code>#+LCO:</code></td><td><code>org-koma-letter-class-option-file</code></td><td></td><td>The default LCO file.</td></tr><tr><td><code>#+FROM_LOGO</code></td><td><code>org-koma-letter-from-logo</code></td><td><code>fromlogo</code></td><td>The sender’s logo.</td></tr><tr><td><code>#+TITLE:</code></td><td></td><td><code>title</code></td><td>The  title of the letter.</td></tr><tr><td><code>#+SUBJECT:</code></td><td></td><td><code>subject</code></td><td>The subject of the letter</td></tr><tr><td><code>#+DATE:</code></td><td></td><td><code>date</code></td><td>The time-stamp of the letter.</td></tr><tr><td><code>#+LOCATION:</code></td><td><code>org-koma-letter-location</code></td><td></td><td>The space opposite the to address</td></tr><tr><td><code>#+PLACE:</code></td><td><code>org-koma-letter-place</code></td><td><code>place</code></td><td>The place of the letter.</td></tr><tr><td><code>#+AUTHOR:</code></td><td><code>org-koma-letter-sender</code></td><td><code>fromname</code></td><td>The sender’s name.</td></tr><tr><td><code>#+FROM_ADDRESS:</code></td><td><code>org-koma-letter-from-address</code></td><td><code>fromaddress</code></td><td>The sender’s address.<sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup></td></tr><tr><td><code>#+PHONE_NUMBER:</code></td><td><code>org-koma-letter-phone</code></td><td><code>fromphone</code></td><td>The sender’s phone number.</td></tr><tr><td><code>#+URL</code></td><td><code>org-koma-letter-url</code></td><td><code>fromurl</code></td><td>The sender’s URL, e. g., the URL of her homepage</td></tr><tr><td><code>#+EMAIL:</code></td><td><code>org-koma-letter-email</code></td><td><code>fromemail</code></td><td>The sender’s email.</td></tr><tr><td><code>#+TO_ADDRESS:</code></td><td></td><td></td><td>The recipient’s address.<sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup></td></tr><tr><td><code>#+OPENING:</code></td><td><code>org-koma-letter-opening</code></td><td></td><td>The opening line of the letter.<sup><a href="#user-content-fn-4" id="user-content-fnref-4" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup></td></tr><tr><td><code>#+CLOSING:</code></td><td><code>org-koma-letter-closing</code></td><td></td><td>The closing line of the letter.<sup><a href="#user-content-fn-5" id="user-content-fnref-5" data-footnote-ref="" aria-describedby="footnote-label">5</a></sup></td></tr><tr><td><code>#+SIGNATURE:</code></td><td><code>org-koma-letter-signature</code></td><td><code>signature</code></td><td>The sender’s signature.</td></tr><tr><td><code>#+LATEX_CLASS:</code></td><td><code>org-koma-letter-default-class</code></td><td></td><td>Corresponds to <code>org-latex-default-class</code></td></tr></tbody></table>
+<h4 id="options">List of <code>ox-koma-letter</code> options</h4>
+<p>The following letter options can be set in an <code>#+OPTIONS:</code> line. In
+general, they correspond to a LaTeX command such as:</p>
+<pre><code class="language-latex">\KOMAoption{&#x3C;KOMA option>}{&#x3C;value>}
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Option</th><th>Emacs variable</th><th>KOMA-Script option</th><th>Description</th></tr></thead><tbody><tr><td><code>after-closing-order</code></td><td><code>org-koma-letter-special-tags-after-closing</code></td><td></td><td>Order or special headlines such as <code>ps</code>, <code>cc</code>, and <code>encl</code></td></tr><tr><td><code>after-letter-order</code></td><td><code>org-koma-letter-special-tags-after-letter</code></td><td></td><td>Order or special headlines such as <code>after_letter</code></td></tr><tr><td><code>backaddress</code></td><td><code>org-koma-letter-use-backaddress</code></td><td><code>backaddress</code></td><td>Print the sender’s address in a  line above the recipient’s address.</td></tr><tr><td><code>phone</code></td><td><code>org-koma-letter-use-phone</code></td><td><code>fromphone</code></td><td>Print the sender’s phone.</td></tr><tr><td><code>url</code></td><td><code>org-koma-letter-use-url</code></td><td><code>fromurl</code></td><td>Print the sender’s URL</td></tr><tr><td><code>email</code></td><td><code>org-koma-letter-use-email</code></td><td><code>fromemail</code></td><td>Print the sender’s email.</td></tr><tr><td><code>foldmarks</code></td><td><code>org-koma-letter-use-foldmarks</code></td><td><code>foldmarks</code></td><td>If and how foldmarks are printed.</td></tr><tr><td><code>subject</code></td><td><code>org-koma-letter-subject-format</code></td><td><code>subject</code></td><td>If and how to print the letter’s subject line.</td></tr><tr><td><code>place</code></td><td><code>org-koma-letter-use-place</code></td><td></td><td>Print the letter’s place stamp.</td></tr><tr><td><code>from-logo</code></td><td><code>org-koma-letter-use-from-logo</code></td><td><code>fromlogo</code></td><td>Insert the sender’s logo.</td></tr></tbody></table>
+<h4 id="special-headings">List of <code>ox-koma-letter</code> special headings</h4>
+<p>Special headings may be used to input metadata in <code>ox-koma-letter</code>
+documents.  A special heading is simply a heading with a recognized
+tag.  Their usages were illustrated in the <a href="#a-simple-letter-example">example</a> above.  Special
+headings tags are defined in the variables
+<code>org-koma-letter-special-tags-in-letter</code>,
+<code>org-koma-letter-special-tags-after-closing</code>, and
+<code>org-koma-letter-special-tags-after-letter</code>.  Note that these can also
+be dynamically set via the options <code>after-closing-order</code> and
+<code>after-letter-order</code>.
+Currently the following special headings are recognized.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Tag</th><th>KOMA-Script</th><th>Description</th></tr></thead><tbody><tr><td><code>to</code></td><td><code>\begin{letter}{to}</code></td><td>To-address. Alternative to <code>#+TO_ADDRESS:</code>.</td></tr><tr><td><code>from</code></td><td><code>fromaddress</code></td><td>From-address.  Alternative to <code>+FROM_ADDRESS:</code>.</td></tr><tr><td><code>closing</code></td><td><code>closing</code> and <code>signature</code></td><td>headings title and signature.  Alternative to <code>#+CLOSING:</code> and <code>#+SIGNATURE:</code></td></tr><tr><td><code>after_closing</code></td><td></td><td>Content is inserted after <code>\closing{.}</code>.</td></tr><tr><td><code>ps</code></td><td><code>\ps{}</code></td><td>Wrap content in a <code>ps</code>-macro.</td></tr><tr><td><code>cc</code></td><td><code>\cc{}</code></td><td>Wrap content in a <code>cc</code>-macro.</td></tr><tr><td><code>encl</code></td><td><code>\encl{}</code></td><td>Wrap content in a <code>encl</code> macro.</td></tr><tr><td><code>after_letter</code></td><td></td><td>Content is inserted after <code>\end{letter}</code>.</td></tr></tbody></table>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>A special headings in <code>ox-koma-letter</code> is a heading with a
+recognized tag.  These headings are treated specially. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p>If the letter is exported below an Org headline, the default
+subject contains the Org headline text. <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-3">
+<p>The options lines <code>#+FROM_ADDRESS:</code>, <code>#+TO_ADDRESS:</code>, can be
+used multiple times and may also be specified using headlines cf. the <a href="#a-simple-letter-example">example</a> above. <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-4">
+<p>The options lines <code>#+OPENING:</code> and <code>#+CLOSING:</code> cannot be set
+in an LCO file. <a href="#user-content-fnref-4" data-footnote-backref="" aria-label="Back to reference 4" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-5">
+<p>See the <a href="http://www.komascript.de/">KOMA script documentation</a> for a list of accepted
+values. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 5" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

@@ -1,0 +1,12 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<pre><code class="language-emacs-lisp">(+ foo bar)
+</code></pre>
+<h2 id="overwriting-a-file-wide-property">overwriting a file-wide property</h2>
+<pre><code class="language-emacs-lisp">foo
+</code></pre>
+<h2 id="appending-to-a-file-wide-property">appending to a file-wide property</h2>
+<pre><code class="language-emacs-lisp">(+ foo bar baz)
+</code></pre>

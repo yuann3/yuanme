@@ -1,0 +1,10 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(&format!(\"{name}.org\"), &text)"
+---
+<h2 id="parent">Parent</h2>
+<p>Shown, as an ancestor.</p>
+<h3 id="chosen">Chosen</h3>
+<p>Shown.</p>
+<h4 id="child">Child</h4>
+<p>Shown, as a descendant.</p>

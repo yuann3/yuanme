@@ -1,0 +1,12 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: macros aren't in the Org subset
+ --> org-mode-testing/macro-templates.org:2:1
+  |
+2 | #+MACRO: included-macro success
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: write the text the macro would expand to
+  = note: run `yuanme docs org/unsupported-construct` for more

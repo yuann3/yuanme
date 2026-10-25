@@ -1,0 +1,354 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: macros aren't in the Org subset
+ --> org-special-block-extras/org-special-block-extras.org:9:1
+  |
+9 | #+macro: blurb Thirty new custom block and 34 link types for Emacs' Org-mode ^_^
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: write the text the macro would expand to
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: macros aren't in the Org subset
+   --> org-special-block-extras/org-special-block-extras.org:128:1
+    |
+128 | #+macro: newline @@latex: \newline@@
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: write the text the macro would expand to
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+INCLUDE` keywords aren't in the Org subset
+   --> org-special-block-extras/org-special-block-extras.org:749:1
+    |
+749 | #+include: ~/.emacs.d/init.org::#Mini-tutorial-on-Org-mode
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: copy the text in, or link to the other file
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: macros aren't in the Org subset
+    --> org-special-block-extras/org-special-block-extras.org:5730:1
+     |
+5730 | #+macro: showicon badge:||grey||$1  $1
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: write the text the macro would expand to
+     = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: macros aren't in the Org subset
+    --> org-special-block-extras/org-special-block-extras.org:5866:1
+     |
+5866 | #+macro: withsrc  $1 @@html:<details><summary>src</summary>@@ ~$1~ @@html:</details>@@
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: write the text the macro would expand to
+     = note: run `yuanme docs org/unsupported-construct` for more
+error[link/unresolved]: nothing here is called `kbd:C-u 80 -`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:3667:37
+     |
+3667 | aesthetically pleasing way, such as [[kbd:C-u 80 -]] to insert 80 dashes,
+     |                                     ^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `kbd:key sequence`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:3678:41
+     |
+3678 |   sequence][description]]= will show as [[kbd:key sequence][description]]; i.e.,
+     |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `org-block/details`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:3836:33
+     |
+3836 | Sometimes you want to remark on [[org-block/details][details]] without drawing too much
+     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `org-block/remark`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:3837:33
+     |
+3837 | attention, and so a tooltip via [[org-block/remark][remark]] suffices.
+     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `teal:Loop sequentially with`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:4139:36
+     |
+4139 |   The above “quantification” means [[teal:Loop sequentially with]]
+     |                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `brown:loop-bodies f(x)`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:4140:3
+     |
+4140 |   [[brown:loop-bodies f(x)]] [[teal:fused using ⊕]], using [[violet:x as the
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `teal:fused using ⊕`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:4140:30
+     |
+4140 |   [[brown:loop-bodies f(x)]] [[teal:fused using ⊕]], using [[violet:x as the
+     |                              ^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `violet:x as the name of the current element`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:4140:60
+     |
+4140 |     [[brown:loop-bodies f(x)]] [[teal:fused using ⊕]], using [[violet:x as the
+     |  ____________________________________________________________^
+4141 | |   name of the current element]], [[red:starting at a]] and [[cyan:ending at b]].
+     | |_______________________________^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `red:starting at a`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:4141:34
+     |
+4141 |   name of the current element]], [[red:starting at a]] and [[cyan:ending at b]].
+     |                                  ^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `cyan:ending at b`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:4141:60
+     |
+4141 |   name of the current element]], [[red:starting at a]] and [[cyan:ending at b]].
+     |                                                            ^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `doc:org-block/latex-definitions`: no `<<target>>`, `#+NAME` or headline title
+    --> org-special-block-extras/org-special-block-extras.org:4144:27
+     |
+4144 |   As such, we declare the [[doc:org-block/latex-definitions][latex-definitions]] block type which avoids
+     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: run `yuanme docs link/unresolved` for more
+<style>
+/* Using source blocks “C” as alias for Org */
+pre.src-C:before { content: 'Org-mode Example!'; }
+/* Execute this for alias: (add-to-list 'org-src-lang-modes '("org" . C)) */
+</style>
+<h2 id="️-write-once-export-everywhere-say-hello-to-org-special-block-extras">🧙‍♂️ <em>Write Once, Export Everywhere</em>: Say Hello to <code>org-special-block-extras</code></h2>
+<p><strong>Tired of repeating yourself when writing in Org-mode for LaTeX and HTML
+exports?</strong> <code>org-special-block-extras</code> is your magical toolkit for
+creating <em>custom Org-mode blocks</em> and <em>links</em> that work seamlessly
+across backends —without diving into the dark arts of raw HTML or
+LaTeX!</p>
+<h3 id="--what-does-it-do">🎁  What Does It Do?</h3>
+<ul>
+<li><strong>🎨 Style with ease</strong> — add colors, badges, tooltips (from a dictionary, Emacs
+Help, or custom file), keystroke notations, inline editorial comments, or even
+colourful ASCII cows with fortune cookies.</li>
+<li><strong>📚 Glossary support</strong> — embed hoverable documentation with <code>doc:</code> links and auto-generated glossaries.</li>
+<li><strong>📦 Add interactive content</strong>: from collapsible detail sections and parallel columns to spoiler tags and equational proofs.</li>
+<li>badge:Hello|World Use <strong>badge-style links</strong> to embed GitHub stars, Reddit subs, or custom  project metadata via <code>shields.io</code>.</li>
+<li><strong>🛠 Use <code>org-defblock</code> and <code>org-deflink</code> macros</strong> — familiar <code>defun</code>-like syntax lets you
+define custom Org behaviours.
+<ul>
+<li>Create powerful custom blocks with the <code>defblock</code> macro: Define a block once
+and export to LaTeX <em>and</em> HTML effortlessly. With <em>header-args</em> support like
+like <code>:color red :signoff "Thanks!"</code> for locally customised exports.</li>
+<li>Use <code>org-deflink</code> to create custom links using a syntax similar to <code>defun</code>.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p><strong>🧱 Ready-to-Use Custom Blocks</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Block</th><th>Use Case</th></tr></thead><tbody><tr><td><code>details</code></td><td>Foldable sections — perfect for hiding spoilers, proofs, or long explanations.</td></tr><tr><td><code>parallel</code></td><td>Display content in multiple columns — great for comparisons or saving space.</td></tr><tr><td><code>margin</code></td><td>Add subtle explanatory tooltips or side remarks — delightful for scholarly writing.</td></tr><tr><td><code>box</code></td><td>Emphasize content with nicely styled borders — great for callouts or side notes.</td></tr><tr><td><code>spoiler</code></td><td>Hide content visually until the reader chooses to see it — useful in teaching.</td></tr><tr><td><code>tree</code></td><td>Display proof trees and logical derivations — fantastic for formal logic.</td></tr><tr><td><code>rename</code></td><td>Automated text substitution — great for translation or glossary effects.</td></tr><tr><td><code>stutter</code></td><td>Repeat content multiple times — e.g., for emphasis or stylistic flair.</td></tr><tr><td><code>solution</code></td><td>Reveal answers in stages — perfect for educational content.</td></tr><tr><td><code>org-demo</code></td><td>Show Org markup alongside its rendered result — ideal for tutorials.</td></tr><tr><td><code>latex-definitions</code></td><td>Hide LaTeX-only declarations from HTML — keep your source clean.</td></tr><tr><td><code>calc</code></td><td>Step-by-step equational reasoning — beautiful for math walkthroughs.</td></tr></tbody></table>
+<hr>
+<p><strong>Ready-to-Use Custom Links</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Link</th><th>Purpose</th></tr></thead><tbody><tr><td><code>doc:label</code></td><td>Glossary/dictionary tooltips —link to local or global explanations; e.g., doc:cl-loop</td></tr><tr><td><code>kbd:</code></td><td>Stylized keybindings with tooltips — e.g., <code>kbd:C-x_C-e</code>.</td></tr><tr><td><code>color:</code> or <code>red:</code></td><td>Inline text colouring — supports both names and hex codes.</td></tr><tr><td><code>html-export-style:</code></td><td>Pick a visual theme for HTML exports — one click, new style.</td></tr><tr><td><code>badge:</code></td><td>Embed project badges — e.g., GitHub stars, Reddit subs, versioning.</td></tr><tr><td><code>fortune:</code></td><td>Insert ASCII animals saying jokes or phrases — joy in your docs!</td></tr><tr><td><code>octoicon:</code></td><td>GitHub-style icons — for styling and linking like a pro.</td></tr><tr><td><code>link-here:</code></td><td>Local anchors — create navigable sections anywhere.</td></tr><tr><td><code>show:</code></td><td>Show a variable value — dynamically insert content like your name or version.</td></tr><tr><td><code>elisp:</code></td><td>Make clickable actions — buttons that run Emacs Lisp.</td></tr></tbody></table>
+<hr>
+<p>💡 Ideal For</p>
+<ul>
+<li>🧑‍🏫 Educators building interactive lessons and glossaries</li>
+<li>🧑‍💻 Developers documenting APIs with style</li>
+<li>📚 Writers crafting scholarly or explorable documents</li>
+<li>✨ Emacsers who want rich export without leaving Org-mode</li>
+<li>✏️ Bloggers wanting powerful interactivity
+<ul>
+<li>This is <em>the</em> reason I made this package.</li>
+</ul>
+</li>
+<li>1️⃣ Anyone who wants to keep Org-mode as the single source of truth for pink:rich
+exports</li>
+</ul>
+<p>🪄 <strong>Just load the package, write in Org, and let <code>defblock</code> handle the
+rest.</strong> Now your Org-mode documents are not just structured —they’re
+<em>spectacular</em>.</p>
+<hr>
+<p><strong>Write rich Org-mode documents — one source, many formats.</strong>
+The <code>org-special-block-extras</code> package empowers you to define and use
+<em>custom blocks</em> and <em>links</em> that make your Org files export beautifully
+to both <strong>HTML and LaTeX</strong>, <em>without ever writing raw HTML or LaTeX
+again</em>.</p>
+<h2 id="block-and-link-types-provided-by-this-package">Block and link types provided by this package</h2>
+<h3 id="Boxed-Text">Boxed Text —Calling out super duper info</h3>
+<p>osbe-example:~/org-special-block-extras/tests/box.yaml</p>
+<h3 id="Folded-Details">Folded Details —Let the user see stuff only if they’re interested</h3>
+<p>osbe-example:~/org-special-block-extras/tests/details.yaml</p>
+<h3 id="kbd:nice-keystroke-renditions">Nice Keystroke Renditions: kbd:C-h_t</h3>
+<p>Anyone who writes <em>about</em> Emacs will likely want to mention keystrokes in an
+aesthetically pleasing way, such as <a href=""></a> to insert 80 dashes,
+or kbd:C-c_C-e_h_o to export an Org-mode file to HTML,
+or the useful &#x3C;kbd:M-s h .>.</p>
+<ul>
+<li>
+<p><code>kbd:𝒳</code> will show a tooltip defining 𝒳, as an Emacs Lisp function, if possible.
+For example, <code>kbd:C-h_t</code> is kbd:C-h_t; and likewise <code>&#x3C;kbd:M-s h .></code> is &#x3C;kbd:M-s h
+.> (we need to use <code>&#x3C;...></code> since punctuation is not picked up as part of link
+labels).  In contrast, <code>kbd:nope</code> renders as kbd:nope <em>without</em> a tooltip (nor a
+red border).</p>
+<p>You can also supply explicit tooltip description: <code>[[kbd:key
+  sequence][description]]</code> will show as <a href="">description</a>; i.e.,
+the key sequence in nice key font along with a tooltip explaining it.</p>
+</li>
+</ul>
+<p><img src="./images/kbd.png" alt="kbd.png" width="80%" height="80%s"></p>
+<h3 id="tooltip">Remark —Inline footnotes, viz HTML tooltips and LaTeX notes in the margin</h3>
+<p>Sometimes you want to remark on <a href="">details</a> without drawing too much
+attention, and so a tooltip via <a href="">remark</a> suffices.</p>
+<div class="tiny">
+<div class="org-center">
+<p><em>(Scroll to make tooltips disappear!)</em></p>
+</div>
+</div>
+<p>osbe-example:~/org-special-block-extras/tests/tooltip.yaml</p>
+<h3 id="Parallel">Parallel —<em>Place ideas side-by-side, possibly with a separator</em></h3>
+<p>osbe-example:~/org-special-block-extras/tests/parallel.yaml</p>
+<h3 id="latex-definitions-for-hiding-LaTeX-declarations-in-HTML">  <code>latex-definitions</code> for hiding LaTeX declarations in HTML</h3>
+<p>To present mathematical formulae in HTML export, we may use
+LaTeX-style commands such as <code>{\color{red} x}</code> by enclosing them in
+<code>$</code>-symbols to obtain <code class="language-math math-inline">{\color{red}x}</code>.  This is known as the MathJax
+tool —Emacs’ default HTML export includes it.  (Unfortunately,
+MathJax does not directly support arbitrary HTML elements to occur
+within the <code>$</code>-delimiters.)</p>
+<p>It is common to declare LaTeX definitions for convenience, but such
+declarations occur within <code>$</code>-delimiters and thereby produce
+undesirable extra whitespace. See the superflous vertical whitespace
+in the <code>Result</code> side below.</p>
+<div class="org-demo">
+<p>Hello, in this blog post I’d like to talk about quantifiers.</p>
+<p><code class="language-math math-display">
+  \def\Plus{\color{teal}\bigoplus}
+  \def\plus{\;\color{teal}\oplus\;}
+  \def\f#1{{\color{brown}f}{\color{violet}(#1)}}
+  \def\xstart{\color{red} a}
+  \def\xend{\color{cyan} b}
+  </code></p>
+<p>Anyhow, let’s talk about quantifiers…
+<code class="language-math math-display">
+  \Plus_{{\color{violet} x} = \xstart}^{\xend} \f{x}
+  \; = \;
+  \f{{\xstart}} \plus \f{a+1} \plus \f{a+2} \plus \cdots \plus \f{{\xend}}
+  </code></p>
+<p>The above “quantification” means <a href=""></a>
+<a href=""></a> <a href=""></a>, using <a href=""></a>, <a href=""></a> and <a href=""></a>.</p>
+</div>
+<p>As such, we declare the <a href="">latex-definitions</a> block type which avoids
+displaying such extra whitespace in the resulting HTML.</p>
+<p>osbe-example:~/org-special-block-extras/tests/latex-definitions.yaml</p>

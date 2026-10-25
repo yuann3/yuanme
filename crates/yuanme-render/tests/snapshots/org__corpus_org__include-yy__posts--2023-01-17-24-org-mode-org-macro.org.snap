@@ -1,0 +1,435 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>本文算是我在阅读 org manual 的 13.9 节时的意外收获，原本我只是想学习一下 org 到 HTML 的导出顺便记个笔记，但在读到 13.5 章时发现这 macro 居然意外的好玩，遂记下了一些折腾过程。</p>
+<p>本文使用的环境如下：</p>
+<ul>
+<li>emacs 28.2 x86_64 on windows 11</li>
+</ul>
+<h2 id="org-mode-的导出过程">org-mode 的导出过程</h2>
+<p>在 org-mode 文档中对宏行为的描述是 <em>Org expands macros at the very beginning of the export process.</em> 拿 C 语言类比一下可能是在宏展开阶段。要准确的了解导出过程还是得阅读源代码，或者是阅读<a href="https://orgmode.org/worg/dev/org-export-reference.html">文档</a>。不过这是一份教你如何为 org-mode 写导出后端的文档，我在<a href="https://kdr2.com/tech/emacs/1403-orgmode-export-process.html">这里</a>找到了对 org-mode 导出过程的说明：</p>
+<ol>
+<li>运行 <code>org-export-before-processing-hook</code></li>
+<li>展开 <code>#INCLUDE:</code></li>
+<li>展开 <code>{{{macro}}}</code></li>
+<li>执行 babel 代码块</li>
+<li>运行 <code>org-export-before-parsing-hook</code></li>
+<li>调用导出后端</li>
+</ol>
+<p>为了确定这个描述是否正确，我们可以阅读一下 <code>ox.el</code> 中 <code>org-export-as</code> 函数，它是整个导出过程的核心函数。在 emacs 28.2 中它位于 <code>ox.el</code> 的 2907 行至 3065 行，我们只关注重点部分：</p>
+<ul>
+<li>
+<p>2942 行 ~ 2948 行，处理 narrow 和 region</p>
+<pre><code class="language-elisp"> ;; Narrow buffer to an appropriate region or subtree for
+ ;; parsing.  If parsing subtree, be sure to remove main
+ ;; headline, planning data and property drawer.
+ (cond ((org-region-active-p)
+ (narrow-to-region (region-beginning) (region-end)))
+(subtreep
+ (org-narrow-to-subtree)
+ (goto-char (point-min))
+ (org-end-of-meta-data)
+ (narrow-to-region (point) (point-max))))
+</code></pre>
+</li>
+<li>
+<p>2967 行 ~ 2968 行，执行 <code>org-export-before-processing-hook</code></p>
+<pre><code class="language-elisp"> ;; Run first hook with current back-end's name as argument.
+ (run-hook-with-args 'org-export-before-processing-hook
+(org-export-backend-name backend))
+</code></pre>
+</li>
+<li>
+<p>2969 行，展开所有的 <code>include</code> 关键字</p>
+<pre><code class="language-elisp">(org-export-expand-include-keyword)
+</code></pre>
+</li>
+<li>
+<p>2971 行 ~ 2972 行，宏初始化和宏替换</p>
+<pre><code class="language-elisp">(org-macro-initialize-templates org-export-global-macros)
+(org-macro-replace-all org-macro-templates parsed-keywords)
+</code></pre>
+</li>
+<li>
+<p>2981 行 ~ 2985 行，执行 babel 代码块</p>
+<pre><code class="language-elisp">;;  Possibly execute Babel code.  Re-run a macro expansion
+;;  specifically for {{{results}}} since inline source blocks
+;;  may have generated some more.  Refresh buffer properties
+;;  and radio targets another time.
+(when org-export-use-babel
+  (org-babel-exp-process-buffer)
+  (org-macro-replace-all '(("results" . "$1")) parsed-keywords)
+  (org-set-regexps-and-options)
+  (org-update-radio-target-regexp))
+</code></pre>
+</li>
+<li>
+<p>2990 行 ~ 2992 行，执行 <code>org-export-before-parsing-hook</code></p>
+<pre><code class="language-elisp">(save-excursion
+  (run-hook-with-args 'org-export-before-parsing-hook
+ (org-export-backend-name backend)))
+</code></pre>
+</li>
+<li>
+<p>3023 行，进行 parse</p>
+<pre><code class="language-elisp">;; Parse buffer.
+(setq tree (org-element-parse-buffer nil visible-only))
+</code></pre>
+</li>
+<li>
+<p>3043 ~ 3065 行，执行从 <code>tree</code> 到输出 <code>output</code> 的过程</p>
+<pre><code class="language-elisp">;; Eventually transcode TREE.  Wrap the resulting string into
+;; a template.
+(let* ((body (org-element-normalize-string
+(or (org-export-data tree info) "")))
+...
+</code></pre>
+</li>
+</ul>
+<p>可以看到整个过程和上面列出的基本一致，大致是 <code>预处理->宏展开->解析->输出</code> 这样的一个过程。</p>
+<h2 id="导出宏的实现">导出宏的实现</h2>
+<p>从上面给出的代码片段可以看到在整个 export 过程中有关宏展开的代码只有两行：</p>
+<pre><code class="language-elisp">(org-macro-initialize-templates org-export-global-macros)
+(org-macro-replace-all org-macro-templates parsed-keywords)
+</code></pre>
+<p>从这两个函数的名字我们就能看出处理宏的步骤，首先初始化模板，然后对所有的宏进行展开。下面我们从模板和展开两个方面来介绍具体实现。</p>
+<h3 id="由宏定义生成函数">由宏定义生成函数</h3>
+<p>org-macro 中的宏使用正则替换或 elisp 函数实现，org 宏可看作接受字符串参数并返回字符串的函数。在内部 org-macro 会通过 <code>org-macro--makeargs</code> 根据宏内容生成参数表， <code>org-macro--set-templates</code> 根据宏内容生成字符串或函数。我们可以简单体验一下这两个函数的功能：</p>
+<pre><code class="language-elisp">(org-macro--makeargs "$1")
+=> (&#x26;optional $1 &#x26;rest _)
+(org-macro--makeargs "$1, $2")
+=> (&#x26;optional $1 $2 &#x26;rest _)
+(org-macro--makeargs "$1, $2, $4")
+=> (&#x26;optional $1 $2 $3 $4 &#x26;rest _)
+(org-macro--makeargs "$9")
+=> (&#x26;optional $1 $2 $3 $4 $5 $6 $7 $8 $9 &#x26;rest _)
+</code></pre>
+<p>在导出宏的模板中，参数名由 <code>$</code> 加上数字组成。 <code>$1</code> 是宏调用的第一个参数， <code>$2</code> 是第二个，以此类推。匹配参数的正则是 <code>"\\$\\([0-9]+\\)"</code> ，虽然它能够匹配 <code>$0</code> ，但实现代码不允许它出现在参数表中：</p>
+<pre><code class="language-elisp">;; org-macro.el line 92
+(while (> max 0)
+  (push (intern (format "$%d" max)) args)
+  (setq max (1- max)))
+
+;; use $0
+(org-macro--makeargs "$0")
+=> (&#x26;rest _)
+(org-macro--makeargs "$0, $5")
+=> (&#x26;optional $1 $2 $3 $4 $5 &#x26;rest _)
+</code></pre>
+<p><code>org-macro--set-templates</code> 接受由 <code>(name . template)</code> 组成的列表，返回经过处理的模板列表。对列表中名字相同的模板，它会使用最后出现的模板。对于以 <code>(eval</code> 开头 <code>template</code> ，它会将模板字符串解析为 lisp 代码，对于普通 <code>template</code> ，它不做处理，直接返回原字符串：</p>
+<pre><code class="language-elisp">(org-macro--set-templates '(("hello" . "$1 $2 world")))
+=> (("hello" . "$1 $2 world"))
+
+(org-macro--set-templates '(("hello" . "$1 world")
+	      ("hello" . "$2 world")))
+=> (("hello" . "$2 world"))
+
+(org-macro--set-templates '(("h" . "(eval (concat $1 $2))")))
+=> (("h" closure (t) (&#x26;optional $1 $2 &#x26;rest _) (concat $1 $2)))
+</code></pre>
+<p>参考官方文档，定义宏有两种方法，分别是：</p>
+<pre><code class="language-text">#+MACRO: name template
+#+MACRO: name (eval template)
+</code></pre>
+<p>前者用于定义普通的文本替换宏，后者用于函数宏。宏的使用方法是 <code>{{{name(arg1, arg2, ...)}}}</code> ，如果没有参数就是 <code>{{{name}}}</code> 。根据上面得到的参数表容易知道宏对参数的使用非常宽容，超出或少于宏定义中的参数个数都没有问题。</p>
+<h3 id="从文件中收集宏定义">从文件中收集宏定义</h3>
+<p>上面我们提到了可以使用 <code>#+MACRO:</code> 关键字来定义宏，那么 org-macro 是以何种方式和何种顺序来找到文件中的宏定义的呢？ <code>org-macro--collect-macros</code> 通过调用 <code>org-collect-keywords</code> 来收集使用 <code>MACRO</code> 关键字的名字和值。这个函数比较有意思的一点是它会将通过 <code>SETUPFILE</code> 引入的文件中的宏定义也包含进去：</p>
+<pre><code class="language-elisp">;; org.el line 4519
+(let* ((keywords (cons "SETUPFILE" (mapcar #'upcase keywords)))
+</code></pre>
+<p>这也就是说如果你通过 <code>#+SETUPFILE:</code> 引入了一些 <code>settings</code> ，那么 setupfile 中的宏定义也会起作用。 <code>org-collect-keywords</code> 中的注释没有说明它的扫描顺序，不过根据位于 org.el 4536 行的 <code>re-search-forward</code> 可以猜测应该是从上往下的顺序。这也就是说宏在文件中出现位置越靠后，它在 <code>org-collect-keywords</code> 的返回表中的位置就越靠后。</p>
+<p><code>org-macro--collect-macros</code> 添加了 4 个预定义的宏，分别是 <code>author</code> ， <code>email</code> ， <code>title</code> 和 <code>date</code> ，它们通过文件或 <code>SETUPFILE</code> 中的 <code>#+AUTHOR</code> ， <code>#+EMAIL</code> ， <code>#+TITLE</code> 和 <code>#+DATE</code> 获取：</p>
+<pre><code class="language-elisp"> ;; org-macro line 124
+ (defun org-macro--collect-macros ()
+   "Collect macro definitions in current buffer and setup files.
+ Return an alist containing all macro templates found."
+   (let ((templates
+   `(("author" . ,(org-macro--find-keyword-value "AUTHOR" t))
+     ("email" . ,(org-macro--find-keyword-value "EMAIL"))
+     ("title" . ,(org-macro--find-keyword-value "TITLE" t))
+     ("date" . ,(org-macro--find-date)))))
+     (pcase (org-collect-keywords '("MACRO"))
+(`(("MACRO" . ,values))
+ (dolist (value values)
+   (when (string-match "^\\(\\S-+\\)[ \t]*" value)
+     (let ((name (match-string 1 value))
+	   (definition (substring value (match-end 0))))
+       (push (cons name definition) templates))))))
+     templates))
+</code></pre>
+<p>根据该函数的中使用的 <code>push</code> ，我们可知在它的返回表中 4 个预定义的宏位于最后，表头是文件中最后出现的宏，第二元素是倒数第二个出现的宏，以此类推。如果说 <code>org-collect-keywords</code> 得到的是 <code>M1 M2 M3</code> 的话，那么它的返回值是 <code>M3 M2 M1 author email title date</code> 。</p>
+<p>在 <code>org-macro-initialize-templates</code> ，也就是宏初始化函数中，使用 <code>org-macro--collect-macros</code> 收集到的宏会被 <code>org-macro--set-templates</code> 进行一次转换得到可用的模板，注意这里的 <code>default</code> 在前面，这也就是说文件中定义的宏具有更高的优先级，如果 <code>default</code> 中有宏与文件宏同名，那么它会被替换掉：</p>
+<pre><code class="language-elisp">;; org-macro.el line 158
+;; org-macro-initialize-templates
+
+;; Install user-defined macros.  Local macros have higher
+;; precedence than global ones.
+(org-macro--set-templates (append default (org-macro--collect-macros)))
+</code></pre>
+<p>随后，该函数将 <code>input-file</code> 和 <code>modification-time</code> 这两个宏插入表中，它们分别是输入文件名和修改时间：</p>
+<pre><code class="language-elisp">;; org-macro.el line 164
+`("input-file" . ,(file-name-nondirectory visited-file))
+`("modification-time" . ...)
+</code></pre>
+<p>在最后添加 <code>keyword</code> ， <code>n</code> ， <code>property</code> 和 <code>time</code> 这四个宏，可见它们就是函数：</p>
+<pre><code class="language-elisp">;; org-macro line 174
+
+;; Install generic macros.
+'(("keyword" . (lambda (arg1 &#x26;rest _)
+   (org-macro--find-keyword-value arg1 t)))
+  ("n" . (lambda (&#x26;optional arg1 arg2 &#x26;rest _)
+    (org-macro--counter-increment arg1 arg2)))
+  ("property" . (lambda (arg1 &#x26;optional arg2 &#x26;rest _)
+    (org-macro--get-property arg1 arg2)))
+  ("time" . (lambda (arg1 &#x26;rest _)
+(format-time-string arg1))))
+</code></pre>
+<p>最后让我们回到 <code>ox.el</code> 中调用 <code>org-macro-initialize-templates</code> 的位置：</p>
+<pre><code class="language-elisp">(org-macro-initialize-templates org-export-global-macros)
+</code></pre>
+<p>注意函数的参数 <code>org-export-global-macros</code> ，我们可以使用它来定义全局宏，它将作为 <code>default</code> 参加参与 <code>org-macro-initialize-templates</code> 的调用。</p>
+<p>以上就是对收集宏阶段的过程分析，现在让我们举个例子，假设 <code>f1</code> 中有定义 <code>M1</code> 和 <code>M2</code> ， <code>f2</code> 中有定义 <code>M3</code> 和 <code>M4</code> ， <code>org-export-global-macros</code> 中有宏 <code>M5</code> ， <code>M6</code> （它们都是按顺序出现）。那么，对于以下 org 文件：</p>
+<pre><code class="language-org">#+INCLUDE: f1.org
+#+MACRO: M7 $1
+#+SETUPFILE: f2.org
+#+MACRO: M8 Hello world
+</code></pre>
+<p>我们最终由 <code>org-macro-initialize-templates</code> 得到的宏表就是： <code>(--set-templates M5 M6 M8 M4 M3 M7 M2 M1 author email title date)</code> + <code>input-file, modification-time, keyword, n, property, time</code> 。在 <code>+</code> 号前的宏定义会被 <code>org-macro--set-templates</code> 整理为模板。</p>
+<p>上一节忘了说了，在处理过程中 <code>org-macro--set-templates</code> 会将列表反序，上一节的例子不足以说明这一点，这里补充一下：</p>
+<pre><code class="language-elisp">(org-macro--set-templates '(("hello" . "world")
+	      ("world" . "hello")))
+=> (("world" . "hello") ("hello" . "world"))
+</code></pre>
+<p>所以我们最终得到的顺序应该是 <code>date title email author M1 M2 M7 M3 M4 M8 M6 M5 input-file modification-time keyword n property time</code> 。</p>
+<p>我在本地试了以下，先将 <code>org-macro-global-macros</code> 设置为 <code>(("M5" . "foooo") ("M6" . "barrrr"))</code> ，然后在 <code>org-macro.el</code> 中 <code>org-macro-initialize-templates</code> 的末尾插入 <code>(print org-macro-templates)</code> ，添加需要的文件 <code>f1</code> 和 <code>f2</code> 后，我通过 <code>C-c C-e h H</code> 调用导出到 html 的 buffer，最后在 <code>*message*</code> buffer 中看到了如下输出：</p>
+<p><img src="./1.png" alt="1.png"></p>
+<p>实际上这样的输出出现了几次，原因不明…如果你也像我一样修改了 org-macro.el 中的代码，记得测试之后改回来。</p>
+<p><img src="./2.png" alt="2.png"></p>
+<p>根据这样的处理方法会出现一个比较鬼畜的现象，那就是文件中定义的宏如果出现重名，那么最先定义的宏生效，这和我们一般想的最后定义生效不一致，如果你使用 <code>ox-org</code> （记得 <code>(require 'ox-org)</code> ）导出以下文件，那么最后得到的结果是 1 而不是 2：</p>
+<pre><code class="language-org">#+MACRO: A 1
+#+MACRO: A 2
+
+{{{A}}}
+</code></pre>
+<p><img src="./3.png" alt="3.png"></p>
+<p>得到的宏列表如下，可见没有 <code>A 2</code> ：</p>
+<p><img src="./4.png" alt="4.png"></p>
+<p>宏，很神奇吧（笑）。</p>
+<p>整个导出过程还是有点复杂的，不过总结一下也就以下几条规则：</p>
+<ul>
+<li>宏表顺序为 <code>date, title, email, author</code> 加上 <code>文件中按顺序出现的宏</code> 加上 <code>全局宏表倒序</code> 加上剩下的六个宏</li>
+<li>尽量不要使用 <code>author</code> ， <code>email</code> ， <code>title</code> ， <code>date</code> ， <code>input-file</code> ， <code>modification-time</code> ， <code>keyword</code> ， <code>n</code> ， <code>property</code> ， <code>time</code> 作为宏名，它们算是保留关键字</li>
+<li>可以使用 <code>org-macro-templates</code> 定义全局宏，但如果与文件宏同名，它们会被覆盖</li>
+<li>对于同名 <strong>文件</strong> 宏，以 <strong>最先</strong> 出现的宏定义为准，其他同名定义会被覆盖</li>
+<li>对于同名 <strong>全局</strong> 宏，以 <strong>最后</strong> 出现的宏定义为准，其他同名定义会被覆盖</li>
+</ul>
+<p>文档中对宏的顺序没有做任何说明，可见作者也不认为宏应该被非常复杂地使用。</p>
+<h3 id="宏的展开">宏的展开</h3>
+<p><code>org-export-as</code> 通过调用 <code>org-macro-replace-all</code> 来展开文件中出现的宏调用。它的表达式为：</p>
+<pre><code class="language-elisp">(org-macro-replace-all org-macro-templates parsed-keywords)
+</code></pre>
+<p>其中的参数我们随后解释，首先让我们看看 <code>org-macro-replace-all</code> 干了什么。</p>
+<p>首先该函数会进入一个匹配当前 buffer 中所有宏调用的循环，对 buffer 中出现的宏调用逐个处理：</p>
+<pre><code class="language-elisp">(while (re-search-forward "{{{[-A-Za-z0-9_]" nil t)
+  ...
+</code></pre>
+<p>根据这个匹配规则我们可以知道宏的命名规则，即可以使用大小写字母加上 0~9 数字加上 <code>-</code> 和 <code>_</code> 。在找到宏调用后会判断当前位置的 headline 是否被注释，若是则跳过：</p>
+<pre><code class="language-elisp">(unless (save-match-data (org-in-commented-heading-p))
+</code></pre>
+<p>随后该函数调用 <code>org-element-context</code> 获取宏调用所在环境，对此我们无序太过关心，不过感兴趣的话可以把光标放到一个宏调用 <code>{{{A}}}</code> 上，然后再 <code>M-: (print (org-element-context))</code> ：</p>
+<p><img src="./5.png" alt="5.png"></p>
+<p>可见我们得到了一个 plist，我们最关心的宏位于表头。 <code>:key</code> 为 <code>"a"</code> ， <code>:value</code> 为 <code>"{{{A}}}"</code> 。不过这只是最简单的情况，如果宏调用位于 keyword 或 property 环境中那么 <code>org-element-context</code> 的返回值会有所不同。 <code>org-macro-replace-all</code> 对它们进行了处理：</p>
+<pre><code class="language-elisp">;; org-macro.el line 228
+
+(macro
+ (cond
+  ((eq type 'macro) datum)
+  ;; In parsed keywords and associated node
+  ;; properties, force macro recognition.
+  ((or (and (eq type 'keyword)
+     (member (org-element-property :key datum) keywords))
+(and (eq type 'node-property)
+     (string-match-p properties-regexp
+	      (org-element-property :key datum))))
+   (save-excursion
+     (goto-char (match-beginning 0))
+     (org-element-macro-parser))))))
+</code></pre>
+<p>如果从匹配处获取的是一个宏，那么接下来会从由 <code>org-element-context</code> 获取的 datum 中获取一些信息，比如 key 和 value 值，宏调用起始位置等等。这里比较有意思的是它通过记录当前宏调用的签名来判断是否会出现宏的无限展开：</p>
+<pre><code class="language-elisp">;; org-mcaro.el line: 241
+(when macro
+  (let* ((key (org-element-property :key macro))
+  (value (org-macro-expand macro templates))
+  (begin (org-element-property :begin macro))
+  (signature (list begin
+	    macro
+	    (org-element-property :args macro))))
+    ;; Avoid circular dependencies by checking if the same
+    ;; macro with the same arguments is expanded at the
+    ;; same position twice.
+    (cond ((member signature record)
+    (error "Circular macro expansion: %s" key))
+   (value
+    (push signature record)
+    ...
+</code></pre>
+<p>真正的展开过程发生在 <code>value</code> 那一行，即 <code>(value (org-macro-expand macro templates))</code> 。这里的 <code>macro</code> 就是 <code>datum</code> ， <code>templates</code> 就是 <code>(org-macro-replace-all org-macro-templates parsed-keywords)</code> 调用的第一参数，也就是收集阶段得到的模板。 <code>org-macro-expand</code> 定义如下：</p>
+<pre><code class="language-elisp"> (defun org-macro-expand (macro templates)
+   (let ((template
+   ;; Macro names are case-insensitive.
+   (cdr (assoc-string (org-element-property :key macro) templates t))))
+     (when template
+(let* ((value
+	(if (functionp template)
+	    (apply template (org-element-property :args macro))
+	  (replace-regexp-in-string
+	   "\\$[0-9]+"
+	   (lambda (m)
+	     (or (nth (1- (string-to-number (substring m 1)))
+		      (org-element-property :args macro))
+		 ;; No argument: remove place-holder.
+		 ""))
+	   template nil 'literal))))
+  ;; Force return value to be a string.
+  (format "%s" (or value ""))))))
+</code></pre>
+<p>首先它会使用 <code>accos-string</code> 在 <code>templates</code> 里面按顺序寻找宏定义，这里还强调了一句宏名大小写不敏感。在找到模板后，如果模板是函数，那就使用宏调用的参数对该函数进行调用；如果模板是字符串（也就是一般的文本宏），那就使用正则替换，如果某个变量没有作为参数传递，那么该变量在输出字符串中就是零长字符串。</p>
+<p>如果出现宏嵌套，org-macro 的处理方式是展开到不能再展开为止。根据实现，嵌套宏的展开顺序应该是从外到内。</p>
+<p>文档中说明了可以使用宏的位置：段落，标题，VERSE 块，表格，列表，关键字，以及一些后端特定的规定。参考实现内容我们可知也能在属性中使用宏。</p>
+<p>到了这里我们就完成了对 org-macro 基本实现的介绍，org-macro 中还定义了一些辅助函数帮助我们编写函数宏，这里就不一一介绍了，我可能会在下面的例子中使用它们。</p>
+<h2 id="导出宏的使用">导出宏的使用</h2>
+<p>整个导出过程并不只有宏展开，如果我们只想知道宏展开结果的话可以从 <code>org-export-as</code> 中拆除一小块代码片段出来。不过这里我们采用更好的方法，首先 <code>(require 'ox-org)</code> ，然后在每次想要导出时使用 <code>C-c C-e O O</code> 得到导出的 org buffer。 <code>ox-org</code> 的作用是规范化作为源的 org 文件。</p>
+<p>最简单的宏应该是无参宏，类似于 C 语言的 <code>#DEFINE A 1</code> 。我们在上面也演示了它的用法。</p>
+<pre><code class="language-org">#+MACRO: hello world
+
+{{{hellO}}}
+=>
+world
+</code></pre>
+<p>稍微复杂的是带参文本宏，比如这些：</p>
+<pre><code class="language-org">#+MACRO: h how $1 are you?
+
+{{{h}}}
+{{{h()}}}
+{{{h(old)}}}
+=>
+how  are you?
+how  are you?
+how old are you?
+</code></pre>
+<p>说到带参宏我想到了 C 语言里的 <code>##</code> ，这里我们可以借助单位宏来实现：</p>
+<pre><code class="language-org">#+MACRO: hel $1b
+#+MACRO: id $1
+#+MACRO: hel2 {{{id($1)}}}1
+
+{{{hel(1)}}}
+{{{hel2(1)}}}
+=>
+1b
+11
+</code></pre>
+<p>在文本宏中似乎不太能表达空格：</p>
+<pre><code class="language-org">#+MACRO: abc a$1b$2c$3d
+
+{{{abc}}}
+{{{abc(1)}}}
+{{{abc(1 )}}}
+{{{abc( 1 )}}}
+{{{abc(  1  )}}}
+{{{abc( 1  ,)}}}
+{{{abc(1,2)}}}
+{{{abc(1, 2)}}}
+{{{abc(1, 2 )}}}
+{{{abc(1, 2 ,)}}}
+{{{abc(1, 2 ,3)}}}
+{{{abc(1, 2 , 3)}}}
+{{{abc(1, 2 , 3 )}}}
+{{{abc(1, 2 , 3 ,)}}}
+{{{abc(1,     2    , 3     ,)}}}
+=>
+abcd
+a1bcd
+a1bcd
+a1bcd
+a1bcd
+a1 bcd
+a1b2cd
+a1b 2cd
+a1b 2cd
+a1b 2 cd
+a1b 2 c3d
+a1b 2 c 3d
+a1b 2 c 3d
+a1b 2 c 3 d
+a1b 2 c 3 d
+</code></pre>
+<p>可见想要表达空格需要 <code>,</code> 分割，而且多个空格会被合并。这样以来我们也就不能在第一个参数的前面加空格了。不过这些问题都可以通过函数宏在一定程度上解决，比如去掉参数中的空格等等。</p>
+<p>我们可以使用 babel 来完成一些魔法操作：</p>
+<pre><code class="language-org"># https://stackoverflow.com/questions/22132603/define-org-mode-macro-with-line-breaks
+
+#+MACRO: newline   src_emacs-lisp[:results raw]{"\n"}
+</code></pre>
+<p>不过这属实是有点难顶…而且宏展开时还需要保证 <code>{{{</code> 前面没有非空白字符。我们可以很轻松的使用函数宏做到换行和空白：</p>
+<pre><code class="language-org">#+MACRO: newline (eval "\n")
+
+a{{{newline}}}b
+=>
+a
+b
+</code></pre>
+<p>这是一个组合宏的例子：</p>
+<pre><code class="language-org">#+MACRO: newline (eval "\n")
+#+MACRO: x a$1b
+
+{{{x({{{newline}}})}}}
+=>
+a
+b
+</code></pre>
+<p>关于宏的使用暂时就介绍这么多，我目前还没有什么使用经验，我试着能不能用它表示一些 org HTML 不导出的 tag。这样就不用写 <code>@@html:...@@</code> 了。</p>
+<p><hr></p>
+<h3 id="默认宏">默认宏</h3>
+<p>最后我们再介绍一下 org-macro 自带的 10 个宏吧。</p>
+<p><code>title, author, email, date</code> 是无参宏，表示标题，作者，邮箱和日期：</p>
+<pre><code class="language-org">#+TITLE: hello
+#+DATE: [2023-01-17 Tue 11:11]
+#+AUTHOR: include-yy
+#+EMAIL: include-yy@abc.com
+
+{{{author}}}
+{{{title}}}
+{{{email}}}
+{{{date}}}
+=>
+include-yy
+hello
+include-yy@abc.com
+[2023-01-17 Tue 11:11]
+</code></pre>
+<p><code>keyword</code> 的作用是收集当前文件中某一关键字的所有值，上面的四个宏都是使用它定义的：</p>
+<pre><code class="language-org">#+TITLE: hello
+#+DATE: [2023-01-17 Tue 11:11]
+#+AUTHOR: include-yy
+#+EMAIL: include-yy@abc.com
+
+{{{keyword(AUTHOR)}}}
+=>
+include-yy
+</code></pre>
+<p><code>time</code> 和 <code>modification-time</code> 分别是文件的导出时间和修改时间。它们都可以接受 <code>format</code> 参数。</p>
+<p><code>input-file</code> 展开为被导出文件的名字：</p>
+<pre><code class="language-org">{{{input-file}}}
+=>
+1.org
+</code></pre>
+<p><code>property</code> 接受属性名和搜索选项作为参数，它返回当前实体下的属性值，如果搜索选项指向远处的实体，则在远处实体下搜索属性选项。</p>
+<p>最后一个宏是 <code>n</code> ，它实现了一个计数器，可以展开得到计数器值，从 1 开始。无参调用返回 <code>n</code> 调用的次数，有参调用则创建名为参数的计数器。它的第二参数可以设定计数器的值，如果是 <code>-</code> 的话，则不增加：</p>
+<pre><code class="language-org">{{{n}}}{{{n}}}{{{n}}}{{{n}}}
+{{{n(add)}}}{{{n(add,-)}}}{{{n(add)}}}{{{n(add)}}}{{{n(add)}}}
+=>
+1234
+11234
+10
+</code></pre>
+<p>以上。</p>

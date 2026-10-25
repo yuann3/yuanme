@@ -1,0 +1,33 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(&format!(\"{name}.org\"), &text)"
+---
+error[org/unsupported-construct]: headlines deeper than level 5 aren't in the Org subset
+  --> outline.org:27:1
+   |
+27 | ****** Too deep
+   | ^^^^^^^^^^^^^^^
+   |
+   = help: `*` is `<h2>` and `*****` is `<h6>`, the deepest heading HTML has; make it a list item or a bold paragraph
+   = note: run `yuanme docs org/unsupported-construct` for more
+<h2 id="a-task-12">A task [1/2]</h2>
+<p>Task text.</p>
+<h3 id="sub-task">Sub task</h3>
+<p>Shown without its heading.</p>
+<h3 id="kept-child">Kept child</h3>
+<h2 id="archived">Archived</h2>
+<h2 id="a">A</h2>
+<h3 id="b">B</h3>
+<h4 id="c">C</h4>
+<h5 id="d">D</h5>
+<h6 id="e">E</h6>
+<p>Its text.</p>
+<h2 id="uses-it">Uses it</h2>
+<p>A note.<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup></p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>Defined in the footnote section. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

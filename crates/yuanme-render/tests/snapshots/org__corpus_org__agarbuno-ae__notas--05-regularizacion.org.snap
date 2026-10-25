@@ -1,0 +1,617 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<div class="NOTES">
+<p><strong>Profesor</strong>: Alfredo Garbuno Iñigo | Primavera, 2023 | Métodos de selección.<br>
+<strong>Objetivo</strong>: Detalles en métodos de selección de variables. Veremos las estrategias de regularización y penalización para ajustar modelos controlando el sesgo predictivo hacia el conjunto de entrenamiento. Utilizaremos validación cruzada para probar configuraciones y elegir la <em>mejor</em>. Hablaremos sobre reducción de dimensiones y su combinación con métodos predictivos.<br>
+<strong>Lectura recomendada</strong>: Capítulo 6 de citep:James2021. Sección 6.4 de citep:Kuhn2013. Aunque el enfoque es regresión, los principios de validación cruzada para escoger modelos penalizados son análogos en el contexto de clasificación. Puedes leer la sección 12.5 de citep:Kuhn2013.</p>
+</div>
+<h2 id="introducción">Introducción</h2>
+<p>Ya hemos visto cómo cuantificar el <code>error de generalización</code> en un proceso de
+aprendizaje. Es decir, cuantificar los <code>errores de predicción</code> sobre nuevas
+observaciones y, además, <code>cuantificar la variabilidad</code> de esta predicción. En
+esta parte estudiaremos cómo incorporar lo aprendido para <code>escoger un modelo
+sobre otro</code>.</p>
+<p>Por ejemplo, hemos visto que es natural <code>extender</code> el modelo lineal</p>
+<code class="language-math math-display">\begin{align}
+Y = \beta_0 + \beta_1 X_1 + \cdots + \beta_p X_p + \epsilon \,.
+\end{align}</code>
+<p>Veremos (mas adelante) la idea de incorporar relaciones <code>no lineales</code> manteniendo el supuesto de <code>aditividad</code>.</p>
+<p>Incluso aunque el modelo lineal es sencillo, tiene sus ventajas pues nos ayuda a tener un modelo <code>interpretable</code> y al mismo tiempo con buena <code>capacidad predictiva</code>.</p>
+<div class="NOTES">
+<p>El libro de citet:Kuhn2013 tiene una buena discusión sobre las ventajas algorítmicas de un modelo lineal. Usualmente en la práctica queremos tener nuestro modelo en un ambiente productivo. Lo cual necesita que las predicciones sean fácilmente calculables. ¿Qué pasaría si en la plataforma de Netflix o Amazon se tarda mucho en aparecer las sugerencias? Los modelos lineales son fácilmente calculables en prácticamente cualquier ambiente productivo.</p>
+</div>
+<p>Estudiaremos estrategias para mejorar modelos lineales a través de procedimientos alternativos de ajuste.</p>
+<h3 id="opciones-para-ajustar-modelos">Opciones para ajustar modelos</h3>
+<ul>
+<li>Basados en <code>precisión de ajuste</code>, ideal cuando <code class="language-math math-inline">p > n</code> con el objetivo de <em>reducir</em> varianza.</li>
+<li>Basados en <code>interpretabilidad</code>. Por ejemplo, eliminar variables que no tengan capacidad predictiva.</li>
+</ul>
+<h2 id="estrategias-de-selección-de-variables">Estrategias de selección de variables</h2>
+<ul>
+<li>Selección por subconjuntos.</li>
+<li>Reducción de coeficientes (regularización).</li>
+<li>Reducción de dimensiones.</li>
+</ul>
+<p><code class="language-math math-inline">\newpage</code></p>
+<h3 id="selección-por-subconjuntos">Selección por subconjuntos</h3>
+<p>El mecanismo sería el siguiente.</p>
+<ol>
+<li>Utilizar el <code>modelo nulo</code> <code class="language-math math-inline">\mathcal{M}_0</code> (sin predictores).</li>
+<li>Para <code class="language-math math-inline">{\color{orange} k} = 1, \ldots, p</code>:
+<ol>
+<li>Ajustar todos modelos posibles con <code class="language-math math-inline">{\color{orange} k}</code> predictores.</li>
+<li>Elegir el <em>mejor</em> de esa colección de modelos, le pondremos <code class="language-math math-inline">\mathcal{M}_{\color{orange} k}</code>.</li>
+</ol>
+</li>
+<li>Elegir el mejor modelo dentro de la colección <code class="language-math math-inline">\mathcal{M}_0, \ldots, \mathcal{M}_p</code> utilizando un <code>criterio de comparación de modelos</code>.</li>
+</ol>
+<h4 id="para-pensar">Para pensar:</h4>
+<p>¿Por qué no puedes utilizar el criterio de <code>RSS</code> para escoger entre las opciones <code class="language-math math-inline">\mathcal{M}_1, \ldots, \mathcal{M}_p</code>?</p>
+<h3 id="en-el-contexto-de-clasificación">En el contexto de clasificación</h3>
+<p>La <code>devianza</code> –el negativo de dos veces la log-verosimilitud– se utiliza como
+una métrica de bondad de ajuste (como el <code>RSS</code>) para una clase mas amplia de modelos.</p>
+<h3 id="selección-iterativa">Selección iterativa</h3>
+<p>Podemos elegir empezar con el modelo mas sencillo e ir incorporando una variable
+a la vez mas predictores.  En cada paso podemos evaluar la <code>mejora adicional</code> de
+haber incorporado estas nuevas características.</p>
+<h3 id="pseudo-código-selección-hacia-adelante">Pseudo-código (selección hacia adelante)</h3>
+<p>El proceso sería el siguiente.</p>
+<ol>
+<li>Denotamos por <code class="language-math math-inline">\mathcal{M}_0</code> el modelo <code>nulo</code>.</li>
+<li>Para <code class="language-math math-inline">{\color{orange} k} = 0, \ldots, p -1</code>:
+<ol>
+<li>Considera todos los <code class="language-math math-inline">p-{\color{orange} k}</code> modelos que aumentan el modelo en la iteración anterior <code class="language-math math-inline">\mathcal{M}_{\color{orange} k}</code> con un predictor adicional.</li>
+<li>Escoge el <code>mejor</code> de estos <code class="language-math math-inline">p-{\color{orange}  k}</code> modelos y llámale <code class="language-math math-inline">\mathcal{M}_{{\color{orange}  k}+1}</code> .</li>
+</ol>
+</li>
+<li>Escoge el mejor de los modelos entre <code class="language-math math-inline">\mathcal{M}_0, \ldots, \mathcal{M}_{p}</code> utilizando un criterio de comparación de modelos.</li>
+</ol>
+<h3 id="aplicación-créditos">Aplicación: créditos</h3>
+<figure>
+<figcaption>Muestra de datos del conjunto <code>Credit</code>.</figcaption>
+<pre><code class="language-org"># A tibble: 400 × 10
+  Income Limit Rating Cards   Age Education Gender Student Married Balance
+   &#x3C;dbl> &#x3C;int>  &#x3C;int> &#x3C;int> &#x3C;int>     &#x3C;int> &#x3C;fct>  &#x3C;fct>   &#x3C;fct>     &#x3C;int>
+1   14.9  3606    283     2    34        11 Male   No      Yes         333
+2  106.   6645    483     3    82        15 Female Yes     Yes         903
+3  105.   7075    514     4    71        11 Male   No      No          580
+4  149.   9504    681     3    36        11 Female No      No          964
+5   55.9  4897    357     2    68        16 Male   No      Yes         331
+# … with 395 more rows
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+</figure>
+<p>El objetivo es predecir <code>Saldo</code> utilizando las demás características. El ejemplo de citep:James2021 ha implementado la búsqueda por subconjuntos y la búsqueda iterativa hacia adelante. Estos son los mejores modelos encontrados.</p>
+<figure>
+<img src="images/20220302-170205_screenshot.png" alt="20220302-170205_screenshot.png" width="700" align="center">
+<figcaption>Método de selección para los datos de créditos. Tomada de citep:James2021.</figcaption>
+</figure>
+<div class="NOTES">
+<p>Nota que el mecanismo iterativo no tiene garantía de encontrar el mejor modelo dentro de las <code class="language-math math-inline">{p \choose k}</code> posibilidades.</p>
+</div>
+<figure>
+<figcaption>Métricas de bondad de ajuste para los datos de <code>Credit</code>.</figcaption>
+<pre><code class="language-org"># A tibble: 2 × 6
+  estrategia  sigma r.squared adj.r.squared   AIC deviance
+  &#x3C;chr>       &#x3C;dbl>     &#x3C;dbl>         &#x3C;dbl> &#x3C;dbl>    &#x3C;dbl>
+1 subconjunto  99.6     0.954         0.953 4823. 3915058.
+2 adelante    101.      0.952         0.952 4835. 4032502.
+</code></pre>
+</figure>
+<h4 id="para-pensar-1">Para pensar:</h4>
+<p>¿Cuántos modelos en total se ajustan con el procedimiento de búsqueda iterativa hacia adelante? Considera <code class="language-math math-inline">p = 20</code>.</p>
+<h3 id="selección-iterativa-hacia-atrás">Selección iterativa hacia atrás</h3>
+<p>Empezamos con el <code>modelo completo</code> que contenga los <code class="language-math math-inline">p</code> predictores. Eliminando variables, una a la vez, cuando un predictor no sea tan útil. La única restricción que necesitamos es que <code class="language-math math-inline">n>p</code> .</p>
+<h2 id="métricas-de-desempeño">Métricas de desempeño</h2>
+<p>Si utilizáramos el <code>RSS</code>  para comparar entre <code class="language-math math-inline">\mathcal{M}_0, \ldots, \mathcal{M}_k</code> tendríamos un problema pues eliminar (aumentar) predictores siempre perjudicaría (beneficia) la capacidad predictiva del modelo. Necesitamos <code>compensar</code> por el sesgo de sobre-ajuste. Es decir, considerar una métrica que pueda estimar el error de <code>generalización</code>.</p>
+<h3 id="c_p-de-mallow"><code class="language-math math-inline">C_p</code> de Mallow</h3>
+<p>Es un criterio de bondad de ajuste (<code>menor mejor</code>) definida como</p>
+<code class="language-math math-display">\begin{align}
+C_p(\mathcal{M}_d) = \frac1n \left( \mathsf{RSS}(d)  + 2 d \hat \sigma^2\right)\,.
+\end{align}</code>
+<div class="NOTES">
+<p>Tenemos una penalización a la suma de residuales al cuadrado (<code>RSS</code>) que considera un aumento en predictores utilizados.</p>
+</div>
+<h3 id="el-criterio-de-información-de-akaike-aic">El criterio de información de Akaike (AIC)</h3>
+<p>Se utiliza para evaluar modelos ajustados por máxima verosimilitud (<code>menor mejor</code>)</p>
+<code class="language-math math-display">\begin{align}
+\mathsf{AIC}(\mathcal{M}_d) = - 2\log L + 2 d \hat{\sigma}^2\,.
+\end{align}</code>
+<h4 id="ejercicio">Ejercicio:</h4>
+<p>Prueba que en el caso del modelo lineal con errores Gaussianos el criterio de mínimos cuadrados y máxima verosimilitud es el mismo. Además los criterios <code class="language-math math-inline">C_p</code> y <code class="language-math math-inline">\mathsf{AIC}</code> son lo mismo.</p>
+<h3 id="r2-ajustada"><code class="language-math math-inline">R^2</code> ajustada</h3>
+<p>Se calcula como</p>
+<code class="language-math math-display">\begin{align}
+R^2_A(\mathcal{M}_d) = 1 - \frac{\mathsf{RSS}/(n - d - 1)}{\mathsf{TSS}/(n-1)}\,.
+\end{align}</code>
+<p>Es una métrica de correlación entre predicción ($<code class="language-math math-inline">\hat</code> y$) y respuesta ($y$)
+(<code>mayor mejor</code>). Al contrario de la <code class="language-math math-inline">R^2</code> tradicional esta métrica si se afecta
+por la inclusión de variables inecesarias/redundantes.</p>
+<h3 id="objetivo">Objetivo</h3>
+<p>Cada uno de los procedimientos de selección de variables regresa una secuencia de modelos <code class="language-math math-inline">\mathcal{M}_k</code>. Lo que queremos es escoger la <code class="language-math math-inline">k^\star</code> de acuerdo al <code>error de generalización</code>. El error de generalización obtenido por <code>validación cruzada</code>  tiene la ventaja de no hacer la estimación de <code class="language-math math-inline">\sigma^2</code>.</p>
+<div class="NOTES">
+<p>Estimar <code class="language-math math-inline">\sigma^2</code> es una tarea complicada. Implica, bajo el modelo de regresión, estimar el mejor modelo y encontrar la precisión de la familia de modelos que estamos utilizando.</p>
+</div>
+<h4 id="selección-de-modelo-datos-de-crédito">Selección de modelo: Datos de crédito</h4>
+<p>El objetivo es predecir el <code>Saldo</code> en términos de los demás predictores. Se seleccionarán las variables de acuerdo a un proceso iterativo. En este caso por <code>búsqueda hacia adelante</code>.</p>
+<p><code>Funciones a utilizar</code>:</p>
+<figure>
+<figcaption>Separación de muestras</figcaption>
+<pre><code class="language-R">train &#x3C;- analysis(split)
+valid &#x3C;- assessment(split)
+</code></pre>
+</figure>
+<figure>
+<figcaption>Ajuste de modelos <code>esquina</code>.</figcaption>
+<pre><code class="language-R">modelo.nulo     &#x3C;- lm(Balance ~ 1, train)
+modelo.completo &#x3C;- lm(Balance ~ ., train)
+</code></pre>
+</figure>
+<figure>
+<figcaption>Instrucción de ajuste iterativo.</figcaption>
+<pre><code class="language-R">adelante &#x3C;- step(modelo.nulo,
+                 direction='forward',
+                 scope=formula(modelo.completo),
+                 trace=0)
+predictores &#x3C;- attributes(adelante$terms)$term.labels
+</code></pre>
+</figure>
+<figure>
+<img src="../images/errror-validacion-cruzada-swf.jpeg" alt="errror-validacion-cruzada-swf.jpeg">
+<figcaption>Error de generalización estimado por validación cruzada con <code class="language-math math-inline">K=10</code>. Para los datos de <code>Credit</code>.</figcaption>
+</figure>
+<p>Escogemos el modelo con el error mas pequeño. Sin embargo, validación cruzada nos puede dar una métrica de incertidumbre (¿cuál?). ¿Y si el problema de decisión lo planteamos como una prueba de hipótesis?</p>
+<h3 id="el-método-de-un-error-estándar">El método de <code>un error estándar</code></h3>
+<ol>
+<li>
+<p>Se estima la función de pérdida generalizada parametrizada por los hiper-parámetros.</p>
+<code class="language-math math-display">   \begin{align}
+  \mathsf{CV}_{(K)}(\lambda) = \frac1K  \sum_{k=1}^{K} \mathsf{MSE}_k (\lambda)\,.
+   \end{align} </code>
+</li>
+<li>
+<p>Se localiza el valor de los hiper-parámetros que minimicen dicha función de pérdida.</p>
+<code class="language-math math-display">   \begin{align}
+   \hat{\lambda} = \arg \min_{\lambda \in \Lambda}   \mathsf{CV}_{(K)}(\lambda)\,.
+   \end{align}  </code>
+</li>
+<li>
+<p>Se escoge el modelo mas sencillo que se encuentre a un error estándar.</p>
+<code class="language-math math-display">   \begin{align}
+   \hat{\lambda}^\star \text{ tal que }    \mathsf{CV}_{(K)}(\lambda) \leq  \mathsf{CV}_{(K)}(\hat{\lambda}) + \mathsf{SE}\left(   \mathsf{CV}_{(K)}(\hat{\lambda}) \right)\,.
+   \end{align}</code>
+</li>
+</ol>
+<figure>
+<img src="images/20230222-114417_screenshot.png" alt="20230222-114417_screenshot.png" width="700" align="center">
+<figcaption>Imagen tomada de las notas del curso ofrecido en <a href="https://www.cs.cmu.edu/">CMU</a>.</figcaption>
+</figure>
+<h2 id="regularización">Regularización</h2>
+<p>Los procedimientos <code>selección de variables discretos/iterativos</code> pueden generar una <code>varianza</code> muy alta en las estimaciones del error y podría no reducir el error de predicción del modelo completo. Estudiaremos dos métodos de regularización, <code>Ridge</code> y <code>LASSO</code>, donde ajustamos un modelo con todas las características <em>penalizando</em> de alguna manera la complejidad del modelo.</p>
+<h3 id="regresión-ridge">Regresión <em>Ridge</em></h3>
+<p>Nuestra formulación anterior consideraba encontrar <code class="language-math math-inline">\beta_0, \beta_1, \ldots, \beta_n</code> minimizando</p>
+<code class="language-math math-display">\begin{align}
+\mathsf{RSS} = \sum_{i = 1}^{n}\left(  y_i - \beta_0 - \sum_{j= 1}^{p}\beta_jx_j\right)^2\,.
+\end{align}</code>
+<p>Lo que haremos ahora será incorporar un <code>término de penalización</code> en la función objetivo</p>
+<code class="language-math math-display">\begin{align}
+\mathsf{RSS} + \lambda \sum_{j=1}^{p} \beta_j^2\,,
+\end{align}</code>
+<p>donde <code class="language-math math-inline">\lambda \geq0</code>  es un <code>hiper-parámetro</code>.</p>
+<p>El objetivo sigue siendo el mismo, ajustar el modelo lo mejor posible. El término adicional favorece soluciones con <code class="language-math math-inline">\beta_1, \ldots, \beta_p</code> pequeños.
+El parámetro <code class="language-math math-inline">\lambda</code> controla qué tanto <code>penalizamos</code> el <em>tamaño</em> de los coeficientes.</p>
+<h4 id="para-pensar-2">Para pensar:</h4>
+<p>Un valor muy pequeño para <code class="language-math math-inline">\lambda</code> implica una penalización <code>pequeña</code>, por lo tanto la solución tenderá a ser un modelo <code>altamente flexible</code>. Por otro lado un valor de <code class="language-math math-inline">\lambda</code>  grande implica una penalización <code>fuerte</code>. Esto se traduce en un solución <code>poco flexible</code>.</p>
+<p>¿Por qué la regresión Ridge mejora las estimaciones en contraste con mínimos cuadrados?<br>
+<code>R</code>: La descomposición en sesgo-varianza.</p>
+<p>La regularización disminuye la varianza de las estimaciones, ¿por qué?</p>
+<figure>
+<img src="images/20230228-084300_screenshot.png" alt="20230228-084300_screenshot.png" width="1200" align="center">
+<figcaption>Sesgo (negro), varianza (verde) y error predictivo fuera de muestra (morado).</figcaption>
+</figure>
+<h3 id="ridge-datos-de-crédito">Ridge: datos de crédito</h3>
+<p>Usaremos Ridge como mecanismo de reducción de coeficientes para ajustar modelos parsimoniosos.</p>
+<figure>
+<img src="../images/ridge-credit.jpeg" alt="ridge-credit.jpeg">
+<figcaption>Trayectorias de los coeficientes al aumentar la penalización <code class="language-math math-inline">\lambda</code>.</figcaption>
+</figure>
+<p>Observa que conforme <code>aumenta la penalización</code> los <code>coeficientes disminuyen</code> gradualmente.</p>
+<div class="NOTES">
+<p>Al penalizar sobre los coeficientes necesitamos que todos <em>platiquen</em> en el mismo idioma. Es por esto que tenemos que estandarizar los predictores. Si queremos estimar el error de generalización métodos de separación de muestras, ¿en qué momento lo hacemos? Es decir, ¿antes de separar los datos o en cada paso del proceso de ajuste?</p>
+</div>
+<figure>
+<img src="../images/ridge-cv-credit.jpeg" alt="ridge-cv-credit.jpeg">
+<figcaption>Error de validación calculada con <code class="language-math math-inline">K=10</code>. Nota que graficamos contra <code class="language-math math-inline">1/\lambda</code>.</figcaption>
+</figure>
+<p>Con validación cruzada podemos identificar qué valor de <code class="language-math math-inline">\lambda</code> es el adecuado para penalizar. Una vez realizada esta elección, re-entrenamos el modelo utilizando <code>todo</code> el conjunto de datos para predecir situaciones/observaciones futuras.</p>
+<h4 id="implementación-con-tidymodels">Implementación con <code>tidymodels</code>:</h4>
+<p>Primero tenemos que realizar un <em>split</em> de los datos en entrenamiento y prueba.</p>
+<pre><code class="language-R">data_split &#x3C;- initial_split(data)
+data_train &#x3C;- training(data_split)
+data_test &#x3C;- testing(data_split)
+</code></pre>
+<p>Tenemos que especificar el modelo.</p>
+<pre><code class="language-R">ridge_spec &#x3C;- linear_reg(penalty = tune(), mixture = 0) |>
+    set_engine(engine = "glmnet")
+
+ridge_spec
+</code></pre>
+<pre><code class="language-org">Linear Regression Model Specification (regression)
+
+Main Arguments:
+  penalty = tune()
+  mixture = 0
+
+Computational engine: glmnet
+</code></pre>
+<p>Con el modelo especificado podemos definir el proceso de pre-preocesamiento a través de un <code>recipe</code>.</p>
+<figure>
+<figcaption>Definir el pre-procesamiento con <a href="https://recipes.tidymodels.org/"><code>recipes</code></a>.</figcaption>
+<pre><code class="language-R">## Defino el pre-procesamiento
+ridge_recipe &#x3C;- recipe(Balance ~ .,  data = data_train) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_predictors()) 
+
+  ridge_recipe
+</code></pre>
+</figure>
+<pre><code class="language-org">Recipe
+
+Inputs:
+
+      role #variables
+   outcome          1
+ predictor          9
+
+Operations:
+
+Dummy variables from all_nominal_predictors()
+Centering and scaling for all_predictors()
+</code></pre>
+<pre><code class="language-R">ridge_workflow &#x3C;- workflow() |>
+  add_recipe(ridge_recipe) |> 
+  add_model(ridge_spec)
+
+ridge_workflow
+</code></pre>
+<pre><code class="language-org">══ Workflow ══════════════════════════════════════════════════════════════════════════════════════
+Preprocessor: Recipe
+Model: linear_reg()
+
+── Preprocessor ──────────────────────────────────────────────────────────────────────────────────
+2 Recipe Steps
+
+• step_dummy()
+• step_normalize()
+
+── Model ─────────────────────────────────────────────────────────────────────────────────────────
+Linear Regression Model Specification (regression)
+
+Main Arguments:
+  penalty = tune()
+  mixture = 0
+
+Computational engine: glmnet
+</code></pre>
+<p>Definimos la partición de los datos para realizar una estimación del error de generalización.</p>
+<pre><code class="language-R">data_folds &#x3C;- vfold_cv(data_train, v = 10)
+data_folds |> print(n = 5)
+</code></pre>
+<pre><code class="language-org">#  10-fold cross-validation 
+# A tibble: 10 × 2
+  splits           id    
+  &#x3C;list>           &#x3C;chr> 
+1 &#x3C;split [270/30]> Fold01
+2 &#x3C;split [270/30]> Fold02
+3 &#x3C;split [270/30]> Fold03
+4 &#x3C;split [270/30]> Fold04
+5 &#x3C;split [270/30]> Fold05
+# … with 5 more rows
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+<p>Definimos el espacio de búsqueda de <code class="language-math math-inline">\lambda</code></p>
+<pre><code class="language-R">penalty_grid &#x3C;- grid_regular(penalty(range = c(-3, 5)), levels = 50)
+penalty_grid |> print(n = 5)
+</code></pre>
+<pre><code class="language-org"># A tibble: 50 × 1
+  penalty
+    &#x3C;dbl>
+1 0.001  
+2 0.00146
+3 0.00212
+4 0.00309
+5 0.00450
+# … with 45 more rows
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+<p>Usamos la partición de los datos en bloques para ajustar múltiples modelos con distintos conjuntos de entrenamiento y sus respectivas métricas de generalización</p>
+<pre><code class="language-R">tune_res &#x3C;- tune_grid(
+  ridge_workflow,
+  resamples = data_folds,
+  metrics = metric_set(rmse),
+  grid = penalty_grid
+)
+tune_res |> print(n = 5)
+</code></pre>
+<pre><code class="language-org"># Tuning results
+# 10-fold cross-validation 
+# A tibble: 10 × 4
+  splits           id     .metrics           .notes          
+  &#x3C;list>           &#x3C;chr>  &#x3C;list>             &#x3C;list>          
+1 &#x3C;split [270/30]> Fold01 &#x3C;tibble [100 × 5]> &#x3C;tibble [0 × 3]>
+2 &#x3C;split [270/30]> Fold02 &#x3C;tibble [100 × 5]> &#x3C;tibble [0 × 3]>
+3 &#x3C;split [270/30]> Fold03 &#x3C;tibble [100 × 5]> &#x3C;tibble [0 × 3]>
+4 &#x3C;split [270/30]> Fold04 &#x3C;tibble [100 × 5]> &#x3C;tibble [0 × 3]>
+5 &#x3C;split [270/30]> Fold05 &#x3C;tibble [100 × 5]> &#x3C;tibble [0 × 3]>
+# … with 5 more rows
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+<pre><code class="language-R">tune_res |> unnest(.metrics) |> print(n = 5)
+</code></pre>
+<pre><code class="language-org"># A tibble: 1,000 × 8
+  splits           id     penalty .metric .estimator .estimate .config  .notes  
+  &#x3C;list>           &#x3C;chr>    &#x3C;dbl> &#x3C;chr>   &#x3C;chr>          &#x3C;dbl> &#x3C;chr>    &#x3C;list>  
+1 &#x3C;split [270/30]> Fold01 0.001   rmse    standard        131. Preproc… &#x3C;tibble>
+2 &#x3C;split [270/30]> Fold01 0.00146 rmse    standard        131. Preproc… &#x3C;tibble>
+3 &#x3C;split [270/30]> Fold01 0.00212 rmse    standard        131. Preproc… &#x3C;tibble>
+4 &#x3C;split [270/30]> Fold01 0.00309 rmse    standard        131. Preproc… &#x3C;tibble>
+5 &#x3C;split [270/30]> Fold01 0.00450 rmse    standard        131. Preproc… &#x3C;tibble>
+# … with 995 more rows
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+<pre><code class="language-R">collect_metrics(tune_res) |> print(n = 5)
+</code></pre>
+<pre><code class="language-org"># A tibble: 100 × 7
+  penalty .metric .estimator    mean     n std_err .config              
+    &#x3C;dbl> &#x3C;chr>   &#x3C;chr>        &#x3C;dbl> &#x3C;int>   &#x3C;dbl> &#x3C;chr>                
+1 0.001   rmse    standard   122.       10 3.87    Preprocessor1_Model01
+2 0.001   rsq     standard     0.937    10 0.00575 Preprocessor1_Model01
+3 0.00146 rmse    standard   122.       10 3.87    Preprocessor1_Model02
+4 0.00146 rsq     standard     0.937    10 0.00575 Preprocessor1_Model02
+5 0.00212 rmse    standard   122.       10 3.87    Preprocessor1_Model03
+# … with 95 more rows
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+<p><img src="../images/cv-ridge-tidy.jpeg" alt="cv-ridge-tidy.jpeg"></p>
+<pre><code class="language-R">best_penalty &#x3C;- select_best(tune_res, metric = "rmse")
+best_penalty
+</code></pre>
+<pre><code class="language-org"># A tibble: 1 × 2
+  penalty .config              
+    &#x3C;dbl> &#x3C;chr>                
+1   0.001 Preprocessor1_Model01
+</code></pre>
+<p>Podemos seleccionar el mejor modelo regularizado</p>
+<pre><code class="language-R">ridge_final &#x3C;- finalize_workflow(ridge_workflow, best_penalty)
+ridge_final_fit &#x3C;- fit(ridge_final, data = data_train)
+</code></pre>
+<p>y obtener su capacidad predictiva en el conjunto de prueba para reportar</p>
+<pre><code class="language-R">augment(ridge_final_fit, new_data = data_test) |>
+  rmse(truth = Balance, estimate = .pred)
+</code></pre>
+<pre><code class="language-org"># A tibble: 1 × 3
+  .metric .estimator .estimate
+  &#x3C;chr>   &#x3C;chr>          &#x3C;dbl>
+1 rmse    standard        111.
+</code></pre>
+<h3 id="regresión-lasso">Regresión <em>LASSO</em></h3>
+<p>En la práctica Ridge no elimina completamente los predictores. Podemos cambiar la penalización para incorporar un <code>término de penalización</code> en la función objetivo</p>
+<code class="language-math math-display">\begin{align}
+\mathsf{RSS} + \lambda \sum_{j=1}^{p} |\beta_j|\,,
+\end{align}</code>
+<p>donde <code class="language-math math-inline">\lambda \geq0</code>  es un <code>hiper-parámetro</code>.</p>
+<p>Igual que antes… el objetivo sigue siendo el mismo, ajustar el modelo lo mejor
+posible. El término adicional favorece soluciones con <code class="language-math math-inline">\beta_1, \ldots, \beta_p</code>
+pequeños.  El parámetro <code class="language-math math-inline">\lambda</code> controla qué tanto penalizamos el <em>tamaño</em> de
+los coeficientes.</p>
+<h3 id="lasso-datos-de-crédito">LASSO: datos de crédito</h3>
+<figure>
+<img src="../images/lasso-credit.jpeg" alt="lasso-credit.jpeg">
+<figcaption>Trayectorias de los coeficientes al aumentar la penalización <code class="language-math math-inline">\lambda</code>.</figcaption>
+</figure>
+<p>Observa que LASSO tiene la propiedad de eliminar completamente los predictores
+($β = 0$) por lo que es un mecanismo de <code>selección automática de variables</code>.</p>
+<figure>
+<img src="../images/lasso-cv-credit.jpeg" alt="lasso-cv-credit.jpeg">
+<figcaption>Error de validación calculada con <code class="language-math math-inline">K=10</code>. Nota que graficamos contra <code class="language-math math-inline">1/\lambda</code>.</figcaption>
+</figure>
+<h3 id="comparación-ridge-v-lasso">Comparación: Ridge v. LASSO</h3>
+<p>El problema de optimización (Ridge) se puede reescribir de la siguiente manera</p>
+<code class="language-math math-display">\begin{align}
+\text{minimizar } \mathsf{RSS}, \qquad \text{ sujeto a}   \sum_{j=1}^{p} \beta_j^2 \leq s\,,
+\end{align}</code>
+<p>y el respectivo de LASSO</p>
+<code class="language-math math-display">\begin{align}
+\text{minimizar } \mathsf{RSS}, \qquad \text{ sujeto a}   \sum_{j=1}^{p} |\beta_j| \leq s\,.
+\end{align}</code>
+<figure>
+<img src="images/20220304-125828_screenshot.png" alt="20220304-125828_screenshot.png" width="700" align="center">
+<figcaption>Curvas de nivel de los problemas de optimización: LASSO (izquierda) y Ridge (derecha). Tomada de citep:James2021.</figcaption>
+</figure>
+<h2 id="aplicación-rating-de-espisodios">Aplicación: <em>Rating</em> de espisodios</h2>
+<p>Queremos predecir las calificaciones en <code>IMDB</code> de los episodios de <em>The
+Office</em>. Utilizaremos información que hay sobre el <em>rating</em> y sobre los episodios
+(actores, directores, escritores y diálogo). Ejemplo tomado de <a href="https://juliasilge.com/blog/lasso-the-office/">aqui</a>.</p>
+<p>Veamos la participación de cada personaje en los episodios</p>
+<pre><code class="language-org"># A tibble: 185 × 16
+  episode_name   Andy Angela Darryl Dwight   Jim Kelly Kevin Michael Oscar   Pam
+  &#x3C;chr>         &#x3C;int>  &#x3C;int>  &#x3C;int>  &#x3C;int> &#x3C;int> &#x3C;int> &#x3C;int>   &#x3C;int> &#x3C;int> &#x3C;int>
+1 a benihana c…    28     37      3     61    44     5    14     108     1    57
+2 aarm             44     39     30     87    89     0    30       0    28    34
+3 after hours      20     11     14     60    55     8     4       0    10    15
+4 alliance          0      7      0     47    49     0     3      68    14    22
+5 angry y          53      7      5     16    19    13     9       0     7    29
+# … with 180 more rows, and 5 more variables: Phyllis &#x3C;int>, Ryan &#x3C;int>,
+#   Toby &#x3C;int>, Erin &#x3C;int>, Jan &#x3C;int>
+# ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+</code></pre>
+<p>También veamos al equipo creativo detrás de cada episodio.</p>
+<pre><code class="language-org"># A tibble: 135 × 14
+  episode_name  Ken Kw…¹ Greg …² B.J. …³ Paul …⁴ Mindy…⁵ Paul …⁶ Gene …⁷ Lee E…⁸
+  &#x3C;chr>            &#x3C;dbl>   &#x3C;dbl>   &#x3C;dbl>   &#x3C;dbl>   &#x3C;dbl>   &#x3C;dbl>   &#x3C;dbl>   &#x3C;dbl>
+1 pilot                1       1       0       0       0       0       0       0
+2 diversity day        1       0       1       0       0       0       0       0
+3 health care          0       0       0       1       0       0       0       0
+4 basketball           0       1       0       0       0       0       0       0
+5 hot girl             0       0       0       0       1       0       0       0
+# … with 130 more rows, 5 more variables: `Jennifer Celotta` &#x3C;dbl>,
+#   `Randall Einhorn` &#x3C;dbl>, `Brent Forrester` &#x3C;dbl>, `Jeffrey Blitz` &#x3C;dbl>,
+#   `Justin Spitzer` &#x3C;dbl>, and abbreviated variable names ¹​`Ken Kwapis`,
+#   ²​`Greg Daniels`, ³​`B.J. Novak`, ⁴​`Paul Lieberstein`, ⁵​`Mindy Kaling`,
+#   ⁶​`Paul Feig`, ⁷​`Gene Stupnitsky`, ⁸​`Lee Eisenberg`
+# ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+</code></pre>
+<p>Juntamos toda la información en un sólo conjunto de datos.</p>
+<pre><code class="language-org">Joining, by = "episode_name"
+Joining, by = "episode_name"
+Joining, by = "episode_name"
+# A tibble: 136 × 32
+  season episode episode_…¹  andy angela darryl dwight   jim kelly kevin michael
+   &#x3C;dbl>   &#x3C;dbl> &#x3C;chr>      &#x3C;int>  &#x3C;int>  &#x3C;int>  &#x3C;int> &#x3C;int> &#x3C;int> &#x3C;int>   &#x3C;int>
+1      1       1 pilot          0      1      0     29    36     0     1      81
+2      1       2 diversity…     0      4      0     17    25     2     8      75
+3      1       3 health ca…     0      5      0     62    42     0     6      56
+4      1       5 basketball     0      3     15     25    21     0     1     104
+5      1       6 hot girl       0      3      0     28    55     0     5     106
+# … with 131 more rows, 21 more variables: oscar &#x3C;int>, pam &#x3C;int>,
+#   phyllis &#x3C;int>, ryan &#x3C;int>, toby &#x3C;int>, erin &#x3C;int>, jan &#x3C;int>,
+#   ken_kwapis &#x3C;dbl>, greg_daniels &#x3C;dbl>, b_j_novak &#x3C;dbl>,
+#   paul_lieberstein &#x3C;dbl>, mindy_kaling &#x3C;dbl>, paul_feig &#x3C;dbl>,
+#   gene_stupnitsky &#x3C;dbl>, lee_eisenberg &#x3C;dbl>, jennifer_celotta &#x3C;dbl>,
+#   randall_einhorn &#x3C;dbl>, brent_forrester &#x3C;dbl>, jeffrey_blitz &#x3C;dbl>,
+#   justin_spitzer &#x3C;dbl>, imdb_rating &#x3C;dbl>, and abbreviated variable name …
+# ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+</code></pre>
+<p>Para el ajuste de un modelo hay que cuidar el proceso de exploración de datos (pueden ver el siguiente video <a href="https://www.youtube.com/watch?v=_IvAubTDQME">aqui</a>).</p>
+<p><img src="../images/the-office-eda.jpeg" alt="the-office-eda.jpeg"></p>
+<h3 id="proceso-de-entrenamiento">Proceso de entrenamiento</h3>
+<pre><code class="language-R">office_split &#x3C;- initial_split(office, strata = season)
+office_train &#x3C;- training(office_split)
+office_test &#x3C;- testing(office_split)
+</code></pre>
+<p>Preparamos un procesamiento para el entrenamiento usual.</p>
+<pre><code class="language-R">## Con mixture = 1, pedimos lasso
+tune_spec &#x3C;- linear_reg(penalty = tune(), mixture = 1) |> 
+  set_engine("glmnet") |>
+  set_mode("regression")
+
+office_rec &#x3C;- recipe(imdb_rating ~ ., data = office_train) |>
+  update_role(episode_name, new_role = "ID") |>
+  step_zv(all_numeric_predictors()) |>
+  step_normalize(all_numeric_predictors())
+
+office_prep &#x3C;- office_rec |>
+  prep(strings_as_factors = FALSE)
+</code></pre>
+<h3 id="validación-cruzada">Validación cruzada</h3>
+<pre><code class="language-R">set.seed(108727)
+office_boot &#x3C;- vfold_cv(office_train, v = 10, strata = season)
+</code></pre>
+<pre><code class="language-R">set.seed(2020)
+wf &#x3C;- workflow() |>
+  add_recipe(office_rec) |>
+  add_model(tune_spec)
+
+lasso_grid &#x3C;- wf |>
+  tune_grid(
+    resamples = office_boot,
+    grid = lambda_grid,
+    control = control_grid(verbose = FALSE)
+  )
+</code></pre>
+<pre><code class="language-R">lasso_grid |>
+  collect_metrics()
+</code></pre>
+<p><img src="../images/the-office-lasso.jpeg" alt="the-office-lasso.jpeg"></p>
+<h3 id="selección-de-modelo">Selección de modelo</h3>
+<pre><code class="language-R">lowest_rmse &#x3C;- lasso_grid |>
+  select_best("rmse")
+
+final_lasso &#x3C;- finalize_workflow(
+  wf |> add_model(tune_spec),
+  lowest_rmse
+)
+</code></pre>
+<p><img src="../images/the-office-lasso-coefs.jpeg" alt="the-office-lasso-coefs.jpeg"></p>
+<pre><code class="language-R">final_lasso |>
+  fit(office_train) |>
+  augment(new_data = office_test) |>
+  rmse(truth = imdb_rating, estimate = .pred)
+</code></pre>
+<pre><code class="language-org"># A tibble: 1 × 3
+  .metric .estimator .estimate
+  &#x3C;chr>   &#x3C;chr>          &#x3C;dbl>
+1 rmse    standard       0.482
+</code></pre>
+<h3 id="conclusiones">Conclusiones</h3>
+<p>En la práctica no hay una estrategia dominante. LASSO podría ser preferido cuando el número de parámetros es pequeño. Pero eso implica conocer <em>a priori</em> el número de predictores para usar en el modelo.</p>
+<h4 id="para-pensar-3">Para pensar:</h4>
+<p>¿cómo escogerías entre Ridge o LASSO?</p>
+<div class="NOTES">
+<p>La penalización tipo LASSO es indiferente a la selección de variables dentro de un conjunto de variables altamente correlacionadas. Ridge, por su parte, tiende a agrupar los coeficientes en valores similares. La penalización de <code>Elastic Net</code> puede lograr un compromiso entre los puntos anteriores</p>
+<code class="language-math math-display">\begin{align}
+\lambda \left[ \alpha \|\beta\|_1 + (1 - \alpha) \|\beta\|_2^2 \right]\,.
+\end{align}</code>
+<p>El segundo término logra promediar los coeficientes de atributos altamente correlacionados, mientras que el primer término se encarga de acercarlos mas a cero (una solución <em>sparse</em>).</p>
+</div>
+<p>Extender la selección de modelos a una búsqueda de varios hiper-parámetros se
+puede realizar dentro de <code>tidymodels</code> especificando los parámetros que se deben de
+ajustar en la definición del modelo y creando la <em>malla</em> adecuada de búsqueda.</p>
+<pre><code class="language-R">tune_spec &#x3C;- linear_reg(penalty = tune(), mixture = tune()) |> 
+  set_engine("glmnet") |>
+  set_mode("regression")
+</code></pre>
+<pre><code class="language-R">hyper_params &#x3C;- parameters(penalty(range = c(-5, 3)), mixture())
+hparams_grid &#x3C;- grid_regular(hyper_params, levels = 10)
+</code></pre>
+<p>Tenemos que asegurar que la especificación se actualiza para poder hacer la búsqueda.</p>
+<pre><code class="language-R">set.seed(2020)
+wf &#x3C;- workflow() |>
+  add_recipe(office_rec) |>
+  add_model(tune_spec)
+
+lasso_grid &#x3C;- wf |>
+  tune_grid(
+    resamples = office_boot,
+    grid = hparams_grid,
+    control = control_grid(verbose = FALSE)
+  )
+</code></pre>
+<p>Existen otras estrategias de búsqueda utilizando un diseño aleatorio en el espacio de hiper-parámetros.</p>
+<pre><code class="language-R">grid_max_entropy(hyper.params, size = 50)
+grid_random(hyper.params, size = 50)
+</code></pre>
+<h2 id="métodos-de-reducción-de-dimensiones">Métodos de reducción de dimensiones</h2>
+<p>LASSO o Ridge utilizan el concepto de regularización para <code>restringir</code> los modelos posibles. Una alternativa es <code>transformar</code> primero los predictores (el espacio de los predictores) y <code>ajustar</code> un modelo con ese subespacio.</p>
+<h3 id="regresión-con-reducción-de-dimensiones">Regresión con reducción de dimensiones</h3>
+<p>Denotemos por <code class="language-math math-inline">Z_1, Z_2, \ldots Z_M</code> combinaciones lineales de nuestros predictores originales. Lo escribimos como</p>
+<code class="language-math math-display">\begin{align}
+Z_m = \sum_{j = 1}^{p}\phi_{mj} X_j, \qquad m = 1, \ldots, M\,, 
+\end{align}</code>
+<p>con algunas constantes <code class="language-math math-inline">\phi_{mj}</code> (que se escogen con alguna estrategia).</p>
+<p>Podemos ajustar un modelo de regresión por medio de</p>
+<code class="language-math math-display">\begin{align}
+y_i = \theta_0 + \sum_{m = 1}^{M}\theta_m z_{im} + \epsilon_i\,,
+\end{align}</code>
+<p>utilizando mínimos cuadrados.</p>
+<p>Nota que podemos rescribir</p>
+<code class="language-math math-display">\begin{align}
+\sum_{m = 1}^{M} \theta_m z_{im} = \sum_{m= 1}^{M} \theta_m \sum_{j = 1}^{p} \phi_{mj}x_{ij} = \sum_{j = 1}^{p}  \beta_j x_{ij}\,,
+\end{align}</code>
+<p>donde</p>
+<code class="language-math math-display">\begin{align}
+\beta_j = \sum_{m=1}^{M} \theta_m \phi_{mj}\,.
+\end{align}</code>
+<div class="NOTES">
+<p>El modelo restringe automáticamente las <code class="language-math math-inline">\beta_j</code> pues tienen que tomar una forma muy particular. Si las <code class="language-math math-inline">\phi_{mj}</code> se escogen bien, incluso pueden realizar un mejor trabajo que el modelo de mínimos cuadrados en las variables originales.</p>
+</div>
+<h3 id="otros-métodos-de-reducción-de-dimensiones">Otros métodos de reducción de dimensiones</h3>
+<ul>
+<li>Utilizar componentes principales (<code>varianza máxima</code> entre <code>predictores</code>).</li>
+<li>Utilizar <em>partial least squares</em> (<code>varianza máxima</code> entre <code>predictores y respuesta</code>).</li>
+<li>Utilizar <em>least angle regression</em> (trayectoria de <code>contribución lineal predictiva</code> de atributos).</li>
+</ul>
+<p>bibliographystyle:abbrvnat
+bibliography:references.bib</p>

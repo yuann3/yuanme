@@ -1,0 +1,63 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="新手与专家思维区别">新手与专家思维区别</h2>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-11-26_3_screenshot.png" alt="16-11-26_3_screenshot.png"></p>
+<p>》》从总体出发</p>
+<h2 id="stage-1-novice">Stage 1: Novice</h2>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-17-14_3_screenshot.png" alt="16-17-14_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-13-55_3_screenshot.png" alt="16-13-55_3_screenshot.png"></p>
+<h3 id="特点">特点</h3>
+<blockquote>
+<p>Novices don’t particularly want to<br>
+learn; they just want to accomplish an immediate goal. They do<br>
+not know how to respond to mistakes and so are fairly vulnerable<br>
+to confusion when things go awry.</p>
+</blockquote>
+<h2 id="stage-2-improved-beginner">Stage 2: Improved Beginner</h2>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-16-33_3_screenshot.png" alt="16-16-33_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-18-25_3_screenshot.png" alt="16-18-25_3_screenshot.png"></p>
+<h2 id="stage-3-competent">Stage 3: Competent</h2>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-19-13_3_screenshot.png" alt="16-19-13_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-19-39_3_screenshot.png" alt="16-19-39_3_screenshot.png"></p>
+<h2 id="stage-4-proficient">Stage 4: Proficient</h2>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-20-18_3_screenshot.png" alt="16-20-18_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-20-58_3_screenshot.png" alt="16-20-58_3_screenshot.png"></p>
+<h2 id="stage-5-expert">Stage 5: Expert</h2>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-29-52_3_screenshot.png" alt="16-29-52_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-21-41_3_screenshot.png" alt="16-21-41_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-22-15_3_screenshot.png" alt="16-22-15_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-30-41_3_screenshot.png" alt="16-30-41_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-32-38_3_screenshot.png" alt="16-32-38_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-33-13_3_screenshot.png" alt="16-33-13_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-33-55_3_screenshot.png" alt="16-33-55_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-34-47_3_screenshot.png" alt="16-34-47_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-35-23_3_screenshot.png" alt="16-35-23_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-36-05_3_screenshot.png" alt="16-36-05_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-36-50_3_screenshot.png" alt="16-36-50_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-37-16_3_screenshot.png" alt="16-37-16_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-40-47_3_screenshot.png" alt="16-40-47_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-50-36_3_screenshot.png" alt="16-50-36_3_screenshot.png"></p>
+<blockquote>
+<p>Software isn’t designed in an IDE or other tool. It’s imagined and<br>
+created in our heads.</p>
+</blockquote>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-51-31_3_screenshot.png" alt="16-51-31_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-51-58_3_screenshot.png" alt="16-51-58_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-53-39_3_screenshot.png" alt="16-53-39_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-54-06_3_screenshot.png" alt="16-54-06_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-54-28_3_screenshot.png" alt="16-54-28_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-54-51_3_screenshot.png" alt="16-54-51_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-54-58_3_screenshot.png" alt="16-54-58_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-56-28_3_screenshot.png" alt="16-56-28_3_screenshot.png"></p>
+<blockquote>
+<p>“I was only following orders” did not work in WWII,<br>
+it did not work for the nursing profession, and it does not work in<br>
+software development.</p>
+</blockquote>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-57-33_3_screenshot.png" alt="16-57-33_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/16-59-05_3_screenshot.png" alt="16-59-05_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/17-00-31_3_screenshot.png" alt="17-00-31_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/17-00-58_3_screenshot.png" alt="17-00-58_3_screenshot.png"></p>
+<p><img src="https://gcore.jsdelivr.net/gh/zhangxingong/blog@main/static/img/17-01-25_3_screenshot.png" alt="17-01-25_3_screenshot.png"></p>

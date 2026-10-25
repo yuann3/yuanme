@@ -1,0 +1,2 @@
+#+OPTIONS: ^:t toc:nil
+snake_case and a^2 are scripts here.

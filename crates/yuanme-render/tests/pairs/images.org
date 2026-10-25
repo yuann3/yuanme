@@ -1,0 +1,6 @@
+[[file:a.png]]
+
+#+ATTR_HTML: :alt A cat
+[[file:cat.png]]
+
+Before [[./b.png]] after.

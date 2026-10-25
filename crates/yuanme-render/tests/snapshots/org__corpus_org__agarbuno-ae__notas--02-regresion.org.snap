@@ -1,0 +1,429 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<div class="NOTES">
+<p><strong>Profesor</strong>: Alfredo Garbuno Iñigo | Primavera, 2023 | Regresión lineal.<br>
+<strong>Objetivo</strong>. Repasaremos los conceptos de regresión lineal desde un punto de vista de inferencia. Haremos conexiones interesantes con conceptos clave en probabilidad y teoria de la información. Veremos métricas de desempeño para modelos de regresión. Nos llevará a cuestionar el modelo bajo el enfoque de predicción.<br>
+<strong>Lectura recomendada</strong>: Capítulo 3 de citet:James2021.</p>
+</div>
+<h2 id="introducción">Introducción</h2>
+<p>Aproximamos <code class="language-math math-inline">f(X)</code> como una combinación lineal de las entradas.</p>
+<h3 id="datos-de-marketing">Datos de <em>marketing</em></h3>
+<p>¿Qué preguntas serían las que nos interesarían?</p>
+<p><img src="../images/sales.jpeg" alt="sales.jpeg"></p>
+<div class="NOTES">
+<p>¿Hay alguna relación entre datos de entrada? En especial, ¿hay alguna relación entre cuánto se le dedica al presupuesto de <em>marketing</em> y las ventas observadas? ¿Qué tipo de <em>marketing</em> contribuye mas a las ventas? ¿Qué tan precisos podemos ser con nuestras predicciones? La relación es lineal? ¿Hay algún tipo de sinergia?</p>
+</div>
+<h2 id="el-modelo-simple">El modelo simple</h2>
+<code class="language-math math-display">\begin{align}
+Y = \beta_0 + \beta_1 X + \varepsilon\,.
+\end{align}</code>
+<div class="NOTES">
+<p>Si tuvieramos un estimador <code class="language-math math-inline">\hat \beta</code>, ¿cómo podemos realizar predicciones?</p>
+</div>
+<h3 id="estimación-de-parámetros">Estimación de parámetros</h3>
+<code class="language-math math-display">\begin{align}
+\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i\,.
+\end{align}</code>
+<div class="NOTES">
+<p>Formulación de problema de optimización. Conexiones interesantes.</p>
+</div>
+<h3 id="solución">Solución</h3>
+<code class="language-math math-display">\begin{gather}
+\hat \beta_1 = \frac{\sum_{i = 1}^{n} (x_i - \bar x)(y_i - \bar y)}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\,, \\
+\hat \beta_0 = \bar y - \hat \beta_1 \bar x\,.
+\end{gather}</code>
+<figure>
+<img src="../images/residuals.jpeg" alt="residuals.jpeg">
+<figcaption>Ajuste y residuales a la recta de mínimos cuadrados.</figcaption>
+</figure>
+<div class="NOTES">
+<p>Qué deficiencia encuentras en el ajuste?</p>
+</div>
+<h3 id="precisión-en-los-estimadores">¿Precisión en los estimadores?</h3>
+<code class="language-math math-display">\begin{gather}
+\mathsf{SE}(\hat \beta_1)^2 = \frac{\sigma^2}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\,,\\
+\mathsf{SE}(\hat \beta_0)^2 = \sigma^2 \left[ \frac{1}{n} + \frac{\bar x^2}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\right]\,.
+\end{gather}</code>
+<div class="NOTES">
+<p>¿A qué se debe esta variabilidad? Se pueden construir <strong>intervalos de confianza</strong>.</p>
+</div>
+<figure>
+<figcaption>Resumen del modelo.</figcaption>
+<pre><code class="language-R">model |> 
+      summary()
+</code></pre>
+</figure>
+<figure>
+<figcaption>Resumen del modelo (<em>tidy</em>).</figcaption>
+<pre><code class="language-R">model |>
+  broom::tidy() 
+</code></pre>
+</figure>
+<pre><code class="language-R">genera_datos &#x3C;- function(id){
+  a &#x3C;- 1; b &#x3C;- 0; n &#x3C;- 100
+  tibble(x = runif(n, -1, 1),
+         y = a * x + b + rnorm(n, sd = 1))
+}
+ajusta_modelo &#x3C;- function(datos){
+  modelo &#x3C;- lm(y ~ x, datos)
+  modelo
+}
+</code></pre>
+<pre><code class="language-R">simulacion &#x3C;-  tibble(id = seq(1, 10)) |>
+    mutate(datos  = map(id, genera_datos),
+           modelo = map(datos, ajusta_modelo),
+           ajuste = map(modelo, broom::tidy))
+</code></pre>
+<figure>
+<img src="../images/incertidumbre.jpeg" alt="incertidumbre.jpeg">
+<figcaption>Simulación de ajuste (variación en datos).</figcaption>
+</figure>
+<h3 id="prueba-de-hipótesis">Prueba de hipótesis</h3>
+<code class="language-math math-display">\begin{align}
+H_0&#x26;: \qquad \text{ No hay relación entre } X \text{ y } Y\,,\\
+H_1&#x26;: \qquad \text{ Existe una hay relación entre } X \text{ y } Y\,.
+\end{align}</code>
+<div class="NOTES">
+<p>La prueba de hipótesis se efectúa en el contexto del modelo que estamos proponiendo.</p>
+</div>
+<h3 id="el-valor-p">El valor-<code class="language-math math-inline">p</code></h3>
+<code class="language-math math-display">\begin{align}
+t = \frac{\hat \beta_1 - 0}{\textsf{SE}(\hat \beta_1)}, \qquad \text{ distribución } t_{n  - 2}\,.
+\end{align}</code>
+<h3 id="midiendo-la-precisión-del-modelo">Midiendo la precisión del modelo</h3>
+<code class="language-math math-display">\begin{align}
+\textsf{RSE} = \sqrt{\frac{1}{n-2} \textsf{RSS}}\,.
+\end{align}</code>
+<div class="NOTES">
+<code class="language-math math-display">\begin{align*}
+\textsf{RSS} =\sum_{i = 1}^{n}(y_i - \hat y_i)^2\,.
+\end{align*}</code>
+<p>Es una métrica usual de ajuste. Nos dice qué tan precisos podemos ser al calcular una nueva predicción. Tiene sentido cuando comparamos con las unidades de la variable respuesta. Es decir, no es una métrica absoluta.</p>
+</div>
+<code class="language-math math-display">\begin{align}
+R^2 = \frac{\textsf{TSS} - \textsf{RSS}}{\textsf{TSS}}\,.
+\end{align}</code>
+<div class="NOTES">
+<code class="language-math math-display">\begin{align*}
+\textsf{TSS} = \sum_{i = 1}^{n}(y_i - \bar y)^2\,.
+\end{align*}</code>
+<p>Hay que tener cuidado pues la <code class="language-math math-inline">R^2</code> es una métrica de correlación lineal, no de ajuste. Esto lo podemos ver en el caso sencillo de una variable respuesta y un modelo lineal. También está sujeta a la variación de la respuesta. Depende la aplicación para determinar cuándo tenemos un buen coeficiente de variación explicada.</p>
+</div>
+<h2 id="el-modelo-multivariado">El modelo multivariado</h2>
+<code class="language-math math-display">\begin{align}
+Y = \beta_0 + \beta_1 X_1 + \cdots + \beta_p X_p + \varepsilon\,.
+\end{align}</code>
+<div class="NOTES">
+<p>Cuando tenemos multiples predictores nos gustaría poder entender la relación de cada uno con la respuesta. ¿Ajustaríamos un modelo independiente con sólo un predictor?</p>
+</div>
+<h3 id="interpretación">Interpretación</h3>
+<code class="language-math math-display">\begin{align}
+\mathsf{sales} = \beta_0 + \beta_1 \times \mathsf{TV} + \beta_2 \times \mathsf{radio} + \beta_3 \times\mathsf{newspaper} + \varepsilon\,.
+\end{align}</code>
+<div class="NOTES">
+<p>El modelo de regresión lineal usualmente se interpreta como los efectos
+(¿promedio, esperados?) de cada variable al mantener todas las demás
+<em>constantes</em>. Hay problemas cuando hay correlación entre predictores. Cuidado con
+datos observacionales.</p>
+</div>
+<h3 id="estimación">Estimación</h3>
+<pre><code class="language-R">model &#x3C;- lm(sales ~ ., data)
+</code></pre>
+<pre><code class="language-R">model |>
+  broom::tidy() 
+</code></pre>
+<pre><code class="language-org">         term estimate std.error statistic p.value
+1 (Intercept)    2.939    0.3119      9.42 1.3e-17
+2          TV    0.046    0.0014     32.81 1.5e-81
+3       radio    0.189    0.0086     21.89 1.5e-54
+4   newspaper   -0.001    0.0059     -0.18 8.6e-01
+</code></pre>
+<div class="NOTES">
+<p>Desarollo de verosimilitud.</p>
+</div>
+<h3 id="existe-una-relación-entre-la-respuesta-y-los-predictores">¿Existe una relación entre la respuesta y los predictores?</h3>
+<p>Nos preguntamos si es que existe alguna <code class="language-math math-inline">\beta_j \neq 0</code> .</p>
+<code class="language-math math-display">\begin{align}
+F = \frac{(\mathsf{TSS} - \mathsf{RSS})/p}{\mathsf{RSS}/(n - p -1)} \sim F_{p, n-p-1}\,.
+\end{align}</code>
+<div class="NOTES">
+<p>La prueba de hipótesis que formularíamos sería probar contra alguna <code class="language-math math-inline">\beta_j \neq 0</code> . Se puede probar que si el supuesto del modelo lineal es correcto y bajo la hipótesis nula el cociente será cercano a 1. En caso de que la hipótesis <code>alternativa</code> sea cierta entonces <code class="language-math math-inline">F > 1</code>.</p>
+</div>
+<figure>
+<figcaption>Resumen global del modelo (<em>tidy</em>).</figcaption>
+<pre><code class="language-R">model |>
+  broom::glance() |>
+  select(statistic, p.value, df, df.residual)
+</code></pre>
+</figure>
+<pre><code class="language-org">  statistic p.value df
+1       570 1.6e-96  3
+</code></pre>
+<ul>
+<li>¿Por qué tenemos que evaluar en conjunto?</li>
+</ul>
+<div class="NOTES">
+<p>¿Qué pasa en el caso con 100 predictores donde no hay relación?</p>
+</div>
+<h3 id="cuáles-son-los-predictores-importantes">¿Cuáles son los predictores importantes?</h3>
+<p>Métodos de selección.</p>
+<div class="NOTES">
+<p>La idea mas ingenua es ajustar todas las posibles combinaciones. Pero se pueden
+construir modelos de manera secuencial . Usualmente ajustando y comparando con
+respecto a <em>alguna métrica</em>. Mas adelante lo estudiaremos.</p>
+</div>
+<h3 id="qué-tan-bien-ajusta-el-modelo">¿Qué tan bien ajusta el modelo?</h3>
+<p>Podemos usar las métricas típicas como el <code class="language-math math-inline">\mathsf{RSE}</code> o la <code class="language-math math-inline">R^2</code>.</p>
+<div class="NOTES">
+<p></p>
+<p><code class="language-math math-inline">R^2</code>: Agregar predictores siempre ayuda (en datos de entrenamiento).</p>
+<p><code class="language-math math-inline">\mathsf{RSE}</code>: Podemos tener problemas pues mientras mas variables agregemos si el cambio en residuales es pequeño en relación al aumento de <code class="language-math math-inline">p</code>.</p>
+</div>
+<h3 id="cómo-predecimos-y-que-tan-precisa-es-nuestra-predicción">¿Cómo predecimos y que tan precisa es nuestra predicción?</h3>
+<div class="NOTES">
+<p>Podemos utilizar <code>intervalos confianza</code>. Mejor aún, podemos utilizar <code>intervalos de predicción</code>.</p>
+</div>
+<h2 id="extensiones">Extensiones</h2>
+<h3 id="predictores-cualitativos">Predictores cualitativos</h3>
+<div class="NOTES">
+<p>Modelo con respuestas binarias (1D). ¿Qué tal que tenemos mas categorias?</p>
+</div>
+<h3 id="interacciones">Interacciones</h3>
+<p>Eliminar el <code>supuesto aditivo</code>: <em>interacciones</em> y <em>no-linealidad</em>.</p>
+<figure>
+<figcaption>Ajuste de modelos sin/con interacciones.</figcaption>
+<pre><code class="language-R">model.1 &#x3C;- lm(sales ~ TV + radio, data)
+model.2 &#x3C;- lm(sales ~ TV + radio + TV:radio, data)
+</code></pre>
+</figure>
+<pre><code class="language-R">tibble(modelo = list(model.1, model.2),
+       tipo   = c("lineal", "interaccion")) |>
+  mutate(resultados = map(modelo, broom::tidy)) |>
+  select(-modelo) |>
+  unnest(resultados) |>
+  select(tipo, term, estimate, p.value) 
+</code></pre>
+<figure>
+<figcaption>Resúmenes sobre los coeficientes.</figcaption>
+<pre><code class="language-org">         tipo        term estimate p.value
+1      lineal (Intercept)   2.9211 4.6e-19
+2      lineal          TV   0.0458 5.4e-82
+3      lineal       radio   0.1880 9.8e-59
+4 interaccion (Intercept)   6.7502 1.5e-68
+5 interaccion          TV   0.0191 2.4e-27
+6 interaccion       radio   0.0289 1.4e-03
+7 interaccion    TV:radio   0.0011 2.8e-51
+</code></pre>
+</figure>
+<pre><code class="language-R">tibble(modelo = list(model.1, model.2)) |>
+  mutate(resultados = map(modelo, broom::glance)) |>
+  select(-modelo)|>
+  unnest(resultados) |>
+  select(r.squared, sigma, AIC, deviance) 
+</code></pre>
+<figure>
+<figcaption>Resúmenes globales de los modelos.</figcaption>
+<pre><code class="language-org">  r.squared sigma AIC deviance
+1      0.90  1.68 780      557
+2      0.97  0.94 550      174
+</code></pre>
+</figure>
+<div class="NOTES">
+<p>El efecto de incrementar el presupuesto en un canal de ventas puede aumentar la efectividad de otro.</p>
+</div>
+<h3 id="jerarquías">Jerarquías</h3>
+<p>¿Qué pasa cuando un valor-<code class="language-math math-inline">p</code> de una interacción es pequeño, pero de los términos individuales no?</p>
+<h3 id="interacciones-y-modelos-múltiples">Interacciones y modelos múltiples</h3>
+<figure>
+<img src="../images/students.jpeg" alt="students.jpeg">
+<figcaption>Ajuste con interacción cualitativa y cuantitativa.</figcaption>
+</figure>
+<h3 id="problemas-con-supuestos">Problemas con supuestos.</h3>
+<ul>
+<li>No hay una relación lineal.</li>
+<li>Los errores están correlacionados.</li>
+<li>No hay varianza constante.</li>
+<li>Valores atípicos.</li>
+<li>Multicolinealidad.</li>
+<li>Puntos ancla.</li>
+</ul>
+<h2 id="generalizaciones">Generalizaciones</h2>
+<ul>
+<li>Problemas de clasificación (siguiente).</li>
+<li>No-linealidad.</li>
+<li>Interacciones.</li>
+<li>Regularización.</li>
+</ul>
+<h2 id="aplicación-predicción-de-asistencia-en-partidos-de-football">Aplicación: Predicción de asistencia en partidos de <em>football</em></h2>
+<p>Tomado de esta <a href="https://juliasilge.com/blog/intro-tidymodels/">liga</a> y es un buen ejemplo de lo que se puede empezar a hacer con <a href="https://www.tidymodels.org/">tidymodels</a> citep:Kuhn2022.</p>
+<pre><code class="language-R">library(tidyverse)
+base_url &#x3C;- "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-02-04/"
+
+attendance &#x3C;- read_csv(paste(base_url, "attendance.csv", sep = ""),
+                       progress = FALSE, show_col_types = FALSE)
+standings &#x3C;- read_csv(paste(base_url, "standings.csv", sep = ""),
+                      progress = FALSE, show_col_types = FALSE)
+
+attendance_joined &#x3C;- attendance |>
+  left_join(standings, by = c("year", "team_name", "team"))
+attendance_joined
+</code></pre>
+<pre><code class="language-org"># A tibble: 10,846 × 20
+   team    team_n…¹  year  total   home   away  week weekl…²  wins  loss point…³
+   &#x3C;chr>   &#x3C;chr>    &#x3C;dbl>  &#x3C;dbl>  &#x3C;dbl>  &#x3C;dbl> &#x3C;dbl>   &#x3C;dbl> &#x3C;dbl> &#x3C;dbl>   &#x3C;dbl>
+ 1 Arizona Cardina…  2000 893926 387475 506451     1   77434     3    13     210
+ 2 Arizona Cardina…  2000 893926 387475 506451     2   66009     3    13     210
+ 3 Arizona Cardina…  2000 893926 387475 506451     3      NA     3    13     210
+ 4 Arizona Cardina…  2000 893926 387475 506451     4   71801     3    13     210
+ 5 Arizona Cardina…  2000 893926 387475 506451     5   66985     3    13     210
+ 6 Arizona Cardina…  2000 893926 387475 506451     6   44296     3    13     210
+ 7 Arizona Cardina…  2000 893926 387475 506451     7   38293     3    13     210
+ 8 Arizona Cardina…  2000 893926 387475 506451     8   62981     3    13     210
+ 9 Arizona Cardina…  2000 893926 387475 506451     9   35286     3    13     210
+10 Arizona Cardina…  2000 893926 387475 506451    10   52244     3    13     210
+# … with 10,836 more rows, 9 more variables: points_against &#x3C;dbl>,
+#   points_differential &#x3C;dbl>, margin_of_victory &#x3C;dbl>,
+#   strength_of_schedule &#x3C;dbl>, simple_rating &#x3C;dbl>, offensive_ranking &#x3C;dbl>,
+#   defensive_ranking &#x3C;dbl>, playoffs &#x3C;chr>, sb_winner &#x3C;chr>, and abbreviated
+#   variable names ¹​team_name, ²​weekly_attendance, ³​points_for
+# ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+</code></pre>
+<figure>
+<img src="../images/nfl-attendance.jpeg" alt="nfl-attendance.jpeg">
+<figcaption>Asistencia en estadios por equipo.</figcaption>
+</figure>
+<figure>
+<img src="../images/nfl-margin-victory.jpeg" alt="nfl-margin-victory.jpeg">
+<figcaption>Diferencia de puntos en partidos ganados.</figcaption>
+</figure>
+<figure>
+<img src="../images/nfl-attendance-week.jpeg" alt="nfl-attendance-week.jpeg">
+<figcaption>Asistencia a lo largo de la temporada.</figcaption>
+</figure>
+<pre><code class="language-R">  attendance_df &#x3C;- attendance_joined |>
+  filter(!is.na(weekly_attendance)) |>
+  select(
+    weekly_attendance, team_name, year, week,
+    margin_of_victory, strength_of_schedule, playoffs
+  )
+
+attendance_df
+</code></pre>
+<pre><code class="language-org"># A tibble: 10,208 × 7
+   weekly_attendance team_name  year  week margin_of_victory strength_…¹ playo…²
+               &#x3C;dbl> &#x3C;chr>     &#x3C;dbl> &#x3C;dbl>             &#x3C;dbl>       &#x3C;dbl> &#x3C;chr>  
+ 1             77434 Cardinals  2000     1             -14.6        -0.7 No Pla…
+ 2             66009 Cardinals  2000     2             -14.6        -0.7 No Pla…
+ 3             71801 Cardinals  2000     4             -14.6        -0.7 No Pla…
+ 4             66985 Cardinals  2000     5             -14.6        -0.7 No Pla…
+ 5             44296 Cardinals  2000     6             -14.6        -0.7 No Pla…
+ 6             38293 Cardinals  2000     7             -14.6        -0.7 No Pla…
+ 7             62981 Cardinals  2000     8             -14.6        -0.7 No Pla…
+ 8             35286 Cardinals  2000     9             -14.6        -0.7 No Pla…
+ 9             52244 Cardinals  2000    10             -14.6        -0.7 No Pla…
+10             64223 Cardinals  2000    11             -14.6        -0.7 No Pla…
+# … with 10,198 more rows, and abbreviated variable names
+#   ¹​strength_of_schedule, ²​playoffs
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+<pre><code class="language-R">library(tidymodels)
+
+set.seed(108727)
+attendance_split &#x3C;- attendance_df |>
+  initial_split(strata = playoffs)
+
+nfl_train &#x3C;- training(attendance_split)
+nfl_test &#x3C;- testing(attendance_split)
+</code></pre>
+<pre><code class="language-R">lm_spec &#x3C;- linear_reg() |>
+  set_engine(engine = "lm")
+
+lm_spec
+</code></pre>
+<pre><code class="language-org">Linear Regression Model Specification (regression)
+
+Computational engine: lm
+</code></pre>
+<pre><code class="language-R">lm_fit &#x3C;- lm_spec |>
+  fit(weekly_attendance ~ .,
+      data = nfl_train
+      )
+
+lm_fit |> broom::tidy()
+</code></pre>
+<pre><code class="language-org"># A tibble: 37 × 5
+   term                estimate std.error statistic  p.value
+   &#x3C;chr>                  &#x3C;dbl>     &#x3C;dbl>     &#x3C;dbl>    &#x3C;dbl>
+ 1 (Intercept)         -79125.     33598.   -2.36   1.85e- 2
+ 2 team_nameBears       -2613.       767.   -3.41   6.64e- 4
+ 3 team_nameBengals     -4757.       771.   -6.17   7.08e-10
+ 4 team_nameBills         106.       766.    0.138  8.90e- 1
+ 5 team_nameBroncos      2889.       775.    3.73   1.93e- 4
+ 6 team_nameBrowns        -21.6      775.   -0.0278 9.78e- 1
+ 7 team_nameBuccaneers  -2796.       752.   -3.72   2.04e- 4
+ 8 team_nameCardinals   -5905.       767.   -7.70   1.53e-14
+ 9 team_nameChargers    -5098.       774.   -6.59   4.76e-11
+10 team_nameChiefs       1802.       763.    2.36   1.83e- 2
+# … with 27 more rows
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+<pre><code class="language-R">lm_fit |> broom::tidy(conf.int = TRUE)
+</code></pre>
+<pre><code class="language-org"># A tibble: 37 × 7
+   term                estimate std.error statistic  p.value conf.low conf.high
+   &#x3C;chr>                  &#x3C;dbl>     &#x3C;dbl>     &#x3C;dbl>    &#x3C;dbl>    &#x3C;dbl>     &#x3C;dbl>
+ 1 (Intercept)         -79125.     33598.   -2.36   1.85e- 2 -144985.   -13264.
+ 2 team_nameBears       -2613.       767.   -3.41   6.64e- 4   -4117.    -1109.
+ 3 team_nameBengals     -4757.       771.   -6.17   7.08e-10   -6268.    -3246.
+ 4 team_nameBills         106.       766.    0.138  8.90e- 1   -1396.     1608.
+ 5 team_nameBroncos      2889.       775.    3.73   1.93e- 4    1371.     4408.
+ 6 team_nameBrowns        -21.6      775.   -0.0278 9.78e- 1   -1541.     1498.
+ 7 team_nameBuccaneers  -2796.       752.   -3.72   2.04e- 4   -4271.    -1321.
+ 8 team_nameCardinals   -5905.       767.   -7.70   1.53e-14   -7408.    -4401.
+ 9 team_nameChargers    -5098.       774.   -6.59   4.76e-11   -6615.    -3581.
+10 team_nameChiefs       1802.       763.    2.36   1.83e- 2     306.     3298.
+# … with 27 more rows
+# ℹ Use `print(n = ...)` to see more rows
+</code></pre>
+<pre><code class="language-R">lm_fit |> broom::glance()
+</code></pre>
+<pre><code class="language-org"># A tibble: 1 × 12
+  r.squared adj.r.…¹ sigma stati…²   p.value    df  logLik    AIC    BIC devia…³
+      &#x3C;dbl>    &#x3C;dbl> &#x3C;dbl>   &#x3C;dbl>     &#x3C;dbl> &#x3C;dbl>   &#x3C;dbl>  &#x3C;dbl>  &#x3C;dbl>   &#x3C;dbl>
+1     0.152    0.148 8379.    38.1 7.30e-242    36 -80005. 1.60e5 1.60e5 5.35e11
+# … with 2 more variables: df.residual &#x3C;int>, nobs &#x3C;int>, and abbreviated
+#   variable names ¹​adj.r.squared, ²​statistic, ³​deviance
+# ℹ Use `colnames()` to see all variable names
+</code></pre>
+<pre><code class="language-R">results_train &#x3C;- lm_fit |>
+  predict(new_data = nfl_train) |>
+  mutate(truth = nfl_train$weekly_attendance,
+         model = "lm")
+results_train |>
+  rmse(truth = truth, estimate = .pred)
+</code></pre>
+<pre><code class="language-org"># A tibble: 1 × 3
+  .metric .estimator .estimate
+  &#x3C;chr>   &#x3C;chr>          &#x3C;dbl>
+1 rmse    standard       8358.
+</code></pre>
+<pre><code class="language-R">results_test &#x3C;- lm_fit |>
+  predict(new_data = nfl_test) |>
+  mutate(truth = nfl_test$weekly_attendance,
+         model = "lm")
+results_test |>
+  rmse(truth = truth, estimate = .pred)
+</code></pre>
+<pre><code class="language-org"># A tibble: 1 × 3
+  .metric .estimator .estimate
+  &#x3C;chr>   &#x3C;chr>          &#x3C;dbl>
+1 rmse    standard       8192.
+</code></pre>
+<figure>
+<img src="../images/nfl-linear-performance.jpeg" alt="nfl-linear-performance.jpeg">
+<figcaption>Comparativo de predicciones contra valores reales.</figcaption>
+</figure>
+<p>bibliographystyle:abbrvnat
+bibliography:references.bib</p>

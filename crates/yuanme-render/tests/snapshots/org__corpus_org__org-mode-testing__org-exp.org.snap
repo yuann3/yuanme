@@ -1,0 +1,10 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="stripping-commas-from-within-blocks-on-export">stripping commas from within blocks on export</h2>
+<p>The following commas should not be removed.</p>
+<pre><code class="language-r">a &#x3C;- c(1
+       , 2
+       , 3)
+</code></pre>

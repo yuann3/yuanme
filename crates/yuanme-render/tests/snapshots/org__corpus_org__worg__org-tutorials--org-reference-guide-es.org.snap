@@ -1,0 +1,338 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="tabla-de-contenido">Tabla de Contenido</h2>
+<p>[TABLE-OF-CONTENTS]</p>
+<h2 id="introducción">Introducción</h2>
+<p>Esta guía de referencia no pretende ser completa ni abarcar todas las posibilidades de este fantástico modo para Emacs. Sin embargo, ¿quién lo diría? tal vez en un futuro, gracias a muchos colaboradores, las cosas sean distintas y esta guía abarque mucho más.</p>
+<p>Por el momento, me concentraré en escribir una guía para las personas que quieren aprender. Iba a decir “principiantes”, pero la verdad nunca me cayó bien esa palabra con lo que evitaré usarla así como también sus sinónimos.</p>
+<p>Como podrás ver, tampoco me concentraré en hacerla en un lenguaje demasiado formal. De hecho, todo lo contrario, seré informal cual si estuviese hablando con un compañer@ o con un amig@.</p>
+<p>Espero que esta guía te guste, te sirva mucho en este fascinante mundo y la encuentres entretenida. ¿Y por qué no? ¡hasta podría ser que me quieras ayudar a mejorarla!</p>
+<p>Saludos Cordiales.</p>
+<h2 id="primero-lo-primero">Primero lo Primero</h2>
+<blockquote>
+<p>¡Todo es texto!</p>
+</blockquote>
+<p>Seguro estás sobre una hermosa computadora, con Emacs iniciado y te estás preguntando ¿y ahora qué?</p>
+<p>Primero, vas a sentir un escalofríos cuando ves que está todo(¡sí todo!) en inglés. Dirás “esto no es lo mío” o “esto es difícil”. Pues <strong>no</strong>, no te sientas intimidado. Lo mismo dije ¡y mirame!, con un par de canas verdes que otra ¡ahora uso Emacs para todo! (lo de las canas es un asunto meramente genético y no tiene nada que ver con Emacs).</p>
+<h3 id="las-teclas">Las Teclas</h3>
+<p>Bien, antes que nada te comentaré acerca de <em>las teclas</em>. Ya habrás visto en muchas páginas que hablan de Emacs que dicen “presioná M-x algo para hacer esto… ”, “presioná ‘M-x calendario’ para saber en que día estás”, etc. ¿Y qué es M-x? a eso vamos:</p>
+<p>Las teclas especiales, en cada computadora, pueden llamarse diferente: en algunos se llaman “Alt”, Alternate, Alternar, en otros es un símbolo, ¡en otros ni siquiera hay una tecla “Alt”! Por eso se inventó la convención de llamar a la tecla Alt (o simbolito) como “Meta”. Por eso, la “M” de “M-x” es de Meta-x.
+Bien, ¿y si no tengo una tecla “Alt”? se usa la tecla Escape. De forma que M-x es Escape-x. Algo bueno de la tecla Escape es que puedes presionarla y soltarla, no hace falta presionar Escape y x juntos.</p>
+<p>Otra tecla es la “Ctrl” o mejor conocida por Control. Esta tecla se representa por “C”, de forma que “C-x” es Control-x.</p>
+<p>Hay una cosita más: ¿cuándo presionar a la vez y cuándo presionar una después de otra?. Sí, Emacs tiene accesos de teclados que se presionan varias teclas en secuencia.
+Por ejemplo: <code>C-x 8_a</code> escribe el símbolo “ª”.</p>
+<p>No es difícil de leer:</p>
+<ul>
+<li>Si tiene un guión, se presionan a la vez. <code>C-x</code> es Control con la tecla <code>x</code> a la vez.</li>
+<li>Si están juntas, es en secuencia. <code>8_a</code> es <code>8</code>, luego <code>_</code>, luego <code>a</code>.</li>
+</ul>
+<p>¡Hey! ¡Tranquilo! Tipea despacio y con tranquilidad que Emacs te espera. Primero presioná <code>C-x</code>, luego con todo el tiempo del mundo <code>8</code>, <code>_</code> y finalmente <code>a</code>.</p>
+<h4 id="referencias">Referencias</h4>
+<dl>
+<dt>M</dt>
+<dd>Escape(podés presionar y soltar), Alt, Alternate o una tecla similar.</dd>
+<dt>S</dt>
+<dd>Shift o Mayúsculas.</dd>
+<dt>C</dt>
+<dd>Control, Ctrl o similar.</dd>
+<dt>ESC</dt>
+<dd>Lo mismo que <code>M</code></dd>
+<dt>RET</dt>
+<dd>Enter, Return, Retorno de Carro, etc.</dd>
+<dt>SPC</dt>
+<dd>Espacio.</dd>
+<dt>TAB</dt>
+<dd>Tabulador.</dd>
+</dl>
+<h3 id="qué-es-org">¿Qué es Org?</h3>
+<h2 id="escribir-en-modo-org">Escribir en Modo Org</h2>
+<h3 id="encabezados-y-títulos">Encabezados y Títulos</h3>
+<dl>
+<dt>Primer encabezado</dt>
+<dd>Comenzar  la línea con un asterisco.</dd>
+<dt>Segundo encabezado</dt>
+<dd>Comenzar la línea con dos asteriscos.</dd>
+<dt>Tercer encabezado</dt>
+<dd>Comenzar la línea con tres asteriscos.</dd>
+</dl>
+<p>Y  así sucesivamente.</p>
+<h4 id="ejemplo">Ejemplo</h4>
+<pre><code class="language-org">* Mi Primer Encabezado
+,  Aquí va el texto.     
+** Mi Segundo Encabezado 
+,   ¡Hola mundo!
+* Otro Primer Encabezado
+,  Un texto para probar Org.
+** Segundo Encabezado Otra Vez
+*** Tercer Encabezado
+,    Mi tercer encabezado
+**** ¡Cuarto!
+,     ¡Agrega tantos encabezados como quieras!
+</code></pre>
+<h4 id="teclas">Teclas</h4>
+<p>Todas las teclas funcionan cuando el cursor está sobre el título. No lo intentes en otro lugar porque ¡tendrás un resultado desastroso o te decepcionaras!</p>
+<dl>
+<dt>M-→</dt>
+<dd>Aumentar la prioridad del título (de título tres a título dos, y así sucesivamente)</dd>
+<dt>M-←</dt>
+<dd>Disminuir la prioridad del título (de título uno a título dos, y así sucesivamente)</dd>
+<dt>Tabulador</dt>
+<dd>Ocultar/mostrar el contenido del título. ¡El texto no se borró!</dd>
+<dt>M-↑</dt>
+<dd>Subir el título y ponerlo antes del título anterior. ¡El contenido también se sube!</dd>
+<dt>M-↓</dt>
+<dd>Bajar el título y ponerlo después del título siguiente. ¡El contenido también se baja!</dd>
+</dl>
+<h3 id="estilos-de-fuentes">Estilos de Fuentes</h3>
+<dl>
+<dt>Negrita</dt>
+<dd>Se encierran las palabras entre asteriscos: <code>*una frase en negrita*</code></dd>
+<dt>Cursiva</dt>
+<dd>Se encierran las palabras entre barras inclinadas: <code>/una frase en cursiva/</code></dd>
+<dt>Subrayado</dt>
+<dd>Se encierran las palabras entre guiones bajos: <code>_una frase subrayada_</code></dd>
+<dt>Tachado</dt>
+<dd>Se encierran las palabras entre símbolos de suma: <code>+una frase tachada+</code></dd>
+<dt>Código Fuente</dt>
+<dd>Se encierran las palabras entre símbolos de igualdad: <code>=una frase en código fuente=</code></dd>
+<dt>Verbatim</dt>
+<dd>Se encierran las palabras entre tildes: <code>\~una frase en verbatim\~</code></dd>
+</dl>
+<h4 id="ejemplo-1">Ejemplo</h4>
+<pre><code class="language-org">,Escribo acerca de *una frase en negrita* que está antes /de una en cursiva/. Tenga en cuenta que el _subrayado se hace con_ guiones bajos.
+
+,Si desea tachar alguna cosa +con símbolos de suma+ puede hacerlo fácilmente. 
+
+,Una variable o el nombre de una función puede escribirlo con símbolos de igual, por ejemplo: la variable =emacs-version= posee la versión de su Emacs.
+
+,Para decir cómo escribir algo, puede usar verbatim: para escribir una +frase cualquiera+ tachada debe hacerlo así: ~una +frase cualquiera+ tachada~. 
+
+</code></pre>
+<p>Escribo acerca de <strong>una frase en negrita</strong> que está antes <em>de una en cursiva</em>. Tenga en cuenta que el <span class="underline">subrayado se hace con</span> guiones bajos.</p>
+<p>Si desea tachar alguna cosa <del>con símbolos de suma</del> puede hacerlo fácilmente.</p>
+<p>Una variable o el nombre de una función puede escribirlo con símbolos de igual, por ejemplo: la variable <code>emacs-version</code> posee la versión de su Emacs.</p>
+<p>Para decir cómo escribir algo, puede usar verbatim: para escribir una <del>frase cualquiera</del> tachada debe hacerlo así: <code>una +frase cualquiera+ tachada</code>.</p>
+<h3 id="notas-al-pié-de-página">Notas al Pié de Página</h3>
+<h4 id="notas-con-nombre">Notas con Nombre</h4>
+<p>Siendo <code>NOMBRE</code> un número o un nombre con el cual hacer referencia a la nota:</p>
+<ol>
+<li>Escribir <code>[fn:NOMBRE]</code> en el lugar que desees agregar la referencia. Será reemplazado por el <code>NOMBRE</code>.</li>
+<li>Escribir <code>[fn:NOMBRE]</code> en una sección aparte para escribir la nota.</li>
+</ol>
+<h5 id="ejemplo-2">Ejemplo:</h5>
+<pre><code class="language-org">,Este es un texto en el cual está escrito en modo org [fn:1]. ¡Org es fantástico!
+,.
+,.
+,.
+
+* Footnotes
+
+, [fn:1] ¡Modo Org te organiza la vida!
+</code></pre>
+<p>Este es un texto en el cual está escrito en modo org <sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>. ¡Org es fantástico!
+…</p>
+<h4 id="notas-en-línea">Notas En Línea</h4>
+<p>Estas notas se escriben directamente sobre el texto para no perder fluidez, al exportar aparecerán en una sección aparte o al pié de página.</p>
+<ul>
+<li>Escribir <code>[fn:: Texto de la nota al pié de página]</code>.</li>
+</ul>
+<h5 id="ejemplo-3">Ejemplo:</h5>
+<pre><code class="language-org">,Este es un texto en el cual está escrito en modo org [fn:: ¡Modo Org te organiza la vida!]. ¡Org es fantástico!
+</code></pre>
+<p>Este es un texto en el cual está escrito en modo org <sup><a href="#user-content-fn-anonymous.1" id="user-content-fnref-anonymous.1" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup>. ¡Org es fantástico!</p>
+<h4 id="teclas-1">Teclas</h4>
+<dl>
+<dt>C-c C-x f</dt>
+<dd>El comando “Footnote”
+<dl>
+<dt>Si el cursor está en un texto</dt>
+<dd>Crea una nueva nota.</dd>
+<dt>Si el cursor está sobre una referencia a una nota</dt>
+<dd>Saltar a la definición de la nota.</dd>
+<dt>Si el cursor está sobre la definición de la nota</dt>
+<dd>Saltar a la referencia.</dd>
+</dl>
+</dd>
+<dt>C-c C-c</dt>
+<dd>
+<dl>
+<dt>Si el cursor está sobre una referencia a una nota</dt>
+<dd>Saltar a la definición de la nota.</dd>
+<dt>Si el cursor está sobre la definición de la nota</dt>
+<dd>Saltar a la referencia.</dd>
+</dl>
+</dd>
+</dl>
+<h3 id="listas-y-enumeraciones">Listas y Enumeraciones</h3>
+<p>Existen tres tipos de listas:</p>
+<dl>
+<dt>Listas Desordenadas</dt>
+<dd>Empezar la línea con <code>-</code> o <code>+</code>. Se puede dejar espacios para indicar un orden jerárquico.</dd>
+<dt>Listas Ordenadas</dt>
+<dd>Empezar la línea con <code>1.</code> o <code>1)</code>. Se puede dejar espacios para indicar un orden jerárquico.</dd>
+<dt>Listas de Descripciones</dt>
+<dd>Empezar la línea con <code>-</code> o <code>+</code>, escribir un texto, dividir con <code>::</code> y escribir su descripción
+(<code>- texto :: descripción larga...</code>).</dd>
+</dl>
+<h4 id="ejemplo-4">Ejemplo:</h4>
+<pre><code class="language-org">,- Item 1
+,- Item 2
+,  - Sub-item 2.1
+,  - Sub-item 2.2
+,    1. Sub-sub-item 2.2.1
+,    2. Sub-sub-item 2.2.2
+,       1. Un pequeño item 2.2.2.1
+,       2. Otro 2.2.2.2
+,    3. Sub-sub-item 2.2.3
+,  - Sub-item 2.3
+,- Item 3
+,  - Item 3.1 :: Describiendo item 3.1.
+,  - Item 3.2 :: Describiendo item 3.2
+,    - Item 3.2.1 :: Describiento item 3.2.1
+
+</code></pre>
+<ul>
+<li>Item 1</li>
+<li>Item 2
+<ul>
+<li>Sub-item 2.1</li>
+<li>Sub-item 2.2
+<ol>
+<li>Sub-sub-item 2.2.1</li>
+<li>Sub-sub-item 2.2.2
+<ol>
+<li>Un pequeño item 2.2.2.1</li>
+<li>Otro 2.2.2.2</li>
+</ol>
+</li>
+<li>Sub-sub-item 2.2.3</li>
+</ol>
+</li>
+<li>Sub-item 2.3</li>
+</ul>
+</li>
+<li>Item 3
+<dl>
+<dt>Item 3.1</dt>
+<dd>Describiendo item 3.1.</dd>
+<dt>Item 3.2</dt>
+<dd>Describiendo item 3.2
+<dl>
+<dt>Item 3.2.1</dt>
+<dd>Describiento item 3.2.1</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+<h4 id="teclas-2">Teclas</h4>
+<dl>
+<dt>M-→</dt>
+<dd>Indentar a la derecha un item. Hacer de un item un subítem del anterior.</dd>
+<dt>M-←</dt>
+<dd>Indentar a la izquierda un item. Hacer de un subítem un item.</dd>
+<dt>M-S-→</dt>
+<dd>Indentar a la derecha el ítem y todos sus subítems.</dd>
+<dt>M-S-←</dt>
+<dd>Indentar a la izquierda el ítem y todos sus subítems.</dd>
+<dt>M-↑</dt>
+<dd>Subir un ítem, posicionarlo encima del anterior.</dd>
+<dt>M-↓</dt>
+<dd>Bajar un ítem, posicionarlo debajo del siguiente.</dd>
+<dt>M-S-↑</dt>
+<dd>Subir toda una jerarquía de items.</dd>
+<dt>M-S-↓</dt>
+<dd>Bajar toda una jerarquía de items.</dd>
+<dt>M-RET</dt>
+<dd>Hacer un ítem nuevo. Si es una lista de descripciones preguntará el término a describir.</dd>
+<dt>TAB</dt>
+<dd>Cuando el cursor está en un ítem, oculta sus subítems.</dd>
+</dl>
+<h3 id="hipervínculos">Hipervínculos</h3>
+<p>Los hipervínculos son textos que apuntan a una página web o a un archivo, de forma que al hacer clic puede verlo.</p>
+<p>Un ejemplo de hipervínculo es <a href="https://orgmode.org">este texto</a>, que al hacer clic encima de él te llevará a la página <a href="https://orgmode.org">https://orgmode.org</a>.</p>
+<p>Todos los hipervínculos poseen el siguiente formato:</p>
+<pre><code>[[ubicación del archivo][Texto del archivo]]
+</code></pre>
+<p>La <code>ubicación del archivo</code> se da en forma de URL   <sup><a href="#user-content-fn-anonymous.2" id="user-content-fnref-anonymous.2" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup>.</p>
+<p>Una URL comienza con los siguientes caracteres:</p>
+<dl>
+<dt><code>http://dirección_web</code></dt>
+<dd>Una página web. Ejemplo: <a href="https://orgmode.org">https://orgmode.org</a></dd>
+<dt><code>https://dirección_web</code></dt>
+<dd>Una página web de acceso seguro. Ejemplo: <a href="https://es.wikipedia.org">https://es.wikipedia.org</a></dd>
+<dt><code>file://ubicación_del_archivo</code></dt>
+<dd>Un archivo en tu máquina. Ejemplo: <code>file://../mi\_imagen.png</code> <sup><a href="#user-content-fn-subir_dir" id="user-content-fnref-subir_dir" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup> o <code>file:///home/mi\_usuario/mi\_imagen.png</code></dd>
+</dl>
+<p>Entre muchos otros tipos de accesos.</p>
+<h4 id="teclas-3">Teclas</h4>
+<dl>
+<dt>C-c C-l</dt>
+<dd>Insertar un hipervínculo. Primero pide el tipo de hipervínculo, luego pide la ubicación y finalmente el texto.</dd>
+<dt>TAB</dt>
+<dd>Si está escribiendo la ubicación de un archivo puede presionar <code>TAB</code> para auto-completar el nombre(si la computadora puede deducirlo).</dd>
+<dt>TAB TAB</dt>
+<dd>Si está escribiendo la ubicación de un archivo puede presionar <code>TAB</code> una vez para auto-completar, si la computadora no puede deducirlo, puede presionar otra vez <code>TAB</code> para ver qué nombres similares hay.</dd>
+</dl>
+<h3 id="insertar-imágenes-y-otros-archivos">Insertar Imágenes y Otros Archivos</h3>
+<p>Para insertar archivos en general debemos hacer un <a href="#hiperv%C3%ADnculos">hipervínculo</a>.</p>
+<dl>
+<dt>Inserción directa</dt>
+<dd>Escribir la URL o la ubicación directamente.</dd>
+<dt>Imágenes sin previsualización</dt>
+<dd>Sólo hacer un <a href="#hiperv%C3%ADnculos">hipervínculo</a> sin texto de descripción.</dd>
+<dt>Imágenes con previsualización</dt>
+<dd>Hacer un <a href="#hiperv%C3%ADnculos">hipervínculo</a> con un texto de descripción que empiece con <code>file:</code> o <code>http:</code>.</dd>
+</dl>
+<p>Véase a continuación para más detalles.</p>
+<h4 id="insertar-imágenes">Insertar Imágenes</h4>
+<p>Se debe escribir la ubicación del archivo entre dobles corchetes. La ubicación puede ser relativa en donde está el archivo Org o absoluta, incluso se aceptan URLs de una imagen en Internet.</p>
+<p>Por ejemplo:</p>
+<p>Un archivo</p>
+<pre><code>[[file:../imagenes/mi_imagen.png]]
+[[../imagenes/mi_imagen.png]]
+</code></pre>
+<p><sup><a href="#user-content-fn-subir_dir" id="user-content-fnref-subir_dir-2" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup></p>
+<p>Dando la URL:</p>
+<pre><code>[[https://orgmode.org/worg/images/orgmode/org-mode-unicorn.jpg]]
+</code></pre>
+<p><img src="https://orgmode.org/worg/images/orgmode/org-mode-unicorn.jpg" alt="org-mode-unicorn.jpg"></p>
+<p>Dependiendo de la versión de Org, pueden soportar diversos formatos. Los más comunes son los siguientes:</p>
+<ul>
+<li>JPG</li>
+<li>PNG</li>
+<li>GIF</li>
+</ul>
+<h4 id="insertar-pdfs">Insertar PDFs</h4>
+<p>PDFs pueden ser insertados de manera análoga a las imágenes:</p>
+<p>Ejemplos:</p>
+<pre><code>../mis_archivos/mi_pdf.pdf
+[[:../mis_archivos/mi_pdf.pdf]]
+
+file:../mis_archivos/mi_pdf.pdf
+[[file:../mis_archivos/mi_pdf.pdf]]
+
+http://mi_pagina/mis_archivos/mi_pdf.pdf
+[[http://mi_pagina/mis_archivos/mi_pdf.pdf]]
+</code></pre>
+<h3 id="mis-cosas-a-hacer">Mis Cosas a Hacer</h3>
+<h2 id="exportación-a-otros-formatos">Exportación a Otros Formatos</h2>
+<h2 id="búsquedas">Búsquedas</h2>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>¡Modo Org te organiza la vida! <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-anonymous.1">
+<p>¡Modo Org te organiza la vida! <a href="#user-content-fnref-anonymous.1" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-anonymous.2">
+<p>URL son las siglas de Localizador Uniforme de Recursos. Es un texto utilizado para identificar y localizar recursos de Internet. <a href="#user-content-fnref-anonymous.2" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-subir_dir">
+<p>El ”..” significa que busca un directorio más arriba. <a href="#user-content-fnref-subir_dir" data-footnote-backref="" aria-label="Back to reference 4" class="data-footnote-backref">↩</a> <a href="#user-content-fnref-subir_dir-2" data-footnote-backref="" aria-label="Back to reference 4-2" class="data-footnote-backref">↩<sup>2</sup></a></p>
+</li>
+</ol>
+</section>

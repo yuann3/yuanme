@@ -1,0 +1,135 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="simple-tests">Simple tests</h2>
+<pre id="simple"><code class="language-cpp">std::cout &#x3C;&#x3C; 42;
+return 0;
+</code></pre>
+<pre id="simple"><code class="language-cpp">std::cout &#x3C;&#x3C; 42;
+return 0;
+</code></pre>
+<pre id="simple"><code class="language-D">writefln ("%s", 42);
+</code></pre>
+<pre id="integer_var"><code class="language-cpp">std::cout &#x3C;&#x3C; q;
+return 0;
+</code></pre>
+<pre id="integer_var"><code class="language-D">writefln ("%s", q);
+</code></pre>
+<pre id="two_var"><code class="language-cpp">std::cout &#x3C;&#x3C; p+q;
+return 0;
+</code></pre>
+<pre id="two_var"><code class="language-D">writefln ("%s", p+q);
+</code></pre>
+<pre id="string_var"><code class="language-cpp">std::cout &#x3C;&#x3C; q &#x3C;&#x3C; ' ' &#x3C;&#x3C; std::strlen(q);
+return 0;
+</code></pre>
+<pre id="string_var"><code class="language-D">writefln ("%s %s", q, q.length);
+</code></pre>
+<pre id="define"><code class="language-cpp">std::cout &#x3C;&#x3C; N;
+return 0;
+</code></pre>
+<h2 id="array">Array</h2>
+<pre id="array"><code class="language-cpp">for (int i=1; i&#x3C;3; i++) {
+  std::cout &#x3C;&#x3C; i &#x3C;&#x3C; '\n';
+}
+return 0;
+</code></pre>
+<pre id="array"><code class="language-D">foreach (i; 1..3)
+  writefln ("%s", i);
+</code></pre>
+<h2 id="matrix">Matrix</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="C-matrix"><tbody><tr><td>1</td><td>2</td></tr><tr><td>3</td><td>4</td></tr></tbody></table>
+<pre id="list_var"><code class="language-cpp">std::cout &#x3C;&#x3C; a[0] &#x3C;&#x3C; a[1] &#x3C;&#x3C; sizeof(a)/sizeof(*a) &#x3C;&#x3C; '\n';
+</code></pre>
+<pre id="list_var"><code class="language-D">writefln ("%s%s%s", a[0], a[1], a.length);
+</code></pre>
+<pre id="vector_var"><code class="language-cpp">std::cout &#x3C;&#x3C; a[0] &#x3C;&#x3C; a[1] &#x3C;&#x3C; sizeof(a)/sizeof(*a) &#x3C;&#x3C; '\n';
+</code></pre>
+<pre id="vector_var"><code class="language-D">writefln ("%s%s%s", a[0], a[1], a.length);
+</code></pre>
+<pre id="list_list_var"><code class="language-cpp">std::cout &#x3C;&#x3C; q[0][0] &#x3C;&#x3C; ' ' &#x3C;&#x3C; q[1][0] &#x3C;&#x3C; '\n'
+          &#x3C;&#x3C; q[0][1] &#x3C;&#x3C; ' ' &#x3C;&#x3C; q[1][1] &#x3C;&#x3C; '\n'; // transpose
+</code></pre>
+<pre id="list_list_var"><code class="language-D">writefln ("%s %s", q[0][0], q[1][0]);
+writefln ("%s %s", q[0][1], q[1][1]); // transpose
+</code></pre>
+<h2 id="inhomogeneous-table">Inhomogeneous table</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table id="tinomogen"><thead><tr><th>day</th><th>quty</th></tr></thead><tbody><tr><td>monday</td><td>34</td></tr><tr><td>tuesday</td><td>41</td></tr><tr><td>wednesday</td><td>56</td></tr><tr><td>thursday</td><td>17</td></tr><tr><td>friday</td><td>12</td></tr><tr><td>saturday</td><td>7</td></tr><tr><td>sunday</td><td>4</td></tr></tbody></table>
+<pre id="inhomogeneous_table"><code class="language-cpp">int main()
+{
+  int i, j;
+  for (i=0; i&#x3C;tinomogen_rows; i++) {
+    for (j=0; j&#x3C;tinomogen_cols; j++)
+      printf ("%s ", tinomogen[i][j]);
+    printf ("\n");
+  }
+  printf ("Friday %s\n", tinomogen_h(4,"day"));
+  return 0;
+}
+</code></pre>
+<pre id="inhomogeneous_table"><code class="language-D">import std.stdio;
+void main()
+{
+  for (int i=0; i&#x3C;tinomogen_rows; i++) {
+    for (int j=0; j&#x3C;tinomogen_cols; j++)
+      writef ("%s ", tinomogen[i][j]);
+    writeln();
+  }
+  writefln ("Friday %s", tinomogen_h(4,"day"));
+}
+</code></pre>
+<h2 id="output">Output</h2>
+<pre id="double_quotes"><code class="language-cpp">std::cout &#x3C;&#x3C; "\"line 1\"\n";
+std::cout &#x3C;&#x3C; "\"line 2\"\n";
+std::cout &#x3C;&#x3C; "\"line 3\"\n";
+</code></pre>

@@ -1,0 +1,33 @@
+#+TITLE: Outline
+#+TODO: TODO NEXT | DONE
+
+* TODO [#A] A task [1/2] :work:
+SCHEDULED: <2025-12-12 Fri>
+:PROPERTIES:
+:ID: 1234
+:END:
+CLOCK: [2025-12-12 Fri 10:00]--[2025-12-12 Fri 11:00] =>  1:00
+Task text.
+** NEXT Sub task
+* COMMENT Commented out
+Not shown.
+* Hidden :noexport:
+Not shown.
+** Nor this
+* Ignored heading :ignore:
+Shown without its heading.
+** Kept child
+* Archived :ARCHIVE:
+Not shown.
+* A
+** B
+*** C
+**** D
+***** E
+****** Too deep
+Its text.
+* Footnotes
+[fn:1] Defined in the footnote section.
+
+* Uses it
+A note.[fn:1]

@@ -197,6 +197,14 @@ impl Document {
         id
     }
 
+    pub(crate) fn attrs_mut(&mut self, id: NodeId) -> &mut Vec<(String, String)> {
+        &mut self.nodes[id.0 as usize].attrs
+    }
+
+    pub(crate) fn children_mut(&mut self, id: NodeId) -> &mut Vec<NodeId> {
+        &mut self.nodes[id.0 as usize].children
+    }
+
     pub fn node(&self, id: NodeId) -> &Node {
         &self.nodes[id.0 as usize]
     }

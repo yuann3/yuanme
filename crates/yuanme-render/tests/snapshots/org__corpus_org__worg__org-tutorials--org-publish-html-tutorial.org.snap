@@ -1,0 +1,1635 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+error[org/unsupported-construct]: radio targets and links aren't in the Org subset
+  --> worg/org-tutorials--org-publish-html-tutorial.org:78:57
+   |
+78 |     Optionally, set up the stylesheet as shown in section Special comment
+   |  _________________________________________________________^
+79 | |   section. The recommended way is to use a real stylesheet though.
+   | |_________^
+   |
+   = help: use a `<<target>>` and link to it with `[[target][text]]`
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: radio targets and links aren't in the Org subset
+   --> worg/org-tutorials--org-publish-html-tutorial.org:283:4
+    |
+283 | ** <<<Special comment section>>>
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: use a `<<target>>` and link to it with `[[target][text]]`
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: radio targets and links aren't in the Org subset
+   --> worg/org-tutorials--org-publish-html-tutorial.org:307:53
+    |
+307 |    This file contains all export options lines. The special comment section
+    |                                                     ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: use a `<<target>>` and link to it with `[[target][text]]`
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: radio targets and links aren't in the Org subset
+   --> worg/org-tutorials--org-publish-html-tutorial.org:324:17
+    |
+324 |  Now remove the special comment section from the end of your Org-mode files in
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: use a `<<target>>` and link to it with `[[target][text]]`
+    = note: run `yuanme docs org/unsupported-construct` for more
+<h2 id="introduction">Introduction</h2>
+<p>This Tutorial describes one of many ways to publishing Org-mode files to
+XHTML. We use the publishing mechanism to keep the <code>*.html</code> files separated
+from our <code>*.org</code> files and to access them via web browser. Simply exporting the
+Org-mode files to HTML would leave them in <code>~/org/</code>.</p>
+<p>The XHTML files we create will work every where, on any host, with or without
+network access, and even when accessed through the <code>file:///</code> protocol. To
+achieve this goal, we use</p>
+<ul>
+<li>no absolute paths in HTML,</li>
+<li>no server side scripting to navigate our output directories,</li>
+<li>no <code>base</code> element (which is optional as of XHTML 1.0 strict) and</li>
+<li>no software, but emacs, Org-mode and a web browser.</li>
+</ul>
+<p>All this means, we are able to check and use the result of work immediately,
+everywhere.</p>
+<h2 id="basics">Basics</h2>
+<p>Throughout this tutorial, let’s assume that all our Org-mode files live beneath
+<code>~/org/</code> and we publish them to <code>~/public_html/</code>.</p>
+<p>Let’s further assume you’re already familiar with the note taking basics in
+org and able to add a little content to the Org-mode files we add to our project
+during this tutorial. Please add at least one headline to each of the files.</p>
+<p>The first thing to do is to create the folder <code>~/org</code>. This is where our notes
+files live. Inside <code>~/org/</code> we have a folder <code>css/</code> for stylesheets and
+scripts, and a folder called <code>img/</code> (guess what’s in there).</p>
+<p>The first file we add to that folder (and to subdirectories later on) is called
+<code>index.org</code>. This name was choosen, since Org will publish the files to those
+with the basename of the source file plus the extension <code>.html</code> <sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>. Thus
+<code>~/org/index.org</code> will once be <code>~/public_html/index.html</code> – the startpage.</p>
+<p>Let’s add another file and call it <code>~/org/remember.org</code>. After adding a
+stylesheet, <code>~/org/</code> looks like this:</p>
+<pre><code>~/org/
+   |- css/
+   |  `- stylesheet.css
+   |- img/
+   |- index.org
+   `- remember.org
+</code></pre>
+<p>When ever you want to add link to a file, do it the usual way. To link from
+<code>index.org</code> to <code>remember.org</code>, just write</p>
+<pre><code>[[file:remember.org][remember]]
+</code></pre>
+<p>Org will convert those links to HTML links for you on export:</p>
+<pre><code>&#x3C;a href="./remember.html">remember&#x3C;/a>
+</code></pre>
+<p>Same is true for images. To add an image, put it in <code>~/org/img/test.jpg</code> and
+refer to it by</p>
+<pre><code>[[file:img/test.jpg]]
+</code></pre>
+<p>You may test your links by clicking on them. To test image links you may also
+try to turn on <code>iimage-mode</code> <sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup> which works without problems here.</p>
+<p>Optionally, set up the stylesheet as shown in section . The recommended way is to use a real stylesheet though.</p>
+<h2 id="publishing-the-org-project">Publishing the <em>org</em> project</h2>
+<p>To publish the <code>~/org/</code> project to HTML, we’ll have to setup the variable
+<code>org-publish-project-alist</code> <sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup>.  I tend to split each project in three basic
+<em>components</em> as described in the manual. We need these different components,
+since we want org to use two different functions to publish dynamic content
+(org => html) and static content like scripts, images, stylesheets or even
+.htaccess files (org => copy). The third component is just for convenience and
+tells org to execute the former ones.</p>
+<p><code>org-publish-project-alist</code> may be adjusted using customize (<code>M-x
+  customize-variable RET org-publish-project-alist RET</code>), but I prefere to
+use an extra file to setup my projects, since there are quite a few. To follow
+this tutorial use the <code>*scratch*</code> buffer and put all the Lisp in this section
+in there.</p>
+<p>First of all, enter this into the <code>*scratch*</code> buffer:</p>
+<pre><code class="language-emacs-lisp">(require 'ox-publish)
+(setq org-publish-project-alist
+      '(
+
+       ;; ... add all the components here (see below)...
+
+      ))
+</code></pre>
+<p>Be sure to put all the <em>components</em> below right there where the comment line
+is now.</p>
+<h3 id="the-notes-component">The <em>notes</em> component</h3>
+<p>The <em>notes</em> component publishes all the Org-mode files to HTML. Hence the
+<code>publishing-function</code> is set to <code>org-publish-org-to-html</code>. Here is an example
+of the notes component:</p>
+<pre><code class="language-emacs-lisp">("org-notes"
+ :base-directory "~/org/"
+ :base-extension "org"
+ :publishing-directory "~/public_html/"
+ :recursive t
+ :publishing-function org-html-publish-to-html
+ :headline-levels 4             ; Just the default for this project.
+ :auto-preamble t
+ )
+</code></pre>
+<p>Note, that <code>headline-levels</code> may be adjusted <a href="#overwrite-the-defaults">on a per file basis</a> to overwrite
+the default.</p>
+<p>The most important settings here are:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td><code>base-directory</code></td><td>The components root directory.</td></tr><tr><td><code>base-extension</code></td><td>Filename suffix without the dot.</td></tr><tr><td><code>publishing-directory</code></td><td>The base directory where all our files will be published.</td></tr><tr><td><code>recursive</code></td><td>If <code>t</code>, include subdirectories - we want that. Subdirectories in <code>:publishing-directory</code> are created if they don’t yet exist.</td></tr><tr><td><code>publishing-function</code></td><td>If and how org should process the files in this component. In this case: convert the Org-mode files to HTML.</td></tr></tbody></table>
+<h3 id="the-static-component">The <em>static</em> component</h3>
+<p>The <em>static</em> component just copies files (and their folders) from
+<code>:base-directory</code> to <code>:publishing-directory</code> without changing them. Thus
+let’s tell Org-mode to use the function <code>org-publish-attachment</code>:</p>
+<pre><code class="language-emacs-lisp">("org-static"
+ :base-directory "~/org/"
+ :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+ :publishing-directory "~/public_html/"
+ :recursive t
+ :publishing-function org-publish-attachment
+ )
+</code></pre>
+<p><strong>Note</strong> that <code>:publishing-function</code> is set to <code>org-publish-attachment</code>.</p>
+<h3 id="the-publish-component">The <em>publish</em> component</h3>
+<p>To publish all with one command, we add the <em>publish</em> component. For this
+component I usually drop the suffix and just use the basename of the
+project.</p>
+<pre><code class="language-emacs-lisp">("org" :components ("org-notes" "org-static"))
+</code></pre>
+<p>Now <code>M-x org-publish-project RET org RET</code> publishes everything
+recursively to <code>~/public_html/</code>. Target directories are created, if they
+don’t yet exist.</p>
+<h3 id="pooh---can-we-publish-now">Pooh - can we publish now?</h3>
+<p>The good message is <strong>yes, we can</strong>. Just one little hump. Since we’ve put the
+definition for our publishing components in the <code>*scratch*</code> buffer, again,
+make sure all the <em>components</em> are enclosed by the lines</p>
+<pre><code class="language-emacs-lisp">(require 'ox-publish)
+(setq org-publish-project-alist
+      '(
+
+       ;; ... all the components ...
+
+      ))
+</code></pre>
+<p>Move to the end of the first line and press <code>C-x C-e</code> to load
+<code>org-publish</code>. Now go to the end of the last line and press <code>C-x C-e</code>
+again. Repeat the last step after every change to your
+<code>org-publish-project-alist</code>.</p>
+<p>To publish your Org-mode files just type
+<code>M-x org-publish-project RET org RET</code> or use one of the shortcuts listed in
+the manual. If nothing went wrong, you should now be able to point your
+browser to <a href="http://localhost/~user/">http://localhost/~user/</a>, if <code>mod_userdir</code> is set up. If
+not, simply navigate to <a href="/home/user/public_html">///home/user/public_html</a> (you might use
+<em>file -> open</em> from the file menu of your browser.</p>
+<h2 id="adding-directories">Adding directories</h2>
+<p>As we add more and more files to <code>~/org/</code>, we will soon end up with filenames
+like ‘<code>networking-ssh-sshd-config.org</code>’ or longer. What we need is a
+directory structure:</p>
+<pre><code>~/org/
+  |- css/
+  |  `- stylesheet.css
+  |- Emacs
+  |  |- index.org
+  |  |- gnus.org
+  |  |- org.org
+  |  `- snippets.org
+  |- img/
+  |- index.org
+  `- remember.org
+</code></pre>
+<p>If we hadn’t added</p>
+<pre><code>     :recursive t
+</code></pre>
+<p>in the <em>notes</em> and <em>static</em> components already, we would have to do it now at
+the latest to export the subdirectories too.</p>
+<h2 id="overwrite-the-defaults">Overwrite the defaults</h2>
+<p>The defaults set by <code>org-publish-project-alist</code> may be overwritten. You might
+want to justify the export properties for single files. Be it the level of
+headlines, include extry scripts or different stylesheets. Org offers ways to adjust
+the settings for a single file.</p>
+<h3 id="the-export-options-template">The export options template</h3>
+<p>The first choice is the <em>export options template</em> on top of the file. When in
+an Org-mode file, you may insert basic information using <code>C-c C-e #</code>
+(<code>org-export-dispatch</code>) plus “template”.  You will be prompted for a template
+choice.  “default” will provide a template for common options, and “html”
+will provide a template for HTML-specific options.</p>
+<p>WARNING: Do <strong>not</strong> copy lines from the sample output below into your
+files. The template might change from release to release. Instead,
+insert a template as above and delete any entries that are not
+applicable.</p>
+<p>The default option inserts the following lines:</p>
+<pre><code>#+TITLE: filename with the extension omitted
+#+DATE: &#x3C;2013-06-04 Tue>
+#+AUTHOR: Your name
+#+EMAIL: Your email address
+#+OPTIONS: ':t *:t -:t ::t &#x3C;:t H:3 \n:nil ^:t arch:headline author:t c:nil
+#+OPTIONS: creator:comment d:(not LOGBOOK) date:t e:t email:nil f:t inline:t
+#+OPTIONS: num:t p:nil pri:nil stat:t tags:t tasks:t tex:t timestamp:t toc:t
+#+OPTIONS: todo:t |:t
+#+CREATOR: Emacs 24.3.50.3 (Org mode 8.0.3)
+#+DESCRIPTION:
+#+EXCLUDE_TAGS: noexport
+#+KEYWORDS:
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+</code></pre>
+<p>and the html option will add the following:</p>
+<pre><code>#+OPTIONS: html-postamble:auto html-preamble:t tex:t
+#+CREATOR: &#x3C;a href="http://www.gnu.org/software/emacs/">Emacs&#x3C;/a> 24.3.50.3 (&#x3C;a href="https://orgmode.org">Org&#x3C;/a> mode 8.0.3)
+#+HTML_CONTAINER: div
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_HEAD:
+#+HTML_HEAD_EXTRA:
+#+HTML_HTML5_FANCY:
+#+HTML_INCLUDE_SCRIPTS:
+#+HTML_INCLUDE_STYLE:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+INFOJS_OPT:
+</code></pre>
+<p>All we have to do now is to alter the options to match our needs. All the
+options are listed in the wonderful Org-mode manual. Note though, that these
+options are only parsed on startup (i.e., when you first open the file). To
+explicitly apply your new options move on any of those lines and press <code>C-c</code>
+twice.</p>
+<h3 id=""></h3>
+<p>Also, CSS style variables may be using a special section may be
+#insert/appended to Org-mode files:</p>
+<pre><code>* COMMENT html style specifications
+
+# Local Variables:
+# org-html-head: "&#x3C;link rel=\"stylesheet\" type=\"text/css\" href=\"css/stylesheet.css\" />"
+# End:
+</code></pre>
+<p><code>css/stylesheet.css</code> suits the needs for a file in the root folder. Use <br>
+   <code>../css/stylesheet.css</code> in a subfolder (first level), <br>
+   <code>../../css/stylesheet.css</code> for a file in a sub-sub-folder.</p>
+<h2 id="tired-of-export-templates">Tired of export templates?</h2>
+<p>If you’re like me, you will soon get tired of adding the same export options
+template to numerous files and adjust the title and paths in it. Luckily,
+Org-mode supports laziness and offers an additional way to set up files. All
+we need is a directory (e.g. <code>~/.emacs.d/org-templates/</code>) and create the
+following files there:</p>
+<ul>
+<li><code>level-0.org</code> <br>
+   This file contains all export options lines. The
+will not work for files in subdirectories. Hence we always use the export
+options line
+:#+STYLE: &#x3C;link rel=“stylesheet” type=“text/css” href=“stylesheet.css” />
+…suitable for each file in the projects root folder
+(<code>~/org/</code> or <code>~/B/</code> in the examples). Just drop the <code>#+TITLE</code> since this
+will be different for every file and automatically set on export (based on
+the filename if omitted).</li>
+<li><code>level-1.org</code> <br>
+   This file contains all export options lines for the stylesheet suitable for
+each file in a subfolder of the projects root folder (e.g. <code>~/org/emacs/</code>
+or <code>~/org/networking/</code>). Just drop the <code>#+TITLE</code> again. The options line
+for the stylesheet looks like this:
+:#+STYLE: &#x3C;link rel=“stylesheet” type=“text/css” href=”../stylesheet.css” /></li>
+<li>Add more files for more levels.</li>
+</ul>
+<p>Now remove the  from the end of your Org-mode files in
+the project folders and change the export options template to</p>
+<pre><code>#+SETUPFILE: ~/.emacs.d/org-templates/level-N.org
+#+TITLE: My Title
+</code></pre>
+<p>Replace <code>N</code> with distance to the root folder (<code>0</code>, <code>1</code> etc.) of your project
+and press <code>C-c</code> twice while still on this line to apply the
+changes. Subsequent lines still overwrite the settings for just this one file.</p>
+<h3 id="more-level-files">More level files</h3>
+<p>Also, these <em>level-N</em> files give us the chance to easily switch between different
+export setups. As an example, we could have a separate stylesheet and
+<code>org-info.js</code> setup for presentations, and put the appropriate options in a
+file named <code>level-0-slides.org</code>:</p>
+<pre><code>#+INFOJS_OPT: path:org-info.js
+#+INFOJS_OPT: toc:nil view:slide
+#+STYLE: &#x3C;link rel="stylesheet" type="text/css" href="slides.css" />
+</code></pre>
+<p>Now it’s as simple as typing ‘<em>-slides</em>’ to change the appearance of any file
+in our project.</p>
+<h2 id="more-projects">More Projects</h2>
+<p>As we get used to note taking in org, we might add an <code>org</code> directory to most
+of our projects. All those projects are published as well. Project ‘<code>~/B/</code>’
+is published to ‘<code>~/public_html/B/</code>’, ‘<code>~/C/</code>’ is published to
+‘<code>~/public_html/C/</code>’, and so on. This leads to the problem of common
+stylesheets and current JavaScripts — and to a new <em>component</em>.</p>
+<h3 id="the-inherit-component">The <em>inherit</em> component</h3>
+<p>Once we get tired of copying the static files from one project to another, the
+following configuration does the trick for us. We simply add the <em>inherit</em>
+component, that imports all the static files from our <code>~/org/</code> directory <sup><a href="#user-content-fn-4" id="user-content-fnref-4" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup>.
+From now on, it will be sufficient to edit stylesheets and scripts just
+there.</p>
+<pre><code class="language-emacs-lisp">("B-inherit"
+ :base-directory "~/org/"
+ :recursive t
+ :base-extension "css\\|js"
+ :publishing-directory "~/public_html/B/"
+ :publishing-function org-publish-attachment
+)
+
+("B-org"
+:base-directory "~/B/"
+:auto-index t
+:index-filename "sitemap.org"
+:index-title "Sitemap"
+:recursive t
+:base-extension "org"
+:publishing-directory "~/public_html/B/"
+:publishing-function org-publish-org-to-html
+:headline-levels 3
+:auto-preamble t
+)
+("B-static"
+ :base-directory "~/B/"
+ :recursive t
+ :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+ :publishing-directory "~/public_html/B/"
+ :publishing-function org-publish-attachment)
+
+("B" :components ("B-inherit" "B-notes" "B-static"))
+</code></pre>
+<p><strong>Note</strong>, that the inheritance trick works for non org directories. You might
+want to keep all your stylesheets and scripts in a single place, or even add
+more <em>inheritance</em> to your projects, to import sources from upstream.</p>
+<p><strong>Note</strong> also, that <code>B-inherit</code> exports directly to the web. If you want to track
+the changes to <code>~org/*.css</code> directly in <code>~/B</code>, you must ensure, that <code>B-inherit</code> is
+the first component in <code>B</code> since the components in <code>B</code> are executed in
+the sequence listed: first get the new stylesheet into <code>B</code>, then execute
+<code>B-static</code>.</p>
+<h4 id="one-more-example">One more Example</h4>
+<p>As I use <a href="../code/org-info-js/index.org">org-info.js</a> and track Worg git, I use “<code>inherit-org-info-js</code>” in all
+my <code>org</code> projects:</p>
+<pre><code class="language-emacs-lisp">("inherit-org-info-js"
+ :base-directory "~/develop/org/Worg/code/org-info-js/"
+ :recursive t
+ :base-extension "js"
+ :publishing-directory "~/org/"
+ :publishing-function org-publish-attachment)
+
+;; ... all the rest ... ;;
+
+("B" :components ("inherit-org-info-js" "B-inherit" "B-notes" "B-static"))
+("C" :components ("inherit-org-info-js" "C-inherit" "C-notes" "C-static"))
+("D" :components ("inherit-org-info-js" "D-inherit" "D-notes" "D-static"))
+("E" :components ("inherit-org-info-js" "E-inherit" "E-notes" "E-static"))
+</code></pre>
+<p>…means, <code>B</code> <code>C</code> <code>D</code> and <code>E</code> use my local stylesheets and always the latest
+version of <code>org-info.js</code>.</p>
+<h2 id="overview">Overview</h2>
+<p>Once there are lots of files and subdirectories, we’re in the need of ways to
+easily navigate our notes in a browser. What we need now, is an index, an
+overview of all our note files.</p>
+<h3 id="the-sitemap">The sitemap</h3>
+<p>Org-modes great publishing also generates a recursive sitemap. Its name
+defaults to <code>sitemap.org</code>, which get’s in our way, since we have a real
+startpage as <code>sitemap.html</code> <sup><a href="#user-content-fn-5" id="user-content-fnref-5" data-footnote-ref="" aria-describedby="footnote-label">5</a></sup>. Fortunately there is a configuration
+option to change the name of the generated sitemap. To generate the sitemap,
+add these lines to the <em>notes</em> component:</p>
+<pre><code class="language-emacs-lisp">:auto-sitemap t                ; Generate sitemap.org automagically...
+:sitemap-filename "sitemap.org"  ; ... call it sitemap.org (it's the default)...
+:sitemap-title "Sitemap"         ; ... with title 'Sitemap'.
+</code></pre>
+<p>The sitemap will reflect the tree structure of the project. To access the
+sitemap easily, we could do two things:</p>
+<ol>
+<li>Setup the ‘<em>UP</em>’ link of the Startpage to link to <code>sitemap.html</code> (see next
+section),</li>
+<li>use the ‘<code>#+INCLUDE: sitemap.org</code>’ directive. Most of my Org-mode files
+contain a chapter called “<em>Links</em>” at the end of the file, which contains
+a subsection <em>Sitemap</em> that in turn just consists of that
+diretive. For the <code>index.org</code> files in the root directory, I include the
+sitemap as the first section.</li>
+</ol>
+<p>You can also change the position of folders with <code>:sitemap-sort-folders</code>,
+this can be set to <code>last</code> or <code>first</code> (default), to display folders last or
+first.</p>
+<h3 id="org-infojs">org-info.js</h3>
+<p>Another way to get additional links to navigate the structure is
+<a href="../code/org-info-js/index.org">org-info.js</a>. Let’s set it up like this (either in every file, or in
+<code>org-level-N.org</code>, where <code>N > 0</code>):</p>
+<pre><code>#+HTML_LINK_UP: index.html
+</code></pre>
+<p>This makes the little <em>UP</em> link (‘<code>h</code>’) point to the <code>index.html</code> in the
+current directory.</p>
+<p>The <code>index.org</code> in the root of the project has the <em>index file</em> as section 2
+(which I may reach pressing ‘<code>n</code>’ then), and the same option set like this:</p>
+<pre><code>#+HTML_LINK_UP: sitemap.html
+</code></pre>
+<p>For an <code>index.org</code> in a subdirectory:</p>
+<pre><code>#+HTML_LINK_UP: ../index.html
+</code></pre>
+<p>The <code>HTML_LINK_HOME</code> always points to the same file:</p>
+<pre><code>#+HTML_LINK_HOME: http://localhost/~user/index.html
+</code></pre>
+<p>Please consider replacing the last one with a relative path (which will be
+different for every level of subdirectories).</p>
+<p>No matter where we are, we may always press <code>H n</code> and we face the sitemap.
+No matter where we are, we may always press <code>h</code> to move up the tree.</p>
+<h2 id="special-symbols">Special symbols</h2>
+<p>This is a list of LaTeX symbols understood by Org-mode. You may use most of
+those LaTeX symbols to get the desired results (shown in the first column)
+when exporting to HTML. Note though, that not all symbols are translated to
+HTML. They are listed anyway, since they may be used for LaTeX export
+nonetheless. Some characters in the first column are invisible (spaces). To
+see them, mark the part of the table using the mouse.</p>
+<p>You may produce special HTML characters for verbatim <code>#+BEGIN\_HTML</code> sections
+using <a href="http://www-atm.physics.ox.ac.uk/user/iwi/charmap.html">http://www-atm.physics.ox.ac.uk/user/iwi/charmap.html</a> (download link on
+the bottom of that page).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Symbol</th><th>LaTeX</th></tr></thead><tbody><tr><td> </td><td><code>\nbsp</code></td></tr><tr><td>¡</td><td><code>\iexcl</code></td></tr><tr><td>¢</td><td><code>\cent</code></td></tr><tr><td>£</td><td><code>\pound</code></td></tr><tr><td>¤</td><td><code>\curren</code></td></tr><tr><td>¥</td><td><code>\yen</code></td></tr><tr><td>¦</td><td><code>\brvbar</code></td></tr><tr><td>|</td><td><code>\vert</code></td></tr><tr><td>§</td><td><code>\sect</code></td></tr><tr><td>¨</td><td><code>\uml</code></td></tr><tr><td>©</td><td><code>\copy</code></td></tr><tr><td>ª</td><td><code>\ordf</code></td></tr><tr><td>«</td><td><code>\laquo</code></td></tr><tr><td>¬</td><td><code>\not</code></td></tr><tr><td></td><td><code>\shy</code></td></tr><tr><td>®</td><td><code>\reg</code></td></tr><tr><td>¯</td><td><code>\macr</code></td></tr><tr><td>°</td><td><code>\deg</code></td></tr><tr><td>±</td><td><code>\plusmn</code></td></tr><tr><td>¹</td><td><code>\sup1</code></td></tr><tr><td>²</td><td><code>\sup2</code></td></tr><tr><td>³</td><td><code>\sup3</code></td></tr><tr><td>´</td><td><code>\acute</code></td></tr><tr><td>µ</td><td><code>\micro</code></td></tr><tr><td>¶</td><td><code>\para</code></td></tr><tr><td>·</td><td><code>\middot</code></td></tr><tr><td>ʘ</td><td><code>\odot</code></td></tr><tr><td>⋆</td><td><code>\star</code></td></tr><tr><td>¸</td><td><code>\cedil</code></td></tr><tr><td>º</td><td><code>\ordm</code></td></tr><tr><td>»</td><td><code>\raquo</code></td></tr><tr><td>¼</td><td><code>\frac14</code></td></tr><tr><td>½</td><td><code>\frac12</code></td></tr><tr><td>¾</td><td><code>\frac34</code></td></tr><tr><td>¿</td><td><code>\iquest</code></td></tr><tr><td>À</td><td><code>\Agrave</code></td></tr><tr><td>Á</td><td><code>\Aacute</code></td></tr><tr><td>Â</td><td><code>\Acirc</code></td></tr><tr><td>Ã</td><td><code>\Atilde</code></td></tr><tr><td>Ä</td><td><code>\Auml</code></td></tr><tr><td>Å</td><td><code>\Aring</code> <code>\AA</code></td></tr><tr><td>Æ</td><td><code>\AElig</code></td></tr><tr><td>Ç</td><td><code>\Ccedil</code></td></tr><tr><td>È</td><td><code>\Egrave</code></td></tr><tr><td>É</td><td><code>\Eacute</code></td></tr><tr><td>Ê</td><td><code>\Ecirc</code></td></tr><tr><td>Ë</td><td><code>\Euml</code></td></tr><tr><td>Ì</td><td><code>\Igrave</code></td></tr><tr><td>Í</td><td><code>\Iacute</code></td></tr><tr><td>Î</td><td><code>\Icirc</code></td></tr><tr><td>Ï</td><td><code>\Iuml</code></td></tr><tr><td>Ð</td><td><code>\ETH</code></td></tr><tr><td>Ñ</td><td><code>\Ntilde</code></td></tr><tr><td>Ò</td><td><code>\Ograve</code></td></tr><tr><td>Ó</td><td><code>\Oacute</code></td></tr><tr><td>Ô</td><td><code>\Ocirc</code></td></tr><tr><td>Õ</td><td><code>\Otilde</code></td></tr><tr><td>Ö</td><td><code>\Ouml</code></td></tr><tr><td>×</td><td><code>\times</code></td></tr><tr><td>Ø</td><td><code>\Oslash</code></td></tr><tr><td>Ù</td><td><code>\Ugrave</code></td></tr><tr><td>Ú</td><td><code>\Uacute</code></td></tr><tr><td>Û</td><td><code>\Ucirc</code></td></tr><tr><td>Ü</td><td><code>\Uuml</code></td></tr><tr><td>Ý</td><td><code>\Yacute</code></td></tr><tr><td>Þ</td><td><code>\THORN</code></td></tr><tr><td>ß</td><td><code>\szlig</code></td></tr><tr><td>à</td><td><code>\agrave</code></td></tr><tr><td>á</td><td><code>\aacute</code></td></tr><tr><td>â</td><td><code>\acirc</code></td></tr><tr><td>ã</td><td><code>\atilde</code></td></tr><tr><td>ä</td><td><code>\auml</code></td></tr><tr><td>å</td><td><code>\aring</code></td></tr><tr><td>æ</td><td><code>\aelig</code></td></tr><tr><td>ç</td><td><code>\ccedil</code></td></tr><tr><td>è</td><td><code>\egrave</code></td></tr><tr><td>é</td><td><code>\eacute</code></td></tr><tr><td>ê</td><td><code>\ecirc</code></td></tr><tr><td>ë</td><td><code>\euml</code></td></tr><tr><td>ì</td><td><code>\igrave</code></td></tr><tr><td>í</td><td><code>\iacute</code></td></tr><tr><td>î</td><td><code>\icirc</code></td></tr><tr><td>ï</td><td><code>\iuml</code></td></tr><tr><td>ð</td><td><code>\eth</code></td></tr><tr><td>ñ</td><td><code>\ntilde</code></td></tr><tr><td>ò</td><td><code>\ograve</code></td></tr><tr><td>ó</td><td><code>\oacute</code></td></tr><tr><td>ô</td><td><code>\ocirc</code></td></tr><tr><td>õ</td><td><code>\otilde</code></td></tr><tr><td>ö</td><td><code>\ouml</code></td></tr><tr><td>ø</td><td><code>\oslash</code></td></tr><tr><td>ù</td><td><code>\ugrave</code></td></tr><tr><td>ú</td><td><code>\uacute</code></td></tr><tr><td>û</td><td><code>\ucirc</code></td></tr><tr><td>ü</td><td><code>\uuml</code></td></tr><tr><td>ý</td><td><code>\yacute</code></td></tr><tr><td>þ</td><td><code>\thorn</code></td></tr><tr><td>ÿ</td><td><code>\yuml</code></td></tr><tr><td>ƒ</td><td><code>\fnof</code></td></tr><tr><td>Α</td><td><code>\Alpha</code></td></tr><tr><td>Β</td><td><code>\Beta</code></td></tr><tr><td>Γ</td><td><code>\Gamma</code></td></tr><tr><td>Δ</td><td><code>\Delta</code></td></tr><tr><td>Ε</td><td><code>\Epsilon</code></td></tr><tr><td>Ζ</td><td><code>\Zeta</code></td></tr><tr><td>Η</td><td><code>\Eta</code></td></tr><tr><td>Θ</td><td><code>\Theta</code></td></tr><tr><td>Ι</td><td><code>\Iota</code></td></tr><tr><td>Κ</td><td><code>\Kappa</code></td></tr><tr><td>Λ</td><td><code>\Lambda</code></td></tr><tr><td>Μ</td><td><code>\Mu</code></td></tr><tr><td>Ν</td><td><code>\Nu</code></td></tr><tr><td>Ξ</td><td><code>\Xi</code></td></tr><tr><td>Ο</td><td><code>\Omicron</code></td></tr><tr><td>Π</td><td><code>\Pi</code></td></tr><tr><td>Ρ</td><td><code>\Rho</code></td></tr><tr><td>Σ</td><td><code>\Sigma</code></td></tr><tr><td>Τ</td><td><code>\Tau</code></td></tr><tr><td>Υ</td><td><code>\Upsilon</code></td></tr><tr><td>Φ</td><td><code>\Phi</code></td></tr><tr><td>Χ</td><td><code>\Chi</code></td></tr><tr><td>Ψ</td><td><code>\Psi</code></td></tr><tr><td>Ω</td><td><code>\Omega</code></td></tr><tr><td>α</td><td><code>\alpha</code></td></tr><tr><td>β</td><td><code>\beta</code></td></tr><tr><td>γ</td><td><code>\gamma</code></td></tr><tr><td>δ</td><td><code>\delta</code></td></tr><tr><td>ε</td><td><code>\epsilon</code></td></tr><tr><td>ε</td><td><code>\varepsilon</code></td></tr><tr><td>ζ</td><td><code>\zeta</code></td></tr><tr><td>η</td><td><code>\eta</code></td></tr><tr><td>θ</td><td><code>\theta</code></td></tr><tr><td>ι</td><td><code>\iota</code></td></tr><tr><td>κ</td><td><code>\kappa</code></td></tr><tr><td>λ</td><td><code>\lambda</code></td></tr><tr><td>μ</td><td><code>\mu</code></td></tr><tr><td>ν</td><td><code>\nu</code></td></tr><tr><td>ξ</td><td><code>\xi</code></td></tr><tr><td>ο</td><td><code>\omicron</code></td></tr><tr><td>π</td><td><code>\pi</code></td></tr><tr><td>ρ</td><td><code>\rho</code></td></tr><tr><td>ς</td><td><code>\sigmaf</code>  <code>\varsigma</code></td></tr><tr><td>σ</td><td><code>\sigma</code></td></tr><tr><td>τ</td><td><code>\tau</code></td></tr><tr><td>υ</td><td><code>\upsilon</code></td></tr><tr><td>ɸ</td><td><code>\phi</code></td></tr><tr><td>χ</td><td><code>\chi</code></td></tr><tr><td>ψ</td><td><code>\psi</code></td></tr><tr><td>ω</td><td><code>\omega</code></td></tr><tr><td>ϑ</td><td><code>\thetasym</code>  <code>\vartheta</code></td></tr><tr><td>ϒ</td><td><code>\upsih</code></td></tr><tr><td>ϖ</td><td><code>\piv</code></td></tr><tr><td>•</td><td><code>\bull</code>  <code>\bullet</code></td></tr><tr><td>…</td><td><code>\hellip</code>  <code>\dots</code></td></tr><tr><td>′</td><td><code>\prime</code></td></tr><tr><td>″</td><td><code>\Prime</code></td></tr><tr><td>‾</td><td><code>\oline</code></td></tr><tr><td>⁄</td><td><code>\frasl</code></td></tr><tr><td>℘</td><td><code>\weierp</code></td></tr><tr><td>ℑ</td><td><code>\image</code></td></tr><tr><td>ℜ</td><td><code>\real</code></td></tr><tr><td>™</td><td><code>\trade</code></td></tr><tr><td>ℵ</td><td><code>\alefsym</code></td></tr><tr><td>←</td><td><code>\larr</code></td></tr><tr><td>↑</td><td><code>\uarr</code></td></tr><tr><td>→</td><td><code>\rarr</code></td></tr><tr><td>↓</td><td><code>\darr</code></td></tr><tr><td>↔</td><td><code>\harr</code></td></tr><tr><td>↵</td><td><code>\crarr</code></td></tr><tr><td>⇐</td><td><code>\lArr</code></td></tr><tr><td>⇑</td><td><code>\uArr</code></td></tr><tr><td>⇒</td><td><code>\rArr</code></td></tr><tr><td>⇓</td><td><code>\dArr</code></td></tr><tr><td>⇔</td><td><code>\hArr</code></td></tr><tr><td>∀</td><td><code>\forall</code></td></tr><tr><td><code class="language-math math-inline">\part</code></td><td><code>\part</code></td></tr><tr><td>∃</td><td><code>\exist</code></td></tr><tr><td>∅</td><td><code>\empty</code></td></tr><tr><td>∇</td><td><code>\nabla</code></td></tr><tr><td>∈</td><td><code>\isin</code></td></tr><tr><td>∉</td><td><code>\notin</code></td></tr><tr><td>∋</td><td><code>\ni</code></td></tr><tr><td>∏</td><td><code>\prod</code></td></tr><tr><td>∑</td><td><code>\sum</code></td></tr><tr><td>−</td><td><code>\minus</code></td></tr><tr><td>∗</td><td><code>\lowast</code></td></tr><tr><td>√</td><td><code>\radic</code></td></tr><tr><td>∝</td><td><code>\prop</code></td></tr><tr><td>∞</td><td><code>\infin</code></td></tr><tr><td>∠</td><td><code>\ang</code></td></tr><tr><td>∩</td><td><code>\cap</code></td></tr><tr><td>∪</td><td><code>\cup</code></td></tr><tr><td>∫</td><td><code>\int</code></td></tr><tr><td>∴</td><td><code>\there4</code></td></tr><tr><td>∼</td><td><code>\sim</code></td></tr><tr><td>≅</td><td><code>\cong</code></td></tr><tr><td>≈</td><td><code>\asymp</code></td></tr><tr><td>≠</td><td><code>\ne</code></td></tr><tr><td>≡</td><td><code>\equiv</code></td></tr><tr><td>≤</td><td><code>\le</code></td></tr><tr><td>≥</td><td><code>\ge</code></td></tr><tr><td>⊂</td><td><code>\sub</code></td></tr><tr><td>⊃</td><td><code>\sup</code></td></tr><tr><td>⊄</td><td><code>\nsub</code></td></tr><tr><td>⊆</td><td><code>\sube</code></td></tr><tr><td>⊇</td><td><code>\supe</code></td></tr><tr><td>⊕</td><td><code>\oplus</code></td></tr><tr><td>⊗</td><td><code>\otimes</code></td></tr><tr><td>⊥</td><td><code>\perp</code></td></tr><tr><td>⋅</td><td><code>\sdot</code></td></tr><tr><td>⌈</td><td><code>\lceil</code></td></tr><tr><td>⌉</td><td><code>\rceil</code></td></tr><tr><td>⌊</td><td><code>\lfloor</code></td></tr><tr><td>⌋</td><td><code>\rfloor</code></td></tr><tr><td>⟨</td><td><code>\lang</code></td></tr><tr><td>⟩</td><td><code>\rang</code></td></tr><tr><td>⧫</td><td><code>\loz</code></td></tr><tr><td>♠</td><td><code>\spades</code></td></tr><tr><td>♣</td><td><code>\clubs</code></td></tr><tr><td>♥</td><td><code>\hearts</code></td></tr><tr><td>◆</td><td><code>\diams</code></td></tr><tr><td>⌣</td><td><code>\smile</code></td></tr><tr><td>"</td><td><code>\quot</code></td></tr><tr><td>&#x26;</td><td><code>\amp</code></td></tr><tr><td>&#x3C;</td><td><code>\lt</code></td></tr><tr><td>></td><td><code>\gt</code></td></tr><tr><td>Œ</td><td><code>\OElig</code></td></tr><tr><td>œ</td><td><code>\oelig</code></td></tr><tr><td>Š</td><td><code>\Scaron</code></td></tr><tr><td>š</td><td><code>\scaron</code></td></tr><tr><td>Ÿ</td><td><code>\Yuml</code></td></tr><tr><td>∘</td><td><code>\circ</code></td></tr><tr><td>~</td><td><code>\tilde</code></td></tr><tr><td> </td><td><code>\ensp</code></td></tr><tr><td> </td><td><code>\emsp</code></td></tr><tr><td> </td><td><code>\thinsp</code></td></tr><tr><td>‌</td><td><code>\zwnj</code></td></tr><tr><td>‍</td><td><code>\zwj</code></td></tr><tr><td>‎</td><td><code>\lrm</code></td></tr><tr><td>‏</td><td><code>\rlm</code></td></tr><tr><td>–</td><td><code>\ndash</code></td></tr><tr><td>—</td><td><code>\mdash</code></td></tr><tr><td>‘</td><td><code>\lsquo</code></td></tr><tr><td>’</td><td><code>\rsquo</code></td></tr><tr><td>‚</td><td><code>\sbquo</code></td></tr><tr><td>“</td><td><code>\ldquo</code></td></tr><tr><td>”</td><td><code>\rdquo</code></td></tr><tr><td>„</td><td><code>\bdquo</code></td></tr><tr><td>†</td><td><code>\dagger</code></td></tr><tr><td>‡</td><td><code>\Dagger</code></td></tr><tr><td>‰</td><td><code>\permil</code></td></tr><tr><td>‹</td><td><code>\lsaquo</code></td></tr><tr><td>›</td><td><code>\rsaquo</code></td></tr><tr><td>€</td><td><code>\euro</code></td></tr><tr><td>arccos</td><td><code>\arccos</code></td></tr><tr><td>arcsin</td><td><code>\arcsin</code></td></tr><tr><td>arctan</td><td><code>\arctan</code></td></tr><tr><td>arg</td><td><code>\arg</code></td></tr><tr><td>cos</td><td><code>\cos</code></td></tr><tr><td>cosh</td><td><code>\cosh</code></td></tr><tr><td>cot</td><td><code>\cot</code></td></tr><tr><td>coth</td><td><code>\coth</code></td></tr><tr><td>csc</td><td><code>\csc</code></td></tr><tr><td>°</td><td><code>\deg</code></td></tr><tr><td>det</td><td><code>\det</code></td></tr><tr><td>dim</td><td><code>\dim</code></td></tr><tr><td>exp</td><td><code>\exp</code></td></tr><tr><td>gcd</td><td><code>\gcd</code></td></tr><tr><td>hom</td><td><code>\hom</code></td></tr><tr><td>inf</td><td><code>\inf</code></td></tr><tr><td>ker</td><td><code>\ker</code></td></tr><tr><td>lg</td><td><code>\lg</code></td></tr><tr><td>lim</td><td><code>\lim</code></td></tr><tr><td>liminf</td><td><code>\liminf</code></td></tr><tr><td>limsup</td><td><code>\limsup</code></td></tr><tr><td>ln</td><td><code>\ln</code></td></tr><tr><td>log</td><td><code>\log</code></td></tr><tr><td>max</td><td><code>\max</code></td></tr><tr><td>min</td><td><code>\min</code></td></tr><tr><td>Pr</td><td><code>\Pr</code></td></tr><tr><td>sec</td><td><code>\sec</code></td></tr><tr><td>sin</td><td><code>\sin</code></td></tr><tr><td>sinh</td><td><code>\sinh</code></td></tr><tr><td>tan</td><td><code>\tan</code></td></tr><tr><td>tanh</td><td><code>\tanh</code></td></tr></tbody></table>
+<h2 id="further-reading">Further reading</h2>
+<p>For more information you might want to read the great <a href="https://orgmode.org/manual/">Org-mode manual</a>. One of
+the nicest mailing lists on this planet, BTW, is
+<a href="../org-mailing-list.org">the Org-mode mailing list</a>
+where you might as well find answers to your questions.</p>
+<p>Have fun!</p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>You may customize the file suffix for exported files like this:
+<code>M-x customize RET org-html-extension</code>. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p>…by typing <code>M-x iimage-mode RET</code>. iimage-mode even shows *.svg images, if
+<code>librsvg</code> was present on compile time. FIXME: is this true for emacs22 ? <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-3">
+<p>All components of <code>org-publish-projects-alist</code> are documented in the <a href="https://orgmode.org/manual/Project-alist.html#Project-alist">Org Mode
+Manual</a>. <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-4">
+<p>Files may be copied from arbitrary src directories to any target directory
+desired. <a href="#user-content-fnref-4" data-footnote-backref="" aria-label="Back to reference 4" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-5">
+<p>This is primarily because of the behaviour of servers. When we navigate
+to <a href="https://orgmode.org/worg/">https://orgmode.org/worg/</a> we will face the <code>index.html</code> if present. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 5" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

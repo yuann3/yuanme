@@ -1,0 +1,7 @@
+Text with a note[fn:1], another[fn:n] and one inline[fn:x:Inline.].
+
+Again[fn:1].
+
+[fn:1] The first.
+
+[fn:n] The /second/.

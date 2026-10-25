@@ -1,0 +1,14 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>This is an example file for use by the Org mode tests.</p>
+<h2 id="top">top</h2>
+<h3 id="code-block-section">code block</h3>
+<p>Here are a couple of code blocks.</p>
+<pre><code class="language-emacs-lisp">;; 94839181-184f-4ff4-a72f-94214df6f5ba
+(message "I am code")
+</code></pre>
+<h2 id="accumulating-properties-in-drawers">accumulating properties in drawers</h2>
+<pre><code class="language-emacs-lisp">(list bar foo)
+</code></pre>

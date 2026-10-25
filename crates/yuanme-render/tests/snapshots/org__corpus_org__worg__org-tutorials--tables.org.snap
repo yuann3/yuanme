@@ -1,0 +1,204 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<p>This tutorial briefly describes the use of tables with Org.  You can
+freely improve this tutorial by editing <a href="../index.org">Worg</a>.</p>
+<h2 id="creating-a-table">Creating a table</h2>
+<h3 id="while-typing">While typing</h3>
+<p>The easiest way to create a table is to directly type the ”|” character
+at the beginning of a line, or after any amount of white space.  This
+will put you in the first field of an atomic table.</p>
+<pre><code>| This is the content of the first cell
+</code></pre>
+<p>Once you’ve finished editing this cell, you can jump to the next one by
+pressing <code>TAB</code>.  Since the row you just started only contains one cell,
+the next cell is really the first cell of the next row.</p>
+<pre><code>| This is the content of the first cell |
+| &#x3C; Here I am after pressing TAB        |
+</code></pre>
+<h3 id="by-creating-the-structure-and-filling-it">By creating the structure and filling it</h3>
+<p>You can also create a table from scratch with <code>C-c |</code>.  You will be
+asked for the structure of the table, the default being 5x2 (see
+<code>org-table-default-size</code>), five columns and two rows:</p>
+<pre><code>|   |   |   |   |   |
+|---+---+---+---+---|
+|   |   |   |   |   |
+</code></pre>
+<p>Then you can jump from one field to another with the <code>TAB</code> key (jump to
+the <em>next</em> cell) or <code>S-&#x3C;TAB></code> (jump to the <em>previous</em> cell).  <code>RET</code> will
+jump to the to the next cell in the same colum, and create a new column
+if there is no such cell (or if the next row is beyond a separator
+line.)</p>
+<h3 id="by-converting-a-region-into-a-table">By converting a region into a table</h3>
+<p>Org provides useful ways of converting a region into a table.  For this,
+select a region and press <code>C-c |</code>.  For example, press <code>C-c |</code> on this:</p>
+<pre><code>some, comma, separated, values
+</code></pre>
+<p>will automagically produce this:</p>
+<pre><code>| some | comma | separated | values |
+</code></pre>
+<p>Usually, this command should be smart enough to guess what is the field
+separator for the region.  If each line of the active region contains a
+<code>TAB</code> or a comma, it will assume this is the separator.</p>
+<ul>
+<li>If you want to force the comma as a field separator, press <code>C-u C-c |</code>.</li>
+<li>If you want to force TAB as a field separator, press <code>C-u C-u C-c |</code>.</li>
+<li>If you want to force a specific number of spaces – say 3 – use <code>C-u 3 C-c |</code>.</li>
+</ul>
+<h2 id="editing-the-structure-of-a-table">Editing the structure of a table</h2>
+<p>Editing table with Org is pure magic.</p>
+<h3 id="moving-rowscolumns">Moving rows/columns</h3>
+<p>Let’s say for example that you have this basic table:</p>
+<pre><code>| A | B | C |
+| 1 | 2 | 3 |
+| a | b | c |
+</code></pre>
+<p>With the cursor in the A field, pressing <code>M-&#x3C;right></code> will move the A
+column to the right:</p>
+<pre><code>| B | A | C |
+| 2 | 1 | 3 |
+| b | a | c |
+</code></pre>
+<p>With the cursor in the first row, pressing <code>M-&#x3C;down></code> will move the
+first row down:</p>
+<pre><code>| 1 | 2 | 3 |
+| A | B | C |
+| a | b | c |
+</code></pre>
+<h3 id="inserting-rowscolumns">Inserting rows/columns</h3>
+<p>Prefixed with the Shift key, these command will <em>insert</em> a new column or
+a new row, instead of moving it.  For example, with the cursor initially
+in the <code>B</code> cell, <code>S-M-&#x3C;right></code> will insert a new column between <code>A</code> and
+<code>B</code></p>
+<pre><code>| A |   | B | C |
+| 1 |   | 2 | 3 |
+| a |   | b | c |
+</code></pre>
+<p>… leaving the cursor in the newly created column.</p>
+<p>And <code>S-M-&#x3C;down></code> when cursor is in the first row will insert a new row
+at the beginning of the table:</p>
+<pre><code>|   |   |   |
+| A | B | C |
+| 1 | 2 | 3 |
+| a | b | c |
+</code></pre>
+<h2 id="narrowing-the-visible-part-of-a-column">Narrowing the visible part of a column</h2>
+<p>Sometimes cells can get really wide.  If you want to restrict the width
+visible width of a cell, you need to add a new row to your table.</p>
+<pre><code>| &#x3C;10>             | &#x3C;15>                        |
+| A very wide cell | Another very very wide cell |
+</code></pre>
+<p>Pressing <code>C-c C-c</code> on this table will update the display so that the
+first and second columns are respectively narrowed to 10 and 15
+characters:</p>
+<pre><code>| &#x3C;10>     | &#x3C;15>            |
+| A very=> | Another very => |
+</code></pre>
+<p>When columns are narrowed, it might be useful to temporarily see the
+content of a cell with <code>C-u &#x3C;TAB></code> (or <code>C-u C-c `</code>) or to edit the
+content in a separate window with <code>C-c `</code>.</p>
+<h2 id="preparing-tables-for-export">Preparing tables for export</h2>
+<p>This table :</p>
+<pre><code>| A | B |
+| 1 | 2 |
+</code></pre>
+<p>will be exported like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+<table><tbody><tr><td>A</td><td>B</td></tr><tr><td>1</td><td>2</td></tr></tbody></table>
+<h3 id="adding-a-table-header">Adding a table header</h3>
+<p>This table :</p>
+<pre><code>| A | B |
+|---+---|
+| 1 | 2 |
+</code></pre>
+<p>will be exported like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>
+<p>The horizontal line separating the two rows tells the exporter to
+consider the first line is the table header.</p>
+<h3 id="grouping-columns">Grouping columns</h3>
+<p>You can group columns like this:</p>
+<pre><code>|   |  N | N^2 | N^3 | N^4 | sqrt(n) | sqrt[4](N) |
+|---+----+-----+-----+-----+---------+------------|
+| / | &#x3C;> |   &#x3C; |     |   > |       &#x3C; |          > |
+| # |  1 |   1 |   1 |   1 |       1 |          1 |
+| # |  2 |   4 |   8 |  16 |  1.4142 |     1.1892 |
+| # |  3 |   9 |  27 |  81 |  1.7321 |     1.3161 |
+|---+----+-----+-----+-----+---------+------------|
+</code></pre>
+<p>Here is the output:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th></th><th>N</th><th>N<sup>2</sup></th><th>N<sup>3</sup></th><th>N<sup>4</sup></th><th>sqrt(n)</th><th>sqrt(N)</th></tr></thead><tbody><tr><td>/</td><td>&#x3C;></td><td>&#x3C;</td><td></td><td>></td><td>&#x3C;</td><td>></td></tr><tr><td>#</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr><tr><td>#</td><td>2</td><td>4</td><td>8</td><td>16</td><td>1.4142</td><td>1.1892</td></tr><tr><td>#</td><td>3</td><td>9</td><td>27</td><td>81</td><td>1.7321</td><td>1.3161</td></tr></tbody></table>

@@ -1,0 +1,453 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+warning[org/no-effect]: `-n -r` has no effect in yuanme
+   --> worg/org-tutorials--org4beginners.org:391:24
+    |
+391 | #+BEGIN_SRC emacs-lisp -n -r
+    |                        ^^^^^
+    |
+    = note: a code block's lines aren't numbered and its labels aren't rewritten
+    = note: run `yuanme docs org/no-effect` for more
+<p>Org mode, as it says on the <a href="https://orgmode.org/">official web page</a>, is for keeping notes,
+maintaining TODO lists, doing project planning, and authoring with a
+fast and effective plain-text system. Beginning with Emacs 22.2 and
+XEmacs 22.1 it has been part of Emacs. The following is a simple
+tutorial to help you get started using Emacs and Org mode.</p>
+<h2 id="the-absolute-minimum-you-need-to-know-about-emacs">The absolute minimum you need to know about Emacs</h2>
+<p>The absolute minimum you need to know about Emacs, to be able to do
+<em>anything</em>, is more then you need to know about many other
+applications. But, you might compare it to a regular toy and
+lego. Lego is harder to begin with (you start with a box with little
+plastic pieces), but in the long run, you can do more with it.</p>
+<p>Emacs is heavy on shortcuts. Starting out, that is rather annoying,
+but in time you’ll notice you start to use the mouse less and less,
+and you actually start to work quicker.</p>
+<p>All the basic things can be done with the mouse from the menu: open
+file, save file, etc. You will notice, however, that in time it is
+faster to use shortcuts and leave your hands on the keyboard.</p>
+<p>Emacs uses a lot of double shortcuts, so instead of Alt-F and Alt-S,
+like most applications, it uses <strong>Control-X Control-F</strong> and <strong>Control-X
+Control-S</strong>. This seems rather counter-productive in the beginning, but
+you’ll get used to it.</p>
+<p><strong>Note:</strong> Key abbreviations:</p>
+<ul>
+<li><strong>M</strong> – Alt (used to be called Meta on ancient keyboards, that’s why)</li>
+<li><strong>C</strong> – Control</li>
+<li><strong>S</strong> – Shift</li>
+<li><strong>C-x f</strong> – means holding both Control <em>and</em> x, release both, and press f</li>
+</ul>
+<h3 id="what-version-of-emacs-should-you-choose">What version of Emacs should you choose?</h3>
+<p>If it is all the same to you, then choose Emacs over XEmacs (if you
+disagree, then you already know enough to skip this paragraph). Here
+are some links to help:</p>
+<ul>
+<li><a href="http://aquamacs.org/">Aquamacs: Emacs for Mac OS X</a> (my favourite)</li>
+<li><a href="http://homepage.mac.com/zenitani/emacs-e.html">Carbon Emacs for OSX</a></li>
+<li><a href="http://emacsformacosx.com/">Regular Emacs for OS X</a></li>
+<li><a href="http://ftp.gnu.org/gnu/emacs/windows/">Emacs for MS Windows</a></li>
+</ul>
+<p>On GNU/Linux, just use your package manager to install Emacs.</p>
+<p>On Debian:</p>
+<pre><code class="language-sh">sudo apt-get install emacs
+</code></pre>
+<h3 id="configuration">Configuration</h3>
+<p>The biggest pain, when you are just beginning with Emacs, is the
+configuration. There is not really a menu for it (you might later hear
+there is, but they are lying, that menu is really there to trap
+innocent people); you need to edit a text-file. The location of that
+config-file (and even the name) is different on different OSes, but
+the text in it is mostly the same across platforms. Many people
+actually use the same config-file on different OSes and even over many
+years, so in the long run, it is for the best!</p>
+<p>Location of the configuration file:</p>
+<ul>
+<li>Aquamacs: <code>~/Library/Preferences/Aquamacs Emacs/Preferences.el</code></li>
+<li>Regular emacs on Linux or OS X: <code>~/.emacs</code></li>
+<li>On Windows: <code>c:\emacs\.emacs.d\init.txt</code> (<a href="http://www.claremontmckenna.edu/math/alee/emacs/emacs.html">according to this example installation</a>)</li>
+</ul>
+<h2 id="starting-org-mode">Starting Org mode</h2>
+<p>New shortcuts in this chapter:</p>
+<ul>
+<li><strong>C-x C-s</strong> – save document</li>
+<li><strong>C-x C-f</strong> – open document</li>
+</ul>
+<h3 id="our-first-org-document">Our first Org document</h3>
+<p>By now, we know enough to start our first Org document. Start up
+Emacs. If you have a completely new Emacs install, then you should see
+the Emacs splash-screen. It has a couple of shortcuts, to the Emacs
+tutorial and some other documents, but for now, we don’t need those.</p>
+<p>To start a new document, use the following short-cut: <strong>C-x C-f</strong>, which
+will offer to open a document (or buffer as it is called in
+Emacs), call it <strong>1.org</strong>. This will give you a brand-new, empty document.</p>
+<p>To save the document, either press the save icon, or press <strong>C-x C-s</strong>,
+call it 1.org.</p>
+<p>Emacs does not yet actually understand that you are editing an Org
+document. To enable Org mode on your current document, type <code>M-x
+org-mode</code> which will enable the Org mode on the current document.</p>
+<p>To make Emacs understand that this is an Org document, add the
+following to the <strong>top</strong> of your document:</p>
+<pre><code class="language-org">MY PROJECT -*- mode: org -*-
+</code></pre>
+<p>Those are minuses, <em>not</em> underscores. MY PROJECT is the title of the
+document; this can be anything.</p>
+<p>This will enable Org mode for this document, no matter what the
+file-ending is.</p>
+<p>To enable Org mode to always work on all your Org files, you have to
+edit your Emacs configuration. We do that in the following paragraph.</p>
+<h3 id="our-first-edit-to-our-emacs-configuration">Our first edit to our Emacs configuration</h3>
+<p>Open your Emacs configuration file (see <a href="#configuration">Configuration</a>). To open it in
+Emacs, use <strong>C-x C-f</strong> (open file). Put the following in it:</p>
+<pre><code class="language-emacs-lisp">;; -*- mode: elisp -*-
+
+;; Disable the splash screen (to enable it agin, replace the t with 0)
+(setq inhibit-splash-screen t)
+
+;; Enable transient mark mode
+(transient-mark-mode 1)
+
+;;;;Org mode configuration
+;; Enable Org mode
+(require 'org)
+;; Make Org mode work with files ending in .org
+;; (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+;; The above is the default in recent emacsen
+</code></pre>
+<p><strong>Note:</strong> Org-mode is included by default from Emacs 22.1 onward. So no
+additional steps are required to install it.</p>
+<p>Restart Emacs.</p>
+<p><strong>Note:</strong> The mode-line, mentioned above is only needed if you (1) have
+files with a different file-ending than configured in your Emacs
+config (for example myfile.txt), or (2) don’t have the auto-mode-alist
+line in your configuration.</p>
+<h2 id="keep-track-of-lists-and-notes">Keep track of lists and notes</h2>
+<p>New shortcuts in this chapter:</p>
+<ul>
+<li><strong>TAB</strong> / <strong>S-TAB</strong> – (un)fold</li>
+<li><strong>M-up/down</strong> – move a headline up or down</li>
+<li><strong>M-left/right</strong> – promote or demote a headline</li>
+<li><strong>M-RET</strong> – insert a new headline</li>
+<li><strong>C-x C-s</strong> – save file</li>
+<li><strong>C-h t</strong> – Emacs tutorial</li>
+</ul>
+<p>Now that we have configured Emacs to work with Org document, we can
+actually start using it. Let’s begin with an outline that will help us
+get to know Org mode. Start a new document (<strong>C-x b</strong>), call it 2.org, and
+copy and paste the following in it:</p>
+<pre><code class="language-org">#-*- mode: org -*-
+#+STARTUP: showall
+
+* Welcome to Org mode
+
+  Welcome, and thanks for trying out Org mode. Making outlines in
+  Org is very simple. It is just text! Just start typing.
+* This is a headline, it starts with one or more stars
+  A heading has one star, a sub-heading two, etc.
+* Working with lists
+** Moving around in our outline
+** Moving around headlines
+</code></pre>
+<p>Save the file (<strong>C-x C-s</strong>) as 2.org, and you will notice that the colors
+change, syntax highlighting is turned on, and Emacs understands you
+are working in Org mode.</p>
+<p>Now we are ready to really start working with Org mode!</p>
+<h3 id="working-with-lists">Working with lists</h3>
+<p>List are great for brainstorming and keeping track of things. They
+also help you to keep the big picture in mind when taking notes.</p>
+<p>The first thing we will do is folding. Especially when you have a long
+document, this is very useful. In our example document, go to the
+first headline (just use the arrow keys), <strong>Welcome to Org mode</strong>, end
+press <strong>TAB</strong>, and now press <strong>S-TAB</strong>. <strong>TAB</strong> will fold and unfold parts or,
+using shift and tab, the whole document.</p>
+<p>The basic idea of brainstorming is to write a list of items. Then,
+later, you might want to change the order of your items, for example
+in order of importance. To move a headline up or down, use <strong>M-up/down</strong>.
+Try it on any of the headlines. Notice that your list is folded,
+showing only headings, to give a general overview of the document, and
+you don’t get lost in the details.</p>
+<p>Next we will promote and demote headings. For example you might make
+<strong>This is a headline, it starts with one or more stars</strong>, a sub-heading of
+<strong>Working with lists</strong>, moving it down, and then using <strong>M-right</strong> to demote
+it.</p>
+<p>Finally, to add a new headline, press <strong>M-RET</strong>.</p>
+<p>Besides headlines there are other kinds of lists: ordered and
+unordered lists. They look like this:</p>
+<pre><code class="language-org">** Lord of the Rings
+   My favorite scenes are (in this order)
+   1. The attack of the Rohirrim
+   2. Eowyn's fight with the witch king
+      + this was already my favorite scene in the book
+      + I really like Miranda Otto.
+   3. Peter Jackson being shot by Legolas
+       - on DVD only
+      He makes a really funny face when it happens.
+   But in the end, no individual scenes matter but the film as a whole.
+   Important actors in this film are:
+   - Elijah Wood :: He plays Frodo
+   - Sean Austin :: He plays Sam, Frodo's friend.  I still remember
+     him very well from his role as Mikey Walsh in The Goonies.
+</code></pre>
+<p>Unordered lists start with <code>-</code>,=+=,or <code>*</code>. Ordered lists start with a
+number and a dot. Descriptions use <code>::</code>.</p>
+<p>Further information: a short <a href="http://bzg.fr/org-playing-with-lists-screencast.html">screencast</a> presenting a few features of
+plain lists, also look at the <a href="https://orgmode.org/manual/Plain-lists.html#Plain-lists">manual</a>.</p>
+<h3 id="working-with-notes">Working with notes</h3>
+<p>To keep notes, there is some markup to make things stand out a bit
+more. You can use the following markup:</p>
+<pre><code>You can make words *bold*, /italic/, _underlined_, =code= and ~verbatim~, and, if you must, +strike-through+.
+</code></pre>
+<p>It will look like this:</p>
+<p>You can make words <strong>bold</strong>, <em>italic</em>, <span class="underline">underlined</span>, <code>code</code> and
+<code>verbatim</code>, and, if you must, <del>strike-through</del>.</p>
+<p>If you like what you see so far, it might be a good idea to do the
+Emacs tutorial that comes with Emacs itself (<strong>C-h t</strong>). The tutorial
+will teach you some more Emacs shortcuts for moving around in your
+documents.</p>
+<h2 id="working-with-todo-items">Working with TODO items</h2>
+<p>New shortcuts in this chapter:</p>
+<ul>
+<li><strong>S-left/right</strong> – cycle workflow</li>
+<li><strong>C-c / t</strong> – show TODOs in current document</li>
+</ul>
+<h3 id="basic-todo-functionality">Basic TODO functionality</h3>
+<p>The biggest use-case of Org mode is using it to keep track of
+TODOs. To start working with TODOs you don’t have to do anything,
+just add the TODO keyword in a headline:</p>
+<pre><code class="language-org">** TODO buy airplane
+</code></pre>
+<p>To speed up working with TODO lists there is the shortcut
+<strong>S-left/right</strong>, which will cycle through: <code>TODO</code> - <code>DONE</code> and empty.</p>
+<p>Imagine that you have a large document, with TODO entries scattered
+all over the document. <strong>C-c / t</strong> will show only your
+current TODOs, folding the rest away.</p>
+<h3 id="configuring-todos">Configuring TODOs</h3>
+<h4 id="in-the-file-itself">In the file itself</h4>
+<p>Org mode files can be configured by adding workflow states to the
+beginning of the file, like so:</p>
+<pre><code class="language-org">#+TODO: TODO IN-PROGRESS WAITING DONE
+</code></pre>
+<p>The line should be at the top of file. There should <em>not</em> be any empty
+lines between the top and the <code>#+TODO</code> line.</p>
+<p>To activate the new workflow, either reopen the file, or go to the top
+of the file (any line starting with #) and press <strong>C-c C-c</strong>.</p>
+<p>Try copying the workflow to your test-file 1.org. Seeing it helps
+understanding what you can do with it.</p>
+<h4 id="in-the-emacs-config-file">In the Emacs-config file</h4>
+<p>Adding the workflow states to every org-file you create gets boring
+fast, so it is also possible to do this in your config file. Add the
+following <em>after</em> the (require ‘org) line:</p>
+<pre><code class="language-lisp">(setq org-todo-keywords
+  '((sequence "TODO" "IN-PROGRESS" "WAITING" "DONE")))
+</code></pre>
+<p>To activate the workflow states, restart Emacs.</p>
+<h2 id="agendas">Agendas</h2>
+<p>New shortcuts in this chapter:</p>
+<ul>
+<li><strong>C-c a</strong> – agenda</li>
+<li><strong>C-c [</strong> – add document to the list of agenda files</li>
+<li><strong>C-c ]</strong> – remove document from the list of agenda files</li>
+<li><strong>C-c .</strong> – add date</li>
+<li><strong>C-u C-c .</strong> – add time and date</li>
+<li><strong>C-g</strong> – stop doing what you are trying to do, escape</li>
+</ul>
+<p>The basic meaning of the word agenda is <em>things to be done</em>, coming from
+the latin <em>agendum</em>. Org mode is very good in making different kinds of
+agendas, or task-lists, collecting all the tasks from one or more
+Org documents.</p>
+<h3 id="creating-lists-of-all-active-todos">Creating lists of all active TODOs</h3>
+<p>We will start by using 1.org as our basic agenda file. Later we will
+see how this works in the Emacs-config file.</p>
+<p>So, again, visit <code>1.org</code>. Next press <strong>C-c a</strong>, which calls the
+agenda. It looks like this:</p>
+<pre><code>Press key for an agenda command
+-------------------------------
+a Agenda for the current week or day
+t List of all TODO entries
+</code></pre>
+<p>and then some more.</p>
+<p>Unfortunately, both will show just empty lists (you can try if you
+want). So just press <strong>C-g</strong> (the Emacs version of escape). Next we will
+add 1.org as an agenda file, using <strong>C-c [</strong>. Now if you go to the
+agenda menu (<strong>C-c a</strong>) and press <strong>t</strong>, you get a list off all your TODO
+items.</p>
+<p>You will also notice that, if you have added a more comprehensive
+workflow, as explained in <a href="#working-with-todo-items">Working with TODO items</a>, all items are
+listed, except DONE.</p>
+<p>This can be repeated for as many documents as you want, and the agenda
+will give you a complete list of TODOs. If you want to remove a
+document from the list of agenda files, press <strong>C-c ]</strong>.</p>
+<h3 id="appointments-and-deadlines">Appointments and deadlines</h3>
+<p>When a task is time-related, we usually put it in our calendar. This
+can also be done in Org mode. And the agenda can then show us a
+time-based list of all our TODOs. This is done in the following way.</p>
+<p>In <code>1.org</code>, add a new (sub-)heading called: <em>Call fred</em> (<strong>M-RET</strong> Call fred),
+but at the end press <strong>C-c .</strong>. This will give you, at the bottom of the
+screen, the date chooser. You can either type something by hand, or
+use <strong>S-left/right</strong> to change the date. If you want to add a time as
+well, use <strong>C-u C-c .</strong> instead of <strong>C-c .</strong>.</p>
+<p>Now, if you go to the agenda (<strong>C-c a</strong>) and press <strong>a</strong>, you get an agenda
+entry!</p>
+<p>Further reading:</p>
+<ul>
+<li><a href="http://doc.norang.ca/org-mode.html#Clocking">Bernt Hansens extensive description Time Clocking: Usage, Customization,
+Workflow description</a></li>
+<li><a href="http://sachachua.com/blog/2007/12/clocking-time-with-emacs-org/">Clocking time with Emacs Org</a></li>
+<li>And of course <a href="https://orgmode.org/manual/#toc-Dates-and-times-1">the manual</a></li>
+</ul>
+<h3 id="configuring-the-agenda-in-the-emacs-configuration-file">Configuring the agenda in the Emacs configuration file</h3>
+<p>If you open your emacs configuration file after you have used
+<strong>C-c [</strong>, you will see the following:</p>
+<pre><code class="language-emacs-lisp">(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(org-agenda-files (quote ("~/Documents/Projects/org4beginners/2.org"
+ "~/Documents/Projects/org4beginners/1.org"))))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
+</code></pre>
+<p>Welcome to the world of Emacs lisp. This is what it looks like if
+Emacs changes your config file. (<strong>Note:</strong> on Aquamacs, this is in a
+separate file called customizations.el)</p>
+<p>For us, the important part is in the middle (lines 5 and 6), the line
+with <em>org-agenda-files</em>. There we see the list of files the agenda
+uses to create its lists. For now we can just leave it there, but at
+least you know what it is when you later look at your config-file.</p>
+<p>Further reading: <a href="https://orgmode.org/worg/org-tutorials/org-custom-agenda-commands.html">Custom agenda commands</a></p>
+<h2 id="gtd">GTD</h2>
+<p>New shortcuts in this chapter:</p>
+<ul>
+<li><strong>C-c C-c</strong> – add tag</li>
+</ul>
+<p><em>Getting things done</em> is one of the most popular ways to organize
+oneself, with 4.3 million hits on Google. It is quite possible to use
+the same kind of setup in Org mode, using tags.</p>
+<p>Tags are used to organize different kind of TODO-entries, for
+example all tasks on the phone, reading, shopping, etc.</p>
+<p>To add tags, add the following to the top your document:</p>
+<pre><code class="language-org">#+TAGS: { @OFFICE(o) @HOME(h) } COMPUTER(c) PHONE(p) READING(r)
+</code></pre>
+<p>Reload the document, or press <strong>C-c C-c</strong> on a line starting with #.</p>
+<p>Now it is possible to add one or more tags, to any line in your
+document. If we press <strong>C-c C-c</strong>, the following will pop up:</p>
+<pre><code>Inherited:
+Current:
+{ [o] @OFFICE     [h] @HOME    }
+  [C] COMPUTER   [p] PHONE   [r] READING
+</code></pre>
+<p>These are the shortcuts we defined at the beginning of our
+document. The first two tags (OFFICE and HOME) are mutually exclusive,
+the rest can just be added.</p>
+<h3 id="adding-tags-to-the-emacs-config-file">Adding tags to the Emacs config-file</h3>
+<p>To add tags to the Emacs config-file, so it is available to all your
+documents, add the following.</p>
+<pre><code class="language-emacs-lisp">(setq org-tag-alist '(("@work" . ?w) ("@home" . ?h) ("laptop" . ?l)))
+</code></pre>
+<p>To set mutually exclusive groups, like the previous example, see <a href="https://orgmode.org/org.html#Setting-Tags">here</a>
+in the manual.</p>
+<p>It is always possible to override your settings by adding something
+else to the top of the document. This way every document can have its
+own workflow and/or tags.</p>
+<p>An extensive example of working with tags can be found <a href="http://sachachua.com/blog/2008/01/tagging-in-org-plus-bonus-code-for-timeclocks-and-tags/">here</a> as well.</p>
+<h2 id="export">Export</h2>
+<p>New shortcuts in this chapter:</p>
+<ul>
+<li><strong>C-c C-e</strong> – export menu</li>
+</ul>
+<p>Working with Org documents is usually fine, but sometimes you might
+want to export your documents to another format.</p>
+<p>To export the current document to, for example, html, press <strong>C-c C-e</strong>,
+and then <strong>b</strong>. This will export the document and open the new document in
+your browser.</p>
+<p>Further reading: <a href="https://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html">HTML publishing tutorial</a> (which goes further then
+just a document, you can use it to publish a complete website). And
+<a href="https://orgmode.org/manual/Exporting.html#Exporting">the manual</a> which explains exporting to HTML, LaTeX, PDF and others.</p>
+<h2 id="becoming-proficient-with-org-mode">Becoming proficient with Org mode</h2>
+<p>To really save time with any efficiency tool, you have to know it
+well. To get to know Org mode, reading and using the manual is
+important.  Org mode is well documented. The fastest way to read the
+Org-mode documentation is right in Emacs, in the so-called info browser.</p>
+<p>To call the info browser, use <strong>C-h i</strong>, and use <strong>TAB</strong> to jump from
+hyperlink to hyperlink.</p>
+<p>To move around in the info-browser use:</p>
+<ul>
+<li><strong>u</strong> – up</li>
+<li><strong>n</strong> – next</li>
+<li><strong>p</strong> – previous</li>
+</ul>
+<p>Besides the Org mode manual, there is the <a href="https://orgmode.org/worg/">Worg website</a>, which has
+many cool ideas and <a href="https://orgmode.org/worg/org-tutorials/index.html">tutorials</a>.</p>
+<p>For quick reminders there are the <a href="https://orgmode.org/index.html#sec-4.2">Org mode cheat-sheet</a> and the
+emacs cheat-sheet, both will help you to remember those pesky
+short-cuts.</p>
+<h2 id="beyond-the-basics">Beyond the basics</h2>
+<p>As is often said in geek humor: “here be dragons!” From here on you
+are going into the die-hard section of using Org mode. Most of the
+following material is not really hard, but make sure to have backups
+of your important data. If you have questions about the following,
+look it up in the manual and the faq. Also irc (#orgmode on Libera)
+is a good place to ask questions.</p>
+<h3 id="quickly-adding-tasks-with-capture">Quickly adding tasks with Capture</h3>
+<h3 id="running-the-latest-version-of-org-mode">Running the latest version of Org mode</h3>
+<p>New commands in this section:</p>
+<ul>
+<li><strong>M-x org-reload</strong> – reload Org mode after an update</li>
+<li><strong>M-x org-version</strong> – show Org mode version</li>
+</ul>
+<p>Pretty soon you will notice that the development of Org mode goes a
+lot faster the speed Emacs gets updated with. It is quite possible to
+run the development version of Org mode daily.</p>
+<p>How do you go about that?</p>
+<ol>
+<li>
+<p>Install git
+Not really part of an Org mode tutorial, but here are some
+places to start:</p>
+<ul>
+<li><a href="http://code.google.com/p/git-osx-installer/">Git OS X installer</a></li>
+<li><a href="https://gitforwindows.org/">git for Windows</a></li>
+<li>On Linux, use your package manager:</li>
+</ul>
+<pre><code class="language-sh">sudo apt-get install git
+</code></pre>
+</li>
+<li>
+<p>Decide where you will keep the Org mode code. I use
+<strong>~/Build/Emacs/org-mode</strong>, but for Emacs it is really all the
+same, just choose something convenient, and stick with it.</p>
+</li>
+<li>
+<p>Download the latest version of Org mode:</p>
+<pre><code class="language-sh">mkdir ~/Build/Emacs
+cd ~/Build/Emacs
+git clone https://git.savannah.nongnu.org/git/org-mode.git
+cd org-mode &#x26;&#x26; make &#x26;&#x26; make doc
+</code></pre>
+</li>
+<li>
+<p>Add to your Emacs-init file:</p>
+<pre><code class="language-emacs-lisp">(setq load-path (cons "~/Build/Emacs/org-mode/lisp" load-path))
+(setq load-path (cons "~/Build/Emacs/org-mode/contrib/lisp" load-path))
+</code></pre>
+</li>
+</ol>
+<p><strong>Important!</strong> If you run the regular version of Org mode, you have
+<code>(require 'org)</code> in your config-file.</p>
+<ol>
+<li>
+<p>To keep up-to-date with Org mode in the future do:</p>
+<pre><code class="language-sh">cd ~/Build/Emacs/org-mode
+git pull &#x26;&#x26; make clean &#x26;&#x26; make &#x26;&#x26; make doc
+</code></pre>
+</li>
+<li>
+<p>Reload Org mode, using: <strong>M-x org-reload</strong>, or restart Emacs.</p>
+</li>
+</ol>
+<p>To see what version of Org mode you are running: <strong>M-x org-version</strong>.</p>

@@ -1,0 +1,153 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+<h2 id="criteria">Criteria</h2>
+<p>After reviewing a list of org-mode<sup><a href="#user-content-fn-4" id="user-content-fnref-4" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup> capable static website generators<sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">2</a></sup>,
+I decided to see if org-static-blog<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup> could suffice my simple
+needs. My criteria for choosing an org-mode static site generator was:</p>
+<ul>
+<li>it must be actively maintained,</li>
+<li>it must be simple to set up with customizations,</li>
+<li>and it must work with Emacs 26 and later.</li>
+</ul>
+<p>This ruled out quite a few right away. I didn’t attempt using
+org-publish, as it looked like a great deal of configuration to
+achieve a minimum viable web-page for this project.</p>
+<h2 id="configuration-of-org-static-blog">Configuration of <code>org-static-blog</code></h2>
+<p>Following the org-static-blog README documentation, it is very
+straight forward to get a minimal viable website generated. I added
+the following to my <code>init.el</code>:</p>
+<pre><code class="language-elisp">(add-to-list 'auto-mode-alist (cons (concat org-static-blog-posts-directory ".*\\.org\\'") 'org-static-blog-mode))
+(setq org-static-blog-publish-title "blog.winny.tech")
+(setq org-static-blog-publish-url "https://blog.winny.tech/")
+(setq org-static-blog-publish-directory "~/projects/blog/")
+(setq org-static-blog-posts-directory "~/projects/blog/posts/")
+(setq org-static-blog-drafts-directory "~/projects/blog/drafts/")
+(setq org-static-blog-enable-tags t)
+
+(setq org-static-blog-page-header
+      "
+&#x3C;link href=\"static/style.css\" rel=\"stylesheet\" type=\"text/css\" />
+")
+</code></pre>
+<p>I opted to <code>setq</code> all the configuration variables; I will likely
+switch to using <code>M-x customize-group RET org-static-blog RET</code> in the
+future however. It’s a better experience.</p>
+<p>Then I simply create a new post with
+<code>M-x org-static-blog-create-new-post RET &#x3C;TITLE> RET</code>, edit the
+buffer, save it, then run <code>M-x org-static-blog-publish RET</code>.
+I also added some styling to my <code>style.css</code><sup><a href="#user-content-fn-2" id="user-content-fnref-2" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup> based off the Tachyons CSS
+framework<sup><a href="#user-content-fn-5" id="user-content-fnref-5" data-footnote-ref="" aria-describedby="footnote-label">5</a></sup>. I had previously used Bootstrap<sup><a href="#user-content-fn-6" id="user-content-fnref-6" data-footnote-ref="" aria-describedby="footnote-label">6</a></sup> for styling but was hoping
+to avoid adding framework and other extra tooling that shouldn’t
+be necessary to generate a simple site like this one.</p>
+<h2 id="deploying-with-caddy-and-github">Deploying with Caddy and GitHub</h2>
+<p>I am a fan of the Caddy<sup><a href="#user-content-fn-7" id="user-content-fnref-7" data-footnote-ref="" aria-describedby="footnote-label">7</a></sup> web server which offers automatic HTTPS
+via LetsEncrypt with only a few lines of configuration. In addition
+Caddy has a plugin named git which offers the ability to
+automatically deploy content from git repositories with webhook
+support. To deploy the following steps are taken:</p>
+<ol>
+<li><code>M-x org-static-blog-publish RET</code> from Emacs to regenerate the
+static site,</li>
+<li>commit the changes in git,</li>
+<li>and finally push the git branch to GitHub.</li>
+</ol>
+<p>After these steps, GitHub automatically sends a HTTP POST request to my Caddy
+server with information about the new git commits and Caddy pulls the
+git repository. If everything went well and the webhook successfully
+fired, the website is now deployed.</p>
+<h3 id="server-configuration">Server Configuration</h3>
+<p>I switched most of my personal internet-related services to Docker<sup><a href="#user-content-fn-8" id="user-content-fnref-8" data-footnote-ref="" aria-describedby="footnote-label">8</a></sup> in
+conjunction with <code>docker-compose</code><sup><a href="#user-content-fn-9" id="user-content-fnref-9" data-footnote-ref="" aria-describedby="footnote-label">9</a></sup> last year. The main rationale
+is I can move my configuration without dealing with systems package
+versions.  I already had Caddy set up,
+so it was as simple as adding this to my <code>Caddyfile</code>:</p>
+<pre><code class="language-conf">blog.winny.tech {
+        root /srv/www/blog.winny.tech
+        gzip
+        log /logs/blog.winny.tech.log
+        git https://github.com/winny-/blog.winny.tech {
+                hook /webhook top-secret-password-redacted
+        }
+}
+</code></pre>
+<p>The relevant lines of my <code>docker-compose.yml</code> looks like this:</p>
+<pre><code class="language-yaml">version: "2.1"
+services:
+  web:
+    image: abiosoft/caddy:no-stats
+    ports:  # Expose the webserver ports to the internet
+      - "80:80"
+      - "443:443"
+    environment:
+      # This is where caddy places certs after ACME negotiation.
+      CADDYPATH: "/etc/caddycerts"
+      ACME_AGREE: "true"
+    volumes:
+      - /srv/caddy/certs:/etc/caddycerts
+      - /srv/caddy/Caddyfile:/etc/Caddyfile  # Configuration
+      - /srv/www:/srv/www  # the websites
+      - /srv/caddy/logs:/logs
+</code></pre>
+<p>A keen <code>docker-compose</code>-savy reader will notice I did not specify a
+<code>restart: always</code> entry. I had Caddy configured to always restart,
+however, when requesting new HTTPS certificates from LetsEncrypt, there
+is a tendency to misconfigure the domain configuration or Caddyfile,
+and if Caddy requests too many HTTPS certificates in a short amount of
+time, LetsEcrypt will rate-limit my future requests. Usually this is
+only requires an hour or two of waiting, but is frustrating to deal
+with when trying to fix my configuration. Instead I rather Caddy
+exit after failing to activate all the domains and fix my
+configuration first.</p>
+<h3 id="github-configuration">GitHub Configuration</h3>
+<p>Simply create the GitHub repository, then add a webhook. It is
+important to note the webhook <em>must</em> send a JSON payload. By default a
+newly created webhook will send a <code>application/x-www-form-urlencoded</code>
+payload and will not work.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>With this simple setup I can write posts. I can easily move the
+configuration to a new host at will. In addition my setup does not
+depend on future use of GitHub as GitLab, Gogs, and other git hosts
+offer webhook support in the same way. Most importantly, I can author
+org-mode files and have a better balance between features and ease of
+use than what markdown offers.</p>
+<p>Web dev is one of my least
+favorite programming exercises. Between all the testing necessary to
+ensure a simple site works across many platforms, the trend to use a
+very complex system such as webpack and many other tools to produce
+simple websites, and the perpetual flux-and-flow between vendors only
+partially implementing good features, web dev just doesn’t do it for
+me. Hence, I am very pleased how simple this project turned out to
+be.</p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-4">
+<p><a href="https://orgmode.org/">org-mode homepage</a> <a href="#user-content-fnref-4" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-3">
+<p><a href="https://orgmode.org/worg/org-blog-wiki.html">Blogs and Wikis with Org</a> <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-1">
+<p><a href="https://github.com/bastibe/org-static-blog/">org-static-blog on GitHub</a> <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-2">
+<p><a href="static/style.css"><code>static/style.css</code></a> <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 4" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-5">
+<p><a href="http://tachyons.io/">Tachyons homepage</a> <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 5" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-6">
+<p><a href="https://getbootstrap.com/">Bootstrap framework homepage</a> <a href="#user-content-fnref-6" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-7">
+<p><a href="https://caddyserver.com/">Caddy webserver homepage</a> <a href="#user-content-fnref-7" data-footnote-backref="" aria-label="Back to reference 7" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-8">
+<p><a href="https://docs.docker.com/engine/">Docker Engine homepage</a> <a href="#user-content-fnref-8" data-footnote-backref="" aria-label="Back to reference 8" class="data-footnote-backref">↩</a></p>
+</li>
+<li id="user-content-fn-9">
+<p><a href="https://docs.docker.com/compose/overview/"><code>docker-compose</code> homepage</a> <a href="#user-content-fnref-9" data-footnote-backref="" aria-label="Back to reference 9" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

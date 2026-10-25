@@ -1,0 +1,19 @@
+* A heading
+
+Some /emphasis/, *strong*, +struck+, ~code~ and =verbatim=, a
+[[https://example.org][link]] and https://example.org.
+"Quotes" and it's --- dashes... done.
+
+First line\\
+second line.
+
+-----
+
+** A heading
+
+*** Set up
+:PROPERTIES:
+:CUSTOM_ID: install
+:END:
+
+Text.

@@ -1,0 +1,808 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(name, &text)"
+---
+warning[org/no-effect]: `-n -r` has no effect in yuanme
+   --> worg/dev--org-element-api.org:224:17
+    |
+224 | #+BEGIN_SRC org -n -r
+    |                 ^^^^^
+    |
+    = note: a code block's lines aren't numbered and its labels aren't rewritten
+    = note: run `yuanme docs org/no-effect` for more
+error[org/unsupported-construct]: links to code references aren't in the Org subset
+   --> worg/dev--org-element-api.org:236:9
+    |
+236 | of line [[(begin)]] (respectively line [[(end)]]).  ~:post-affiliated~ is the
+    |         ^^^^^^^^^^^
+    |
+    = help: link to the source block's `#+NAME` instead
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: links to code references aren't in the Org subset
+   --> worg/dev--org-element-api.org:236:40
+    |
+236 | of line [[(begin)]] (respectively line [[(end)]]).  ~:post-affiliated~ is the
+    |                                        ^^^^^^^^^
+    |
+    = help: link to the source block's `#+NAME` instead
+    = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: links to code references aren't in the Org subset
+   --> worg/dev--org-element-api.org:237:42
+    |
+237 | buffer position at the beginning of line [[(post)]].  Since source blocks
+    |                                          ^^^^^^^^^^
+    |
+    = help: link to the source block's `#+NAME` instead
+    = note: run `yuanme docs org/unsupported-construct` for more
+<p><code>org-element.el</code> implements a parser according to Org’s
+<a href="../org-syntax.org">syntax specification</a>.</p>
+<p>The library contains tools to generate an abstract syntax tree (AST)
+from an Org buffer, to analyze the syntactical object at point.
+<a href="#parsing">Parsing functions</a> are detailed in the first part of the document,
+along with their relative accessors and setters.</p>
+<p>Upon parsing, each token in an Org document gets a type and some
+properties attached to it.  This information can be extracted and
+modified with provided <a href="#accessors">accessors</a> and <a href="#setters">setters</a>.  An exhaustive list of
+all types and attributes is given in section <a href="#attributes">Types and Attributes</a>.</p>
+<p>Eventually, the library is packed with a few useful functions,
+described in the <a href="#other-tools">last section</a> of the document.</p>
+<h2 id="parsing">Parsing functions</h2>
+<p>There are two ways to parse a buffer using this library: either
+locally or globally.</p>
+<p><a href="#local">Local parsing</a> gives information about the structure at point.
+Depending on the level of detail required, <code>org-element-at-point</code> and
+<code>org-element-context</code> fullfill that role.</p>
+<p><a href="#global">Global parsing</a> is done with <code>org-element-parse-buffer</code>, which returns
+the AST representing the document.</p>
+<h3 id="local">Analyzing the structure at point</h3>
+<p><code>org-element-at-point</code> offers a glimpse into the local structure of
+the document.  However, it stops at the element level.  It doesn’t,
+for example, analyze the contents of a paragraph.  While this is
+sufficient for many use cases, <code>org-element-context</code> allows to go
+deeper, down to the object level.  The following example illustrates
+the difference between the two functions.</p>
+<pre id="context-vs-at-point"><code class="language-org">*Lorem ipsum dolor* sit amet, consectetur adipisicing elit, sed do
+eiusmod tempor incididunt ut labore et dolore magna aliqua.
+</code></pre>
+<p>Indeed, calling <code>org-element-at-point</code> at the beginning of the
+paragraph returns a <code>paragraph</code> element, whereas calling
+<code>org-element-context</code> returns a <code>bold</code> object.</p>
+<p>Both functions indirectly return all parents of the value up to the
+topmost <code>org-data</code> node, through <code>:parent</code> property.  For example, when
+point is at <code>(X)</code></p>
+<pre id="full-hierarchy"><code class="language-org">* Headline
+
+#+BEGIN_CENTER
+Paragraph(X)
+#+END_CENTER
+</code></pre>
+<p><code>org-element-at-point</code> returns a <code>paragraph</code> element, whose <code>:parent</code>
+property contains a <code>center-block</code> element, which, in turn, contains
+<code>section</code> since the next ancestor is the section itself.  The <code>:parent</code>
+chain then goes further up to <code>headline</code> and, finally, <code>org-data</code>.</p>
+<h3 id="global">Creating a snapshot of the document</h3>
+<p><code>org-element-parse-buffer</code> completely parses a (possibly narrowed)
+buffer into an AST.  The virtual root node has type <code>org-data</code>.</p>
+<p>Unlike to local parsing functions, data obtained through
+<code>org-element-parse-buffer</code> can be altered to your heart’s content.
+See <a href="#setters">Setters</a> for a list of related tools.</p>
+<h2 id="accessors">Accessors</h2>
+<h3 id="accessing-a-single-node">Accessing a single node</h3>
+<p>Type and properties of a given node are obtained with, respectively,
+<code>org-element-type</code>, <code>org-element-property</code>, <code>org-element-property-2</code>, or
+<code>org-element-properties-map</code> and <code>org-element-properties-mapc</code> (to map
+over all the available properties).</p>
+<p>Some commonly used properties have dedicated accessors:
+<code>org-element-parent</code>, <code>org-element-begin</code>, <code>org-element-end</code>,
+<code>org-element-contents-begin</code>, <code>org-element-contents-end</code>,
+<code>org-element-post-affiliated</code>, and <code>org-element-post-blank</code>.</p>
+<p><code>org-element-contents</code> returns an ordered (by buffer position) list of
+all elements or objects within a given element or object.  Since local
+parsing ignores contents, it only makes sense to use this function on
+a part of an AST.</p>
+<h3 id="examining-genealogy-of-an-element-or-object">Examining genealogy of an element or object</h3>
+<p><code>org-element-lineage</code> produces a list of all ancestors of a given
+element or object.  <code>org-element-lineage-map</code> maps over the ancestors.</p>
+<p>With optional arguments, it is also possible to check for a particular
+type of ancestor.  See function’s docstring for more information.</p>
+<p>Further, <code>org-element-parent-element</code> returns the closest parent <strong>element</strong>
+node (that is - non-<strong>object</strong>, but paragraph-level node)</p>
+<p><code>org-element-property-inherited</code> provides a way to query inherited
+properties from the parent nodes, combining them as needed.</p>
+<h3 id="accessing-the-whole-buffer-ast">Accessing the whole buffer AST</h3>
+<p>Eventually, <code>org-element-map</code> operates on an AST, a part of it, or any
+list of nodes.  It is a versatile function.</p>
+<p>For example, it can be used to collect data from an AST.  Hence the
+following snippet returns all paragraphs beginning a section in the
+current document.  Note that equality between elements is tested with
+<code>eq</code>.</p>
+<pre id="collect"><code class="language-emacs-lisp">(org-element-map (org-element-parse-buffer) 'paragraph
+  (lambda (paragraph)
+    (let ((parent (org-element-property :parent paragraph)))
+      (and (org-element-type-p parent 'section)
+           (let ((first-child (car (org-element-contents parent))))
+             (eq first-child paragraph))
+           ;; Return value.
+           paragraph))))
+</code></pre>
+<p>It can also be used as a predicate.  Thus, the following snippet
+returns a non-<code>nil</code> value when the document contains a checked item.</p>
+<pre id="checkedp"><code class="language-emacs-lisp">(org-element-map (org-element-parse-buffer) 'item
+  (lambda (item) (eq (org-element-property :checkbox item) 'on))
+  nil t)
+</code></pre>
+<p>See <code>org-element-map</code>’s docstring for more examples.</p>
+<h2 id="setters">Setters</h2>
+<p><code>org-element-put-property</code> modifies any property of a given element or
+object.</p>
+<p>Note that, even though structures obtained with local parsers are
+mutable, it is good practice to consider them immutable.  In
+particular, destructively changing properties relative to buffer
+positions is likely to break the caching mechanism running in the
+background.  If, for example, you need to slightly alter an element
+obtained using these functions, first copy it, using
+<code>org-element-copy</code>, before modifying it by side effect.  There is no
+such restriction for elements grabbed from a complete AST.</p>
+<p>The library also provides tools to manipulate the parse tree.  Thus,
+<code>org-element-extract-element</code> removes an element or object from an
+AST, <code>org-element-set-element</code> replaces one with another, whereas
+<code>org-element-insert-before</code> and <code>org-element-adopt-element</code> insert
+elements within the tree, respectively before a precise location or
+after all children.</p>
+<h2 id="attributes">Types and Attributes</h2>
+<p>Each greater element, element and object has a variable set of
+properties attached to it.  Among them, four are shared by all types:
+<code>:begin</code> and <code>:end</code>, which refer to the beginning and ending buffer
+positions of the considered element or object, <code>:post-blank</code>, which
+holds the number of blank lines, or white spaces, at its end<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup> and
+<code>:parent</code>, which refers to the element or object containing it.</p>
+<p>Greater elements containing objects on the one hand, and elements or
+objects containing objects on the other hand also have
+<code>:contents-begin</code> and <code>:contents-end</code> properties to delimit contents.</p>
+<p>In addition to these properties, each element can optionally get some
+more from affiliated keywords, namely: <code>:caption</code>, <code>:header</code>, <code>:name</code>,
+<code>:plot</code>, <code>:results</code> or <code>:attr_NAME</code> where <code>NAME</code> stands for the name
+of an export back-end.</p>
+<p>Also, <code>:post-affiliated</code> property is attached to all elements (but not
+objects).  It refers to the buffer position after any affiliated
+keyword, when applicable, or to the beginning of the element
+otherwise.</p>
+<p>The following example illustrates the relationship between position
+properties.</p>
+<pre id="position-properties"><code class="language-org">#+NAME: dont-do-this-at-home (ref:begin)
+#+BEGIN_SRC emacs-lisp       (ref:post)
+(/ 1 0)
+#+END_SRC
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do (ref:end)
+eiusmod tempor incididunt ut labore et dolore magna aliqua.
+</code></pre>
+<p>The first element’s type is <code>src-block</code>.  Its <code>:begin</code> property
+(respectively <code>:end</code> property) is the buffer position at the beginning
+of line  (respectively line ).  <code>:post-affiliated</code> is the
+buffer position at the beginning of line .  Since source blocks
+cannot contain other elements or objects, both <code>:contents-begin</code> and
+<code>:contents-end</code> are <code>nil</code>. <code>:post-blank</code> is 1.</p>
+<p>Other properties, specific to each element or object type, are listed
+below.</p>
+<h3 id="babel-call">Babel Call</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:call</code></dt>
+<dd>Name of code block being called (string).</dd>
+<dt><code>:inside-header</code></dt>
+<dd>Header arguments applied to the named code block
+(string or <code>nil</code>).</dd>
+<dt><code>:arguments</code></dt>
+<dd>Arguments passed to the code block (string or <code>nil</code>).</dd>
+<dt><code>:end-header</code></dt>
+<dd>Header arguments applied to the calling instance
+(string or <code>nil</code>).</dd>
+<dt><code>:value</code></dt>
+<dd>Raw call, as Org syntax (string).</dd>
+</dl>
+<h3 id="bold">Bold</h3>
+<p>Recursive object.</p>
+<p>No specific property.</p>
+<h3 id="center-block">Center Block</h3>
+<p>Greater element.</p>
+<p>No specific property.</p>
+<h3 id="clock">Clock</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:duration</code></dt>
+<dd>Clock duration for a closed clock, or <code>nil</code> (string or
+<code>nil</code>).</dd>
+<dt><code>:status</code></dt>
+<dd>Status of current clock (symbol: <code>closed</code> or
+<code>running</code>).</dd>
+<dt><code>:value</code></dt>
+<dd>Timestamp associated to clock keyword (timestamp
+object).</dd>
+</dl>
+<h3 id="code">Code</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Contents (string).</dd>
+</dl>
+<h3 id="comment">Comment</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Comments, with pound signs (string).</dd>
+</dl>
+<h3 id="comment-block">Comment Block</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Comments, without block’s boundaries (string).</dd>
+</dl>
+<h3 id="diary-sexp">Diary Sexp</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Full Sexp (string).</dd>
+</dl>
+<h3 id="drawer">Drawer</h3>
+<p>Greater element.</p>
+<dl>
+<dt><code>:drawer-name</code></dt>
+<dd>Drawer’s name (string).</dd>
+<dt><code>:pre-blank</code></dt>
+<dd>Number of newline characters between the beginning
+of the drawer and the beginning of the contents.</dd>
+</dl>
+<h3 id="dynamic-block">Dynamic Block</h3>
+<p>Greater element.</p>
+<dl>
+<dt><code>:arguments</code></dt>
+<dd>Block’s parameters (string).</dd>
+<dt><code>:block-name</code></dt>
+<dd>Block’s name (string).</dd>
+</dl>
+<h3 id="entity">Entity</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:ascii</code></dt>
+<dd>Entity’s ASCII representation (string).</dd>
+<dt><code>:html</code></dt>
+<dd>Entity’s HTML representation (string).</dd>
+<dt><code>:latex</code></dt>
+<dd>Entity’s LaTeX representation (string).</dd>
+<dt><code>:latex-math-p</code></dt>
+<dd>Non-<code>nil</code> if entity’s LaTeX representation should
+be in math mode (boolean).</dd>
+<dt><code>:latin1</code></dt>
+<dd>Entity’s Latin-1 encoding representation (string).</dd>
+<dt><code>:name</code></dt>
+<dd>Entity’s name, without backslash nor brackets (string).</dd>
+<dt><code>:use-brackets-p</code></dt>
+<dd>Non-<code>nil</code> if entity is written with optional
+brackets in original buffer (boolean).</dd>
+<dt><code>:utf-8</code></dt>
+<dd>Entity’s UTF-8 encoding representation (string).</dd>
+</dl>
+<h3 id="example-block">Example Block</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:label-fmt</code></dt>
+<dd>Format string used to write labels in current block,
+if different from <code>org-coderef-label-format</code> (string or <code>nil</code>).</dd>
+<dt><code>:number-lines</code></dt>
+<dd>Non-<code>nil</code> if code lines should be numbered.
+A <code>new</code> value starts numbering from 1 wheareas <code>continued</code> resume
+numbering from previous numbered block (symbol: <code>new</code>, <code>continued</code>
+or <code>nil</code>).</dd>
+<dt><code>:preserve-indent</code></dt>
+<dd>Non-<code>nil</code> when indentation within the block
+mustn’t be modified upon export (boolean).</dd>
+<dt><code>:retain-labels</code></dt>
+<dd>Non-<code>nil</code> if labels should be kept visible upon
+export (boolean).</dd>
+<dt><code>:switches</code></dt>
+<dd>Optional switches for code block export (string or
+<code>nil</code>).</dd>
+<dt><code>:use-labels</code></dt>
+<dd>Non-<code>nil</code> if links to labels contained in the block
+should display the label instead of the line number (boolean).</dd>
+<dt><code>:value</code></dt>
+<dd>Contents (string).</dd>
+</dl>
+<h3 id="export-block">Export Block</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:type</code></dt>
+<dd>Related back-end’s name (string).</dd>
+<dt><code>:value</code></dt>
+<dd>Contents (string).</dd>
+</dl>
+<h3 id="export-snippet">Export Snippet</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:back-end</code></dt>
+<dd>Relative back-end’s name (string).</dd>
+<dt><code>:value</code></dt>
+<dd>Export code (string).</dd>
+</dl>
+<h3 id="fixed-width">Fixed Width</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Contents, without colons prefix (string).</dd>
+</dl>
+<h3 id="footnote-definition">Footnote Definition</h3>
+<p>Greater element.</p>
+<dl>
+<dt><code>:label</code></dt>
+<dd>Label used for references (string).</dd>
+<dt><code>:pre-blank</code></dt>
+<dd>Number of newline characters between the beginning
+of the footnoote and the beginning of the contents (0, 1 or 2).</dd>
+</dl>
+<h3 id="footnote-reference">Footnote Reference</h3>
+<p>Recursive object.</p>
+<dl>
+<dt><code>:label</code></dt>
+<dd>Footnote’s label, if any (string or <code>nil</code>).</dd>
+<dt><code>:type</code></dt>
+<dd>Determine whether reference has its definition inline, or
+not (symbol: <code>inline</code>, <code>standard</code>).</dd>
+</dl>
+<h3 id="headline">Headline</h3>
+<p>Greater element.</p>
+<p>In addition to the following list, any property specified in
+a property drawer attached to the headline will be accessible as an
+attribute (with an uppercase name, e.g., <code>:CUSTOM_ID</code>).</p>
+<dl>
+<dt><code>:archivedp</code></dt>
+<dd>Non-<code>nil</code> if the headline has an archive tag
+(boolean).</dd>
+<dt><code>:closed</code></dt>
+<dd>Headline’s <code>CLOSED</code> reference, if any (timestamp object
+or <code>nil</code>)</dd>
+<dt><code>:commentedp</code></dt>
+<dd>Non-<code>nil</code> if the headline has a comment keyword
+(boolean).</dd>
+<dt><code>:deadline</code></dt>
+<dd>Headline’s <code>DEADLINE</code> reference, if any (timestamp
+object or <code>nil</code>).</dd>
+<dt><code>:footnote-section-p</code></dt>
+<dd>Non-<code>nil</code> if the headline is a footnote
+section (boolean).</dd>
+<dt><code>:level</code></dt>
+<dd>Reduced level of the headline (integer).</dd>
+<dt><code>:true-level</code></dt>
+<dd>True level of the headline, as the number of stars
+(integer).</dd>
+<dt><code>:pre-blank</code></dt>
+<dd>Number of blank lines between the headline and the
+first non-blank line of its contents (integer).</dd>
+<dt><code>:priority</code></dt>
+<dd>Headline’s priority, as a character (integer).</dd>
+<dt><code>:raw-value</code></dt>
+<dd>Raw headline’s text, without the stars and the
+tags (string).</dd>
+<dt><code>:scheduled</code></dt>
+<dd>Headline’s <code>SCHEDULED</code> reference, if any (timestamp
+object or <code>nil</code>).</dd>
+<dt><code>:tags</code></dt>
+<dd>Headline’s tags, if any, without the archive tag. (list
+of strings).</dd>
+<dt><code>:title</code></dt>
+<dd>Parsed headline’s text, without the stars and the
+tags (secondary string).</dd>
+<dt><code>:todo-keyword</code></dt>
+<dd>Headline’s TODO keyword without quote and comment
+strings, if any (string or <code>nil</code>).</dd>
+<dt><code>:todo-type</code></dt>
+<dd>Type of headline’s TODO keyword, if any (symbol:
+<code>done</code>, <code>todo</code>).</dd>
+</dl>
+<h3 id="horizontal-rule">Horizontal Rule</h3>
+<p>Element.</p>
+<p>No specific property.</p>
+<h3 id="inline-babel-call">Inline Babel Call</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:call</code></dt>
+<dd>Name of code block being called (string).</dd>
+<dt><code>:inside-header</code></dt>
+<dd>Header arguments applied to the named code
+block (string or <code>nil</code>).</dd>
+<dt><code>:arguments</code></dt>
+<dd>Arguments passed to the code block (string or
+<code>nil</code>).</dd>
+<dt><code>:end-header</code></dt>
+<dd>Header arguments applied to the calling instance
+(string or <code>nil</code>).</dd>
+<dt><code>:value</code></dt>
+<dd>Raw call, as Org syntax (string).</dd>
+</dl>
+<h3 id="inline-src-block">Inline Src Block</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:language</code></dt>
+<dd>Language of the code in the block (string).</dd>
+<dt><code>:parameters</code></dt>
+<dd>Optional header arguments (string or <code>nil</code>).</dd>
+<dt><code>:value</code></dt>
+<dd>Source code (string).</dd>
+</dl>
+<h3 id="inlinetask">Inlinetask</h3>
+<p>Greater element.</p>
+<p>In addition to the following list, any property specified in
+a property drawer attached to the headline will be accessible as an
+attribute (with an uppercase name, e.g. <code>:CUSTOM_ID</code>).</p>
+<dl>
+<dt><code>:archivedp</code></dt>
+<dd>Non-<code>nil</code> if the headline has an archive tag
+(boolean).</dd>
+<dt><code>:closed</code></dt>
+<dd>Inlinetask’s <code>CLOSED</code> reference, if any (timestamp
+object or <code>nil</code>)</dd>
+<dt><code>:deadline</code></dt>
+<dd>Inlinetask’s <code>DEADLINE</code> reference, if any (timestamp
+object or <code>nil</code>).</dd>
+<dt><code>:footnote-section-p</code></dt>
+<dd>Non-<code>nil</code> if the headline is a footnote
+section (boolean).</dd>
+<dt><code>:level</code></dt>
+<dd>Reduced level of the inlinetask (integer).</dd>
+<dt><code>:true-level</code></dt>
+<dd>True level of the headline, as the number of stars
+(integer).</dd>
+<dt><code>:priority</code></dt>
+<dd>Headline’s priority, as a character (integer).</dd>
+<dt><code>:raw-value</code></dt>
+<dd>Raw inlinetask’s text, without the stars and the
+tags (string).</dd>
+<dt><code>:scheduled</code></dt>
+<dd>Inlinetask’s <code>SCHEDULED</code> reference, if any
+(timestamp object or <code>nil</code>).</dd>
+<dt><code>:tags</code></dt>
+<dd>Inlinetask’s tags, if any (list of strings).</dd>
+<dt><code>:title</code></dt>
+<dd>Parsed inlinetask’s text, without the stars and the
+tags (secondary string).</dd>
+<dt><code>:todo-keyword</code></dt>
+<dd>Inlinetask’s <code>TODO</code> keyword, if any (string or
+<code>nil</code>).</dd>
+<dt><code>:todo-type</code></dt>
+<dd>Type of inlinetask’s <code>TODO</code> keyword, if any (symbol:
+<code>done</code>, <code>todo</code>).</dd>
+</dl>
+<h3 id="italic">Italic</h3>
+<p>Recursive object.</p>
+<p>No specific property.</p>
+<h3 id="item">Item</h3>
+<p>Greater element.</p>
+<dl>
+<dt><code>:bullet</code></dt>
+<dd>Item’s bullet (string).</dd>
+<dt><code>:checkbox</code></dt>
+<dd>Item’s check-box, if any (symbol: <code>on</code>, <code>off</code>,
+<code>trans</code>, <code>nil</code>).</dd>
+<dt><code>:counter</code></dt>
+<dd>Item’s counter, if any.  Literal counters become
+ordinals (integer).</dd>
+<dt><code>:pre-blank</code></dt>
+<dd>Number of newline characters between the beginning
+of the item and the beginning of the contents (0, 1 or 2).</dd>
+<dt><code>:tag</code></dt>
+<dd>Parsed item’s tag, if any (secondary string or <code>nil</code>).</dd>
+<dt><code>:structure</code></dt>
+<dd>Full list’s structure, as returned by
+<code>org-list-struct</code> (alist).</dd>
+</dl>
+<h3 id="keyword">Keyword</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:key</code></dt>
+<dd>Keyword’s name (string).</dd>
+<dt><code>:value</code></dt>
+<dd>Keyword’s value (string).</dd>
+</dl>
+<h3 id="latex-environment">LaTeX Environment</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>LaTeX code (string).</dd>
+</dl>
+<h3 id="latex-fragment">LaTeX Fragment</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>LaTeX code (string).</dd>
+</dl>
+<h3 id="line-break">Line Break</h3>
+<p>Object.</p>
+<p>No specific property.</p>
+<h3 id="link">Link</h3>
+<p>Recursive object.</p>
+<dl>
+<dt><code>:application</code></dt>
+<dd>Name of application requested to open the link in
+Emacs (string or <code>nil</code>). It only applies to “file” type links.</dd>
+<dt><code>:format</code></dt>
+<dd>Format for link syntax (symbol: <code>plain</code>, <code>angle</code>,
+<code>bracket</code>).</dd>
+<dt><code>:path</code></dt>
+<dd>Identifier for link’s destination.  It is usually the
+link part with type, if specified, removed (string).</dd>
+<dt><code>:raw-link</code></dt>
+<dd>Uninterpreted link part (string).</dd>
+<dt><code>:search-option</code></dt>
+<dd>Additional information for file location
+(string or <code>nil</code>). It only applies to “file” type links.</dd>
+<dt><code>:explicit-type-p</code></dt>
+<dd>Whether link type is explicitly written in
+<code>:raw-link</code>.  For example, <code>&#x3C;./file.png></code> is a link with “file” type,
+but the type is not explicit.  In contrast, <code>&#x3C;file:./file.png></code> has
+explicit type.</dd>
+<dt><code>:type</code></dt>
+<dd>Link’s type.  Possible types (string) are:
+<dl>
+<dt><code>coderef</code></dt>
+<dd>Line in some source code,</dd>
+<dt><code>custom-id</code></dt>
+<dd>Specific headline’s custom-id,</dd>
+<dt><code>file</code></dt>
+<dd>External file,</dd>
+<dt><code>fuzzy</code></dt>
+<dd>Target, referring to a target object, a named
+element or a headline in the current parse tree,</dd>
+<dt><code>id</code></dt>
+<dd>Specific headline’s id,</dd>
+<dt><code>radio</code></dt>
+<dd>Radio-target.</dd>
+<dt></dt>
+<dd>Any type defined in <code>org-link-types</code>.</dd>
+</dl>
+</dd>
+</dl>
+<h3 id="macro">Macro</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:args</code></dt>
+<dd>Arguments passed to the macro (list of strings).</dd>
+<dt><code>:key</code></dt>
+<dd>Macro’s name (string).</dd>
+<dt><code>:value</code></dt>
+<dd>Replacement text (string).</dd>
+</dl>
+<h3 id="node-property">Node Property</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:key</code></dt>
+<dd>Property’s name (string).</dd>
+<dt><code>:value</code></dt>
+<dd>Property’s value (string).</dd>
+</dl>
+<h3 id="paragraph">Paragraph</h3>
+<p>Element containing objects.</p>
+<p>No specific property.</p>
+<h3 id="plain-list">Plain List</h3>
+<p>Greater element.</p>
+<dl>
+<dt><code>:structure</code></dt>
+<dd>Full list’s structure, as returned by
+<code>org-list-struct</code> (alist).</dd>
+<dt><code>:type</code></dt>
+<dd>List’s type (symbol: <code>descriptive</code>, <code>ordered</code>,
+<code>unordered</code>).</dd>
+</dl>
+<h3 id="planning">Planning</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:closed</code></dt>
+<dd>Timestamp associated to <code>CLOSED</code> keyword, if any
+(timestamp object or <code>nil</code>).</dd>
+<dt><code>:deadline</code></dt>
+<dd>Timestamp associated to <code>DEADLINE</code> keyword, if any
+(timestamp object or <code>nil</code>).</dd>
+<dt><code>:scheduled</code></dt>
+<dd>Timestamp associated to <code>SCHEDULED</code> keyword, if any
+(timestamp object or <code>nil</code>).</dd>
+</dl>
+<h3 id="property-drawer">Property Drawer</h3>
+<p>Greater element.</p>
+<p>No specific property.</p>
+<h3 id="quote-block">Quote Block</h3>
+<p>Greater element.</p>
+<h3 id="radio-target">Radio Target</h3>
+<p>Recursive object.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Uninterpreted contents (string).</dd>
+</dl>
+<h3 id="section">Section</h3>
+<p>Greater element.</p>
+<p>No specific property.</p>
+<h3 id="special-block">Special Block</h3>
+<p>Greater element.</p>
+<dl>
+<dt><code>:type</code></dt>
+<dd>Block’s name (string).</dd>
+<dt><code>:parameters</code></dt>
+<dd>Optional header parameters (a non-blank string or <code>nil</code>).</dd>
+</dl>
+<h3 id="src-block">Src Block</h3>
+<p>Element.</p>
+<dl>
+<dt><code>:label-fmt</code></dt>
+<dd>Format string used to write labels in current block,
+if different from <code>org-coderef-label-format</code> (string or <code>nil</code>).</dd>
+<dt><code>:language</code></dt>
+<dd>Language of the code in the block, if specified
+(string or <code>nil</code>).</dd>
+<dt><code>:number-lines</code></dt>
+<dd>Non-<code>nil</code> if code lines should be numbered.
+A <code>new</code> value starts numbering from 1 wheareas <code>continued</code> resume
+numbering from previous numbered block (symbol: <code>new</code>, <code>continued</code>
+or <code>nil</code>).</dd>
+<dt><code>:parameters</code></dt>
+<dd>Optional header arguments (string or <code>nil</code>).</dd>
+<dt><code>:preserve-indent</code></dt>
+<dd>Non-<code>nil</code> when indentation within the block
+mustn’t be modified upon export (boolean).</dd>
+<dt><code>:retain-labels</code></dt>
+<dd>Non-<code>nil</code> if labels should be kept visible upon
+export (boolean).</dd>
+<dt><code>:switches</code></dt>
+<dd>Optional switches for code block export (string or
+<code>nil</code>).</dd>
+<dt><code>:use-labels</code></dt>
+<dd>Non-<code>nil</code> if links to labels contained in the block
+should display the label instead of the line number (boolean).</dd>
+<dt><code>:value</code></dt>
+<dd>Source code (string).</dd>
+</dl>
+<h3 id="statistics-cookie">Statistics Cookie</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Full cookie (string).</dd>
+</dl>
+<h3 id="strike-through">Strike Through</h3>
+<p>Recursive object.</p>
+<p>No specific property.</p>
+<h3 id="subscript">Subscript</h3>
+<p>Recursive object.</p>
+<dl>
+<dt><code>:use-brackets-p</code></dt>
+<dd>Non-<code>nil</code> if contents are enclosed in curly
+brackets (t, <code>nil</code>).</dd>
+</dl>
+<h3 id="superscript">Superscript</h3>
+<p>Recursive object.</p>
+<dl>
+<dt><code>:use-brackets-p</code></dt>
+<dd>Non-<code>nil</code> if contents are enclosed in curly
+brackets (t, <code>nil</code>).</dd>
+</dl>
+<h3 id="table">Table</h3>
+<p>Greater element.</p>
+<dl>
+<dt><code>:tblfm</code></dt>
+<dd>Formulas associated to the table, if any (string or
+<code>nil</code>).</dd>
+<dt><code>:type</code></dt>
+<dd>Table’s origin (symbol: <code>table.el</code>, <code>org</code>).</dd>
+<dt><code>:value</code></dt>
+<dd>Raw <code>table.el</code> table or <code>nil</code> (string or <code>nil</code>).</dd>
+</dl>
+<h3 id="table-cell">Table Cell</h3>
+<p>Recursive object.</p>
+<p>No specific property.</p>
+<h3 id="table-row">Table Row</h3>
+<p>Element containing objects.</p>
+<dl>
+<dt><code>:type</code></dt>
+<dd>Row’s type (symbol: <code>standard</code>, <code>rule</code>).</dd>
+</dl>
+<h3 id="target">Target</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Target’s ID (string).</dd>
+</dl>
+<h3 id="timestamp">Timestamp</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:day-end</code></dt>
+<dd>Day part from timestamp end.  If no ending date is
+defined, it defaults to start day part (integer).</dd>
+<dt><code>:day-start</code></dt>
+<dd>Day part from timestamp start (integer).</dd>
+<dt><code>:hour-end</code></dt>
+<dd>Hour part from timestamp end. If no ending date is
+defined, it defaults to start hour part, if any (integer or <code>nil</code>).</dd>
+<dt><code>:hour-start</code></dt>
+<dd>Hour part from timestamp start, if specified
+(integer or <code>nil</code>).</dd>
+<dt><code>:minute-end</code></dt>
+<dd>Minute part from timestamp end. If no ending date
+is defined, it defaults to start minute part, if any (integer or
+<code>nil</code>).</dd>
+<dt><code>:minute-start</code></dt>
+<dd>Minute part from timestamp start, if specified
+(integer or <code>nil</code>).</dd>
+<dt><code>:month-end</code></dt>
+<dd>Month part from timestamp end.  If no ending date is
+defined, it defaults to start month part (integer).</dd>
+<dt><code>:month-start</code></dt>
+<dd>Month part from timestamp start (integer).</dd>
+<dt><code>:raw-value</code></dt>
+<dd>Raw timestamp (string).</dd>
+<dt><code>:repeater-type</code></dt>
+<dd>Type of repeater, if any (symbol: <code>catch-up</code>,
+<code>restart</code>, <code>cumulate</code> or <code>nil</code>)</dd>
+<dt><code>:repeater-unit</code></dt>
+<dd>Unit of shift, if a repeater is defined
+(symbol: <code>year</code>, <code>month</code>, <code>week</code>, <code>day</code>, <code>hour</code> or <code>nil</code>).</dd>
+<dt><code>:repeater-value</code></dt>
+<dd>Value of shift, if a repeater is defined
+(integer or <code>nil</code>).</dd>
+<dt><code>:repeater-deadline-unit</code></dt>
+<dd>Unit of shift, if a repeater deadline
+is defined (symbol: <code>year</code>, <code>month</code>, <code>week</code>, <code>day</code>, <code>hour</code> or
+<code>nil</code>).</dd>
+<dt><code>:repeater-deadline-value</code></dt>
+<dd>Value of shift, if a repeater deadline
+is defined (integer or <code>nil</code>).</dd>
+<dt><code>:type</code></dt>
+<dd>Type of timestamp (symbol: <code>active</code>, <code>active-range</code>,
+<code>diary</code>, <code>inactive</code>, <code>inactive-range</code>).</dd>
+<dt><code>:range-type</code></dt>
+<dd>Type of range (symbol: <code>daterange</code>, <code>timerange</code> or
+<code>nil</code>).</dd>
+<dt><code>:warning-type</code></dt>
+<dd>Type of warning, if any (symbol: <code>all</code>, <code>first</code>
+or <code>nil</code>)</dd>
+<dt><code>:warning-unit</code></dt>
+<dd>Unit of delay, if one is defined (symbol: <code>year</code>,
+<code>month</code>, <code>week</code>, <code>day</code>, <code>hour</code> or <code>nil</code>).</dd>
+<dt><code>:warning-value</code></dt>
+<dd>Value of delay, if one is defined (integer or
+<code>nil</code>).</dd>
+<dt><code>:year-end</code></dt>
+<dd>Year part from timestamp end.  If no ending date is
+defined, it defaults to start year part (integer).</dd>
+<dt><code>:year-start</code></dt>
+<dd>Year part from timestamp start (integer).</dd>
+</dl>
+<h3 id="underline">Underline</h3>
+<p>Recursive object.</p>
+<p>No specific property.</p>
+<h3 id="verbatim">Verbatim</h3>
+<p>Object.</p>
+<dl>
+<dt><code>:value</code></dt>
+<dd>Contents (string).</dd>
+</dl>
+<h3 id="verse-block">Verse Block</h3>
+<p>Element containing objects.</p>
+<p>No specific property.</p>
+<h2 id="other-tools">Other Tools</h2>
+<h3 id="turning-an-ast-into-an-org-document">Turning an AST into an Org document</h3>
+<p><code>org-element-interpret-data</code> is the reciprocal operation of
+<code>org-element-parse-buffer</code>.  When provided an element, object, or even
+a full parse tree, it generates an equivalent string in Org syntax.</p>
+<p>More precisely, output is a normalized document: it preserves
+structure and blank spaces but it removes indentation and capitalize
+keywords.  As a consequence it is equivalent, but not equal, to the
+original document the AST comes from.</p>
+<p>When called on an element or object obtained through
+<code>org-element-at-point</code> or <code>org-element-context</code>, its contents will not
+appear, since this information is not available.</p>
+<section data-footnotes="" class="footnotes"><h2 class="sr-only" id="footnote-label">Footnotes</h2>
+<ol>
+<li id="user-content-fn-1">
+<p>As a consequence whitespaces or newlines after an element or
+object still belong to it.  To put it differently, <code>:end</code> property of
+an element matches <code>:begin</code> property of the following one at the same
+level, if any. <a href="#user-content-fnref-1" data-footnote-backref="" aria-label="Back to reference 1" class="data-footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>

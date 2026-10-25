@@ -1,0 +1,146 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(&format!(\"{name}.org\"), &text)"
+---
+error[org/setupfile]: `#+SETUPFILE` isn't read: an Entry is one file
+ --> errors.org:1:1
+  |
+1 | #+SETUPFILE: "../setup.org"
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: put shared settings where yuanme reads them: `#+OPTIONS` in each file, LaTeX macros in `[math]` in yuanme.toml, and styles, scripts and analytics in Templates
+  = note: run `yuanme docs org/setupfile` for more
+error[org/unsupported-construct]: `#+INCLUDE` keywords aren't in the Org subset
+ --> errors.org:2:1
+  |
+2 | #+INCLUDE: "other.org"
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: copy the text in, or link to the other file
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: macros aren't in the Org subset
+ --> errors.org:3:1
+  |
+3 | #+MACRO: date 2025
+  | ^^^^^^^^^^^^^^^^^^
+  |
+  = help: write the text the macro would expand to
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `#+CALL` lines aren't in the Org subset
+ --> errors.org:4:1
+  |
+4 | #+CALL: f()
+  | ^^^^^^^^^^^
+  |
+  = help: yuanme never runs code; paste in the results the call wrote
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: macros aren't in the Org subset
+ --> errors.org:6:7
+  |
+6 | Built {{{date}}}, src_python{1 + 1} and call_f(), [cite:@knuth].
+  |       ^^^^^^^^^^
+  |
+  = help: write the text the macro would expand to
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+ --> errors.org:6:19
+  |
+6 | Built {{{date}}}, src_python{1 + 1} and call_f(), [cite:@knuth].
+  |                   ^^^^^^^^^^^^^^^^^
+  |
+  = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: inline calls and source blocks aren't in the Org subset
+ --> errors.org:6:41
+  |
+6 | Built {{{date}}}, src_python{1 + 1} and call_f(), [cite:@knuth].
+  |                                         ^^^^^^^^
+  |
+  = help: yuanme never runs code; use `~code~` to show code, or paste in the result
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: citations aren't in the Org subset
+ --> errors.org:6:51
+  |
+6 | Built {{{date}}}, src_python{1 + 1} and call_f(), [cite:@knuth].
+  |                                                   ^^^^^^^^^^^^^
+  |
+  = help: cite in the text, or with a footnote, until citations arrive
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: radio targets and links aren't in the Org subset
+ --> errors.org:7:3
+  |
+7 | A <<<radio>>> target, [[elisp:(beep)]], [[(ref)]] and [[nowhere]] and [[other.org]].
+  |   ^^^^^^^^^^^
+  |
+  = help: use a `<<target>>` and link to it with `[[target][text]]`
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: `elisp:` links aren't in the Org subset
+ --> errors.org:7:23
+  |
+7 | A <<<radio>>> target, [[elisp:(beep)]], [[(ref)]] and [[nowhere]] and [[other.org]].
+  |                       ^^^^^^^^^^^^^^^^
+  |
+  = help: link to a URL, another Entry's file, or a heading in this one
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: links to code references aren't in the Org subset
+ --> errors.org:7:41
+  |
+7 | A <<<radio>>> target, [[elisp:(beep)]], [[(ref)]] and [[nowhere]] and [[other.org]].
+  |                                         ^^^^^^^^^
+  |
+  = help: link to the source block's `#+NAME` instead
+  = note: run `yuanme docs org/unsupported-construct` for more
+error[org/unsupported-construct]: dynamic blocks aren't in the Org subset
+  --> errors.org:10:1
+   |
+10 | / #+BEGIN: clocktable
+11 | | | a |
+12 | | #+END:
+   | |______^
+   |
+   = help: dynamic blocks are filled in by Emacs; paste in what it wrote and remove the `#+BEGIN:` and `#+END:` lines
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/invalid-attribute]: `class=wide` isn't an attribute name
+  --> errors.org:14:14
+   |
+14 | #+ATTR_HTML: class=wide
+   |              ^^^^^^^^^^
+   |
+   = help: write each attribute as `:name value`, such as `#+ATTR_HTML: :class wide :width 300`
+   = note: run `yuanme docs org/invalid-attribute` for more
+error[org/unsupported-construct]: `:EXPORT_FILE_NAME:` properties aren't in the Org subset
+  --> errors.org:19:1
+   |
+19 | :EXPORT_FILE_NAME: heading
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: one Org file is one Entry, so give this subtree a file of its own
+   = note: run `yuanme docs org/unsupported-construct` for more
+error[org/undefined-footnote]: the footnote `missing` is never defined
+ --> errors.org:8:7
+  |
+8 | A note[fn:missing].
+  |       ^^^^^^^^^^^^
+  |
+  = help: define it on a line of its own, such as `[fn:1] The note.`, or inline, as `[fn:1:The note.]`
+  = note: run `yuanme docs org/undefined-footnote` for more
+error[link/unresolved]: nothing here is called `nowhere`: no `<<target>>`, `#+NAME` or headline title
+ --> errors.org:7:55
+  |
+7 | A <<<radio>>> target, [[elisp:(beep)]], [[(ref)]] and [[nowhere]] and [[other.org]].
+  |                                                       ^^^^^^^^^^^
+  |
+  = note: run `yuanme docs link/unresolved` for more
+error[link/unresolved]: nothing here is called `other.org`: no `<<target>>`, `#+NAME` or headline title
+ --> errors.org:7:71
+  |
+7 | A <<<radio>>> target, [[elisp:(beep)]], [[(ref)]] and [[nowhere]] and [[other.org]].
+  |                                                                       ^^^^^^^^^^^^^
+  |
+  = help: a link to another file is written `[[file:other.org]]`
+  = note: run `yuanme docs link/unresolved` for more
+<p>Built ,  and , .
+A  target, ,  and <a href=""></a> and <a href=""></a>.
+A note<sup><a href="#user-content-fn-missing" id="user-content-fnref-missing" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup>.</p>
+<p><img src="cat.png" alt="cat.png"></p>
+<h2 id="heading">Heading</h2>

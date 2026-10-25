@@ -1,0 +1,5 @@
+---
+source: crates/yuanme-render/tests/org.rs
+expression: "render(&format!(\"{name}.org\"), &text)"
+---
+<p>snake<sub>case</sub> and a<sup>2</sup> are scripts here.</p>
