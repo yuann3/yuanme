@@ -144,6 +144,16 @@ formats = ["webp", "avif"]
 avif_speed = 4
 quality = { jpeg = 90 }
 allow_unoptimized = ["/favicon.png"]
+
+[budgets]
+strict = true
+css = 11
+js = 13.5
+requests = 6
+
+[budgets.overages."/about/"]
+js = 0.25
+requests = 1
 "##;
     let (config, diagnostics) = check(text);
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
@@ -333,8 +343,51 @@ allow_unoptimized = ["/favicon.png"]
         }
     );
 
+    // kB of Brotli become bytes; a limit left out is the Starters' (#15).
+    let budgets = config.budgets.unwrap();
+    assert!(budgets.strict);
+    let limits: Vec<(Budget, u64)> = Budget::ALL.map(|b| (b, budgets.limit(b))).to_vec();
+    assert_eq!(
+        limits,
+        [
+            (Budget::Html, 14_000),
+            (Budget::Css, 11_000),
+            (Budget::Js, 13_500),
+            (Budget::Fonts, 30_000),
+            (Budget::MathFont, 55_000),
+            (Budget::Requests, 6),
+        ]
+    );
+    let overages: Vec<_> = budgets
+        .overages
+        .iter()
+        .map(|o| (o.page.as_str(), o.budget, o.allowance))
+        .collect();
+    assert_eq!(
+        overages,
+        [("/about/", Budget::Js, 250), ("/about/", Budget::Requests, 1)]
+    );
+    assert_eq!(
+        &text[budgets.overages[0].at.clone()],
+        "0.25",
+        "a breach beyond the overage points at it"
+    );
+    assert_eq!(budgets.allowance("/about/", Budget::Js), 250);
+    assert_eq!(budgets.allowance("/about/", Budget::Css), 0);
+
     let (config, _) = check(MINIMAL);
     let config = config.unwrap();
+    // A Site with no budget config still gets the Starters' numbers, as
+    // warnings (ADR 0004).
+    let budgets = config.budgets.as_ref().unwrap();
+    assert!(!budgets.strict && budgets.overages.is_empty());
+    assert_eq!(
+        Budget::ALL.map(|b| budgets.limit(b)),
+        [14_000, 6_000, 3_000, 30_000, 55_000, 4]
+    );
+    let (off, diagnostics) = check(&format!("budgets = false\n{MINIMAL}"));
+    assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+    assert!(off.unwrap().budgets.is_none());
     // #28's defaults: AVIF before a JPEG fallback, at each encoder's own
     // quality.
     assert_eq!(
@@ -734,6 +787,32 @@ const CASES: &[(&str, &str, &str)] = &[
         "config/invalid-value",
         "[site]\nurl = \"https://e.com\"\n[images]\nformats = [\"avif\", \"avif\"]\n",
         "\"avif\"",
+    ),
+    // `false` turns the Site budgets off; nothing turns them on but leaving it out.
+    (
+        "config/wrong-type",
+        "budgets = true\n[site]\nurl = \"https://e.com\"\n",
+        "true",
+    ),
+    (
+        "config/out-of-range",
+        "[site]\nurl = \"https://e.com\"\n[budgets]\ncss = -1\n",
+        "-1",
+    ),
+    (
+        "config/out-of-range",
+        "[site]\nurl = \"https://e.com\"\n[budgets.overages.\"/a/\"]\njs = -0.5\n",
+        "-0.5",
+    ),
+    (
+        "config/wrong-type",
+        "[site]\nurl = \"https://e.com\"\n[budgets]\nrequests = 4.5\n",
+        "4.5",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[budgets.overages.about]\njs = 3\n",
+        "about",
     ),
 ];
 

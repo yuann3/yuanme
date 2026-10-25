@@ -44,6 +44,29 @@ Collections and their fields have their own page, `yuanme docs collections`.
 - `data` (table of types, below): Schemas for Data files: `[data.nav]` checks `data/nav.toml`, `.yaml` or `.json`. A Data file without one is not checked.
 - `yuanme` (string): The oldest yuanme release this project works with, as "X.Y". A newer minor release in the same major builds it; before 1.0, only the same 0.Y does.
 
+### `[budgets]`
+
+The Site budgets every Page of `yuanme build` is measured against, in kB of Brotli at quality 11 (1 kB is 1,000 bytes). A breach is a warning; `budgets = false` turns them off.
+
+- `css` (number): The CSS a Page loads: its stylesheets and `<style>` elements. Defaults to 6.
+- `fonts` (number): The text fonts a Page's stylesheets declare or it preloads. Defaults to 30.
+- `html` (number): A Page's first-flight HTML: the whole document, but an Entry's Page without its body. Defaults to 14.
+- `js` (number): The JS a Page runs as it loads, from the Site's own origin: its Scripts, the chunks they import, and inline `<script>`s. Defaults to 3.
+- `math_font` (number): The math font, on a Page that shows math. Defaults to 55.
+- `requests` (integer): Requests on a Page's render path: the Page, its stylesheets, Scripts and their chunks, fonts and preloads. Defaults to 4.
+- `strict` (boolean): Make every breach of a Site budget an error, as `yuanme build --strict-budgets` does. Defaults to false.
+
+### `[budgets.overages.NAME]`
+
+Acknowledged overages, by a Page's URL: `[budgets.overages."/about/"] js = 3` lets `/about/` load 3 kB of JS more than `js` allows. A breach within it isn't a warning, and the build report still lists it.
+
+- `css` (number): kB over `budgets.css`.
+- `fonts` (number): kB over `budgets.fonts`.
+- `html` (number): kB over `budgets.html`.
+- `js` (number): kB over `budgets.js`.
+- `math_font` (number): kB over `budgets.math_font`.
+- `requests` (integer): Requests over `budgets.requests`.
+
 ### `[build]`
 
 How yuanme builds the Site's stylesheets and Scripts.

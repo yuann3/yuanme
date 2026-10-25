@@ -302,6 +302,8 @@ fn table(schema: &Value, path: &str, out: &mut String) {
         };
         if value.get("properties").is_some() {
             table(value, &at, out);
+        } else if let Some(entry) = or_off(value) {
+            table(&entry, &at, out);
         } else if value["additionalProperties"].get("properties").is_some() {
             let mut entry = value["additionalProperties"].clone();
             entry["description"] = value["description"].clone();
@@ -312,6 +314,18 @@ fn table(schema: &Value, path: &str, out: &mut String) {
             table(&entry, &format!("[[{at}]]"), out);
         }
     }
+}
+
+/// A table that may be `false` instead, as `budgets` may, with the key's
+/// description, which says what `false` does.
+fn or_off(schema: &Value) -> Option<Value> {
+    let mut table = schema["anyOf"]
+        .as_array()?
+        .iter()
+        .find(|o| o.get("properties").is_some())?
+        .clone();
+    table["description"] = schema["description"].clone();
+    Some(table)
 }
 
 /// One line for each key that isn't a table of its own.
@@ -328,6 +342,7 @@ fn keys(schema: &Value, skip: &[&str], out: &mut String) {
     let mut any = false;
     for (key, value) in properties {
         let nested = value.get("properties").is_some()
+            || or_off(value).is_some()
             || value["additionalProperties"].get("properties").is_some()
             || value["items"].get("properties").is_some();
         if nested || skip.contains(&key.as_str()) {

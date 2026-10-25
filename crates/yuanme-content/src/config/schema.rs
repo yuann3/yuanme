@@ -77,6 +77,8 @@ pub(crate) enum Shape {
     /// An array of one shape, such as `[images] widths`.
     Array(&'static Shape),
     Table(&'static [Key]),
+    /// A table, or `false` to turn off what it sets: `budgets = false`.
+    TableOrOff(&'static [Key]),
     /// An array of tables, as `[[host.headers]]` writes one.
     Tables(&'static [Key]),
     /// A table whose keys the Author names, such as Collections.
@@ -144,6 +146,73 @@ pub(crate) const ROOT: &[Key] = &[
         "images",
         Shape::Table(IMAGES),
         "How yuanme resizes and encodes the images that bodies, `image` fields and `image()` name.",
+    ),
+    Key::optional(
+        "budgets",
+        Shape::TableOrOff(BUDGETS),
+        "The Site budgets every Page of `yuanme build` is measured against, in kB of Brotli at quality 11 (1 kB is 1,000 bytes). A breach is a warning; `budgets = false` turns them off.",
+    ),
+];
+
+const BUDGETS: &[Key] = &[
+    Key::optional(
+        "strict",
+        Shape::Bool,
+        "Make every breach of a Site budget an error, as `yuanme build --strict-budgets` does. Defaults to false.",
+    ),
+    Key::optional(
+        "html",
+        Shape::Number,
+        "A Page's first-flight HTML: the whole document, but an Entry's Page without its body. Defaults to 14.",
+    ),
+    Key::optional(
+        "css",
+        Shape::Number,
+        "The CSS a Page loads: its stylesheets and `<style>` elements. Defaults to 6.",
+    ),
+    Key::optional(
+        "js",
+        Shape::Number,
+        "The JS a Page runs as it loads, from the Site's own origin: its Scripts, the chunks they import, and inline `<script>`s. Defaults to 3.",
+    ),
+    Key::optional(
+        "fonts",
+        Shape::Number,
+        "The text fonts a Page's stylesheets declare or it preloads. Defaults to 30.",
+    ),
+    Key::optional(
+        "math_font",
+        Shape::Number,
+        "The math font, on a Page that shows math. Defaults to 55.",
+    ),
+    Key::optional(
+        "requests",
+        Shape::Int {
+            min: 0,
+            max: i64::MAX,
+        },
+        "Requests on a Page's render path: the Page, its stylesheets, Scripts and their chunks, fonts and preloads. Defaults to 4.",
+    ),
+    Key::optional(
+        "overages",
+        Shape::Map(&Shape::Table(OVERAGE)),
+        "Acknowledged overages, by a Page's URL: `[budgets.overages.\"/about/\"] js = 3` lets `/about/` load 3 kB of JS more than `js` allows. A breach within it isn't a warning, and the build report still lists it.",
+    ),
+];
+
+const OVERAGE: &[Key] = &[
+    Key::optional("html", Shape::Number, "kB over `budgets.html`."),
+    Key::optional("css", Shape::Number, "kB over `budgets.css`."),
+    Key::optional("js", Shape::Number, "kB over `budgets.js`."),
+    Key::optional("fonts", Shape::Number, "kB over `budgets.fonts`."),
+    Key::optional("math_font", Shape::Number, "kB over `budgets.math_font`."),
+    Key::optional(
+        "requests",
+        Shape::Int {
+            min: 0,
+            max: i64::MAX,
+        },
+        "Requests over `budgets.requests`.",
     ),
 ];
 
@@ -670,6 +739,7 @@ fn shape(shape: &Shape) -> Value {
         Shape::Counter => json!({ "anyOf": [{ "type": "string" }, { "const": false }] }),
         Shape::Strings => json!({ "type": "array", "items": { "type": "string" } }),
         Shape::Table(keys) => table(keys.iter()),
+        Shape::TableOrOff(keys) => json!({ "anyOf": [table(keys.iter()), { "const": false }] }),
         Shape::Tables(keys) => json!({ "type": "array", "items": table(keys.iter()) }),
         Shape::Map(value) => {
             json!({ "type": "object", "additionalProperties": self::shape(value) })

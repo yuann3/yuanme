@@ -208,6 +208,7 @@ impl Checker {
             (Shape::String, DeValue::String(_))
             | (Shape::Bool, DeValue::Boolean(_))
             | (Shape::Counter, DeValue::String(_) | DeValue::Boolean(false))
+            | (Shape::TableOrOff(_), DeValue::Boolean(false))
             | (Shape::Number, DeValue::Float(_)) => {}
             (Shape::Url, DeValue::String(s)) => self.url(s, at, path),
             (Shape::Choice(choices), DeValue::String(s)) => {
@@ -255,7 +256,10 @@ impl Checker {
                 }
             }
             (Shape::Strings | Shape::Array(_) | Shape::Tables(_), DeValue::Array(_))
-            | (Shape::Table(_) | Shape::Map(_) | Shape::Field { .. }, DeValue::Table(_)) => {
+            | (
+                Shape::Table(_) | Shape::TableOrOff(_) | Shape::Map(_) | Shape::Field { .. },
+                DeValue::Table(_),
+            ) => {
                 self.nested(shape, value.get_mut(), key_span, path);
             }
             (
@@ -271,6 +275,7 @@ impl Checker {
             (Shape::Number, _) => wrong(self, "a number"),
             (Shape::Bool, _) => wrong(self, "a boolean"),
             (Shape::Counter, _) => wrong(self, "a counter's name or `false`"),
+            (Shape::TableOrOff(_), _) => wrong(self, "a table or `false`"),
             (Shape::Strings, _) => wrong(self, "an array of strings"),
             (Shape::Array(_), _) => wrong(self, "an array"),
             (Shape::Tables(_), _) => wrong(self, "an array of tables"),
@@ -298,7 +303,7 @@ impl Checker {
                     self.value(shape, item, key_span.clone(), &format!("{path}[]"));
                 }
             }
-            (Shape::Table(keys), DeValue::Table(table)) => {
+            (Shape::Table(keys) | Shape::TableOrOff(keys), DeValue::Table(table)) => {
                 let keys: Vec<&Key> = keys.iter().collect();
                 self.table(&keys, table, key_span, path);
             }
