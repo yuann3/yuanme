@@ -105,6 +105,7 @@ URLs the host redirects, such as a Page's old address.
 
 How yuanme resizes and encodes the images that bodies, `image` fields and `image()` name.
 
+- `allow_unoptimized` (list of strings): Rasters over 50 KB that a Page may load as they are, by URL from the root, such as ["/favicon.png"]: `image/unoptimized` doesn't warn of them.
 - `avif_speed` (integer): How hard the AVIF encoder works, from 1, the smallest files and slowest, to 10. Defaults to 6.
 - `formats` (list of one of `"avif"`, `"webp"`): The formats offered before the JPEG fallback, or PNG for a source with transparency, in order. Defaults to ["avif"], which every default target browser decodes; add "webp" for older ones.
 - `sizes` (string): The `sizes` attribute: how wide an image is shown, which picks the width a browser fetches. Defaults to "100vw"; set it to the prose width, such as "(min-width: 768px) 720px, 100vw".

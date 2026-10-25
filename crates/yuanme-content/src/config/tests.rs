@@ -140,6 +140,7 @@ sizes = "(min-width: 768px) 720px, 100vw"
 formats = ["webp", "avif"]
 avif_speed = 4
 quality = { jpeg = 90 }
+allow_unoptimized = ["/favicon.png"]
 "##;
     let (config, diagnostics) = check(text);
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
@@ -323,6 +324,7 @@ quality = { jpeg = 90 }
             avif_quality: 72,
             jpeg_quality: 90,
             webp_quality: 80,
+            allow_unoptimized: vec!["/favicon.png".into()],
         }
     );
 
@@ -340,6 +342,7 @@ quality = { jpeg = 90 }
             avif_quality: 72,
             jpeg_quality: 80,
             webp_quality: 80,
+            allow_unoptimized: Vec::new(),
         }
     );
     // Workers static assets is the default host (#25).

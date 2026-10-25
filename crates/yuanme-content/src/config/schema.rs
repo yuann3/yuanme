@@ -169,6 +169,11 @@ const IMAGES: &[Key] = &[
         Shape::Table(QUALITY),
         "Each encoder's quality, on its own scale from 1 to 100.",
     ),
+    Key::optional(
+        "allow_unoptimized",
+        Shape::Array(&Shape::String),
+        "Rasters over 50 KB that a Page may load as they are, by URL from the root, such as [\"/favicon.png\"]: `image/unoptimized` doesn't warn of them.",
+    ),
 ];
 
 const QUALITY: &[Key] = &[

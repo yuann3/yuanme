@@ -182,12 +182,20 @@ sizes = "(min-width: 768px) 720px, 100vw"
 formats = ["avif"]
 avif_speed = 6
 quality = { avif = 72, jpeg = 80, webp = 80 }
+allow_unoptimized = ["/favicon.png"]
 ```
 
 - `widths`: the widths each image is resized to. These are the defaults.
 - `sizes`: how wide images are shown, which picks the width a browser fetches. It defaults to `100vw`, the whole screen; set it to your text's width, as here, and phones fetch smaller files.
 - `formats`: what is offered before the JPEG. Every browser yuanme targets by default reads AVIF; add `"webp"` for older ones, at the cost of encoding every image once more.
 - `avif_speed` and `quality`: each encoder's own settings, from 1 to 10 and from 1 to 100. A lower speed makes smaller AVIFs, slowly.
+- `allow_unoptimized`: images over 50 KB that may be served as they are, below.
+
+## Images served as they are
+
+A raster image over 50 KB that a Page loads as it is, at full size, is the warning `image/unoptimized`: a Static file in an `<img>` or `<link>`, an image a stylesheet's `url()` or a `<link>` copies, or an animated GIF, WebP or PNG. A plain link, such as `<a href="/photo.jpg">`, loads nothing, so it doesn't warn. `yuanme build --strict` makes the warning an error.
+
+Write such an image with `image()` or as a body image instead, which make smaller copies. List one that must stay as it is, such as a favicon, in `allow_unoptimized`, by the URL you name it by from the root: `/favicon.png` for `static/favicon.png`, and `/images/grain.png` for `images/grain.png`.
 
 ## Images in stylesheets
 

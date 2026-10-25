@@ -803,6 +803,13 @@ expression: "serde_json::to_string_pretty(&super::json_schema()).unwrap()"
       "additionalProperties": false,
       "description": "How yuanme resizes and encodes the images that bodies, `image` fields and `image()` name.",
       "properties": {
+        "allow_unoptimized": {
+          "description": "Rasters over 50 KB that a Page may load as they are, by URL from the root, such as [\"/favicon.png\"]: `image/unoptimized` doesn't warn of them.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "avif_speed": {
           "description": "How hard the AVIF encoder works, from 1, the smallest files and slowest, to 10. Defaults to 6.",
           "maximum": 10,

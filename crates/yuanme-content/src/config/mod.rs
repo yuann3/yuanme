@@ -48,6 +48,9 @@ pub struct Images {
     pub avif_quality: u8,
     pub jpeg_quality: u8,
     pub webp_quality: u8,
+    /// URLs from the root, such as `/favicon.png`, of rasters a Page may
+    /// load as they are, which `image/unoptimized` doesn't warn of.
+    pub allow_unoptimized: Vec<String>,
 }
 
 /// `[math]` (#17).
@@ -609,6 +612,7 @@ fn images(images: Option<&Table<'_>>, checker: &mut Checker) -> Images {
         avif_quality: number(quality, "avif", 72),
         jpeg_quality: number(quality, "jpeg", 80),
         webp_quality: number(quality, "webp", 80),
+        allow_unoptimized: get("allow_unoptimized").map(strings).unwrap_or_default(),
     }
 }
 

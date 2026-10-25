@@ -391,6 +391,11 @@ codes! {
         example: "![Sales by month](plot.png)\n(where plot.png is really a PDF)",
         fix: "Export the image again as JPEG or PNG, under 100 megapixels. Move an image out of `static/` to have it processed, or name a Static file by its URL, without `static/`.",
     }
+    IMAGE_UNOPTIMIZED = "image/unoptimized" {
+        meaning: "A Page loads a raster image over 50 KB as it is, at full size and in its own format: a Static file, an image a stylesheet's `url()` or a `<link>` names, or an animated GIF, WebP or PNG. Only an `image` field, `image()` and a body image are resized and converted. `yuanme build --strict` makes this warning an error.",
+        example: "<img src=\"/photos/sea.jpg\" alt=\"The sea\">\n(where static/photos/sea.jpg is 400 KB)",
+        fix: "Move the image out of `static/` and write it with `image()` or as a body image, which make smaller copies of it. Make an animated image a video, or smaller. List an image that must be served as it is, such as a favicon, in `[images] allow_unoptimized`.",
+    }
     LINK_REDIRECTED = "link/redirected" {
         meaning: "A Page links to a URL of the Site that hosts answer with a redirect, which costs the visitor a round trip: a Page's URL without its trailing `/` or with `index.html` on the end, a `.html` file, a `[[host.redirects]]` rule's `from`, or the Site's address with or without `www.`. Every internal link should be the URL a Page is served at, such as `/about/`.",
         example: "<a href=\"/about\">About</a>\n(with a Page at /about/)",

@@ -11,6 +11,7 @@ use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 
 use crate::assets::{has_scheme, normalize, percent_decode, suffix};
 use crate::image::{Settings, Variant};
+use crate::images::{self, Heavy};
 use crate::{Body, Output};
 
 /// What a link on the Site's origin finds.
@@ -23,13 +24,19 @@ enum Verdict {
 
 /// The links of each HTML Page in `pages`, by output path with the
 /// Templates it rendered, and the `to` of each redirect, against `files`
-/// and the image variants a build that encodes none leaves out of them.
+/// and the image variants a build that encodes none leaves out of them;
+/// and each Page that loads a raster of `heavy`.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "each is one output of the build, which a struct would only rename"
+)]
 pub(crate) fn links(
     config: &Config,
     site: &Site,
     pages: &BTreeMap<String, Vec<String>>,
     files: &BTreeMap<String, Output>,
     images: &BTreeMap<String, (Variant, Settings)>,
+    heavy: &BTreeMap<String, Heavy>,
     templates: &BTreeMap<String, FileId>,
     sources: &Files,
 ) -> Vec<Diagnostic> {
@@ -92,6 +99,12 @@ pub(crate) fn links(
                     d.help(format!("link to `{fix}`"))
                 }
             };
+            if link.loaded
+                && let Some(h) = heavy.get(&path[1..])
+            {
+                let d = images::unoptimized(url, h, span.clone());
+                push(d.note(format!("in the Page written to `{output}`")));
+            }
             let d = match verdict(&path, files, images, config) {
                 Verdict::Ok if on_origin(url, absolute, origin) => continue,
                 Verdict::Ok => redirected(path.clone()),

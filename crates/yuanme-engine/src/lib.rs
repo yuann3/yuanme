@@ -259,22 +259,26 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let mut files = link(pages, assets);
     files.extend(statics);
     files.extend(images::copies(inputs, &used));
+    let fallback = Span {
+        file: config.file,
+        range: 0..0,
+    };
     if mode.encodes() {
-        let fallback = Span {
-            file: config.file,
-            range: 0..0,
-        };
         diagnostics.extend(images::encode(inputs, cache, &used, &mut files, &fallback));
     }
+    let heavy = images::heavy(inputs, &config.images, &files, &used);
     let more = links::links(
         &config,
         &site,
         &rendered,
         &files,
         &used.variants,
+        &heavy,
         &templates,
         &sources,
     );
+    diagnostics.extend(more);
+    let more = images::in_css(inputs, &files, &heavy, &mut sources, &fallback);
     diagnostics.extend(more);
     let (files, more) = host::host(&config, files, mode != Mode::Dev, cache);
     diagnostics.extend(more);

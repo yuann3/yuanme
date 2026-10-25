@@ -1,0 +1,40 @@
+---
+source: crates/yuanme-engine/tests/images.rs
+expression: rendered(&inputs)
+---
+warning[image/unoptimized]: `/photos/big.jpg` loads 60 KB at full size: a Static file is served as it is
+ --> templates/posts/entry.html:2:11
+  |
+2 | <img src="/photos/big.jpg" alt=""><img src="/edge.png" alt=""><img src="/over.png" alt="">
+  |           ^^^^^^^^^^^^^^^
+  |
+  = help: move it out of `static/` and write it with `image()`, which makes smaller copies; or, if it must be served as it is, list "/photos/big.jpg" in `[images] allow_unoptimized`
+  = note: in the Page written to `blog/sea/index.html`
+  = note: run `yuanme docs image/unoptimized` for more
+warning[image/unoptimized]: `/over.png` loads 51 KB at full size: a Static file is served as it is
+ --> templates/posts/entry.html:2:73
+  |
+2 | <img src="/photos/big.jpg" alt=""><img src="/edge.png" alt=""><img src="/over.png" alt="">
+  |                                                                         ^^^^^^^^^
+  |
+  = help: move it out of `static/` and write it with `image()`, which makes smaller copies; or, if it must be served as it is, list "/over.png" in `[images] allow_unoptimized`
+  = note: in the Page written to `blog/sea/index.html`
+  = note: run `yuanme docs image/unoptimized` for more
+warning[image/unoptimized]: `/content/posts/sea/spinner.gif` loads 72 KB at full size: an animated image is copied as it is
+ --> content/posts/sea/index.md:4:1
+  |
+4 | ![A spinner](spinner.gif)
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: make it a video, or a smaller animation; or, if it must be served as it is, list "/content/posts/sea/spinner.gif" in `[images] allow_unoptimized`
+  = note: in the Page written to `blog/sea/index.html`
+  = note: run `yuanme docs image/unoptimized` for more
+warning[image/unoptimized]: `paper.webp` loads 70 KB at full size: an image a stylesheet or a `<link>` names is copied as it is
+ --> styles/site.css:2:19
+  |
+2 |   background: url(paper.webp);
+  |                   ^^^^^^^^^^
+  |
+  = help: make it smaller, or write it in a Template with `image()`; or, if it must be served as it is, list "/styles/paper.webp" in `[images] allow_unoptimized`
+  = note: in the stylesheet written to `assets/site-19392328c6c35ca1.css`
+  = note: run `yuanme docs image/unoptimized` for more

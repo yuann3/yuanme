@@ -340,3 +340,70 @@ fn rendered_image_function_diagnostics() {
     inputs.insert("yuanme.toml", config.into_bytes());
     insta::assert_snapshot!(rendered(&inputs));
 }
+
+/// Bytes that no encoder shrinks, so a file of them is `len` bytes.
+fn noise(len: usize) -> Vec<u8> {
+    let mut x: u32 = 0x9e37_79b9;
+    (0..len)
+        .map(|_| {
+            x ^= x << 13;
+            x ^= x >> 17;
+            x ^= x << 5;
+            x as u8
+        })
+        .collect()
+}
+
+/// An animated GIF over 50 KB, since its frames are noise.
+fn heavy_gif() -> Vec<u8> {
+    let mut out = Vec::new();
+    let mut encoder = GifEncoder::new(&mut out);
+    for seed in [0, 1] {
+        let bytes = noise(4 * 160 * 160 + seed);
+        let frame = RgbaImage::from_fn(160, 160, |x, y| {
+            let i = (4 * (y * 160 + x)) as usize + seed;
+            Rgba([bytes[i], bytes[i + 1], bytes[i + 2], 255])
+        });
+        let delay = Delay::from_numer_denom_ms(100, 1);
+        encoder
+            .encode_frame(Frame::from_parts(frame, 0, 0, delay))
+            .unwrap();
+    }
+    drop(encoder);
+    assert!(out.len() > 50_000);
+    out
+}
+
+/// #15's rule: a raster over 50 KB that a Page loads as it is warns, at
+/// the reference, unless `allow_unoptimized` lists it. 50,000 bytes is
+/// not over; a link the visitor follows loads nothing.
+#[test]
+fn rendered_unoptimized_diagnostics() {
+    let template = r#"<head><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/styles/site.css"></head>
+<img src="/photos/big.jpg" alt=""><img src="/edge.png" alt=""><img src="/over.png" alt="">
+<a href="/download.jpg">Download</a>
+{{ entry.content }}
+"#;
+    let big = noise(60_000);
+    let mut inputs = project(&[
+        ("templates/posts/entry.html", template.as_bytes()),
+        (
+            "content/posts/sea/index.md",
+            b"---\ntitle: Sea\n---\n![A spinner](spinner.gif)\n",
+        ),
+        ("content/posts/sea/spinner.gif", &heavy_gif()),
+        ("static/photos/big.jpg", &big),
+        ("static/edge.png", &noise(50_000)),
+        ("static/over.png", &noise(50_001)),
+        ("static/download.jpg", &big),
+        ("static/favicon.png", &big),
+        (
+            "styles/site.css",
+            b"body {\n  background: url(paper.webp);\n}\n",
+        ),
+        ("styles/paper.webp", &noise(70_000)),
+    ]);
+    let config = format!("{CONFIG}allow_unoptimized = [\"/favicon.png\"]\n");
+    inputs.insert("yuanme.toml", config.into_bytes());
+    insta::assert_snapshot!(rendered(&inputs));
+}
