@@ -1248,7 +1248,7 @@ includes a description.</p>
 </code></pre>
 <h4 id="standard-biblatex-citation-commands">Standard biblatex citation commands</h4>
 <p>The standard biblatex citation commands have the following syntax:
-<code class="language-math math-inline">\command[⟨prenote⟩][⟨postnote⟩]{⟨keys⟩}</code></p>
+</p>
 <p>They have been implemented by parsing the description part of the link
 on a semicolon, so that, e.g.,
 <code>[[cite:foo][postnote;prenote]]</code> becomes

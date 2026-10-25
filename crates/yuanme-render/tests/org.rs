@@ -72,7 +72,7 @@ fn org_renders_what_markdown_renders() {
         "differ from Markdown:\n{}",
         wrong.join("\n")
     );
-    assert_eq!(pairs.len(), 6);
+    assert_eq!(pairs.len(), 7);
 }
 
 /// Org's own constructs, and what it reads but doesn't render.

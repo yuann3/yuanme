@@ -41,52 +41,21 @@ error[math/unsupported]: unmatched closing token: "\end{...}"
    |
    = note: run `yuanme docs math/unsupported` for more
 <h2 id="answer">Answer</h2>
-<p><code class="language-math math-inline"> A \perp B \mid C </code> means that</p>
-<code class="language-math math-display">\begin{equation}
-\label{2.6condition}
-\text{Pr}(A\cap B \mid C) = \text{Pr}(A \mid C) \text{Pr}(B \mid C)
-\end{equation}</code>
+<p><math><mi>A</mi><mo>⟂</mo><mi>B</mi><mo>∣</mo><mi>C</mi></math> means that</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∩</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="2.6condition"><mtext>(1)</mtext></mtd></mtr></mtable></math>
 <p>holds.</p>
-<code class="language-math math-display">\begin{equation}
-\label{2.6condition2}
-\text{Pr}(B \mid C) = \text{Pr}(A \cap B \mid C) + \text{Pr}(A^c \cap B \mid C)
-\end{equation}</code>
-<p>From this equation, we can rewrite <code class="language-math math-inline">\text{Pr}(A^c \cap B \mid C)</code> as follows.</p>
-<code class="language-math math-display">\begin{equation}
-\label{2.6ans1}
-    \begin{aligned}
-    \text{Pr}(A^c \cap B \mid C)
-    &#x26;= \text{Pr}(B \mid C) - \text{Pr}(A \cap B \mid C)
-    \qquad  (\because \eqref{2.6condition2})\\
-    &#x26;= \text{Pr}(B \mid C) - \text{Pr}(A \mid C) \text{Pr}(B \mid C)
-    \qquad  (\because \eqref{2.6condition})\\
-    &#x26;= \text{Pr}(B \mid C) \left(1 - \text{Pr}(A \mid C)\right) \\
-    &#x26;= \text{Pr}(A^c \mid C) \text{Pr}(B \mid C) \\
-    \end{aligned}
-\end{equation}</code>
-<p>This means <code class="language-math math-inline"> A^c \perp B \mid C </code>.</p>
-<p>Similarly, <code class="language-math math-inline">\text{Pr}(A \cap B^c \mid C)</code> can be rewritten as follows.
-<code class="language-math math-inline">\begin{equation}</code>
-<code class="language-math math-inline">\label{2.6ans2}</code></p>
-<code class="language-math math-display">    \begin{aligned}
-        \text{Pr}(A \cap B^c \mid C)
-        &#x26;= \text{Pr}(A \mid C) - \text{Pr}(A \cap B \mid C) \\
-        &#x26;= \text{Pr}(A \mid C) - \text{Pr}(A \mid C) \text{Pr}(B \mid C)
-        \qquad (\because \eqref{2.6condition})\\
-        &#x26;= \text{Pr}(A \mid C) \left(1 - \text{Pr}(B \mid C)\right) \\
-        &#x26;= \text{Pr}(A \mid C) \text{Pr}(B^c \mid C). \\
-    \end{aligned}</code>
-<p><code class="language-math math-inline">\end{equation}</code>
-This means <code class="language-math math-inline"> A \perp B^c \mid C </code>.</p>
-<p>Furthermore, <code class="language-math math-inline">\text{Pr}(A^c \cap B^c \mid C)</code> can also be calculated in the same way.</p>
-<code class="language-math math-display">\begin{align*}
-\text{Pr}(A^c \cap B^c \mid C)
-&#x26;= \text{Pr}(A^c \mid C) - \text{Pr}(A^c \cap B \mid C) \\
-&#x26;= \text{Pr}(A^c \mid C) - \text{Pr}(A^c \mid C) \text{Pr}(B \mid C)
-\qquad (\because \eqref{2.6ans1})\\
-&#x26;= \text{Pr}(A^c \mid C) \left(1 - \text{Pr}(B \mid C)\right) \\
-&#x26;= \text{Pr}(A^c \mid C) \text{Pr}(B^c \mid C)
-\end{align*}</code>
-<p>This means <code class="language-math math-inline"> A^c \perp B^c \mid C </code>.</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∩</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>+</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∩</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="2.6condition2"><mtext>(2)</mtext></mtd></mtr></mtable></math>
+<p>From this equation, we can rewrite <math><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∩</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></math> as follows.</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mtable displaystyle="true" scriptlevel="0"><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∩</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∩</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mspace width="2em"/><mo stretchy="false">(</mo><mo lspace="0" rspace="0.2778em">∵</mo><mtext><a href="#2.6condition2">(2)</a></mtext><mo stretchy="false">)</mo></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mspace width="2em"/><mo stretchy="false">(</mo><mo lspace="0" rspace="0.2778em">∵</mo><mtext><a href="#2.6condition">(1)</a></mtext><mo stretchy="false">)</mo></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mrow><mo lspace="0.1667em">(</mo><mn>1</mn><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>)</mo></mrow></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd></mtr></mtable></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="2.6ans1"><mtext>(3)</mtext></mtd></mtr></mtable></math>
+<p>This means <math><msup><mi>A</mi><mi>c</mi></msup><mo>⟂</mo><mi>B</mi><mo>∣</mo><mi>C</mi></math>.</p>
+<p>Similarly, <math><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∩</mo><msup><mi>B</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></math> can be rewritten as follows.
+
+</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0"><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∩</mo><msup><mi>B</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∩</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mspace width="2em"/><mo stretchy="false">(</mo><mo lspace="0" rspace="0.2778em">∵</mo><mtext><a href="#2.6condition">(1)</a></mtext><mo stretchy="false">)</mo></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mrow><mo lspace="0.1667em">(</mo><mn>1</mn><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>)</mo></mrow></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>A</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>B</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mi>.</mi></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd></mtr></mtable></math>
+<p>
+This means <math><mi>A</mi><mo>⟂</mo><msup><mi>B</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi></math>.</p>
+<p>Furthermore, <math><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∩</mo><msup><mi>B</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></math> can also be calculated in the same way.</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∩</mo><msup><mi>B</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∩</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mspace width="2em"/><mo stretchy="false">(</mo><mo lspace="0" rspace="0.2778em">∵</mo><mtext><a href="#2.6ans1">(3)</a></mtext><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mrow><mo lspace="0.1667em">(</mo><mn>1</mn><mo>−</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><mi>B</mi><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mo>)</mo></mrow></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>A</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo><mtext>Pr</mtext><mo stretchy="false">(</mo><msup><mi>B</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
+<p>This means <math><msup><mi>A</mi><mi>c</mi></msup><mo>⟂</mo><msup><mi>B</mi><mi>c</mi></msup><mo>∣</mo><mi>C</mi></math>.</p>
 <p><a href="./2-5.org" class="nav-prev">2.5</a></p>
 <p><a href="./2-7.org" class="nav-next">2.7</a></p>

@@ -10,61 +10,36 @@ Okay. So I made a time-killing <a href="https://twitter.com/marc_b_reynolds/stat
 </code></pre>
 <p>\
 which was intended to be <em>mostly</em> a joke and just a little bit serious. Since a lot of people actually ended up looking at the thread I figure I should be a good net citizen and clarify what’s a joke and what’s not. The “approximation” above can rewritten as:</p>
-<p><code class="language-math math-display"> a~x^2 + \left(1-a\right)~x^2\sqrt{x} </code></p>
+<math display="block"><mi>a</mi><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mrow><mo>(</mo><mn>1</mn><mo>−</mo><mi>a</mi><mo rspace="0.1667em">)</mo></mrow><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><msqrt><mi>x</mi></msqrt></math>
 <p>\
-with <code class="language-math math-inline">a=1/2</code>, so it’s saying: Hey! It’s just about the average of <code class="language-math math-inline">x^2</code> and <code class="language-math math-inline">x^{2.5}</code>! This was a pure joke to have a very short and unlikely looking approximation. Let’s ignore if it’s a good idea or not and look at some better constant choices. But first a little bookkeeping. Throughout this post I’m optimizing for absolute error and most often relative error is the way to go. All given constants are for single precision and are representable. I’m going to be more-or-less mainstream CPU specific in my commentary..my GPU knowledge is (let’s say) a bit rusty.</p>
-<p>Okay optimizing <code class="language-math math-inline">a</code> (method below) gives:</p>
-<p><code class="language-math math-display"> 
-\begin{align*}
-a   &#x26; = 0.564024388790130615234375 \\
-1-a &#x26; = 0.435975611209869384765625
-\end{align*}
-</code></p>
+with <math><mi>a</mi><mo>=</mo><mn>1</mn><mo lspace="0" rspace="0">/</mo><mn>2</mn></math>, so it’s saying: Hey! It’s just about the average of <math><msup><mi>x</mi><mn>2</mn></msup></math> and <math><msup><mi>x</mi><mn>2.5</mn></msup></math>! This was a pure joke to have a very short and unlikely looking approximation. Let’s ignore if it’s a good idea or not and look at some better constant choices. But first a little bookkeeping. Throughout this post I’m optimizing for absolute error and most often relative error is the way to go. All given constants are for single precision and are representable. I’m going to be more-or-less mainstream CPU specific in my commentary..my GPU knowledge is (let’s say) a bit rusty.</p>
+<p>Okay optimizing <math><mi>a</mi></math> (method below) gives:</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>a</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.564024388790130615234375</mn></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mn>1</mn><mo>−</mo><mi>a</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.435975611209869384765625</mn></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <p>\
-well that’s pretty close to <code class="language-math math-inline">0.5</code>. This will give us a version that’s exact at both <code class="language-math math-inline">x=0</code> and <code class="language-math math-inline">x=1</code>. We could also relax our implied exact at <code class="language-math math-inline">1</code> requirement by optimizing <code class="language-math math-inline">a</code> and <code class="language-math math-inline">b</code> for the following:</p>
-<p><code class="language-math math-display"> a~x^2 + b~x^2\sqrt{x} </code></p>
+well that’s pretty close to <math><mn>0.5</mn></math>. This will give us a version that’s exact at both <math><mi>x</mi><mo>=</mo><mn>0</mn></math> and <math><mi>x</mi><mo>=</mo><mn>1</mn></math>. We could also relax our implied exact at <math><mn>1</mn></math> requirement by optimizing <math><mi>a</mi></math> and <math><mi>b</mi></math> for the following:</p>
+<math display="block"><mi>a</mi><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>b</mi><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><msqrt><mi>x</mi></msqrt></math>
 <p>\
 which gives:</p>
-<p><code class="language-math math-display"> 
-\begin{align*}
-a &#x26; = 0.556629836559295654296875 \\
-b &#x26; = 0.444691956043243408203125
-\end{align*}
-</code></p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>a</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.556629836559295654296875</mn></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>b</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.444691956043243408203125</mn></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <p>\
-and we could carry on by relaxing the exact at <code class="language-math math-inline">0</code> requirement with:</p>
-<p><code class="language-math math-display"> a~x^2 + b~x^2\sqrt{x} + c</code></p>
+and we could carry on by relaxing the exact at <math><mn>0</mn></math> requirement with:</p>
+<math display="block"><mi>a</mi><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>b</mi><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><msqrt><mi>x</mi></msqrt><mo>+</mo><mi>c</mi></math>
 <p>\
 but AFAIK nobody really cares about 2.2 ramps (directly computed that way), so let’s stop and look at error plots:</p>
 <div id="orig" style="width:100%"></div>
 <p>\
-So we can see the tweet joke version is total garbage. We don’t even need the other traces to see this and here’s how if you don’t know. We’re look at an error plot which is showing the kind of error we’re interested in. If the approximation is close to being optimal (for that error) then it should “wiggle” between two peak values <code class="language-math math-inline">\pm e</code> and “kiss” them before heading off in the other direction. Roughly speaking for an approximation to be (near) optimal then it should minimize the maximum error (<a href="https://en.wikipedia.org/wiki/Minimax_approximation_algorithm">minimax</a>) which will give error plots as described. The other two approximations do have this property.</p>
+So we can see the tweet joke version is total garbage. We don’t even need the other traces to see this and here’s how if you don’t know. We’re look at an error plot which is showing the kind of error we’re interested in. If the approximation is close to being optimal (for that error) then it should “wiggle” between two peak values <math><mo lspace="0" rspace="0">±</mo><mi>e</mi></math> and “kiss” them before heading off in the other direction. Roughly speaking for an approximation to be (near) optimal then it should minimize the maximum error (<a href="https://en.wikipedia.org/wiki/Minimax_approximation_algorithm">minimax</a>) which will give error plots as described. The other two approximations do have this property.</p>
 <br>
 <hr>
-<h2 id="the-x24-ramp-no-this-isnt-a-complete-srgb-conversion">The <code class="language-math math-inline">x^{2.4}</code> ramp <small>no this isn’t a complete <strong>sRGB</strong> conversion</small></h2>
+<h2 id="the-x24-ramp-no-this-isnt-a-complete-srgb-conversion">The <math><msup><mi>x</mi><mn>2.4</mn></msup></math> ramp <small>no this isn’t a complete <strong>sRGB</strong> conversion</small></h2>
 <p>\
-Repeating the same process with $x^{2.4} $ for exact at both <code class="language-math math-inline">(a)</code>, relaxed at 1 <code class="language-math math-inline">(ab)</code> and relaxed at both endpoints <code class="language-math math-inline">(abc)</code>:</p>
-<p><code class="language-math math-display"> 
-\begin{align*}
-\text{method: a} \\ 
-a   &#x26; = 0.17758834362030029296875 \\
-1-a &#x26; = 0.82241165637969970703125 \\
-\\
-\text{method: ab} \\ 
-a &#x26; = 0.17309470474720001220703125 \\
-b &#x26; = 0.827698051929473876953125   \\
-\\
-\text{method: abc} \\ 
-a &#x26; = 0.181508541107177734375 \\
-b &#x26; = 0.81964015960693359375 \\
-c &#x26; = -5.7434104382991790771484375e-4
-\end{align*}
-</code></p>
+Repeating the same process with $x^{2.4} $ for exact at both <math><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></math>, relaxed at 1 <math><mo stretchy="false">(</mo><mi>a</mi><mi>b</mi><mo stretchy="false">)</mo></math> and relaxed at both endpoints <math><mo stretchy="false">(</mo><mi>a</mi><mi>b</mi><mi>c</mi><mo stretchy="false">)</mo></math>:</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext>method: a</mtext></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>a</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.17758834362030029296875</mn></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mn>1</mn><mo>−</mo><mi>a</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.82241165637969970703125</mn></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext>method: ab</mtext></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>a</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.17309470474720001220703125</mn></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>b</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.827698051929473876953125</mn></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext>method: abc</mtext></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>a</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.181508541107177734375</mn></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>b</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mn>0.81964015960693359375</mn></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>c</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mo lspace="0" rspace="0">−</mo><mn>5.7434104382991790771484375</mn><mi>e</mi><mo>−</mo><mn>4</mn></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <p>\
-Also we could consider what would happen if we reworked the square-root into a recip square root and just used the hardware approximate opcode (where available and without any NR step). Using method <code class="language-math math-inline">ab</code> as the example:</p>
-<p><code class="language-math math-display"> a~x^2 + b~x^2\sqrt{x}  = \left(a~x^2\right) + \left(b~x^3\right) \left(\sqrt{x}\right)^{-1} </code></p>
+Also we could consider what would happen if we reworked the square-root into a recip square root and just used the hardware approximate opcode (where available and without any NR step). Using method <math><mi>a</mi><mi>b</mi></math> as the example:</p>
+<math display="block"><mi>a</mi><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>b</mi><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><msqrt><mi>x</mi></msqrt><mo>=</mo><mrow><mo>(</mo><mi>a</mi><mtext> </mtext><msup><mi>x</mi><mn>2</mn></msup><mo>)</mo></mrow><mo>+</mo><mrow><mo>(</mo><mi>b</mi><mtext> </mtext><msup><mi>x</mi><mn>3</mn></msup><mo rspace="0.1667em">)</mo></mrow><msup><mrow><mo>(</mo><msqrt><mi>x</mi></msqrt><mo>)</mo></mrow><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup></math>
 <p>\
-This introduces a gotcha for <code class="language-math math-inline">x=0</code> since <code class="language-math math-inline">1/\sqrt{\pm0} = \pm\inf</code> which we’d end up multiplying by zero and getting a <code class="language-math math-inline">\text{NaN}</code> (but if we <strong>were</strong> talking about sRGB then a zero input doesn’t occur).</p>
+This introduces a gotcha for <math><mi>x</mi><mo>=</mo><mn>0</mn></math> since <math><mn>1</mn><mo lspace="0" rspace="0">/</mo><msqrt><mrow><mo lspace="0" rspace="0">±</mo><mn>0</mn></mrow></msqrt><mo>=</mo><mo lspace="0" rspace="0">±</mo><mspace width="0.1667em"/><mrow><mspace/><mi>inf</mi></mrow></math> which we’d end up multiplying by zero and getting a <math><mtext>NaN</mtext></math> (but if we <strong>were</strong> talking about sRGB then a zero input doesn’t occur).</p>
 <p>Now that we have some approximations we need to measure if they have any merit and there are two obvious questions:</p>
 <ol>
 <li>Is the error sufficiently small to be usable for the given problem?</li>
@@ -72,14 +47,12 @@ This introduces a gotcha for <code class="language-math math-inline">x=0</code> 
 </ol>
 <p>To have an error bound target let’s just say the result is going to be truncated to a 10-bit integer (just to randomly make-up a problem) then any approximation whose peak error is less than $ 2^{-10} $ is sufficient. Moreover any approximation that spends additional cycles pushing the error bound lower than this is performing useless work (since it doesn’t contribute to the result).</p>
 <p>For an alternate method we can generate a minimax polynomial of high enough degree to meet the error bound requirement (method and code given below).  Just to add an equation, a forth degree polynomial looks like this:</p>
-<p><code class="language-math math-display">
-a x^4 + b x^3 + c x^2 +d x + e
-</code></p>
+<math display="block"><mi>a</mi><msup><mi>x</mi><mn>4</mn></msup><mo>+</mo><mi>b</mi><msup><mi>x</mi><mn>3</mn></msup><mo>+</mo><mi>c</mi><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mi>d</mi><mi>x</mi><mo>+</mo><mi>e</mi></math>
 <p>\
 Let’s cut the error plot (you can hide traces by clicking on its name in the legend):</p>
 <div id="fig1" style="width:100%"></div>
 <p>\
-The Y axis has ticks/grid-lines at <code class="language-math math-inline">\pm2^{-10}</code> and <code class="language-math math-inline">\pm2^{-11}</code> and we can immediately observe that all the approximations meet the minimal error requirement except the degree 3 polynomial (remez 3). The forth degree has a low enough error for 11-bits, so we could find a new polynomial with the constant term <code class="language-math math-inline">e</code> fixed to zero (exercise for the reader). Likewise <code class="language-math math-inline">abc</code> requires an extra constant so it’s not worth considering (aside: in the tweeter thread I joked about <code class="language-math math-inline">ab</code> not being exact at 1 being a sadface..totally unimportant).  Using the computer math library/DSL <a href="http://sollya.gforge.inria.fr/">sollya</a> I computed the peak errors of each:</p>
+The Y axis has ticks/grid-lines at <math><mo lspace="0" rspace="0">±</mo><msup><mn>2</mn><mrow><mo lspace="0" rspace="0">−</mo><mn>10</mn></mrow></msup></math> and <math><mo lspace="0" rspace="0">±</mo><msup><mn>2</mn><mrow><mo lspace="0" rspace="0">−</mo><mn>11</mn></mrow></msup></math> and we can immediately observe that all the approximations meet the minimal error requirement except the degree 3 polynomial (remez 3). The forth degree has a low enough error for 11-bits, so we could find a new polynomial with the constant term <math><mi>e</mi></math> fixed to zero (exercise for the reader). Likewise <math><mi>a</mi><mi>b</mi><mi>c</mi></math> requires an extra constant so it’s not worth considering (aside: in the tweeter thread I joked about <math><mi>a</mi><mi>b</mi></math> not being exact at 1 being a sadface..totally unimportant).  Using the computer math library/DSL <a href="http://sollya.gforge.inria.fr/">sollya</a> I computed the peak errors of each:</p>
 <p>{: .center }</p>
 
 
@@ -118,7 +91,7 @@ The Y axis has ticks/grid-lines at <code class="language-math math-inline">\pm2^
 
 <table><thead><tr><th align="center">method</th><th>peak error</th><th>peak error</th></tr></thead><tbody><tr><td align="center">remez 3</td><td>0.00113705781122</td><td>$ 1.2a12b \cdot 2^{-10} $</td></tr><tr><td align="center">remez 4</td><td>0.00026079002477</td><td>$ 1.11755 \cdot 2^{-11} $</td></tr><tr><td align="center">a</td><td>0.00092451750243</td><td>$ 1.e4b6a \cdot 2^{-11} $</td></tr><tr><td align="center">ab</td><td>0.00079275667667</td><td>$ 1.9fa20 \cdot 2^{-11} $</td></tr><tr><td align="center">abc</td><td>0.00057435967028</td><td>$ 1.2d214 \cdot 2^{-11} $</td></tr></tbody></table>
 <p>\
-So what about the second question? What about performance? Well to spitball it: using any of the above will be roughly <code class="language-math math-inline">5x</code> faster than a standard power function! Oh, compared to each other? Well…it depends. We roughly have the same number of ISA ops for each. This <a href="https://gcc.godbolt.org/z/PEy3s-">godbolt</a> has (completely useless) scalar versions as functions. The mix of ops and port usages are somewhat similar. The potential interesting differences are: the sqrt and rsqrt version need fewer constants which might lead to few register spills and the throughput numbers on sqrt (<a href="https://uops.info/html-instr/VSQRTSS_XMM_XMM_XMM.html">scalar</a>/<a href="https://uops.info/html-instr/VSQRTPS_XMM_XMM.html">SIMD</a>) &#x26; rsqrt (<a href="https://uops.info/html-instr/VRSQRTSS_XMM_XMM_XMM.html">scalar</a>/<a href="https://uops.info/html-instr/VRSQRTPS_XMM_XMM.html">SIMD</a>) are on the move in recent-ish microarchitecture. So we’d really need to look at them <em>in flagrante</em> (or is it <em>in situ</em>, I always mix them up)…whatever…the surrounding work and given microarch are quite important to the answer.</p>
+So what about the second question? What about performance? Well to spitball it: using any of the above will be roughly <math><mn>5</mn><mi>x</mi></math> faster than a standard power function! Oh, compared to each other? Well…it depends. We roughly have the same number of ISA ops for each. This <a href="https://gcc.godbolt.org/z/PEy3s-">godbolt</a> has (completely useless) scalar versions as functions. The mix of ops and port usages are somewhat similar. The potential interesting differences are: the sqrt and rsqrt version need fewer constants which might lead to few register spills and the throughput numbers on sqrt (<a href="https://uops.info/html-instr/VSQRTSS_XMM_XMM_XMM.html">scalar</a>/<a href="https://uops.info/html-instr/VSQRTPS_XMM_XMM.html">SIMD</a>) &#x26; rsqrt (<a href="https://uops.info/html-instr/VRSQRTSS_XMM_XMM_XMM.html">scalar</a>/<a href="https://uops.info/html-instr/VRSQRTPS_XMM_XMM.html">SIMD</a>) are on the move in recent-ish microarchitecture. So we’d really need to look at them <em>in flagrante</em> (or is it <em>in situ</em>, I always mix them up)…whatever…the surrounding work and given microarch are quite important to the answer.</p>
 <br>
 <hr>
 <h2 id="why-u-no-talk-srgb">whY U No TaLk sRGB???</h2>
@@ -135,9 +108,9 @@ f /. p
 </code></pre>
 <p>Which does the following:</p>
 <ul>
-<li><code class="language-math math-inline">t</code> is just an array of <code class="language-math math-inline">\left(x,~x^{2.4}\right)</code> values sample on <code class="language-math math-inline">\left[0,~1\right]</code>.</li>
-<li><code class="language-math math-inline">f</code> defines the expression we want to optimize.</li>
-<li><code class="language-math math-inline">p</code> is the result of the optimization: take the table <code class="language-math math-inline">t</code>, expression <code class="language-math math-inline">f</code>, <code class="language-math math-inline">a</code> and <code class="language-math math-inline">b</code> are the values to optimize, <code class="language-math math-inline">x</code> is the function input and use the supremum norm as error measure.</li>
+<li><math><mi>t</mi></math> is just an array of <math><mrow><mo>(</mo><mi>x</mi><mo>,</mo><mtext> </mtext><msup><mi>x</mi><mn>2.4</mn></msup><mo>)</mo></mrow></math> values sample on <math><mrow><mo>[</mo><mn>0</mn><mo>,</mo><mtext> </mtext><mn>1</mn><mo>]</mo></mrow></math>.</li>
+<li><math><mi>f</mi></math> defines the expression we want to optimize.</li>
+<li><math><mi>p</mi></math> is the result of the optimization: take the table <math><mi>t</mi></math>, expression <math><mi>f</mi></math>, <math><mi>a</mi></math> and <math><mi>b</mi></math> are the values to optimize, <math><mi>x</mi></math> is the function input and use the supremum norm as error measure.</li>
 </ul>
 <p>This generates sub-optimal coefficents but it doesn’t matter here since improving the error bound is useless for the presented toy problem.</p>
 <p>For the polynomials I used <a href="http://sollya.gforge.inria.fr/">Sollya</a>. As an example the degree 4 was generated by:</p>

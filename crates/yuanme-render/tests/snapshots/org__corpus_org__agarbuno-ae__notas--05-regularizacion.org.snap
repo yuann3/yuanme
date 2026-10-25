@@ -149,9 +149,7 @@ observaciones y, además, <code>cuantificar la variabilidad</code> de esta predi
 esta parte estudiaremos cómo incorporar lo aprendido para <code>escoger un modelo
 sobre otro</code>.</p>
 <p>Por ejemplo, hemos visto que es natural <code>extender</code> el modelo lineal</p>
-<code class="language-math math-display">\begin{align}
-Y = \beta_0 + \beta_1 X_1 + \cdots + \beta_p X_p + \epsilon \,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>Y</mi><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>X</mi><mn>1</mn></msub><mo>+</mo><mo lspace="0" rspace="0">⋯</mo><mo>+</mo><msub><mi>β</mi><mi>p</mi></msub><msub><mi>X</mi><mi>p</mi></msub><mo>+</mo><mi>ϵ</mi><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(1)</mtext></mtd></mtr></mtable></math>
 <p>Veremos (mas adelante) la idea de incorporar relaciones <code>no lineales</code> manteniendo el supuesto de <code>aditividad</code>.</p>
 <p>Incluso aunque el modelo lineal es sencillo, tiene sus ventajas pues nos ayuda a tener un modelo <code>interpretable</code> y al mismo tiempo con buena <code>capacidad predictiva</code>.</p>
 <div class="NOTES">
@@ -160,7 +158,7 @@ Y = \beta_0 + \beta_1 X_1 + \cdots + \beta_p X_p + \epsilon \,.
 <p>Estudiaremos estrategias para mejorar modelos lineales a través de procedimientos alternativos de ajuste.</p>
 <h3 id="opciones-para-ajustar-modelos">Opciones para ajustar modelos</h3>
 <ul>
-<li>Basados en <code>precisión de ajuste</code>, ideal cuando <code class="language-math math-inline">p > n</code> con el objetivo de <em>reducir</em> varianza.</li>
+<li>Basados en <code>precisión de ajuste</code>, ideal cuando <math><mi>p</mi><mo>&gt;</mo><mi>n</mi></math> con el objetivo de <em>reducir</em> varianza.</li>
 <li>Basados en <code>interpretabilidad</code>. Por ejemplo, eliminar variables que no tengan capacidad predictiva.</li>
 </ul>
 <h2 id="estrategias-de-selección-de-variables">Estrategias de selección de variables</h2>
@@ -169,21 +167,21 @@ Y = \beta_0 + \beta_1 X_1 + \cdots + \beta_p X_p + \epsilon \,.
 <li>Reducción de coeficientes (regularización).</li>
 <li>Reducción de dimensiones.</li>
 </ul>
-<p><code class="language-math math-inline">\newpage</code></p>
+<p></p>
 <h3 id="selección-por-subconjuntos">Selección por subconjuntos</h3>
 <p>El mecanismo sería el siguiente.</p>
 <ol>
-<li>Utilizar el <code>modelo nulo</code> <code class="language-math math-inline">\mathcal{M}_0</code> (sin predictores).</li>
-<li>Para <code class="language-math math-inline">{\color{orange} k} = 1, \ldots, p</code>:
+<li>Utilizar el <code>modelo nulo</code> <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mn>0</mn></msub></math> (sin predictores).</li>
+<li>Para <math><mrow style="color:#FF8001;"><mi>k</mi></mrow><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>p</mi></math>:
 <ol>
-<li>Ajustar todos modelos posibles con <code class="language-math math-inline">{\color{orange} k}</code> predictores.</li>
-<li>Elegir el <em>mejor</em> de esa colección de modelos, le pondremos <code class="language-math math-inline">\mathcal{M}_{\color{orange} k}</code>.</li>
+<li>Ajustar todos modelos posibles con <math><mrow style="color:#FF8001;"><mi>k</mi></mrow></math> predictores.</li>
+<li>Elegir el <em>mejor</em> de esa colección de modelos, le pondremos <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mrow style="color:#FF8001;"><mi>k</mi></mrow></msub></math>.</li>
 </ol>
 </li>
-<li>Elegir el mejor modelo dentro de la colección <code class="language-math math-inline">\mathcal{M}_0, \ldots, \mathcal{M}_p</code> utilizando un <code>criterio de comparación de modelos</code>.</li>
+<li>Elegir el mejor modelo dentro de la colección <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mn>0</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mi>p</mi></msub></math> utilizando un <code>criterio de comparación de modelos</code>.</li>
 </ol>
 <h4 id="para-pensar">Para pensar:</h4>
-<p>¿Por qué no puedes utilizar el criterio de <code>RSS</code> para escoger entre las opciones <code class="language-math math-inline">\mathcal{M}_1, \ldots, \mathcal{M}_p</code>?</p>
+<p>¿Por qué no puedes utilizar el criterio de <code>RSS</code> para escoger entre las opciones <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mi>p</mi></msub></math>?</p>
 <h3 id="en-el-contexto-de-clasificación">En el contexto de clasificación</h3>
 <p>La <code>devianza</code> –el negativo de dos veces la log-verosimilitud– se utiliza como
 una métrica de bondad de ajuste (como el <code>RSS</code>) para una clase mas amplia de modelos.</p>
@@ -194,14 +192,14 @@ haber incorporado estas nuevas características.</p>
 <h3 id="pseudo-código-selección-hacia-adelante">Pseudo-código (selección hacia adelante)</h3>
 <p>El proceso sería el siguiente.</p>
 <ol>
-<li>Denotamos por <code class="language-math math-inline">\mathcal{M}_0</code> el modelo <code>nulo</code>.</li>
-<li>Para <code class="language-math math-inline">{\color{orange} k} = 0, \ldots, p -1</code>:
+<li>Denotamos por <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mn>0</mn></msub></math> el modelo <code>nulo</code>.</li>
+<li>Para <math><mrow style="color:#FF8001;"><mi>k</mi></mrow><mo>=</mo><mn>0</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>p</mi><mo>−</mo><mn>1</mn></math>:
 <ol>
-<li>Considera todos los <code class="language-math math-inline">p-{\color{orange} k}</code> modelos que aumentan el modelo en la iteración anterior <code class="language-math math-inline">\mathcal{M}_{\color{orange} k}</code> con un predictor adicional.</li>
-<li>Escoge el <code>mejor</code> de estos <code class="language-math math-inline">p-{\color{orange}  k}</code> modelos y llámale <code class="language-math math-inline">\mathcal{M}_{{\color{orange}  k}+1}</code> .</li>
+<li>Considera todos los <math><mi>p</mi><mo>−</mo><mrow style="color:#FF8001;"><mi>k</mi></mrow></math> modelos que aumentan el modelo en la iteración anterior <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mrow style="color:#FF8001;"><mi>k</mi></mrow></msub></math> con un predictor adicional.</li>
+<li>Escoge el <code>mejor</code> de estos <math><mi>p</mi><mo>−</mo><mrow style="color:#FF8001;"><mi>k</mi></mrow></math> modelos y llámale <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mrow><mrow style="color:#FF8001;"><mi>k</mi></mrow><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub></math> .</li>
 </ol>
 </li>
-<li>Escoge el mejor de los modelos entre <code class="language-math math-inline">\mathcal{M}_0, \ldots, \mathcal{M}_{p}</code> utilizando un criterio de comparación de modelos.</li>
+<li>Escoge el mejor de los modelos entre <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mn>0</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mi>p</mi></msub></math> utilizando un criterio de comparación de modelos.</li>
 </ol>
 <h3 id="aplicación-créditos">Aplicación: créditos</h3>
 <figure>
@@ -224,7 +222,7 @@ haber incorporado estas nuevas características.</p>
 <figcaption>Método de selección para los datos de créditos. Tomada de citep:James2021.</figcaption>
 </figure>
 <div class="NOTES">
-<p>Nota que el mecanismo iterativo no tiene garantía de encontrar el mejor modelo dentro de las <code class="language-math math-inline">{p \choose k}</code> posibilidades.</p>
+<p>Nota que el mecanismo iterativo no tiene garantía de encontrar el mejor modelo dentro de las <math><mrow><mo>(</mo><mfrac linethickness="0"><mi>p</mi><mi>k</mi></mfrac><mo>)</mo></mrow></math> posibilidades.</p>
 </div>
 <figure>
 <figcaption>Métricas de bondad de ajuste para los datos de <code>Credit</code>.</figcaption>
@@ -236,38 +234,32 @@ haber incorporado estas nuevas características.</p>
 </code></pre>
 </figure>
 <h4 id="para-pensar-1">Para pensar:</h4>
-<p>¿Cuántos modelos en total se ajustan con el procedimiento de búsqueda iterativa hacia adelante? Considera <code class="language-math math-inline">p = 20</code>.</p>
+<p>¿Cuántos modelos en total se ajustan con el procedimiento de búsqueda iterativa hacia adelante? Considera <math><mi>p</mi><mo>=</mo><mn>20</mn></math>.</p>
 <h3 id="selección-iterativa-hacia-atrás">Selección iterativa hacia atrás</h3>
-<p>Empezamos con el <code>modelo completo</code> que contenga los <code class="language-math math-inline">p</code> predictores. Eliminando variables, una a la vez, cuando un predictor no sea tan útil. La única restricción que necesitamos es que <code class="language-math math-inline">n>p</code> .</p>
+<p>Empezamos con el <code>modelo completo</code> que contenga los <math><mi>p</mi></math> predictores. Eliminando variables, una a la vez, cuando un predictor no sea tan útil. La única restricción que necesitamos es que <math><mi>n</mi><mo>&gt;</mo><mi>p</mi></math> .</p>
 <h2 id="métricas-de-desempeño">Métricas de desempeño</h2>
-<p>Si utilizáramos el <code>RSS</code>  para comparar entre <code class="language-math math-inline">\mathcal{M}_0, \ldots, \mathcal{M}_k</code> tendríamos un problema pues eliminar (aumentar) predictores siempre perjudicaría (beneficia) la capacidad predictiva del modelo. Necesitamos <code>compensar</code> por el sesgo de sobre-ajuste. Es decir, considerar una métrica que pueda estimar el error de <code>generalización</code>.</p>
-<h3 id="c_p-de-mallow"><code class="language-math math-inline">C_p</code> de Mallow</h3>
+<p>Si utilizáramos el <code>RSS</code>  para comparar entre <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mn>0</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mi>k</mi></msub></math> tendríamos un problema pues eliminar (aumentar) predictores siempre perjudicaría (beneficia) la capacidad predictiva del modelo. Necesitamos <code>compensar</code> por el sesgo de sobre-ajuste. Es decir, considerar una métrica que pueda estimar el error de <code>generalización</code>.</p>
+<h3 id="c_p-de-mallow"><math><msub><mi>C</mi><mi>p</mi></msub></math> de Mallow</h3>
 <p>Es un criterio de bondad de ajuste (<code>menor mejor</code>) definida como</p>
-<code class="language-math math-display">\begin{align}
-C_p(\mathcal{M}_d) = \frac1n \left( \mathsf{RSS}(d)  + 2 d \hat \sigma^2\right)\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>C</mi><mi>p</mi></msub><mo stretchy="false">(</mo><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mi>d</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><mrow><mo lspace="0.1667em">(</mo><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo stretchy="false">(</mo><mi>d</mi><mo stretchy="false">)</mo><mo>+</mo><mn>2</mn><mi>d</mi><msup><mover accent="true"><mi>σ</mi><mo stretchy="false">ˆ</mo></mover><mn>2</mn></msup><mo rspace="0.1667em">)</mo></mrow><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(2)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
 <p>Tenemos una penalización a la suma de residuales al cuadrado (<code>RSS</code>) que considera un aumento en predictores utilizados.</p>
 </div>
 <h3 id="el-criterio-de-información-de-akaike-aic">El criterio de información de Akaike (AIC)</h3>
 <p>Se utiliza para evaluar modelos ajustados por máxima verosimilitud (<code>menor mejor</code>)</p>
-<code class="language-math math-display">\begin{align}
-\mathsf{AIC}(\mathcal{M}_d) = - 2\log L + 2 d \hat{\sigma}^2\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mrow><mspace/><mi>𝖠𝖨𝖢</mi></mrow><mo stretchy="false">(</mo><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mi>d</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mo lspace="0" rspace="0">−</mo><mn>2</mn><mo lspace="0.1667em" rspace="0.1667em">log</mo><mi>L</mi><mo>+</mo><mn>2</mn><mi>d</mi><msup><mover accent="true"><mi>σ</mi><mo stretchy="false">ˆ</mo></mover><mn>2</mn></msup><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(3)</mtext></mtd></mtr></mtable></math>
 <h4 id="ejercicio">Ejercicio:</h4>
-<p>Prueba que en el caso del modelo lineal con errores Gaussianos el criterio de mínimos cuadrados y máxima verosimilitud es el mismo. Además los criterios <code class="language-math math-inline">C_p</code> y <code class="language-math math-inline">\mathsf{AIC}</code> son lo mismo.</p>
-<h3 id="r2-ajustada"><code class="language-math math-inline">R^2</code> ajustada</h3>
+<p>Prueba que en el caso del modelo lineal con errores Gaussianos el criterio de mínimos cuadrados y máxima verosimilitud es el mismo. Además los criterios <math><msub><mi>C</mi><mi>p</mi></msub></math> y <math><mrow><mspace/><mi>𝖠𝖨𝖢</mi></mrow></math> son lo mismo.</p>
+<h3 id="r2-ajustada"><math><msup><mi>R</mi><mn>2</mn></msup></math> ajustada</h3>
 <p>Se calcula como</p>
-<code class="language-math math-display">\begin{align}
-R^2_A(\mathcal{M}_d) = 1 - \frac{\mathsf{RSS}/(n - d - 1)}{\mathsf{TSS}/(n-1)}\,.
-\end{align}</code>
-<p>Es una métrica de correlación entre predicción ($<code class="language-math math-inline">\hat</code> y$) y respuesta ($y$)
-(<code>mayor mejor</code>). Al contrario de la <code class="language-math math-inline">R^2</code> tradicional esta métrica si se afecta
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msubsup><mi>R</mi><mi>A</mi><mn>2</mn></msubsup><mo stretchy="false">(</mo><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mi>d</mi></msub><mo stretchy="false">)</mo><mo>=</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo lspace="0" rspace="0">/</mo><mo stretchy="false">(</mo><mi>n</mi><mo>−</mo><mi>d</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><mrow><mrow><mspace/><mi>𝖳𝖲𝖲</mi></mrow><mo lspace="0" rspace="0">/</mo><mo stretchy="false">(</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></mfrac><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(4)</mtext></mtd></mtr></mtable></math>
+<p>Es una métrica de correlación entre predicción ($ y$) y respuesta ($y$)
+(<code>mayor mejor</code>). Al contrario de la <math><msup><mi>R</mi><mn>2</mn></msup></math> tradicional esta métrica si se afecta
 por la inclusión de variables inecesarias/redundantes.</p>
 <h3 id="objetivo">Objetivo</h3>
-<p>Cada uno de los procedimientos de selección de variables regresa una secuencia de modelos <code class="language-math math-inline">\mathcal{M}_k</code>. Lo que queremos es escoger la <code class="language-math math-inline">k^\star</code> de acuerdo al <code>error de generalización</code>. El error de generalización obtenido por <code>validación cruzada</code>  tiene la ventaja de no hacer la estimación de <code class="language-math math-inline">\sigma^2</code>.</p>
+<p>Cada uno de los procedimientos de selección de variables regresa una secuencia de modelos <math><msub><mrow><mspace/><mi>ℳ︀</mi></mrow><mi>k</mi></msub></math>. Lo que queremos es escoger la <math><msup><mi>k</mi><mo>⋆</mo></msup></math> de acuerdo al <code>error de generalización</code>. El error de generalización obtenido por <code>validación cruzada</code>  tiene la ventaja de no hacer la estimación de <math><msup><mi>σ</mi><mn>2</mn></msup></math>.</p>
 <div class="NOTES">
-<p>Estimar <code class="language-math math-inline">\sigma^2</code> es una tarea complicada. Implica, bajo el modelo de regresión, estimar el mejor modelo y encontrar la precisión de la familia de modelos que estamos utilizando.</p>
+<p>Estimar <math><msup><mi>σ</mi><mn>2</mn></msup></math> es una tarea complicada. Implica, bajo el modelo de regresión, estimar el mejor modelo y encontrar la precisión de la familia de modelos que estamos utilizando.</p>
 </div>
 <h4 id="selección-de-modelo-datos-de-crédito">Selección de modelo: Datos de crédito</h4>
 <p>El objetivo es predecir el <code>Saldo</code> en términos de los demás predictores. Se seleccionarán las variables de acuerdo a un proceso iterativo. En este caso por <code>búsqueda hacia adelante</code>.</p>
@@ -295,28 +287,22 @@ predictores &#x3C;- attributes(adelante$terms)$term.labels
 </figure>
 <figure>
 <img src="../images/errror-validacion-cruzada-swf.jpeg" alt="errror-validacion-cruzada-swf.jpeg">
-<figcaption>Error de generalización estimado por validación cruzada con <code class="language-math math-inline">K=10</code>. Para los datos de <code>Credit</code>.</figcaption>
+<figcaption>Error de generalización estimado por validación cruzada con <math><mi>K</mi><mo>=</mo><mn>10</mn></math>. Para los datos de <code>Credit</code>.</figcaption>
 </figure>
 <p>Escogemos el modelo con el error mas pequeño. Sin embargo, validación cruzada nos puede dar una métrica de incertidumbre (¿cuál?). ¿Y si el problema de decisión lo planteamos como una prueba de hipótesis?</p>
 <h3 id="el-método-de-un-error-estándar">El método de <code>un error estándar</code></h3>
 <ol>
 <li>
 <p>Se estima la función de pérdida generalizada parametrizada por los hiper-parámetros.</p>
-<code class="language-math math-display">   \begin{align}
-  \mathsf{CV}_{(K)}(\lambda) = \frac1K  \sum_{k=1}^{K} \mathsf{MSE}_k (\lambda)\,.
-   \end{align} </code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mrow><mspace/><mi>𝖢𝖵</mi></mrow><mrow><mo stretchy="false">(</mo><mi>K</mi><mo stretchy="false">)</mo></mrow></msub><mo stretchy="false">(</mo><mi>λ</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mi>K</mi></mfrac><munderover><mo>∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mrow><mspace/><mi>𝖬𝖲𝖤</mi></mrow><mi>k</mi></msub><mo stretchy="false">(</mo><mi>λ</mi><mo stretchy="false">)</mo><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(5)</mtext></mtd></mtr></mtable></math>
 </li>
 <li>
 <p>Se localiza el valor de los hiper-parámetros que minimicen dicha función de pérdida.</p>
-<code class="language-math math-display">   \begin{align}
-   \hat{\lambda} = \arg \min_{\lambda \in \Lambda}   \mathsf{CV}_{(K)}(\lambda)\,.
-   \end{align}  </code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mover accent="true"><mi>λ</mi><mo stretchy="false">ˆ</mo></mover><mo>=</mo><mo lspace="0" rspace="0.1667em">arg</mo><munder><mo lspace="0" rspace="0.1667em">min</mo><mrow><mi>λ</mi><mo lspace="0" rspace="0">∈</mo><mrow><mspace/><mi mathvariant="normal">Λ</mi></mrow></mrow></munder><msub><mrow><mspace/><mi>𝖢𝖵</mi></mrow><mrow><mo stretchy="false">(</mo><mi>K</mi><mo stretchy="false">)</mo></mrow></msub><mo stretchy="false">(</mo><mi>λ</mi><mo stretchy="false">)</mo><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(6)</mtext></mtd></mtr></mtable></math>
 </li>
 <li>
 <p>Se escoge el modelo mas sencillo que se encuentre a un error estándar.</p>
-<code class="language-math math-display">   \begin{align}
-   \hat{\lambda}^\star \text{ tal que }    \mathsf{CV}_{(K)}(\lambda) \leq  \mathsf{CV}_{(K)}(\hat{\lambda}) + \mathsf{SE}\left(   \mathsf{CV}_{(K)}(\hat{\lambda}) \right)\,.
-   \end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msup><mover accent="true"><mi>λ</mi><mo stretchy="false">ˆ</mo></mover><mo>⋆</mo></msup><mtext> tal que </mtext><msub><mrow><mspace/><mi>𝖢𝖵</mi></mrow><mrow><mo stretchy="false">(</mo><mi>K</mi><mo stretchy="false">)</mo></mrow></msub><mo stretchy="false">(</mo><mi>λ</mi><mo stretchy="false">)</mo><mo>≤</mo><msub><mrow><mspace/><mi>𝖢𝖵</mi></mrow><mrow><mo stretchy="false">(</mo><mi>K</mi><mo stretchy="false">)</mo></mrow></msub><mo stretchy="false">(</mo><mover accent="true"><mi>λ</mi><mo stretchy="false">ˆ</mo></mover><mo stretchy="false">)</mo><mo>+</mo><mrow><mspace/><mi>𝖲𝖤</mi></mrow><mrow><mo lspace="0.1667em">(</mo><msub><mrow><mspace/><mi>𝖢𝖵</mi></mrow><mrow><mo stretchy="false">(</mo><mi>K</mi><mo stretchy="false">)</mo></mrow></msub><mo stretchy="false">(</mo><mover accent="true"><mi>λ</mi><mo stretchy="false">ˆ</mo></mover><mo stretchy="false">)</mo><mo rspace="0.1667em">)</mo></mrow><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(7)</mtext></mtd></mtr></mtable></math>
 </li>
 </ol>
 <figure>
@@ -326,19 +312,15 @@ predictores &#x3C;- attributes(adelante$terms)$term.labels
 <h2 id="regularización">Regularización</h2>
 <p>Los procedimientos <code>selección de variables discretos/iterativos</code> pueden generar una <code>varianza</code> muy alta en las estimaciones del error y podría no reducir el error de predicción del modelo completo. Estudiaremos dos métodos de regularización, <code>Ridge</code> y <code>LASSO</code>, donde ajustamos un modelo con todas las características <em>penalizando</em> de alguna manera la complejidad del modelo.</p>
 <h3 id="regresión-ridge">Regresión <em>Ridge</em></h3>
-<p>Nuestra formulación anterior consideraba encontrar <code class="language-math math-inline">\beta_0, \beta_1, \ldots, \beta_n</code> minimizando</p>
-<code class="language-math math-display">\begin{align}
-\mathsf{RSS} = \sum_{i = 1}^{n}\left(  y_i - \beta_0 - \sum_{j= 1}^{p}\beta_jx_j\right)^2\,.
-\end{align}</code>
+<p>Nuestra formulación anterior consideraba encontrar <math><msub><mi>β</mi><mn>0</mn></msub><mo>,</mo><msub><mi>β</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>β</mi><mi>n</mi></msub></math> minimizando</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mpadded style="padding-right:0.1667em;"><msup><mrow><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><msub><mi>β</mi><mn>0</mn></msub><mo>−</mo><munderover><mo lspace="0">∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>p</mi></munderover><msub><mi>β</mi><mi>j</mi></msub><msub><mi>x</mi><mi>j</mi></msub><mo>)</mo></mrow><mn>2</mn></msup></mpadded><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(8)</mtext></mtd></mtr></mtable></math>
 <p>Lo que haremos ahora será incorporar un <code>término de penalización</code> en la función objetivo</p>
-<code class="language-math math-display">\begin{align}
-\mathsf{RSS} + \lambda \sum_{j=1}^{p} \beta_j^2\,,
-\end{align}</code>
-<p>donde <code class="language-math math-inline">\lambda \geq0</code>  es un <code>hiper-parámetro</code>.</p>
-<p>El objetivo sigue siendo el mismo, ajustar el modelo lo mejor posible. El término adicional favorece soluciones con <code class="language-math math-inline">\beta_1, \ldots, \beta_p</code> pequeños.
-El parámetro <code class="language-math math-inline">\lambda</code> controla qué tanto <code>penalizamos</code> el <em>tamaño</em> de los coeficientes.</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo>+</mo><mi>λ</mi><munderover><mo>∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>p</mi></munderover><msubsup><mi>β</mi><mi>j</mi><mn>2</mn></msubsup><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(9)</mtext></mtd></mtr></mtable></math>
+<p>donde <math><mi>λ</mi><mo>≥</mo><mn>0</mn></math>  es un <code>hiper-parámetro</code>.</p>
+<p>El objetivo sigue siendo el mismo, ajustar el modelo lo mejor posible. El término adicional favorece soluciones con <math><msub><mi>β</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>β</mi><mi>p</mi></msub></math> pequeños.
+El parámetro <math><mi>λ</mi></math> controla qué tanto <code>penalizamos</code> el <em>tamaño</em> de los coeficientes.</p>
 <h4 id="para-pensar-2">Para pensar:</h4>
-<p>Un valor muy pequeño para <code class="language-math math-inline">\lambda</code> implica una penalización <code>pequeña</code>, por lo tanto la solución tenderá a ser un modelo <code>altamente flexible</code>. Por otro lado un valor de <code class="language-math math-inline">\lambda</code>  grande implica una penalización <code>fuerte</code>. Esto se traduce en un solución <code>poco flexible</code>.</p>
+<p>Un valor muy pequeño para <math><mi>λ</mi></math> implica una penalización <code>pequeña</code>, por lo tanto la solución tenderá a ser un modelo <code>altamente flexible</code>. Por otro lado un valor de <math><mi>λ</mi></math>  grande implica una penalización <code>fuerte</code>. Esto se traduce en un solución <code>poco flexible</code>.</p>
 <p>¿Por qué la regresión Ridge mejora las estimaciones en contraste con mínimos cuadrados?<br>
 <code>R</code>: La descomposición en sesgo-varianza.</p>
 <p>La regularización disminuye la varianza de las estimaciones, ¿por qué?</p>
@@ -350,7 +332,7 @@ El parámetro <code class="language-math math-inline">\lambda</code> controla qu
 <p>Usaremos Ridge como mecanismo de reducción de coeficientes para ajustar modelos parsimoniosos.</p>
 <figure>
 <img src="../images/ridge-credit.jpeg" alt="ridge-credit.jpeg">
-<figcaption>Trayectorias de los coeficientes al aumentar la penalización <code class="language-math math-inline">\lambda</code>.</figcaption>
+<figcaption>Trayectorias de los coeficientes al aumentar la penalización <math><mi>λ</mi></math>.</figcaption>
 </figure>
 <p>Observa que conforme <code>aumenta la penalización</code> los <code>coeficientes disminuyen</code> gradualmente.</p>
 <div class="NOTES">
@@ -358,9 +340,9 @@ El parámetro <code class="language-math math-inline">\lambda</code> controla qu
 </div>
 <figure>
 <img src="../images/ridge-cv-credit.jpeg" alt="ridge-cv-credit.jpeg">
-<figcaption>Error de validación calculada con <code class="language-math math-inline">K=10</code>. Nota que graficamos contra <code class="language-math math-inline">1/\lambda</code>.</figcaption>
+<figcaption>Error de validación calculada con <math><mi>K</mi><mo>=</mo><mn>10</mn></math>. Nota que graficamos contra <math><mn>1</mn><mo lspace="0" rspace="0">/</mo><mi>λ</mi></math>.</figcaption>
 </figure>
-<p>Con validación cruzada podemos identificar qué valor de <code class="language-math math-inline">\lambda</code> es el adecuado para penalizar. Una vez realizada esta elección, re-entrenamos el modelo utilizando <code>todo</code> el conjunto de datos para predecir situaciones/observaciones futuras.</p>
+<p>Con validación cruzada podemos identificar qué valor de <math><mi>λ</mi></math> es el adecuado para penalizar. Una vez realizada esta elección, re-entrenamos el modelo utilizando <code>todo</code> el conjunto de datos para predecir situaciones/observaciones futuras.</p>
 <h4 id="implementación-con-tidymodels">Implementación con <code>tidymodels</code>:</h4>
 <p>Primero tenemos que realizar un <em>split</em> de los datos en entrenamiento y prueba.</p>
 <pre><code class="language-R">data_split &#x3C;- initial_split(data)
@@ -446,7 +428,7 @@ data_folds |> print(n = 5)
 # … with 5 more rows
 # ℹ Use `print(n = ...)` to see more rows
 </code></pre>
-<p>Definimos el espacio de búsqueda de <code class="language-math math-inline">\lambda</code></p>
+<p>Definimos el espacio de búsqueda de <math><mi>λ</mi></math></p>
 <pre><code class="language-R">penalty_grid &#x3C;- grid_regular(penalty(range = c(-3, 5)), levels = 50)
 penalty_grid |> print(n = 5)
 </code></pre>
@@ -533,34 +515,28 @@ ridge_final_fit &#x3C;- fit(ridge_final, data = data_train)
 </code></pre>
 <h3 id="regresión-lasso">Regresión <em>LASSO</em></h3>
 <p>En la práctica Ridge no elimina completamente los predictores. Podemos cambiar la penalización para incorporar un <code>término de penalización</code> en la función objetivo</p>
-<code class="language-math math-display">\begin{align}
-\mathsf{RSS} + \lambda \sum_{j=1}^{p} |\beta_j|\,,
-\end{align}</code>
-<p>donde <code class="language-math math-inline">\lambda \geq0</code>  es un <code>hiper-parámetro</code>.</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo>+</mo><mi>λ</mi><munderover><mo>∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>p</mi></munderover><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>β</mi><mi>j</mi></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(10)</mtext></mtd></mtr></mtable></math>
+<p>donde <math><mi>λ</mi><mo>≥</mo><mn>0</mn></math>  es un <code>hiper-parámetro</code>.</p>
 <p>Igual que antes… el objetivo sigue siendo el mismo, ajustar el modelo lo mejor
-posible. El término adicional favorece soluciones con <code class="language-math math-inline">\beta_1, \ldots, \beta_p</code>
-pequeños.  El parámetro <code class="language-math math-inline">\lambda</code> controla qué tanto penalizamos el <em>tamaño</em> de
+posible. El término adicional favorece soluciones con <math><msub><mi>β</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>β</mi><mi>p</mi></msub></math>
+pequeños.  El parámetro <math><mi>λ</mi></math> controla qué tanto penalizamos el <em>tamaño</em> de
 los coeficientes.</p>
 <h3 id="lasso-datos-de-crédito">LASSO: datos de crédito</h3>
 <figure>
 <img src="../images/lasso-credit.jpeg" alt="lasso-credit.jpeg">
-<figcaption>Trayectorias de los coeficientes al aumentar la penalización <code class="language-math math-inline">\lambda</code>.</figcaption>
+<figcaption>Trayectorias de los coeficientes al aumentar la penalización <math><mi>λ</mi></math>.</figcaption>
 </figure>
 <p>Observa que LASSO tiene la propiedad de eliminar completamente los predictores
 ($β = 0$) por lo que es un mecanismo de <code>selección automática de variables</code>.</p>
 <figure>
 <img src="../images/lasso-cv-credit.jpeg" alt="lasso-cv-credit.jpeg">
-<figcaption>Error de validación calculada con <code class="language-math math-inline">K=10</code>. Nota que graficamos contra <code class="language-math math-inline">1/\lambda</code>.</figcaption>
+<figcaption>Error de validación calculada con <math><mi>K</mi><mo>=</mo><mn>10</mn></math>. Nota que graficamos contra <math><mn>1</mn><mo lspace="0" rspace="0">/</mo><mi>λ</mi></math>.</figcaption>
 </figure>
 <h3 id="comparación-ridge-v-lasso">Comparación: Ridge v. LASSO</h3>
 <p>El problema de optimización (Ridge) se puede reescribir de la siguiente manera</p>
-<code class="language-math math-display">\begin{align}
-\text{minimizar } \mathsf{RSS}, \qquad \text{ sujeto a}   \sum_{j=1}^{p} \beta_j^2 \leq s\,,
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext>minimizar </mtext><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo>,</mo><mspace width="2em"/><mtext> sujeto a</mtext><munderover><mo>∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>p</mi></munderover><msubsup><mi>β</mi><mi>j</mi><mn>2</mn></msubsup><mo>≤</mo><mi>s</mi><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(11)</mtext></mtd></mtr></mtable></math>
 <p>y el respectivo de LASSO</p>
-<code class="language-math math-display">\begin{align}
-\text{minimizar } \mathsf{RSS}, \qquad \text{ sujeto a}   \sum_{j=1}^{p} |\beta_j| \leq s\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext>minimizar </mtext><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo>,</mo><mspace width="2em"/><mtext> sujeto a</mtext><munderover><mo>∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>p</mi></munderover><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>β</mi><mi>j</mi></msub><mo stretchy="false" lspace="0" rspace="0">|</mo><mo>≤</mo><mi>s</mi><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(12)</mtext></mtd></mtr></mtable></math>
 <figure>
 <img src="images/20220304-125828_screenshot.png" alt="20220304-125828_screenshot.png" width="700" align="center">
 <figcaption>Curvas de nivel de los problemas de optimización: LASSO (izquierda) y Ridge (derecha). Tomada de citep:James2021.</figcaption>
@@ -686,9 +662,7 @@ final_lasso &#x3C;- finalize_workflow(
 <p>¿cómo escogerías entre Ridge o LASSO?</p>
 <div class="NOTES">
 <p>La penalización tipo LASSO es indiferente a la selección de variables dentro de un conjunto de variables altamente correlacionadas. Ridge, por su parte, tiende a agrupar los coeficientes en valores similares. La penalización de <code>Elastic Net</code> puede lograr un compromiso entre los puntos anteriores</p>
-<code class="language-math math-display">\begin{align}
-\lambda \left[ \alpha \|\beta\|_1 + (1 - \alpha) \|\beta\|_2^2 \right]\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>λ</mi><mrow><mo lspace="0.1667em">[</mo><mi>α</mi><mo stretchy="false" lspace="0" rspace="0">‖</mo><mi>β</mi><msub><mo stretchy="false" lspace="0" rspace="0">‖</mo><mn>1</mn></msub><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo stretchy="false">)</mo><mo stretchy="false" lspace="0" rspace="0">‖</mo><mi>β</mi><msubsup><mo stretchy="false" lspace="0" rspace="0">‖</mo><mn>2</mn><mn>2</mn></msubsup><mo rspace="0.1667em">]</mo></mrow><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(13)</mtext></mtd></mtr></mtable></math>
 <p>El segundo término logra promediar los coeficientes de atributos altamente correlacionados, mientras que el primer término se encarga de acercarlos mas a cero (una solución <em>sparse</em>).</p>
 </div>
 <p>Extender la selección de modelos a una búsqueda de varios hiper-parámetros se
@@ -721,26 +695,18 @@ grid_random(hyper.params, size = 50)
 <h2 id="métodos-de-reducción-de-dimensiones">Métodos de reducción de dimensiones</h2>
 <p>LASSO o Ridge utilizan el concepto de regularización para <code>restringir</code> los modelos posibles. Una alternativa es <code>transformar</code> primero los predictores (el espacio de los predictores) y <code>ajustar</code> un modelo con ese subespacio.</p>
 <h3 id="regresión-con-reducción-de-dimensiones">Regresión con reducción de dimensiones</h3>
-<p>Denotemos por <code class="language-math math-inline">Z_1, Z_2, \ldots Z_M</code> combinaciones lineales de nuestros predictores originales. Lo escribimos como</p>
-<code class="language-math math-display">\begin{align}
-Z_m = \sum_{j = 1}^{p}\phi_{mj} X_j, \qquad m = 1, \ldots, M\,, 
-\end{align}</code>
-<p>con algunas constantes <code class="language-math math-inline">\phi_{mj}</code> (que se escogen con alguna estrategia).</p>
+<p>Denotemos por <math><msub><mi>Z</mi><mn>1</mn></msub><mo>,</mo><msub><mi>Z</mi><mn>2</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><msub><mi>Z</mi><mi>M</mi></msub></math> combinaciones lineales de nuestros predictores originales. Lo escribimos como</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>Z</mi><mi>m</mi></msub><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>p</mi></munderover><msub><mi>ϕ</mi><mrow><mi>m</mi><mi>j</mi></mrow></msub><msub><mi>X</mi><mi>j</mi></msub><mo>,</mo><mspace width="2em"/><mi>m</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>M</mi><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(14)</mtext></mtd></mtr></mtable></math>
+<p>con algunas constantes <math><msub><mi>ϕ</mi><mrow><mi>m</mi><mi>j</mi></mrow></msub></math> (que se escogen con alguna estrategia).</p>
 <p>Podemos ajustar un modelo de regresión por medio de</p>
-<code class="language-math math-display">\begin{align}
-y_i = \theta_0 + \sum_{m = 1}^{M}\theta_m z_{im} + \epsilon_i\,,
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>y</mi><mi>i</mi></msub><mo>=</mo><msub><mi>θ</mi><mn>0</mn></msub><mo>+</mo><munderover><mo lspace="0">∑</mo><mrow><mi>m</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>M</mi></munderover><msub><mi>θ</mi><mi>m</mi></msub><msub><mi>z</mi><mrow><mi>i</mi><mi>m</mi></mrow></msub><mo>+</mo><msub><mi>ϵ</mi><mi>i</mi></msub><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(15)</mtext></mtd></mtr></mtable></math>
 <p>utilizando mínimos cuadrados.</p>
 <p>Nota que podemos rescribir</p>
-<code class="language-math math-display">\begin{align}
-\sum_{m = 1}^{M} \theta_m z_{im} = \sum_{m= 1}^{M} \theta_m \sum_{j = 1}^{p} \phi_{mj}x_{ij} = \sum_{j = 1}^{p}  \beta_j x_{ij}\,,
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><munderover><mo lspace="0">∑</mo><mrow><mi>m</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>M</mi></munderover><msub><mi>θ</mi><mi>m</mi></msub><msub><mi>z</mi><mrow><mi>i</mi><mi>m</mi></mrow></msub><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>m</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>M</mi></munderover><msub><mi>θ</mi><mi>m</mi></msub><munderover><mo>∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>p</mi></munderover><msub><mi>ϕ</mi><mrow><mi>m</mi><mi>j</mi></mrow></msub><msub><mi>x</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>p</mi></munderover><msub><mi>β</mi><mi>j</mi></msub><msub><mi>x</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(16)</mtext></mtd></mtr></mtable></math>
 <p>donde</p>
-<code class="language-math math-display">\begin{align}
-\beta_j = \sum_{m=1}^{M} \theta_m \phi_{mj}\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>β</mi><mi>j</mi></msub><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>m</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>M</mi></munderover><msub><mi>θ</mi><mi>m</mi></msub><msub><mi>ϕ</mi><mrow><mi>m</mi><mi>j</mi></mrow></msub><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(17)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
-<p>El modelo restringe automáticamente las <code class="language-math math-inline">\beta_j</code> pues tienen que tomar una forma muy particular. Si las <code class="language-math math-inline">\phi_{mj}</code> se escogen bien, incluso pueden realizar un mejor trabajo que el modelo de mínimos cuadrados en las variables originales.</p>
+<p>El modelo restringe automáticamente las <math><msub><mi>β</mi><mi>j</mi></msub></math> pues tienen que tomar una forma muy particular. Si las <math><msub><mi>ϕ</mi><mrow><mi>m</mi><mi>j</mi></mrow></msub></math> se escogen bien, incluso pueden realizar un mejor trabajo que el modelo de mínimos cuadrados en las variables originales.</p>
 </div>
 <h3 id="otros-métodos-de-reducción-de-dimensiones">Otros métodos de reducción de dimensiones</h3>
 <ul>

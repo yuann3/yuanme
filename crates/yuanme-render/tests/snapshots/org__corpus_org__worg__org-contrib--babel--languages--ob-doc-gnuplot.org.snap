@@ -109,7 +109,7 @@ the table to gnuplot.</li>
 <li><code>:exports {code, results, both, none}</code>
 <ul>
 <li>When the code is run and the document exported (e.g. to HTML or
-<code class="language-math math-inline">\LaTeX</code> PDF), what should appear? Just the code block itself? Only
+ PDF), what should appear? Just the code block itself? Only
 the produced output (in this case a plot of some sort)? Both the
 code and the accompanying results? Or nothing?</li>
 </ul>

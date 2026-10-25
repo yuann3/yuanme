@@ -33,12 +33,8 @@ everything in the subtree, or C-u C-u C-c C-x C-l to preview
 everything in the buffer), you should see something like this (the
 placement on the page and the size of the equations are probably going
 to be different, but the formulas should be recognizably the same):</p>
-<p><code class="language-math math-display">
-e^{i\pi} = -1
-</code></p>
-<p><code class="language-math math-display">
-\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
-</code></p>
+<math display="block"><msup><mi>e</mi><mrow><mi>i</mi><mi>π</mi></mrow></msup><mo>=</mo><mo lspace="0" rspace="0">−</mo><mn>1</mn></math>
+<math display="block"><msubsup><mo lspace="0">∫</mo><mn>0</mn><mi>∞</mi></msubsup><msup><mi>e</mi><mrow><mo lspace="0" rspace="0">−</mo><msup><mi>x</mi><mn>2</mn></msup></mrow></msup><mi>d</mi><mi>x</mi><mo>=</mo><mfrac><msqrt><mi>π</mi></msqrt><mn>2</mn></mfrac></math>
 <p>Generally speaking, the preview mechanism looks for LaTeX environments
 in the current region of applicability and processes one or more of
 them. Prefix arguments and position in the buffer affect the region of

@@ -113,8 +113,8 @@ error[link/unresolved]: nothing here is called `bibliographystyle:authordate1`: 
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
    = note: run `yuanme docs link/unresolved` for more
-<p><code class="language-math math-inline">\maketitle</code>
-<code class="language-math math-inline">\tableofcontents</code></p>
+<p>
+</p>
 <h2 id="introduction">Introduction <a id="sec-intro"></a></h2>
 <p>This is a basic example. The section uses a target label. The next section (Sec. ref:sec-citations uses a <code>CUSTOM_ID</code>).</p>
 <h3 id="sec-citations">Citations</h3>
@@ -148,9 +148,9 @@ error[link/unresolved]: nothing here is called `bibliographystyle:authordate1`: 
 <figcaption>You need a caption.</figcaption>
 </figure>
 <p>Here is an equation using a latex label inside it.:</p>
-<p><code class="language-math math-inline">\begin{equation}</code><code class="language-math math-inline">\label{eq-int}</code>
+<p>
 ∫_0^1 e^x dx
-<code class="language-math math-inline">\end{equation}</code></p>
+</p>
 <h3 id="cross-references">cross-references <a id="sec-cr"></a></h3>
 <p>index:cross-references</p>
 <p>See section ref:sec-intro. The data is shown in Table ref:tab-data.</p>

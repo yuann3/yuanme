@@ -96,7 +96,10 @@ impl Writer<'_> {
         let node = doc.node(id);
         match &node.kind {
             Kind::Root => unreachable!("the root is not a child"),
-            Kind::Paragraph => self.element("p", id),
+            Kind::Paragraph => match lifted(doc, id) {
+                Some(math) => self.node(math),
+                None => self.element("p", id),
+            },
             Kind::Heading {
                 level,
                 id: anchor,
@@ -236,26 +239,13 @@ impl Writer<'_> {
             }
             Kind::LineBreak => self.out.push_str("<br>\n"),
             Kind::FootnoteReference { label, number } => self.reference(label, *number),
-            Kind::Ref { .. } => self.out.push_str(&text(&node.kind.ref_text())),
-            // Until math renders (#50), its TeX shows as code.
-            Kind::Math {
-                display: false,
-                tex,
-                ..
-            } => {
-                self.out.push_str(&format!(
-                    "<code class=\"language-math math-inline\">{}</code>",
-                    text(tex)
-                ));
-            }
-            Kind::Math {
-                display: true, tex, ..
-            } => {
-                self.out.push_str(&format!(
-                    "<code class=\"language-math math-display\">{}</code>",
-                    text(tex)
-                ));
-            }
+            // Linked as an `\eqref` inside math is.
+            Kind::Ref { label, .. } => self.out.push_str(&format!(
+                "<a href=\"#{}\">{}</a>",
+                attribute(&normalize_uri(label)),
+                text(&node.kind.ref_text())
+            )),
+            Kind::Math { mathml, .. } => self.out.push_str(mathml),
         }
     }
 
@@ -325,7 +315,9 @@ impl Writer<'_> {
         let doc = self.doc;
         let is_p = |c: NodeId| {
             let node = doc.node(c);
-            matches!(node.kind, Kind::Paragraph) && node.attrs.is_empty()
+            matches!(node.kind, Kind::Paragraph)
+                && node.attrs.is_empty()
+                && lifted(doc, c).is_none()
         };
         let children = &doc.node(id).children;
         let head_is_p = children.first().is_some_and(|&c| is_p(c));
@@ -556,6 +548,24 @@ impl Writer<'_> {
     }
 }
 
+/// The display math a paragraph holds and nothing else but white space,
+/// which is written without the `<p>` (#17).
+fn lifted(doc: &Document, id: NodeId) -> Option<NodeId> {
+    let node = doc.node(id);
+    if !node.attrs.is_empty() {
+        return None;
+    }
+    let mut math = None;
+    for &c in &node.children {
+        match &doc.node(c).kind {
+            Kind::Math { display: true, .. } if math.is_none() => math = Some(c),
+            Kind::Text(s) if s.trim().is_empty() => {}
+            _ => return None,
+        }
+    }
+    math
+}
+
 /// An image's alt text: its children as plain text, raw HTML included.
 fn alt(doc: &Document, id: NodeId) -> String {
     let mut out = String::new();
@@ -563,6 +573,7 @@ fn alt(doc: &Document, id: NodeId) -> String {
         match &doc.node(c).kind {
             Kind::Text(s) | Kind::Code(s) | Kind::HtmlInline(s) => out.push_str(s),
             Kind::Math { tex, .. } => out.push_str(tex),
+            Kind::Ref { .. } => out.push_str(&doc.node(c).kind.ref_text()),
             _ => {}
         }
     }

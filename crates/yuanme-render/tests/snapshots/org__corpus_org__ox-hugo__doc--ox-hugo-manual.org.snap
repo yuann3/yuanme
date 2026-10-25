@@ -3652,8 +3652,8 @@ restrictions like “there should be no whitespace between the
 equation and the <code>$</code> delimiters”.</p>
 <p>So <code>$ a=b $</code> will not work (it will look like: $ a=b $), but
 <code>$a=b$</code> will work (it will look like: $a=b$).</p>
-<p>On the other hand, both <code>\(a=b\)</code> (it will look like: <code class="language-math math-inline">a=b</code>) and
-<code>\( a=b \)</code> (it will look like: <code class="language-math math-inline"> a=b </code>) will work.</p>
+<p>On the other hand, both <code>\(a=b\)</code> (it will look like: <math><mi>a</mi><mo>=</mo><mi>b</mi></math>) and
+<code>\( a=b \)</code> (it will look like: <math><mi>a</mi><mo>=</mo><mi>b</mi></math>) will work.</p>
 </li>
 </ul>
 </li>
@@ -3664,14 +3664,14 @@ delimiters.</li>
 <pre><code class="language-org">LaTeX formatted equation: \( E = -J \sum_{i=1}^N s_i s_{i+1} \)
 </code></pre>
 <p>will look like this in Hugo rendered HTML (using MathJax):</p>
-<p>LaTeX formatted equation: <code class="language-math math-inline"> E = -J \sum_{i=1}^N s_i s_{i+1 }</code></p>
+<p>LaTeX formatted equation: <math><mi>E</mi><mo>=</mo><mo lspace="0" rspace="0">−</mo><mi>J</mi><munderover><mo>∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>N</mi></munderover><msub><mi>s</mi><mi>i</mi></msub><msub><mi>s</mi><mrow><mi>i</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn></mrow></msub></math></p>
 <p>Here’s another example, taken from :</p>
 <pre><code>If $a^2=b$ and \( b=2 \), then the solution must be either
 $$ a=+\sqrt{2} $$ or \[ a=-\sqrt{2} \]
 </code></pre>
 <p>Above renders to below using Mathjax:</p>
-<p>If <code class="language-math math-inline">a^2=b</code> and <code class="language-math math-inline"> b=2 </code>, then the solution must be either
-<code class="language-math math-display"> a=+\sqrt{2} </code> or <code class="language-math math-display"> a=-\sqrt{2} </code></p>
+<p>If <math><msup><mi>a</mi><mn>2</mn></msup><mo>=</mo><mi>b</mi></math> and <math><mi>b</mi><mo>=</mo><mn>2</mn></math>, then the solution must be either
+<math display="block"><mi>a</mi><mo>=</mo><mo lspace="0" rspace="0">+</mo><msqrt><mn>2</mn></msqrt></math> or <math display="block"><mi>a</mi><mo>=</mo><mo lspace="0" rspace="0">−</mo><msqrt><mn>2</mn></msqrt></math></p>
 <div class="note">
 <p>Note that the last two equations show up on their own lines because
 those equations are wrapped in <code>\[ .. \]</code>.</p>
@@ -3685,10 +3685,7 @@ C = W\log_{2} (1+\mathrm{SNR})
 \end{equation}
 </code></pre>
 <p>will render as below using MathJax:</p>
-<code class="language-math math-display">\begin{equation}
-\label{eq:1}
-C = W\log_{2} (1+\mathrm{SNR})
-\end{equation}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mi>C</mi><mo>=</mo><mi>W</mi><msub><mo lspace="0.1667em" rspace="0">log</mo><mn>2</mn></msub><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mrow><mspace/><mi>SNR</mi></mrow><mo stretchy="false">)</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="eq:1"><mtext>(1)</mtext></mtd></mtr></mtable></math>
 <div class="note">
 <p>You can find many more equation examples at .</p>
 </div>
@@ -3696,7 +3693,7 @@ C = W\log_{2} (1+\mathrm{SNR})
 <p>Equation referencing will also work <strong><strong>but it requires MathJax</strong></strong>. <a href="#mathjax-config-example">Here</a>
 is a MathJax configuration that is known to work for this referencing
 feature. <code>\label{SOMELABEL}</code> labeled equations can be referenced using
-<code>\ref{SOMELABEL}</code><sup><a href="#user-content-fn-12" id="user-content-fnref-12" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup>. So <code>\ref{eq:1}</code> will render as 1
+<code>\ref{SOMELABEL}</code><sup><a href="#user-content-fn-12" id="user-content-fnref-12" data-footnote-ref="" aria-describedby="footnote-label">4</a></sup>. So <code>\ref{eq:1}</code> will render as <a href="#eq:1">1</a>
 and link to the equation above.</p>
 <h5 id="mathjax-config-example">MathJax config example</h5>
 <p>Here’s how MathJax is configured for this website:</p>

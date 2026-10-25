@@ -130,7 +130,7 @@ clashing with ‘org-table’ keybindings):</p>
 <pre><code class="language-emacs-lisp">(defvar outline-minor-mode-prefix "\C-c") 
 </code></pre>
 <p>or whatever you like best to replace the (quite unusable) original prefix
-“<code class="language-math math-inline">\C</code>-c @”. The prefix can only be changed before outline (minor) mode is
+“-c @”. The prefix can only be changed before outline (minor) mode is
 loaded.</p>
 <h5 id="fundamental-idea">Outshine’s fundamental idea</h5>
 <p><em>outshine</em> is based on a very simple yet powerful idea, that enables its use

@@ -2,11 +2,9 @@
 source: crates/yuanme-render/tests/corpus.rs
 expression: render(&path)
 ---
-<p>This theme supports rendering beautiful math in inline and display modes using <a href="https://www.mathjax.org/">MathJax 3</a> engine. You just need to surround your math expression with <code>$$</code>, like <code>$$ E = mc^2 $$</code>. If you leave it inside a paragraph, it will produce an inline expression, just like <code class="language-math math-display"> E = mc^2 </code>.</p>
+<p>This theme supports rendering beautiful math in inline and display modes using <a href="https://www.mathjax.org/">MathJax 3</a> engine. You just need to surround your math expression with <code>$$</code>, like <code>$$ E = mc^2 $$</code>. If you leave it inside a paragraph, it will produce an inline expression, just like <math display="block"><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math>.</p>
 <p>To use display mode, again surround your expression with <code>$$</code> and place it as a separate paragraph. Here is an example:</p>
-<p><code class="language-math math-display">
-\sum_{k=1}^\infty |\langle x, e_k \rangle|^2 \leq \|x\|^2
-</code></p>
+<math display="block"><munderover><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>∞</mi></munderover><mo stretchy="false" lspace="0" rspace="0">|</mo><mo stretchy="false">⟨</mo><mi>x</mi><mo>,</mo><msub><mi>e</mi><mi>k</mi></msub><mo stretchy="false">⟩</mo><msup><mo stretchy="false" lspace="0" rspace="0">|</mo><mn>2</mn></msup><mo>≤</mo><mo stretchy="false" lspace="0" rspace="0">‖</mo><mi>x</mi><msup><mo stretchy="false" lspace="0" rspace="0">‖</mo><mn>2</mn></msup></math>
 <p>You can also use <code>\begin{equation}...\end{equation}</code> instead of <code>$$</code> for display mode math.
 MathJax will automatically number equations:</p>
 <p>\begin{equation}

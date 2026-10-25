@@ -27,37 +27,16 @@ error[link/unresolved]: nothing here is called `beta_sequence`: no `<<target>>`,
 <h2 id="a">a)</h2>
 <h3 id="answer">Answer</h3>
 <h4 id="sampling-model">sampling model</h4>
-<code class="language-math math-display">\begin{align*}
-Y_i &#x26;\sim \text{Bernoulli} \left(\frac{e^{\theta_i}}{1 + e^{\theta_i}} \right) \quad (i = 1, \dots, n) \\
-\theta_i &#x26;= \beta_0 + \beta_1 \gamma_1 x_{i,1} + \beta_2 \gamma_2 x_{i,2} + \beta_3 \gamma_3 x_{i,3} + \beta_4 \gamma_4 x_{i,4} + \beta_5 \gamma_5 x_{i,5} \\
-\end{align*}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>Y</mi><mi>i</mi></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo form="infix">∼</mo><mtext>Bernoulli</mtext><mrow><mo lspace="0.1667em">(</mo><mfrac><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup></mrow></mfrac><mo rspace="0.1667em">)</mo></mrow><mspace width="1em"/><mo stretchy="false">(</mo><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mi>n</mi><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>θ</mi><mi>i</mi></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>γ</mi><mn>1</mn></msub><msub><mi>x</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mn>1</mn></mrow></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><msub><mi>γ</mi><mn>2</mn></msub><msub><mi>x</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mn>2</mn></mrow></msub><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><msub><mi>γ</mi><mn>3</mn></msub><msub><mi>x</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mn>3</mn></mrow></msub><mo>+</mo><msub><mi>β</mi><mn>4</mn></msub><msub><mi>γ</mi><mn>4</mn></msub><msub><mi>x</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mn>4</mn></mrow></msub><mo>+</mo><msub><mi>β</mi><mn>5</mn></msub><msub><mi>γ</mi><mn>5</mn></msub><msub><mi>x</mi><mrow><mi>i</mi><mo rspace="0">,</mo><mn>5</mn></mrow></msub></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <h4 id="prior">prior</h4>
-<code class="language-math math-display">\begin{align*}
-\gamma_j &#x26;\sim \text{Bernoulli}(1/2) \quad (j = 1, \dots, 5) \\
-\beta_0 &#x26;\sim \mathcal{N}(0, 16) \\
-\beta_j &#x26;\sim \mathcal{N}(0, 4) \quad (j = 1, \dots, 5) \\
-\end{align*}</code>
-<h4 id="calculation-of-acceptance-ratio-r">calculation of acceptance ratio <code class="language-math math-inline">r</code></h4>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>γ</mi><mi>j</mi></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo form="infix">∼</mo><mtext>Bernoulli</mtext><mo stretchy="false">(</mo><mn>1</mn><mo lspace="0" rspace="0">/</mo><mn>2</mn><mo stretchy="false">)</mo><mspace width="1em"/><mo stretchy="false">(</mo><mi>j</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mn>5</mn><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>β</mi><mn>0</mn></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo form="infix">∼</mo><mrow><mspace/><mi>𝒩︀</mi></mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mn>16</mn><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>β</mi><mi>j</mi></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo form="infix">∼</mo><mrow><mspace/><mi>𝒩︀</mi></mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mn>4</mn><mo stretchy="false">)</mo><mspace width="1em"/><mo stretchy="false">(</mo><mi>j</mi><mo>=</mo><mn>1</mn><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><mn>5</mn><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
+<h4 id="calculation-of-acceptance-ratio-r">calculation of acceptance ratio <math><mi>r</mi></math></h4>
 <p>The likelihood and log-likelihood are as follows:</p>
-<code class="language-math math-display">\begin{align*}
-p(\bm{y} | \bm{x}, \bm{\beta}, \bm{\gamma})
-&#x26;= \prod_{i=1}^n \left( \frac{e^{\theta_i}}{1 + e^{\theta_i}} \right)^{y_i} \left( \frac{1}{1 + e^{\theta_i}} \right)^{1-y_i} \\
-\log p(\bm{y} | \bm{x}, \bm{\beta}, \bm{\gamma})
-&#x26;= \sum_{i=1}^n \left\{ y_i \log \left( \frac{e^{\theta_i}}{1 + e^{\theta_i}} \right) + (1-y_i) \log \left( \frac{1}{1 + e^{\theta_i}} \right) \right\} \\
-&#x26;= \sum_{i=1}^n \left\{ y_i \left[ \log(e^{\theta_i}) - \log(1 + e^{\theta_i}) \right] + (1-y_i) \left[ - \log(1 + e^{\theta_i}) \right] \right\} \\
-&#x26;= \sum_{i=1}^n \left( y_i \theta_i - y_i \log(1 + e^{\theta_i}) - (1-y_i) \log(1 + e^{\theta_i}) \right) \\
-&#x26;= \sum_{i=1}^n \left( y_i \theta_i - \log(1 + e^{\theta_i}) \right) \\
-\end{align*}</code>
-<p>For example, when updating <code class="language-math math-inline">\gamma_j</code>, the acceptance ratio is calculated as follows:</p>
-<p><code class="language-math math-display">
-r = \frac{ p(\bm{y} | \bm{x}, \bm{\beta}^{(s)}, \bm{\gamma}^{(s)}_{-j}, \gamma_j^{\ast} ) p(\gamma_j^{\ast})}{ p(\bm{y} | \bm{x}, \bm{\beta}^{(s)}, \bm{\gamma}^{(s)}_{-j}, \gamma_j^{(s)}) p(\gamma_j^{(s)}) }
-\times \frac{ J(\gamma_j^{(s)} | \gamma_j^{\ast}) }{ J(\gamma_j^{\ast} | \gamma_j^{(s)}) }
-</code></p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>p</mi><mo stretchy="false">(</mo><mi>𝒚</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><mi>𝜷</mi><mo>,</mo><mi>𝜸</mi><mo stretchy="false">)</mo></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∏</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mpadded style="padding-right:0.1667em;"><msup><mrow><mo>(</mo><mfrac><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup></mrow></mfrac><mo>)</mo></mrow><msub><mi>y</mi><mi>i</mi></msub></msup></mpadded><msup><mrow><mo>(</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup></mrow></mfrac><mo>)</mo></mrow><mrow><mn>1</mn><mo lspace="0" rspace="0">−</mo><msub><mi>y</mi><mi>i</mi></msub></mrow></msup></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mo lspace="0" rspace="0.1667em">log</mo><mi>p</mi><mo stretchy="false">(</mo><mi>𝒚</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><mi>𝜷</mi><mo>,</mo><mi>𝜸</mi><mo stretchy="false">)</mo></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo>{</mo><msub><mi>y</mi><mi>i</mi></msub><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mrow><mo>(</mo><mfrac><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup></mrow></mfrac><mo>)</mo></mrow></mrow><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mrow><mo>(</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup></mrow></mfrac><mo>)</mo></mrow></mrow><mo>}</mo></mrow></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo>{</mo><msub><mi>y</mi><mi>i</mi></msub><mrow><mo lspace="0.1667em">[</mo><mrow><mrow><mspace/><mi>log</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mo stretchy="false">)</mo></mrow></mrow><mo>−</mo><mrow><mrow><mspace/><mi>log</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mo stretchy="false">)</mo></mrow></mrow><mo>]</mo></mrow><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mrow><mo lspace="0.1667em">[</mo><mo lspace="0" rspace="0">−</mo><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mo stretchy="false">)</mo></mrow></mrow><mo>]</mo></mrow><mo>}</mo></mrow></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><msub><mi>θ</mi><mi>i</mi></msub><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mo stretchy="false">)</mo></mrow></mrow><mo>−</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><mo stretchy="false">)</mo><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mo stretchy="false">)</mo></mrow></mrow><mo>)</mo></mrow></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><msub><mi>θ</mi><mi>i</mi></msub><mo>−</mo><mrow><mrow><mspace/><mi>log</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><msup><mi>e</mi><msub><mi>θ</mi><mi>i</mi></msub></msup><mo stretchy="false">)</mo></mrow></mrow><mo>)</mo></mrow></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
+<p>For example, when updating <math><msub><mi>γ</mi><mi>j</mi></msub></math>, the acceptance ratio is calculated as follows:</p>
+<math display="block"><mi>r</mi><mo>=</mo><mfrac><mrow><mi>p</mi><mo stretchy="false">(</mo><mi>𝒚</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><msup><mi>𝜷</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msubsup><mi>𝜸</mi><mrow><mo lspace="0" rspace="0">−</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>,</mo><msubsup><mi>γ</mi><mi>j</mi><mo>∗</mo></msubsup><mo stretchy="false">)</mo><mi>p</mi><mo stretchy="false">(</mo><msubsup><mi>γ</mi><mi>j</mi><mo>∗</mo></msubsup><mo stretchy="false">)</mo></mrow><mrow><mi>p</mi><mo stretchy="false">(</mo><mi>𝒚</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><msup><mi>𝜷</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msubsup><mi>𝜸</mi><mrow><mo lspace="0" rspace="0">−</mo><mi>j</mi></mrow><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>,</mo><msubsup><mi>γ</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo stretchy="false">)</mo><mi>p</mi><mo stretchy="false">(</mo><msubsup><mi>γ</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo stretchy="false">)</mo></mrow></mfrac><mo lspace="0.2222em" rspace="0.2222em">×</mo><mfrac><mrow><mi>J</mi><mo stretchy="false">(</mo><msubsup><mi>γ</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo stretchy="false" lspace="0" rspace="0">|</mo><msubsup><mi>γ</mi><mi>j</mi><mo>∗</mo></msubsup><mo stretchy="false">)</mo></mrow><mrow><mi>J</mi><mo stretchy="false">(</mo><msubsup><mi>γ</mi><mi>j</mi><mo>∗</mo></msubsup><mo stretchy="false" lspace="0" rspace="0">|</mo><msubsup><mi>γ</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo stretchy="false">)</mo></mrow></mfrac></math>
 <h4 id="proposal-distributions">proposal distributions</h4>
-<code class="language-math math-display">\begin{align*}
-\beta_j^{\ast} | \beta_j^{(s)} &#x26;\sim \mathcal{N}(\beta_j^{(s)}, \delta^2) \\
-\gamma_j^{\ast} | \gamma_j^{(s)} &#x26;= \begin{cases} 0 &#x26; \text{ if } \gamma_j^{(s)} = 1 \\ 1 &#x26; \text{ if } \gamma_j^{(s)} = 0 \end{cases} \\
-\end{align*}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msubsup><mi>β</mi><mi>j</mi><mo>∗</mo></msubsup><mo stretchy="false" lspace="0" rspace="0">|</mo><msubsup><mi>β</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo form="infix">∼</mo><mrow><mspace/><mi>𝒩︀</mi></mrow><mo stretchy="false">(</mo><msubsup><mi>β</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>,</mo><msup><mi>δ</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msubsup><mi>γ</mi><mi>j</mi><mo>∗</mo></msubsup><mo stretchy="false" lspace="0" rspace="0">|</mo><msubsup><mi>γ</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mrow><mo>{</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd style="text-align: left;justify-items: start;padding-right: 0;"><mn>0</mn></mtd><mtd style="text-align: left;justify-items: start;padding-right: 0;padding-left:1em;"><mtext> if </mtext><msubsup><mi>γ</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><mn>1</mn></mtd></mtr><mtr><mtd style="text-align: left;justify-items: start;padding-right: 0;"><mn>1</mn></mtd><mtd style="text-align: left;justify-items: start;padding-right: 0;padding-left:1em;"><mtext> if </mtext><msubsup><mi>γ</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo>=</mo><mn>0</mn></mtd></mtr></mtable><mo>⁣</mo></mrow></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <h4 id="import-data">import data</h4>
 <pre><code class="language-julia">using DataFrames
 using DelimitedFiles
@@ -218,13 +197,13 @@ Quantiles
           γ4    1.0000    1.0000    1.0000    1.0000    1.0000
           γ5    1.0000    1.0000    1.0000    1.0000    1.0000
 </code></pre>
-<h4 id="sequence-beta_js">sequence <code class="language-math math-inline">\beta_j^{(s)}</code></h4>
+<h4 id="sequence-beta_js">sequence <math><msubsup><mi>β</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup></math></h4>
 <pre><code class="language-julia"># visualize the MCMC simulation results
 p = plot(chn_β)
 savefig("./ch10/img/exercise10-5a-beta.png")
 "#+NAME: beta_sequence\n[[file:./img/exercise10-5a-beta.png]]"
 </code></pre>
-<h4 id="sequence-beta_js-times-gamma_js">sequence <code class="language-math math-inline">\beta_j^{(s)} \times \gamma_j^{(s)}</code></h4>
+<h4 id="sequence-beta_js-times-gamma_js">sequence <math><msubsup><mi>β</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup><mo lspace="0.2222em" rspace="0.2222em">×</mo><msubsup><mi>γ</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msubsup></math></h4>
 <pre><code class="language-julia">beta_gamma_prod = BETA[:, 1:end] .* GAMMA
 </code></pre>
 <pre><code class="language-julia">beta_gamma_prod[1:5, :]
@@ -278,100 +257,100 @@ savefig("./ch10/img/exercise10-5b-beta-gamma.png")
 </code></pre>
 <figure id="beta_gamma_sequence">
 <img src="./fig/exercise10-5b-beta-gamma.png" alt="exercise10-5b-beta-gamma.png">
-<figcaption>traceplots of <code class="language-math math-inline">\beta_j \times \gamma_j</code></figcaption>
+<figcaption>traceplots of <math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math></figcaption>
 </figure>
 <h4 id="summary">summary</h4>
 <h5 id="日本語">日本語</h5>
-<p>MCMCシミュレーションによって得られた <code class="language-math math-inline">\beta_j</code> と <code class="language-math math-inline">\gamma_j</code> のサンプルを用いて、<code class="language-math math-inline">\beta_j</code> の系列と <code class="language-math math-inline">\beta_j \times \gamma_j</code> の系列の混合について評価した。</p>
+<p>MCMCシミュレーションによって得られた <math><msub><mi>β</mi><mi>j</mi></msub></math> と <math><msub><mi>γ</mi><mi>j</mi></msub></math> のサンプルを用いて、<math><msub><mi>β</mi><mi>j</mi></msub></math> の系列と <math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math> の系列の混合について評価した。</p>
 <ul>
-<li><span class="underline"><code class="language-math math-inline">\beta_j</code> の系列</span>:
+<li><span class="underline"><math><msub><mi>β</mi><mi>j</mi></msub></math> の系列</span>:
 <ul>
-<li>トレースプロット(<a href=""></a>) と診断統計量 (<code>chn_β</code> のサマリー) を見ると、特に <code class="language-math math-inline">\beta_1</code> と <code class="language-math math-inline">\beta_2</code> のチェーンは混合が悪いことが示唆された。
+<li>トレースプロット(<a href=""></a>) と診断統計量 (<code>chn_β</code> のサマリー) を見ると、特に <math><msub><mi>β</mi><mn>1</mn></msub></math> と <math><msub><mi>β</mi><mn>2</mn></msub></math> のチェーンは混合が悪いことが示唆された。
 <ul>
 <li><code>rhat</code> 値が1から離れており (それぞれ約 1.03, 1.09)、 <code>ess_bulk</code> 値も他のパラメータと比較して低い (それぞれ約 248, 233)。</li>
 <li>トレースプロットも安定していないように見える。</li>
 </ul>
 </li>
-<li>これは、対応するインジケータ変数 <code class="language-math math-inline">\gamma_1</code> と <code class="language-math math-inline">\gamma_2</code> の事後平均がそれぞれ約 0.39 と 0.06 であり、シミュレーション中にこれらの変数がモデルから除外されている (<code class="language-math math-inline">\gamma_j=0</code>) 状態が多かったためと考えられる。</li>
-<li><code class="language-math math-inline">\gamma_j=0</code> の場合、尤度は <code class="language-math math-inline">\beta_j</code> に依存しなくなり、<code class="language-math math-inline">\beta_j</code> の条件付き事後分布はその事前分布 (<code class="language-math math-inline">\mathcal{N}(0, 4)</code>) となる。
+<li>これは、対応するインジケータ変数 <math><msub><mi>γ</mi><mn>1</mn></msub></math> と <math><msub><mi>γ</mi><mn>2</mn></msub></math> の事後平均がそれぞれ約 0.39 と 0.06 であり、シミュレーション中にこれらの変数がモデルから除外されている (<math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></math>) 状態が多かったためと考えられる。</li>
+<li><math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></math> の場合、尤度は <math><msub><mi>β</mi><mi>j</mi></msub></math> に依存しなくなり、<math><msub><mi>β</mi><mi>j</mi></msub></math> の条件付き事後分布はその事前分布 (<math><mrow><mspace/><mi>𝒩︀</mi></mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mn>4</mn><mo stretchy="false">)</mo></math>) となる。
 <ul>
-<li>その結果、<code class="language-math math-inline">\beta_1</code> と <code class="language-math math-inline">\beta_2</code> のサンプラーはデータからの情報をあまり受けずに事前分布の広い範囲を動き回り、混合が悪く見えた。</li>
+<li>その結果、<math><msub><mi>β</mi><mn>1</mn></msub></math> と <math><msub><mi>β</mi><mn>2</mn></msub></math> のサンプラーはデータからの情報をあまり受けずに事前分布の広い範囲を動き回り、混合が悪く見えた。</li>
 </ul>
 </li>
-<li>一方、<code class="language-math math-inline">\beta_0, \beta_3, \beta_4, \beta_5</code> については、対応する <code class="language-math math-inline">\gamma_j</code> ( <code class="language-math math-inline">\gamma_0=1</code> は固定、<code class="language-math math-inline">\gamma_3, \gamma_4, \gamma_5</code> はほぼ常に1) が1であるため、データからの情報が反映され、混合は比較的良好であった (<code>rhat ≈ 1</code>, 高い <code>ess</code>)。</li>
+<li>一方、<math><msub><mi>β</mi><mn>0</mn></msub><mo>,</mo><msub><mi>β</mi><mn>3</mn></msub><mo>,</mo><msub><mi>β</mi><mn>4</mn></msub><mo>,</mo><msub><mi>β</mi><mn>5</mn></msub></math> については、対応する <math><msub><mi>γ</mi><mi>j</mi></msub></math> ( <math><msub><mi>γ</mi><mn>0</mn></msub><mo>=</mo><mn>1</mn></math> は固定、<math><msub><mi>γ</mi><mn>3</mn></msub><mo>,</mo><msub><mi>γ</mi><mn>4</mn></msub><mo>,</mo><msub><mi>γ</mi><mn>5</mn></msub></math> はほぼ常に1) が1であるため、データからの情報が反映され、混合は比較的良好であった (<code>rhat ≈ 1</code>, 高い <code>ess</code>)。</li>
 </ul>
 </li>
-<li><span class="underline"><code class="language-math math-inline">\beta_j \times \gamma_j</code> の系列</span>:
+<li><span class="underline"><math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math> の系列</span>:
 <ul>
-<li>この系列は、変数 <code class="language-math math-inline">j</code> がモデルに含まれる場合 (<code class="language-math math-inline">\gamma_j=1</code>) の係数の効果を表し、含まれない場合 (<code class="language-math math-inline">\gamma_j=0</code>) は効果が 0 となる。</li>
+<li>この系列は、変数 <math><mi>j</mi></math> がモデルに含まれる場合 (<math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>1</mn></math>) の係数の効果を表し、含まれない場合 (<math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></math>) は効果が 0 となる。</li>
 <li>トレースプロット (<a href="#beta_gamma_sequence">beta_gamma_sequence</a>) と診断統計量 (<code>chn_βγ</code> のサマリー) を見ると、こちらの系列は全体的に混合が良いことがわかった。
 <ul>
 <li>特に <code>β1*γ1</code> と <code>β2*γ2</code> の <code>rhat</code> 値は1に近くなり (それぞれ約 1.017, 1.0005)、 <code>ess_bulk</code> 値も改善した (それぞれ約 585, 39422)。</li>
 <li>トレースプロットも、特に <code>β2*γ2</code> は 0 付近で非常に安定している。</li>
 </ul>
 </li>
-<li>これは、<code class="language-math math-inline">\gamma_j=0</code> の場合に <code class="language-math math-inline">\beta_j \times \gamma_j</code> の値が 0 に固定されるため、系列の変動が抑えられるからである。
+<li>これは、<math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></math> の場合に <math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math> の値が 0 に固定されるため、系列の変動が抑えられるからである。
 <ul>
-<li><code class="language-math math-inline">\gamma_1</code> や <code class="language-math math-inline">\gamma_2</code> が 0 になる頻度が高いため、対応する積の系列は多くの時間 0 を取り、結果として混合が良く見えた。</li>
+<li><math><msub><mi>γ</mi><mn>1</mn></msub></math> や <math><msub><mi>γ</mi><mn>2</mn></msub></math> が 0 になる頻度が高いため、対応する積の系列は多くの時間 0 を取り、結果として混合が良く見えた。</li>
 </ul>
 </li>
 </ul>
 </li>
 <li><span class="underline">結論</span>:
 <ul>
-<li>変数選択モデルにおいては、係数 <code class="language-math math-inline">\beta_j</code> のみの系列を見ると、変数がモデルに含まれない場合に事前分布の影響で混合が悪く見えることがある。</li>
-<li>そのため、チェーンの混合を評価する際には、変数のモデルへの実質的な寄与を表す <code class="language-math math-inline">\beta_j \times \gamma_j</code> の系列も合わせて確認することが重要である。</li>
-<li>今回のケースでは、<code class="language-math math-inline">\beta_1 \times \gamma_1</code> と <code class="language-math math-inline">\beta_2 \times \gamma_2</code> の混合が良いことから、モデルはこれらの変数の効果（多くの場合 0 であるが、含まれる場合の効果も含む）について安定して学習していると解釈できる。</li>
+<li>変数選択モデルにおいては、係数 <math><msub><mi>β</mi><mi>j</mi></msub></math> のみの系列を見ると、変数がモデルに含まれない場合に事前分布の影響で混合が悪く見えることがある。</li>
+<li>そのため、チェーンの混合を評価する際には、変数のモデルへの実質的な寄与を表す <math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math> の系列も合わせて確認することが重要である。</li>
+<li>今回のケースでは、<math><msub><mi>β</mi><mn>1</mn></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mn>1</mn></msub></math> と <math><msub><mi>β</mi><mn>2</mn></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mn>2</mn></msub></math> の混合が良いことから、モデルはこれらの変数の効果（多くの場合 0 であるが、含まれる場合の効果も含む）について安定して学習していると解釈できる。</li>
 </ul>
 </li>
 </ul>
 <h5 id="english">English</h5>
-<p>We evaluated the mixing of the MCMC chains for the <code class="language-math math-inline">\beta_j</code> series and the <code class="language-math math-inline">\beta_j \times \gamma_j</code> series using the samples obtained from the simulation.</p>
+<p>We evaluated the mixing of the MCMC chains for the <math><msub><mi>β</mi><mi>j</mi></msub></math> series and the <math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math> series using the samples obtained from the simulation.</p>
 <ul>
-<li><span class="underline">Series for <code class="language-math math-inline">\beta_j</code></span>:
+<li><span class="underline">Series for <math><msub><mi>β</mi><mi>j</mi></msub></math></span>:
 <ul>
-<li>The trace plots (<a href=""></a>) and diagnostic statistics (summary of <code>chn_β</code>) suggested poor mixing, especially for the <code class="language-math math-inline">\beta_1</code> and <code class="language-math math-inline">\beta_2</code> chains.
+<li>The trace plots (<a href=""></a>) and diagnostic statistics (summary of <code>chn_β</code>) suggested poor mixing, especially for the <math><msub><mi>β</mi><mn>1</mn></msub></math> and <math><msub><mi>β</mi><mn>2</mn></msub></math> chains.
 <ul>
 <li>The <code>rhat</code> values were far from 1 (approx. 1.03 and 1.09, respectively), and the <code>ess_bulk</code> values were low compared to other parameters (approx. 248 and 233, respectively).</li>
 <li>The trace plots also appeared unstable.</li>
 </ul>
 </li>
-<li>This is likely because the posterior means of the corresponding indicator variables <code class="language-math math-inline">\gamma_1</code> and <code class="language-math math-inline">\gamma_2</code> were low (approx. 0.39 and 0.06, respectively), indicating that these variables were often excluded from the model (<code class="language-math math-inline">\gamma_j=0</code>) during the simulation.</li>
-<li>When <code class="language-math math-inline">\gamma_j=0</code>, the likelihood does not depend on <code class="language-math math-inline">\beta_j</code>, and the conditional posterior distribution of <code class="language-math math-inline">\beta_j</code> becomes its prior distribution (<code class="language-math math-inline">\mathcal{N}(0, 4)</code>).
+<li>This is likely because the posterior means of the corresponding indicator variables <math><msub><mi>γ</mi><mn>1</mn></msub></math> and <math><msub><mi>γ</mi><mn>2</mn></msub></math> were low (approx. 0.39 and 0.06, respectively), indicating that these variables were often excluded from the model (<math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></math>) during the simulation.</li>
+<li>When <math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></math>, the likelihood does not depend on <math><msub><mi>β</mi><mi>j</mi></msub></math>, and the conditional posterior distribution of <math><msub><mi>β</mi><mi>j</mi></msub></math> becomes its prior distribution (<math><mrow><mspace/><mi>𝒩︀</mi></mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mn>4</mn><mo stretchy="false">)</mo></math>).
 <ul>
-<li>As a result, the samplers for <code class="language-math math-inline">\beta_1</code> and <code class="language-math math-inline">\beta_2</code> moved around the wide range of the prior without much influence from the data, leading to the appearance of poor mixing.</li>
+<li>As a result, the samplers for <math><msub><mi>β</mi><mn>1</mn></msub></math> and <math><msub><mi>β</mi><mn>2</mn></msub></math> moved around the wide range of the prior without much influence from the data, leading to the appearance of poor mixing.</li>
 </ul>
 </li>
-<li>In contrast, for <code class="language-math math-inline">\beta_0, \beta_3, \beta_4, \beta_5</code>, the corresponding <code class="language-math math-inline">\gamma_j</code> (<code class="language-math math-inline">\gamma_0=1</code> is fixed, <code class="language-math math-inline">\gamma_3, \gamma_4, \gamma_5</code> were almost always 1) were 1, allowing the data to inform the posterior, resulting in relatively good mixing (<code>rhat</code> ≈ 1, high <code>ess</code>).</li>
+<li>In contrast, for <math><msub><mi>β</mi><mn>0</mn></msub><mo>,</mo><msub><mi>β</mi><mn>3</mn></msub><mo>,</mo><msub><mi>β</mi><mn>4</mn></msub><mo>,</mo><msub><mi>β</mi><mn>5</mn></msub></math>, the corresponding <math><msub><mi>γ</mi><mi>j</mi></msub></math> (<math><msub><mi>γ</mi><mn>0</mn></msub><mo>=</mo><mn>1</mn></math> is fixed, <math><msub><mi>γ</mi><mn>3</mn></msub><mo>,</mo><msub><mi>γ</mi><mn>4</mn></msub><mo>,</mo><msub><mi>γ</mi><mn>5</mn></msub></math> were almost always 1) were 1, allowing the data to inform the posterior, resulting in relatively good mixing (<code>rhat</code> ≈ 1, high <code>ess</code>).</li>
 </ul>
 </li>
-<li><span class="underline">Series for <code class="language-math math-inline">\beta_j \times \gamma_j</code></span>:
+<li><span class="underline">Series for <math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math></span>:
 <ul>
-<li>This series represents the coefficient’s effect when variable <code class="language-math math-inline">j</code> is included in the model (<code class="language-math math-inline">\gamma_j=1</code>) and is zero when excluded (<code class="language-math math-inline">\gamma_j=0</code>).</li>
+<li>This series represents the coefficient’s effect when variable <math><mi>j</mi></math> is included in the model (<math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>1</mn></math>) and is zero when excluded (<math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></math>).</li>
 <li>The trace plots (<a href="#beta_gamma_sequence">beta_gamma_sequence</a>) and diagnostic statistics (summary of <code>chn_βγ</code>) showed that this series generally exhibited good mixing.
 <ul>
 <li>In particular, the <code>rhat</code> values for <code>β1*γ1</code> and <code>β2*γ2</code> were close to 1 (approx. 1.017 and 1.0005, respectively), and the <code>ess_bulk</code> values improved (approx. 585 and 39422, respectively).</li>
 <li>The trace plots were also stable, especially for <code>β2*γ2</code>, which stayed very close to 0.</li>
 </ul>
 </li>
-<li>This is because when <code class="language-math math-inline">\gamma_j=0</code>, the value of <code class="language-math math-inline">\beta_j \times \gamma_j</code> is fixed at 0, reducing the series’ variability.
+<li>This is because when <math><msub><mi>γ</mi><mi>j</mi></msub><mo>=</mo><mn>0</mn></math>, the value of <math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math> is fixed at 0, reducing the series’ variability.
 <ul>
-<li>Since <code class="language-math math-inline">\gamma_1</code> and <code class="language-math math-inline">\gamma_2</code> were frequently 0, the corresponding product series took the value 0 much of the time, resulting in the appearance of good mixing.</li>
+<li>Since <math><msub><mi>γ</mi><mn>1</mn></msub></math> and <math><msub><mi>γ</mi><mn>2</mn></msub></math> were frequently 0, the corresponding product series took the value 0 much of the time, resulting in the appearance of good mixing.</li>
 </ul>
 </li>
 </ul>
 </li>
 <li><span class="underline">Conclusion</span>:
 <ul>
-<li>In variable selection models, looking only at the <code class="language-math math-inline">\beta_j</code> series can be misleading regarding mixing, as it might appear poor due to the influence of the prior when the variable is excluded from the model.</li>
-<li>Therefore, when assessing chain mixing, it is crucial to also examine the <code class="language-math math-inline">\beta_j \times \gamma_j</code> series, which represents the variable’s actual contribution to the model.</li>
-<li>In this case, the good mixing of the <code class="language-math math-inline">\beta_1 \times \gamma_1</code> and <code class="language-math math-inline">\beta_2 \times \gamma_2</code> series suggests that the model is stably learning the effects of these variables (which are often zero, but also includes their effects when included).</li>
+<li>In variable selection models, looking only at the <math><msub><mi>β</mi><mi>j</mi></msub></math> series can be misleading regarding mixing, as it might appear poor due to the influence of the prior when the variable is excluded from the model.</li>
+<li>Therefore, when assessing chain mixing, it is crucial to also examine the <math><msub><mi>β</mi><mi>j</mi></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mi>j</mi></msub></math> series, which represents the variable’s actual contribution to the model.</li>
+<li>In this case, the good mixing of the <math><msub><mi>β</mi><mn>1</mn></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mn>1</mn></msub></math> and <math><msub><mi>β</mi><mn>2</mn></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><msub><mi>γ</mi><mn>2</mn></msub></math> series suggests that the model is stably learning the effects of these variables (which are often zero, but also includes their effects when included).</li>
 </ul>
 </li>
 </ul>
 <h2 id="b">b)</h2>
 <h3 id="answer-1">Answer</h3>
-<h4 id="top-five-most-frequently-occurring-values-of-gamma">top five most frequently occurring values of <code class="language-math math-inline">\gamma</code></h4>
+<h4 id="top-five-most-frequently-occurring-values-of-gamma">top five most frequently occurring values of <math><mi>γ</mi></math></h4>
 <pre><code class="language-julia">gamma_tuples = [tuple(Int.(GAMMA[i, :])...) for i in 1:size(GAMMA, 1)];
 gamma_tuples[1:5]
 </code></pre>
@@ -403,9 +382,9 @@ println("-"^60)
 <ol>
 <li><strong>結果の解釈</strong>:
 <ul>
-<li>上位のモデルを見ると、<code class="language-math math-inline">\gamma_3</code> (BMI) と <code class="language-math math-inline">\gamma_5</code> (Age) は常に1となっている。これは、これらの変数が糖尿病の予測において重要であることを強く示唆している。</li>
-<li><code class="language-math math-inline">\gamma_2</code> (Blood Pressure) は上位2モデル（合計確率約93%）では0であり、<code class="language-math math-inline">\gamma_1</code> (Pregnancies) も最も確率の高いモデル（確率約58%）では0となっている。これは、これらの変数の予測への寄与が相対的に小さい可能性を示唆している。</li>
-<li><code class="language-math math-inline">\gamma_4</code> (Pedigree) は上位4モデルでは1だが、5番目のモデルでは0となっており、重要度は中程度かもしれない。</li>
+<li>上位のモデルを見ると、<math><msub><mi>γ</mi><mn>3</mn></msub></math> (BMI) と <math><msub><mi>γ</mi><mn>5</mn></msub></math> (Age) は常に1となっている。これは、これらの変数が糖尿病の予測において重要であることを強く示唆している。</li>
+<li><math><msub><mi>γ</mi><mn>2</mn></msub></math> (Blood Pressure) は上位2モデル（合計確率約93%）では0であり、<math><msub><mi>γ</mi><mn>1</mn></msub></math> (Pregnancies) も最も確率の高いモデル（確率約58%）では0となっている。これは、これらの変数の予測への寄与が相対的に小さい可能性を示唆している。</li>
+<li><math><msub><mi>γ</mi><mn>4</mn></msub></math> (Pedigree) は上位4モデルでは1だが、5番目のモデルでは0となっており、重要度は中程度かもしれない。</li>
 <li>最も確率の高いモデルは、BMI, 糖尿病の血統, 年齢 のみを含むモデル <code>γ = (0, 0, 1, 1, 1)</code> であった。</li>
 </ul>
 </li>
@@ -413,7 +392,7 @@ println("-"^60)
 <ul>
 <li>MCMCの総サンプル数 (<code>S = 100,000</code>) は十分に大きい。</li>
 <li>事後確率は上位2つのモデルに非常に集中しており（合計約93%）、上位5モデルで全体の約99%を占める。このように確率が集中している場合、上位モデルの相対的な頻度の推定は比較的安定しやすい。</li>
-<li><code class="language-math math-inline">\gamma</code> のチェーンの診断統計量を見ると、<code class="language-math math-inline">\gamma_3</code> と <code class="language-math math-inline">\gamma_5</code> は常に1であり問題ない。<code class="language-math math-inline">\gamma_2</code> の混合も良好であった (<code>rhat</code> ≈ 1.00, <code>ess_bulk</code> ≈ 2900)。<code class="language-math math-inline">\gamma_1</code> と <code class="language-math math-inline">\gamma_4</code> の混合は完璧ではないが (<code>rhat</code> ≈ 1.02, 1.01; <code>ess_bulk</code> ≈ 456, 225)、致命的に悪いわけではない。</li>
+<li><math><mi>γ</mi></math> のチェーンの診断統計量を見ると、<math><msub><mi>γ</mi><mn>3</mn></msub></math> と <math><msub><mi>γ</mi><mn>5</mn></msub></math> は常に1であり問題ない。<math><msub><mi>γ</mi><mn>2</mn></msub></math> の混合も良好であった (<code>rhat</code> ≈ 1.00, <code>ess_bulk</code> ≈ 2900)。<math><msub><mi>γ</mi><mn>1</mn></msub></math> と <math><msub><mi>γ</mi><mn>4</mn></msub></math> の混合は完璧ではないが (<code>rhat</code> ≈ 1.02, 1.01; <code>ess_bulk</code> ≈ 456, 225)、致命的に悪いわけではない。</li>
 <li>以上を考慮すると、特に上位2つのモデルの推定事後確率（約 0.575 と 0.354）はかなり信頼できると考えられる。3位以下のモデルの確率推定にはやや不確実性が残るものの、これらのモデルが他の多くの可能なモデルよりもはるかに確率が高いという結論は頑健である可能性が高い。</li>
 </ul>
 </li>
@@ -422,9 +401,9 @@ println("-"^60)
 <ol>
 <li><strong>Interpretation of Results</strong>:
 <ul>
-<li>Looking at the top models, <code class="language-math math-inline">\gamma_3</code> (BMI) and <code class="language-math math-inline">\gamma_5</code> (Age) are always 1. This strongly suggests that these variables are important for predicting diabetes.</li>
-<li><code class="language-math math-inline">\gamma_2</code> (Blood Pressure) is 0 in the top two models (total probability ≈ 93%), and <code class="language-math math-inline">\gamma_1</code> (Pregnancies) is 0 in the most probable model (probability ≈ 58%). This suggests that the predictive contribution of these variables might be relatively small.</li>
-<li><code class="language-math math-inline">\gamma_4</code> (Pedigree) is 1 in the top four models but 0 in the fifth model, indicating potentially moderate importance.</li>
+<li>Looking at the top models, <math><msub><mi>γ</mi><mn>3</mn></msub></math> (BMI) and <math><msub><mi>γ</mi><mn>5</mn></msub></math> (Age) are always 1. This strongly suggests that these variables are important for predicting diabetes.</li>
+<li><math><msub><mi>γ</mi><mn>2</mn></msub></math> (Blood Pressure) is 0 in the top two models (total probability ≈ 93%), and <math><msub><mi>γ</mi><mn>1</mn></msub></math> (Pregnancies) is 0 in the most probable model (probability ≈ 58%). This suggests that the predictive contribution of these variables might be relatively small.</li>
+<li><math><msub><mi>γ</mi><mn>4</mn></msub></math> (Pedigree) is 1 in the top four models but 0 in the fifth model, indicating potentially moderate importance.</li>
 <li>The most probable model was <code>γ = (0, 0, 1, 1, 1)</code>, which includes only BMI, Pedigree, and Age.</li>
 </ul>
 </li>
@@ -432,7 +411,7 @@ println("-"^60)
 <ul>
 <li>The total number of MCMC samples (<code>S = 100,000</code>) is sufficiently large.</li>
 <li>The posterior probability is highly concentrated in the top two models (totaling ≈ 93%), and the top five models account for ≈ 99% of the total probability mass. When the probability is concentrated like this, the estimation of the relative frequencies of the top models tends to be relatively stable.</li>
-<li>Examining the diagnostic statistics for the <code class="language-math math-inline">\gamma</code> chains, <code class="language-math math-inline">\gamma_3</code> and <code class="language-math math-inline">\gamma_5</code> were always 1 and pose no issue. The mixing for <code class="language-math math-inline">\gamma_2</code> was also good (<code>rhat</code> ≈ 1.00, <code>ess_bulk</code> ≈ 2900). The mixing for <code class="language-math math-inline">\gamma_1</code> and <code class="language-math math-inline">\gamma_4</code> was not perfect (<code>rhat</code> ≈ 1.02, 1.01; <code>ess_bulk</code> ≈ 456, 225) but not critically poor.</li>
+<li>Examining the diagnostic statistics for the <math><mi>γ</mi></math> chains, <math><msub><mi>γ</mi><mn>3</mn></msub></math> and <math><msub><mi>γ</mi><mn>5</mn></msub></math> were always 1 and pose no issue. The mixing for <math><msub><mi>γ</mi><mn>2</mn></msub></math> was also good (<code>rhat</code> ≈ 1.00, <code>ess_bulk</code> ≈ 2900). The mixing for <math><msub><mi>γ</mi><mn>1</mn></msub></math> and <math><msub><mi>γ</mi><mn>4</mn></msub></math> was not perfect (<code>rhat</code> ≈ 1.02, 1.01; <code>ess_bulk</code> ≈ 456, 225) but not critically poor.</li>
 <li>Considering these points, the estimated posterior probabilities for the top two models (≈ 0.575 and 0.354) are likely quite reliable. While there might be slightly more uncertainty in the probability estimates for the 3rd to 5th models, the conclusion that these models are far more probable than most other possible models is likely robust.</li>
 </ul>
 </li>
@@ -453,10 +432,10 @@ savefig("./ch10/img/exercise10-5c_density.png")
  0.38517  0.05703  1.0  0.98574  0.99953
 </code></pre>
 <ul>
-<li><code class="language-math math-inline">\mathrm{Pr}(\gamma_1=1|\boldsymbol{x}, \boldsymbol{y}) \approx 0.385</code></li>
-<li><code class="language-math math-inline">\mathrm{Pr}(\gamma_2=1|\boldsymbol{x}, \boldsymbol{y}) \approx 0.057</code></li>
-<li><code class="language-math math-inline">\mathrm{Pr}(\gamma_3=1|\boldsymbol{x}, \boldsymbol{y}) \approx 1.000</code></li>
-<li><code class="language-math math-inline">\mathrm{Pr}(\gamma_4=1|\boldsymbol{x}, \boldsymbol{y}) \approx 0.986</code></li>
-<li><code class="language-math math-inline">\mathrm{Pr}(\gamma_5=1|\boldsymbol{x}, \boldsymbol{y}) \approx 1.000</code></li>
+<li><math><mrow><mspace/><mi>Pr</mi></mrow><mo stretchy="false">(</mo><msub><mi>γ</mi><mn>1</mn></msub><mo>=</mo><mn>1</mn><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><mi>𝒚</mi><mo stretchy="false">)</mo><mo>≈</mo><mn>0.385</mn></math></li>
+<li><math><mrow><mspace/><mi>Pr</mi></mrow><mo stretchy="false">(</mo><msub><mi>γ</mi><mn>2</mn></msub><mo>=</mo><mn>1</mn><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><mi>𝒚</mi><mo stretchy="false">)</mo><mo>≈</mo><mn>0.057</mn></math></li>
+<li><math><mrow><mspace/><mi>Pr</mi></mrow><mo stretchy="false">(</mo><msub><mi>γ</mi><mn>3</mn></msub><mo>=</mo><mn>1</mn><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><mi>𝒚</mi><mo stretchy="false">)</mo><mo>≈</mo><mn>1.000</mn></math></li>
+<li><math><mrow><mspace/><mi>Pr</mi></mrow><mo stretchy="false">(</mo><msub><mi>γ</mi><mn>4</mn></msub><mo>=</mo><mn>1</mn><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><mi>𝒚</mi><mo stretchy="false">)</mo><mo>≈</mo><mn>0.986</mn></math></li>
+<li><math><mrow><mspace/><mi>Pr</mi></mrow><mo stretchy="false">(</mo><msub><mi>γ</mi><mn>5</mn></msub><mo>=</mo><mn>1</mn><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒙</mi><mo>,</mo><mi>𝒚</mi><mo stretchy="false">)</mo><mo>≈</mo><mn>1.000</mn></math></li>
 </ul>
 <p><a href="./10-4.org" class="nav-prev">10.4</a></p>

@@ -97,7 +97,7 @@ Bla bla bla from equation \(\ref{a_label}\)
 </code></pre>
 <p>will create a numbered equation that can be referred as showed in the
 example<sup><a href="#user-content-fn-3" id="user-content-fnref-3" data-footnote-ref="" aria-describedby="footnote-label">3</a></sup>. The reference is a link to the equation.</p>
-<p>The plugin autobold causes jsMath to use <code class="language-math math-inline">\boldsymbol{...}</code> around
+<p>The plugin autobold causes jsMath to use <math><mrow><mspace/><mi>...</mi></mrow></math> around
 mathematics that appears within &#x3C;B>…&#x3C;/B> tags or has font-weight:bold
 applied via CSS rule.</p>
 <p>Look in the extensions folder for other plugins (some of
@@ -148,7 +148,7 @@ but it requires an additional configuration step. <a href="#user-content-fnref-1
 <p>A button “jsMath” should appear at the bottom east of the page. <a href="#user-content-fnref-2" data-footnote-backref="" aria-label="Back to reference 2" class="data-footnote-backref">↩</a></p>
 </li>
 <li id="user-content-fn-3">
-<p>The Math delimiters are necessary to tell jsMath to process the <code class="language-math math-inline">\ref</code>
+<p>The Math delimiters are necessary to tell jsMath to process the 
 command. <a href="#user-content-fnref-3" data-footnote-backref="" aria-label="Back to reference 3" class="data-footnote-backref">↩</a></p>
 </li>
 <li id="user-content-fn-4">

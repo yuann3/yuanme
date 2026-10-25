@@ -115,7 +115,7 @@ takes background and foreground colors from the Emacs buffer.</p>
 <p>Several LaTeX-specfic header arguments control production of pdf
 snippets.  The LaTeX-specific <code>:headers</code> header argument takes a Lisp
 list that specifies entries for the LaTeX preamble, e.g.,
-’(”\<code class="language-math math-inline">\usepackage{tikz}</code>”).  The <code>:fit</code> header argument invokes the <a href="http://www.ctan.org/tex-archive/macros/latex/contrib/preview">LaTeX
+’(”\”).  The <code>:fit</code> header argument invokes the <a href="http://www.ctan.org/tex-archive/macros/latex/contrib/preview">LaTeX
 preview package</a>, which is developed and distributed along with AucTeX.
 The <code>:border</code> header argument takes a <a href="http://en.wikibooks.org/wiki/LaTeX/Useful_Measurement_Macros#Length_.27macros.27">LaTeX length</a>, which should be
 greater than <code>0.50001bp</code>, or half a usual PostScript point.  This can be

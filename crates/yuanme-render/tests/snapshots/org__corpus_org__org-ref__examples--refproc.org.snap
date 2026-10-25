@@ -97,16 +97,10 @@ error[math/named-environment]: an equation is labelled with `\label`, not `#+NAM
 <dd>Cref:b1,b2</dd>
 </dl>
 <h3 id="equations">equations</h3>
-<code class="language-math math-display">\begin{equation}
-3+3=6
-\end{equation}</code>
-<code class="language-math math-display">\begin{equation}
-3+3=6
-\end{equation}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mn>3</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>6</mn></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(1)</mtext></mtd></mtr></mtable></math>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mn>3</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>6</mn></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(2)</mtext></mtd></mtr></mtable></math>
 <p>This equation will have a number in the ODT export.</p>
-<code class="language-math math-display">\begin{equation}
-3+3=6
-\end{equation}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mn>3</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>6</mn></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(3)</mtext></mtd></mtr></mtable></math>
 <dl>
 <dt>eqref</dt>
 <dd>eqref:q1</dd>

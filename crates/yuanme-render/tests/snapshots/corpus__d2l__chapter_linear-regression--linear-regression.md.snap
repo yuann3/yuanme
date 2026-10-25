@@ -66,23 +66,23 @@ for tackling regression problems.
 Dating back to the dawn of the 19th century :cite:<code>Legendre.1805,Gauss.1809</code>,
 linear regression flows from a few simple assumptions.
 First, we assume that the relationship
-between features <code class="language-math math-inline">\mathbf{x}</code> and target <code class="language-math math-inline">y</code>
+between features <math><mi>𝐱</mi></math> and target <math><mi>y</mi></math>
 is approximately linear,
-i.e., that the conditional mean <code class="language-math math-inline">E[Y \mid X=\mathbf{x}]</code>
+i.e., that the conditional mean <math><mi>E</mi><mo stretchy="false">[</mo><mi>Y</mi><mo>∣</mo><mi>X</mi><mo>=</mo><mi>𝐱</mi><mo stretchy="false">]</mo></math>
 can be expressed as a weighted sum
-of the features <code class="language-math math-inline">\mathbf{x}</code>.
+of the features <math><mi>𝐱</mi></math>.
 This setup allows that the target value
 may still deviate from its expected value
 on account of observation noise.
 Next, we can impose the assumption that any such noise
 is well behaved, following a Gaussian distribution.
-Typically, we will use <code class="language-math math-inline">n</code> to denote
+Typically, we will use <math><mi>n</mi></math> to denote
 the number of examples in our dataset.
 We use superscripts to enumerate samples and targets,
 and subscripts to index coordinates.
 More concretely,
-<code class="language-math math-inline">\mathbf{x}^{(i)}</code> denotes the <code class="language-math math-inline">i^{\textrm{th}}</code> sample
-and <code class="language-math math-inline">x_j^{(i)}</code> denotes its <code class="language-math math-inline">j^{\textrm{th}}</code> coordinate.</p>
+<math><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math> denotes the <math><msup><mi>i</mi><mtext><span class="math-core-serif-font">th</span></mtext></msup></math> sample
+and <math><msubsup><mi>x</mi><mi>j</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msubsup></math> denotes its <math><msup><mi>j</mi><mtext><span class="math-core-serif-font">th</span></mtext></msup></math> coordinate.</p>
 <h3 id="model">Model</h3>
 <p>:label:<code>subsec_linear_model</code></p>
 <p>At the heart of every solution is a model
@@ -91,10 +91,10 @@ into an estimate of the target.
 The assumption of linearity means that
 the expected value of the target (price) can be expressed
 as a weighted sum of the features (area and age):</p>
-<p><code class="language-math math-display">\textrm{price} = w_{\textrm{area}} \cdot \textrm{area} + w_{\textrm{age}} \cdot \textrm{age} + b.</code>
+<p><math display="block"><mtext><span class="math-core-serif-font">price</span></mtext><mo>=</mo><msub><mi>w</mi><mtext><span class="math-core-serif-font">area</span></mtext></msub><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mtext><span class="math-core-serif-font">area</span></mtext><mo>+</mo><msub><mi>w</mi><mtext><span class="math-core-serif-font">age</span></mtext></msub><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mtext><span class="math-core-serif-font">age</span></mtext><mo>+</mo><mi>b</mi><mi>.</mi></math>
 :eqlabel:<code>eq_price-area</code></p>
-<p>Here <code class="language-math math-inline">w_{\textrm{area}}</code> and <code class="language-math math-inline">w_{\textrm{age}}</code>
-are called <em>weights</em>, and <code class="language-math math-inline">b</code> is called a <em>bias</em>
+<p>Here <math><msub><mi>w</mi><mtext><span class="math-core-serif-font">area</span></mtext></msub></math> and <math><msub><mi>w</mi><mtext><span class="math-core-serif-font">age</span></mtext></msub></math>
+are called <em>weights</em>, and <math><mi>b</mi></math> is called a <em>bias</em>
 (or <em>offset</em> or <em>intercept</em>).
 The weights determine the influence of each feature on our prediction.
 The bias determines the value of the estimate when all features are zero.
@@ -104,7 +104,7 @@ to express all linear functions of our features
 (rather than restricting us to lines that pass through the origin).
 Strictly speaking, :eqref:<code>eq_price-area</code> is an <em>affine transformation</em> of input features, which is characterized by a <em>linear transformation</em> of features via a weighted sum, combined with a <em>translation</em> via the added bias.
 Given a dataset, our goal is to choose
-the weights <code class="language-math math-inline">\mathbf{w}</code> and the bias <code class="language-math math-inline">b</code>
+the weights <math><mi>𝐰</mi></math> and the bias <math><mi>b</mi></math>
 that, on average, make our model’s predictions
 fit the true prices observed in the data as closely as possible.</p>
 <p>In disciplines where it is common to focus
@@ -115,50 +115,50 @@ In machine learning, we usually work
 with high-dimensional datasets,
 where it is more convenient to employ
 compact linear algebra notation.
-When our inputs consist of <code class="language-math math-inline">d</code> features,
-we can assign each an index (between <code class="language-math math-inline">1</code> and <code class="language-math math-inline">d</code>)
-and express our prediction <code class="language-math math-inline">\hat{y}</code>
+When our inputs consist of <math><mi>d</mi></math> features,
+we can assign each an index (between <math><mn>1</mn></math> and <math><mi>d</mi></math>)
+and express our prediction <math><mover accent="true"><mi>y</mi><mo stretchy="false">ˆ</mo></mover></math>
 (in general the “hat” symbol denotes an estimate) as</p>
-<p><code class="language-math math-display">\hat{y} = w_1  x_1 + \cdots + w_d  x_d + b.</code></p>
-<p>Collecting all features into a vector <code class="language-math math-inline">\mathbf{x} \in \mathbb{R}^d</code>
-and all weights into a vector <code class="language-math math-inline">\mathbf{w} \in \mathbb{R}^d</code>,
+<math display="block"><mover accent="true"><mi>y</mi><mo stretchy="false">ˆ</mo></mover><mo>=</mo><msub><mi>w</mi><mn>1</mn></msub><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><mo lspace="0" rspace="0">⋯</mo><mo>+</mo><msub><mi>w</mi><mi>d</mi></msub><msub><mi>x</mi><mi>d</mi></msub><mo>+</mo><mi>b</mi><mi>.</mi></math>
+<p>Collecting all features into a vector <math><mi>𝐱</mi><mo>∈</mo><msup><mi>ℝ</mi><mi>d</mi></msup></math>
+and all weights into a vector <math><mi>𝐰</mi><mo>∈</mo><msup><mi>ℝ</mi><mi>d</mi></msup></math>,
 we can express our model compactly via the dot product
-between <code class="language-math math-inline">\mathbf{w}</code> and <code class="language-math math-inline">\mathbf{x}</code>:</p>
-<p><code class="language-math math-display">\hat{y} = \mathbf{w}^\top \mathbf{x} + b.</code>
+between <math><mi>𝐰</mi></math> and <math><mi>𝐱</mi></math>:</p>
+<p><math display="block"><mover accent="true"><mi>y</mi><mo stretchy="false">ˆ</mo></mover><mo>=</mo><msup><mi>𝐰</mi><mi>⊤</mi></msup><mi>𝐱</mi><mo>+</mo><mi>b</mi><mi>.</mi></math>
 :eqlabel:<code>eq_linreg-y</code></p>
-<p>In :eqref:<code>eq_linreg-y</code>, the vector <code class="language-math math-inline">\mathbf{x}</code>
+<p>In :eqref:<code>eq_linreg-y</code>, the vector <math><mi>𝐱</mi></math>
 corresponds to the features of a single example.
 We will often find it convenient
-to refer to features of our entire dataset of <code class="language-math math-inline">n</code> examples
-via the <em>design matrix</em> <code class="language-math math-inline">\mathbf{X} \in \mathbb{R}^{n \times d}</code>.
-Here, <code class="language-math math-inline">\mathbf{X}</code> contains one row for every example
+to refer to features of our entire dataset of <math><mi>n</mi></math> examples
+via the <em>design matrix</em> <math><mi>𝐗</mi><mo>∈</mo><msup><mi>ℝ</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">×</mo><mi>d</mi></mrow></msup></math>.
+Here, <math><mi>𝐗</mi></math> contains one row for every example
 and one column for every feature.
-For a collection of features <code class="language-math math-inline">\mathbf{X}</code>,
-the predictions <code class="language-math math-inline">\hat{\mathbf{y}} \in \mathbb{R}^n</code>
+For a collection of features <math><mi>𝐗</mi></math>,
+the predictions <math><mover accent="true"><mi>𝐲</mi><mo stretchy="false">ˆ</mo></mover><mo>∈</mo><msup><mi>ℝ</mi><mi>n</mi></msup></math>
 can be expressed via the matrix—vector product:</p>
-<p><code class="language-math math-display">{\hat{\mathbf{y}}} = \mathbf{X} \mathbf{w} + b,</code>
+<p><math display="block"><mover accent="true"><mi>𝐲</mi><mo stretchy="false">ˆ</mo></mover><mo>=</mo><mi>𝐗</mi><mi>𝐰</mi><mo>+</mo><mi>b</mi><mo rspace="0">,</mo></math>
 :eqlabel:<code>eq_linreg-y-vec</code></p>
 <p>where broadcasting (:numref:<code>subsec_broadcasting</code>) is applied during the summation.
-Given features of a training dataset <code class="language-math math-inline">\mathbf{X}</code>
-and corresponding (known) labels <code class="language-math math-inline">\mathbf{y}</code>,
+Given features of a training dataset <math><mi>𝐗</mi></math>
+and corresponding (known) labels <math><mi>𝐲</mi></math>,
 the goal of linear regression is to find
-the weight vector <code class="language-math math-inline">\mathbf{w}</code> and the bias term <code class="language-math math-inline">b</code>
+the weight vector <math><mi>𝐰</mi></math> and the bias term <math><mi>b</mi></math>
 such that, given features of a new data example
-sampled from the same distribution as <code class="language-math math-inline">\mathbf{X}</code>,
+sampled from the same distribution as <math><mi>𝐗</mi></math>,
 the new example’s label will (in expectation)
 be predicted with the smallest error.</p>
 <p>Even if we believe that the best model for
-predicting <code class="language-math math-inline">y</code> given <code class="language-math math-inline">\mathbf{x}</code> is linear,
-we would not expect to find a real-world dataset of <code class="language-math math-inline">n</code> examples where
-<code class="language-math math-inline">y^{(i)}</code> exactly equals <code class="language-math math-inline">\mathbf{w}^\top \mathbf{x}^{(i)}+b</code>
-for all <code class="language-math math-inline">1 \leq i \leq n</code>.
+predicting <math><mi>y</mi></math> given <math><mi>𝐱</mi></math> is linear,
+we would not expect to find a real-world dataset of <math><mi>n</mi></math> examples where
+<math><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math> exactly equals <math><msup><mi>𝐰</mi><mi>⊤</mi></msup><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>+</mo><mi>b</mi></math>
+for all <math><mn>1</mn><mo>≤</mo><mi>i</mi><mo>≤</mo><mi>n</mi></math>.
 For example, whatever instruments we use to observe
-the features <code class="language-math math-inline">\mathbf{X}</code> and labels <code class="language-math math-inline">\mathbf{y}</code>, there might be a small amount of measurement error.
+the features <math><mi>𝐗</mi></math> and labels <math><mi>𝐲</mi></math>, there might be a small amount of measurement error.
 Thus, even when we are confident
 that the underlying relationship is linear,
 we will incorporate a noise term to account for such errors.</p>
 <p>Before we can go about searching for the best <em>parameters</em>
-(or <em>model parameters</em>) <code class="language-math math-inline">\mathbf{w}</code> and <code class="language-math math-inline">b</code>,
+(or <em>model parameters</em>) <math><mi>𝐰</mi></math> and <math><mi>b</mi></math>,
 we will need two more things:
 (i) a measure of the quality of some given model;
 and (ii) a procedure for updating the model to improve its quality.</p>
@@ -173,12 +173,12 @@ The loss will usually be a nonnegative number
 where smaller values are better
 and perfect predictions incur a loss of 0.
 For regression problems, the most common loss function is the squared error.
-When our prediction for an example <code class="language-math math-inline">i</code> is <code class="language-math math-inline">\hat{y}^{(i)}</code>
-and the corresponding true label is <code class="language-math math-inline">y^{(i)}</code>,
+When our prediction for an example <math><mi>i</mi></math> is <math><msup><mover accent="true"><mi>y</mi><mo stretchy="false">ˆ</mo></mover><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math>
+and the corresponding true label is <math><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math>,
 the <em>squared error</em> is given by:</p>
-<p><code class="language-math math-display">l^{(i)}(\mathbf{w}, b) = \frac{1}{2} \left(\hat{y}^{(i)} - y^{(i)}\right)^2.</code>
+<p><math display="block"><msup><mi>l</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mpadded style="padding-right:0.1667em;"><msup><mrow><mo lspace="0.1667em">(</mo><msup><mover accent="true"><mi>y</mi><mo stretchy="false">ˆ</mo></mover><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>−</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>)</mo></mrow><mn>2</mn></msup></mpadded><mi>.</mi></math>
 :eqlabel:<code>eq_mse</code></p>
-<p>The constant <code class="language-math math-inline">\frac{1}{2}</code> makes no real difference
+<p>The constant <math><mfrac><mn>1</mn><mn>2</mn></mfrac></math> makes no real difference
 but proves to be notationally convenient,
 since it cancels out when we take the derivative of the loss.
 Because the training dataset is given to us,
@@ -189,18 +189,18 @@ in a problem with one-dimensional inputs.</p>
 <p><img src="../img/fit-linreg.svg" alt="Fitting a linear regression model to one-dimensional data.">
 :label:<code>fig_fit_linreg</code></p>
 <p>Note that large differences between
-estimates <code class="language-math math-inline">\hat{y}^{(i)}</code> and targets <code class="language-math math-inline">y^{(i)}</code>
+estimates <math><msup><mover accent="true"><mi>y</mi><mo stretchy="false">ˆ</mo></mover><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math> and targets <math><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup></math>
 lead to even larger contributions to the loss,
 due to its quadratic form
 (this quadraticity can be a double-edge sword; while it encourages the model to avoid large errors
 it can also lead to excessive sensitivity to anomalous data).
-To measure the quality of a model on the entire dataset of <code class="language-math math-inline">n</code> examples,
+To measure the quality of a model on the entire dataset of <math><mi>n</mi></math> examples,
 we simply average (or equivalently, sum)
 the losses on the training set:</p>
-<p><code class="language-math math-display">L(\mathbf{w}, b) =\frac{1}{n}\sum_{i=1}^n l^{(i)}(\mathbf{w}, b) =\frac{1}{n} \sum_{i=1}^n \frac{1}{2}\left(\mathbf{w}^\top \mathbf{x}^{(i)} + b - y^{(i)}\right)^2.</code></p>
-<p>When training the model, we seek parameters (<code class="language-math math-inline">\mathbf{w}^*, b^*</code>)
+<math display="block"><mi>L</mi><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msup><mi>l</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><mn>1</mn><mn>2</mn></mfrac><mpadded style="padding-right:0.1667em;"><msup><mrow><mo lspace="0.1667em">(</mo><msup><mi>𝐰</mi><mi>⊤</mi></msup><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>+</mo><mi>b</mi><mo>−</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>)</mo></mrow><mn>2</mn></msup></mpadded><mi>.</mi></math>
+<p>When training the model, we seek parameters (<math><msup><mi>𝐰</mi><mo>∗</mo></msup><mo>,</mo><msup><mi>b</mi><mo>∗</mo></msup></math>)
 that minimize the total loss across all training examples:</p>
-<p><code class="language-math math-display">\mathbf{w}^*, b^* = \operatorname*{argmin}_{\mathbf{w}, b}\  L(\mathbf{w}, b).</code></p>
+<math display="block"><msup><mi>𝐰</mi><mo>∗</mo></msup><mo>,</mo><msup><mi>b</mi><mo>∗</mo></msup><mo>=</mo><mrow><munder><mrow><mspace/><mi>argmin</mi></mrow><mrow><mi>𝐰</mi><mo rspace="0">,</mo><mi>b</mi></mrow></munder><mo lspace="0.1667em">&ApplyFunction;</mo><mtext> </mtext></mrow><mi>L</mi><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo><mi>.</mi></math>
 <h3 id="analytic-solution">Analytic Solution</h3>
 <p>Unlike most of the models that we will cover,
 linear regression presents us with
@@ -208,27 +208,22 @@ a surprisingly easy optimization problem.
 In particular, we can find the optimal parameters
 (as assessed on the training data)
 analytically by applying a simple formula as follows.
-First, we can subsume the bias <code class="language-math math-inline">b</code> into the parameter <code class="language-math math-inline">\mathbf{w}</code>
+First, we can subsume the bias <math><mi>b</mi></math> into the parameter <math><mi>𝐰</mi></math>
 by appending a column to the design matrix consisting of all 1s.
-Then our prediction problem is to minimize <code class="language-math math-inline">\|\mathbf{y} - \mathbf{X}\mathbf{w}\|^2</code>.
-As long as the design matrix <code class="language-math math-inline">\mathbf{X}</code> has full rank
+Then our prediction problem is to minimize <math><mo stretchy="false" lspace="0" rspace="0">‖</mo><mi>𝐲</mi><mo>−</mo><mi>𝐗</mi><mi>𝐰</mi><msup><mo stretchy="false" lspace="0" rspace="0">‖</mo><mn>2</mn></msup></math>.
+As long as the design matrix <math><mi>𝐗</mi></math> has full rank
 (no feature is linearly dependent on the others),
 then there will be just one critical point on the loss surface
 and it corresponds to the minimum of the loss over the entire domain.
-Taking the derivative of the loss with respect to <code class="language-math math-inline">\mathbf{w}</code>
+Taking the derivative of the loss with respect to <math><mi>𝐰</mi></math>
 and setting it equal to zero yields:</p>
-<p><code class="language-math math-display">\begin{aligned}
-\partial_{\mathbf{w}} \|\mathbf{y} - \mathbf{X}\mathbf{w}\|^2 =
-2 \mathbf{X}^\top (\mathbf{X} \mathbf{w} - \mathbf{y}) = 0
-\textrm{ and hence }
-\mathbf{X}^\top \mathbf{y} = \mathbf{X}^\top \mathbf{X} \mathbf{w}.
-\end{aligned}</code></p>
-<p>Solving for <code class="language-math math-inline">\mathbf{w}</code> provides us with the optimal solution
+<math display="block"><mtable displaystyle="true" scriptlevel="0"><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>∂</mi><mi>𝐰</mi></msub><mo stretchy="false" lspace="0" rspace="0">‖</mo><mi>𝐲</mi><mo>−</mo><mi>𝐗</mi><mi>𝐰</mi><msup><mo stretchy="false" lspace="0" rspace="0">‖</mo><mn>2</mn></msup><mo>=</mo><mn>2</mn><msup><mi>𝐗</mi><mi>⊤</mi></msup><mo stretchy="false">(</mo><mi>𝐗</mi><mi>𝐰</mi><mo>−</mo><mi>𝐲</mi><mo stretchy="false">)</mo><mo>=</mo><mn>0</mn><mtext><span class="math-core-serif-font"> and hence </span></mtext><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐲</mi><mo>=</mo><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐗</mi><mi>𝐰</mi><mi>.</mi></mtd></mtr></mtable></math>
+<p>Solving for <math><mi>𝐰</mi></math> provides us with the optimal solution
 for the optimization problem.
 Note that this solution</p>
-<p><code class="language-math math-display">\mathbf{w}^* = (\mathbf X^\top \mathbf X)^{-1}\mathbf X^\top \mathbf{y}</code></p>
+<math display="block"><msup><mi>𝐰</mi><mo>∗</mo></msup><mo>=</mo><mo stretchy="false">(</mo><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐗</mi><msup><mo stretchy="false">)</mo><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐲</mi></math>
 <p>will only be unique
-when the matrix <code class="language-math math-inline">\mathbf X^\top \mathbf X</code> is invertible,
+when the matrix <math><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐗</mi></math> is invertible,
 i.e., when the columns of the design matrix
 are linearly independent :cite:<code>Golub.Van-Loan.1996</code>.</p>
 <p>While simple problems like linear regression
@@ -282,29 +277,29 @@ The specific choice of the size of the said minibatch depends on many factors,
 such as the amount of memory, the number of accelerators,
 the choice of layers, and the total dataset size.
 Despite all that, a number between 32 and 256,
-preferably a multiple of a large power of <code class="language-math math-inline">2</code>, is a good start.
+preferably a multiple of a large power of <math><mn>2</mn></math>, is a good start.
 This leads us to <em>minibatch stochastic gradient descent</em>.</p>
-<p>In its most basic form, in each iteration <code class="language-math math-inline">t</code>,
-we first randomly sample a minibatch <code class="language-math math-inline">\mathcal{B}_t</code>
-consisting of a fixed number <code class="language-math math-inline">|\mathcal{B}|</code> of training examples.
+<p>In its most basic form, in each iteration <math><mi>t</mi></math>,
+we first randomly sample a minibatch <math><msub><mrow><mspace/><mi>ℬ︀</mi></mrow><mi>t</mi></msub></math>
+consisting of a fixed number <math><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mspace/><mi>ℬ︀</mi></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></math> of training examples.
 We then compute the derivative (gradient) of the average loss
 on the minibatch with respect to the model parameters.
 Finally, we multiply the gradient
-by a predetermined small positive value <code class="language-math math-inline">\eta</code>,
+by a predetermined small positive value <math><mi>η</mi></math>,
 called the <em>learning rate</em>,
 and subtract the resulting term from the current parameter values.
 We can express the update as follows:</p>
-<p><code class="language-math math-display">(\mathbf{w},b) \leftarrow (\mathbf{w},b) - \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \partial_{(\mathbf{w},b)} l^{(i)}(\mathbf{w},b).</code></p>
+<math display="block"><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo><mo stretchy="false">←</mo><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo><mo>−</mo><mfrac><mi>η</mi><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mspace/><mi>ℬ︀</mi></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mfrac><munder><mo>∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">∈</mo><msub><mrow><mspace/><mi>ℬ︀</mi></mrow><mi>t</mi></msub></mrow></munder><msub><mi>∂</mi><mrow><mo stretchy="false">(</mo><mi>𝐰</mi><mo rspace="0">,</mo><mi>b</mi><mo stretchy="false">)</mo></mrow></msub><msup><mi>l</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo><mi>.</mi></math>
 <p>In summary, minibatch SGD proceeds as follows:
 (i) initialize the values of the model parameters, typically at random;
 (ii) iteratively sample random minibatches from the data,
 updating the parameters in the direction of the negative gradient.
 For quadratic losses and affine transformations,
 this has a closed-form expansion:</p>
-<p><code class="language-math math-display">\begin{aligned} \mathbf{w} &#x26; \leftarrow \mathbf{w} - \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \partial_{\mathbf{w}} l^{(i)}(\mathbf{w}, b) &#x26;&#x26; = \mathbf{w} - \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \mathbf{x}^{(i)} \left(\mathbf{w}^\top \mathbf{x}^{(i)} + b - y^{(i)}\right)\\ b &#x26;\leftarrow b -  \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \partial_b l^{(i)}(\mathbf{w}, b) &#x26;&#x26;  = b - \frac{\eta}{|\mathcal{B}|} \sum_{i \in \mathcal{B}_t} \left(\mathbf{w}^\top \mathbf{x}^{(i)} + b - y^{(i)}\right). \end{aligned}</code>
+<p><math display="block"><mtable displaystyle="true" scriptlevel="0"><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>𝐰</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo stretchy="false">←</mo><mi>𝐰</mi><mo>−</mo><mfrac><mi>η</mi><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mspace/><mi>ℬ︀</mi></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mfrac><munder><mo>∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">∈</mo><msub><mrow><mspace/><mi>ℬ︀</mi></mrow><mi>t</mi></msub></mrow></munder><msub><mi>∂</mi><mi>𝐰</mi></msub><msup><mi>l</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mi>𝐰</mi><mo>−</mo><mfrac><mi>η</mi><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mspace/><mi>ℬ︀</mi></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mfrac><munder><mo>∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">∈</mo><msub><mrow><mspace/><mi>ℬ︀</mi></mrow><mi>t</mi></msub></mrow></munder><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mrow><mo lspace="0.1667em">(</mo><msup><mi>𝐰</mi><mi>⊤</mi></msup><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>+</mo><mi>b</mi><mo>−</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>)</mo></mrow></mtd></mtr><mtr><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>b</mi></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo stretchy="false">←</mo><mi>b</mi><mo>−</mo><mfrac><mi>η</mi><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mspace/><mi>ℬ︀</mi></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mfrac><munder><mo>∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">∈</mo><msub><mrow><mspace/><mi>ℬ︀</mi></mrow><mi>t</mi></msub></mrow></munder><msub><mi>∂</mi><mi>b</mi></msub><msup><mi>l</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">(</mo><mi>𝐰</mi><mo>,</mo><mi>b</mi><mo stretchy="false">)</mo></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mi>b</mi><mo>−</mo><mfrac><mi>η</mi><mrow><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mspace/><mi>ℬ︀</mi></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></mrow></mfrac><munder><mo>∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">∈</mo><msub><mrow><mspace/><mi>ℬ︀</mi></mrow><mi>t</mi></msub></mrow></munder><mrow><mo>(</mo><msup><mi>𝐰</mi><mi>⊤</mi></msup><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>+</mo><mi>b</mi><mo>−</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo rspace="0.1667em">)</mo></mrow><mi>.</mi></mtd></mtr></mtable></math>
 :eqlabel:<code>eq_linreg_batch_update</code></p>
-<p>Since we pick a minibatch <code class="language-math math-inline">\mathcal{B}</code>
-we need to normalize by its size <code class="language-math math-inline">|\mathcal{B}|</code>.
+<p>Since we pick a minibatch <math><mrow><mspace/><mi>ℬ︀</mi></mrow></math>
+we need to normalize by its size <math><mo stretchy="false" lspace="0" rspace="0">|</mo><mrow><mspace/><mi>ℬ︀</mi></mrow><mo stretchy="false" lspace="0" rspace="0">|</mo></math>.
 Frequently minibatch size and learning rate are user-defined.
 Such tunable parameters that are not updated
 in the training loop are called <em>hyperparameters</em>.
@@ -314,18 +309,18 @@ typically assessed on a separate <em>validation dataset</em> (or <em>validation 
 <p>After training for some predetermined number of iterations
 (or until some other stopping criterion is met),
 we record the estimated model parameters,
-denoted <code class="language-math math-inline">\hat{\mathbf{w}}, \hat{b}</code>.
+denoted <math><mover accent="true"><mi>𝐰</mi><mo stretchy="false">ˆ</mo></mover><mo>,</mo><mover accent="true"><mi>b</mi><mo stretchy="false">ˆ</mo></mover></math>.
 Note that even if our function is truly linear and noiseless,
 these parameters will not be the exact minimizers of the loss, nor even deterministic.
 Although the algorithm converges slowly towards the minimizers
 it typically will not find them exactly in a finite number of steps.
-Moreover, the minibatches <code class="language-math math-inline">\mathcal{B}</code>
+Moreover, the minibatches <math><mrow><mspace/><mi>ℬ︀</mi></mrow></math>
 used for updating the parameters are chosen at random.
 This breaks determinism.</p>
 <p>Linear regression happens to be a learning problem
 with a global minimum
-(whenever <code class="language-math math-inline">\mathbf{X}</code> is full rank, or equivalently,
-whenever <code class="language-math math-inline">\mathbf{X}^\top \mathbf{X}</code> is invertible).
+(whenever <math><mi>𝐗</mi></math> is full rank, or equivalently,
+whenever <math><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐗</mi></math> is invertible).
 However, the loss surfaces for deep networks contain many saddle points and minima.
 Fortunately, we typically do not care about finding
 an exact set of parameters but merely any set of parameters
@@ -339,10 +334,10 @@ that lead to accurate predictions on previously unseen data,
 a challenge called <em>generalization</em>.
 We return to these topics throughout the book.</p>
 <h3 id="predictions">Predictions</h3>
-<p>Given the model <code class="language-math math-inline">\hat{\mathbf{w}}^\top \mathbf{x} + \hat{b}</code>,
+<p>Given the model <math><msup><mover accent="true"><mi>𝐰</mi><mo stretchy="false">ˆ</mo></mover><mi>⊤</mi></msup><mi>𝐱</mi><mo>+</mo><mover accent="true"><mi>b</mi><mo stretchy="false">ˆ</mo></mover></math>,
 we can now make <em>predictions</em> for a new example,
 e.g., predicting the sales price of a previously unseen house
-given its area <code class="language-math math-inline">x_1</code> and age <code class="language-math math-inline">x_2</code>.
+given its area <math><msub><mi>x</mi><mn>1</mn></msub></math> and age <math><msub><mi>x</mi><mn>2</mn></msub></math>.
 Deep learning practitioners have taken to calling the prediction phase <em>inference</em>
 but this is a bit of a misnomer---<em>inference</em> refers broadly
 to any conclusion reached on the basis of evidence,
@@ -413,7 +408,7 @@ reducing the potential for errors and increasing portability of the code.</p>
 <p>:label:<code>subsec_normal_distribution_and_squared_loss</code></p>
 <p>So far we have given a fairly functional motivation
 of the squared loss objective:
-the optimal parameters return the conditional expectation <code class="language-math math-inline">E[Y\mid X]</code>
+the optimal parameters return the conditional expectation <math><mi>E</mi><mo stretchy="false">[</mo><mi>Y</mi><mo>∣</mo><mi>X</mi><mo stretchy="false">]</mo></math>
 whenever the underlying pattern is truly linear,
 and the loss assigns large penalties for outliers.
 We can also provide a more formal motivation
@@ -429,9 +424,9 @@ It turns out that the normal distribution
 and linear regression with squared loss
 share a deeper connection than common parentage.</p>
 <p>To begin, recall that a normal distribution
-with mean <code class="language-math math-inline">\mu</code> and variance <code class="language-math math-inline">\sigma^2</code> (standard deviation <code class="language-math math-inline">\sigma</code>)
+with mean <math><mi>μ</mi></math> and variance <math><msup><mi>σ</mi><mn>2</mn></msup></math> (standard deviation <math><mi>σ</mi></math>)
 is given as</p>
-<p><code class="language-math math-display">p(x) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{1}{2 \sigma^2} (x - \mu)^2\right).</code></p>
+<math display="block"><mi>p</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><msqrt><mrow><mn>2</mn><mi>π</mi><msup><mi>σ</mi><mn>2</mn></msup></mrow></msqrt></mfrac><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>exp</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mrow><mo>(</mo><mo lspace="0" rspace="0">−</mo><mfrac><mn>1</mn><mrow><mn>2</mn><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac><mo stretchy="false">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo rspace="0.1667em">)</mo></mrow></mrow><mi>.</mi></math>
 <p>Below [<strong>we define a function to compute the normal distribution</strong>].</p>
 <pre><code class="language-{.python">%%tab all
 def normal(x, mu, sigma):
@@ -468,24 +463,24 @@ d2l.plot(x, [normal(x, mu, sigma) for mu, sigma in params], xlabel='x',
          legend=[f'mean {mu}, std {sigma}' for mu, sigma in params])
 </code></pre>
 <p>Note that changing the mean corresponds
-to a shift along the <code class="language-math math-inline">x</code>-axis,
+to a shift along the <math><mi>x</mi></math>-axis,
 and increasing the variance
 spreads the distribution out,
 lowering its peak.</p>
 <p>One way to motivate linear regression with squared loss
 is to assume that observations arise from noisy measurements,
-where the noise <code class="language-math math-inline">\epsilon</code> follows the normal distribution
-<code class="language-math math-inline">\mathcal{N}(0, \sigma^2)</code>:</p>
-<p><code class="language-math math-display">y = \mathbf{w}^\top \mathbf{x} + b + \epsilon \textrm{ where } \epsilon \sim \mathcal{N}(0, \sigma^2).</code></p>
+where the noise <math><mi>ϵ</mi></math> follows the normal distribution
+<math><mrow><mspace/><mi>𝒩︀</mi></mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="false">)</mo></math>:</p>
+<math display="block"><mi>y</mi><mo>=</mo><msup><mi>𝐰</mi><mi>⊤</mi></msup><mi>𝐱</mi><mo>+</mo><mi>b</mi><mo>+</mo><mi>ϵ</mi><mtext><span class="math-core-serif-font"> where </span></mtext><mi>ϵ</mi><mo form="infix">∼</mo><mrow><mspace/><mi>𝒩︀</mi></mrow><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="false">)</mo><mi>.</mi></math>
 <p>Thus, we can now write out the <em>likelihood</em>
-of seeing a particular <code class="language-math math-inline">y</code> for a given <code class="language-math math-inline">\mathbf{x}</code> via</p>
-<p><code class="language-math math-display">P(y \mid \mathbf{x}) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp\left(-\frac{1}{2 \sigma^2} (y - \mathbf{w}^\top \mathbf{x} - b)^2\right).</code></p>
+of seeing a particular <math><mi>y</mi></math> for a given <math><mi>𝐱</mi></math> via</p>
+<math display="block"><mi>P</mi><mo stretchy="false">(</mo><mi>y</mi><mo>∣</mo><mi>𝐱</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><msqrt><mrow><mn>2</mn><mi>π</mi><msup><mi>σ</mi><mn>2</mn></msup></mrow></msqrt></mfrac><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>exp</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mrow><mo>(</mo><mo lspace="0" rspace="0">−</mo><mfrac><mn>1</mn><mrow><mn>2</mn><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac><mo stretchy="false">(</mo><mi>y</mi><mo>−</mo><msup><mi>𝐰</mi><mi>⊤</mi></msup><mi>𝐱</mi><mo>−</mo><mi>b</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo rspace="0.1667em">)</mo></mrow></mrow><mi>.</mi></math>
 <p>As such, the likelihood factorizes.
 According to <em>the principle of maximum likelihood</em>,
-the best values of parameters <code class="language-math math-inline">\mathbf{w}</code> and <code class="language-math math-inline">b</code> are those
+the best values of parameters <math><mi>𝐰</mi></math> and <math><mi>b</mi></math> are those
 that maximize the <em>likelihood</em> of the entire dataset:</p>
-<p><code class="language-math math-display">P(\mathbf y \mid \mathbf X) = \prod_{i=1}^{n} p(y^{(i)} \mid \mathbf{x}^{(i)}).</code></p>
-<p>The equality follows since all pairs <code class="language-math math-inline">(\mathbf{x}^{(i)}, y^{(i)})</code>
+<math display="block"><mi>P</mi><mo stretchy="false">(</mo><mi>𝐲</mi><mo>∣</mo><mi>𝐗</mi><mo stretchy="false">)</mo><mo>=</mo><munderover><mo lspace="0">∏</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>p</mi><mo stretchy="false">(</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>∣</mo><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">)</mo><mi>.</mi></math>
+<p>The equality follows since all pairs <math><mo stretchy="false">(</mo><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">)</mo></math>
 were drawn independently of each other.
 Estimators chosen according to the principle of maximum likelihood
 are called <em>maximum likelihood estimators</em>.
@@ -498,14 +493,14 @@ as minimization rather than maximization.
 So, without changing anything,
 we can <em>minimize</em> the <em>negative log-likelihood</em>,
 which we can express as follows:</p>
-<p><code class="language-math math-display">-\log P(\mathbf y \mid \mathbf X) = \sum_{i=1}^n \frac{1}{2} \log(2 \pi \sigma^2) + \frac{1}{2 \sigma^2} \left(y^{(i)} - \mathbf{w}^\top \mathbf{x}^{(i)} - b\right)^2.</code></p>
-<p>If we assume that <code class="language-math math-inline">\sigma</code> is fixed,
+<math display="block"><mo lspace="0" rspace="0">−</mo><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mi>P</mi></mrow><mo stretchy="false">(</mo><mi>𝐲</mi><mo>∣</mo><mi>𝐗</mi><mo stretchy="false">)</mo><mo>=</mo><munderover><mo lspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><mn>1</mn><mn>2</mn></mfrac><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo>&ApplyFunction;</mo><mrow><mo stretchy="false">(</mo><mn>2</mn><mi>π</mi><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="false">)</mo></mrow></mrow><mo>+</mo><mfrac><mn>1</mn><mrow><mn>2</mn><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac><mpadded style="padding-right:0.1667em;"><msup><mrow><mo lspace="0.1667em">(</mo><msup><mi>y</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>−</mo><msup><mi>𝐰</mi><mi>⊤</mi></msup><msup><mi>𝐱</mi><mrow><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo></mrow></msup><mo>−</mo><mi>b</mi><mo>)</mo></mrow><mn>2</mn></msup></mpadded><mi>.</mi></math>
+<p>If we assume that <math><mi>σ</mi></math> is fixed,
 we can ignore the first term,
-because it does not depend on <code class="language-math math-inline">\mathbf{w}</code> or <code class="language-math math-inline">b</code>.
+because it does not depend on <math><mi>𝐰</mi></math> or <math><mi>b</mi></math>.
 The second term is identical
 to the squared error loss introduced earlier,
-except for the multiplicative constant <code class="language-math math-inline">\frac{1}{\sigma^2}</code>.
-Fortunately, the solution does not depend on <code class="language-math math-inline">\sigma</code> either.
+except for the multiplicative constant <math><mfrac><mn>1</mn><msup><mi>σ</mi><mn>2</mn></msup></mfrac></math>.
+Fortunately, the solution does not depend on <math><mi>σ</mi></math> either.
 It follows that minimizing the mean squared error
 is equivalent to the maximum likelihood estimation
 of a linear model under the assumption of additive Gaussian noise.</p>
@@ -524,10 +519,10 @@ such as how each input is connected to the output,
 but not the specific values taken by the weights or biases.</p>
 <p><img src="../img/singleneuron.svg" alt="Linear regression is a single-layer neural network.">
 :label:<code>fig_single_neuron</code></p>
-<p>The inputs are <code class="language-math math-inline">x_1, \ldots, x_d</code>.
-We refer to <code class="language-math math-inline">d</code> as the <em>number of inputs</em>
+<p>The inputs are <math><msub><mi>x</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>x</mi><mi>d</mi></msub></math>.
+We refer to <math><mi>d</mi></math> as the <em>number of inputs</em>
 or the <em>feature dimensionality</em> in the input layer.
-The output of the network is <code class="language-math math-inline">o_1</code>.
+The output of the network is <math><msub><mi>o</mi><mn>1</mn></msub></math>.
 Because we are just trying to predict
 a single numerical value,
 we have only one output neuron.
@@ -554,16 +549,16 @@ and the <em>axon terminals</em> (output terminals),
 enabling connections to other neurons via <em>synapses</em>.</p>
 <p><img src="../img/neuron.svg" alt="The real neuron (source: &#x22;Anatomy and Physiology&#x22; by the US National Cancer Institute&#x27;s Surveillance, Epidemiology and End Results (SEER) Program).">
 :label:<code>fig_Neuron</code></p>
-<p>Information <code class="language-math math-inline">x_i</code> arriving from other neurons
+<p>Information <math><msub><mi>x</mi><mi>i</mi></msub></math> arriving from other neurons
 (or environmental sensors) is received in the dendrites.
 In particular, that information is weighted
-by <em>synaptic weights</em> <code class="language-math math-inline">w_i</code>,
+by <em>synaptic weights</em> <math><msub><mi>w</mi><mi>i</mi></msub></math>,
 determining the effect of the inputs,
-e.g., activation or inhibition via the product <code class="language-math math-inline">x_i w_i</code>.
+e.g., activation or inhibition via the product <math><msub><mi>x</mi><mi>i</mi></msub><msub><mi>w</mi><mi>i</mi></msub></math>.
 The weighted inputs arriving from multiple sources
 are aggregated in the nucleus
-as a weighted sum <code class="language-math math-inline">y = \sum_i x_i w_i + b</code>,
-possibly subject to some nonlinear postprocessing via a function <code class="language-math math-inline">\sigma(y)</code>.
+as a weighted sum <math><mi>y</mi><mo>=</mo><munder><mo lspace="0">∑</mo><mi>i</mi></munder><msub><mi>x</mi><mi>i</mi></msub><msub><mi>w</mi><mi>i</mi></msub><mo>+</mo><mi>b</mi></math>,
+possibly subject to some nonlinear postprocessing via a function <math><mi>σ</mi><mo stretchy="false">(</mo><mi>y</mi><mo stretchy="false">)</mo></math>.
 This information is then sent via the axon to the axon terminals,
 where it reaches its destination
 (e.g., an actuator such as a muscle)
@@ -606,26 +601,26 @@ optimization via minibatch stochastic gradient descent,
 and ultimately, evaluation on previously unseen data.</p>
 <h2 id="exercises">Exercises</h2>
 <ol>
-<li>Assume that we have some data <code class="language-math math-inline">x_1, \ldots, x_n \in \mathbb{R}</code>. Our goal is to find a constant <code class="language-math math-inline">b</code> such that <code class="language-math math-inline">\sum_i (x_i - b)^2</code> is minimized.
+<li>Assume that we have some data <math><msub><mi>x</mi><mn>1</mn></msub><mo>,</mo><mo lspace="0">.</mo><mo lspace="0" rspace="0.1667em">.</mo><mo lspace="0">.</mo><mo>,</mo><msub><mi>x</mi><mi>n</mi></msub><mo>∈</mo><mi>ℝ</mi></math>. Our goal is to find a constant <math><mi>b</mi></math> such that <math><munder><mo lspace="0" rspace="0">∑</mo><mi>i</mi></munder><mo stretchy="false">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mi>b</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup></math> is minimized.
 <ol>
-<li>Find an analytic solution for the optimal value of <code class="language-math math-inline">b</code>.</li>
+<li>Find an analytic solution for the optimal value of <math><mi>b</mi></math>.</li>
 <li>How does this problem and its solution relate to the normal distribution?</li>
-<li>What if we change the loss from <code class="language-math math-inline">\sum_i (x_i - b)^2</code> to <code class="language-math math-inline">\sum_i |x_i-b|</code>? Can you find the optimal solution for <code class="language-math math-inline">b</code>?</li>
+<li>What if we change the loss from <math><munder><mo lspace="0" rspace="0">∑</mo><mi>i</mi></munder><mo stretchy="false">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mi>b</mi><msup><mo stretchy="false">)</mo><mn>2</mn></msup></math> to <math><munder><mo lspace="0">∑</mo><mi>i</mi></munder><mo stretchy="false" lspace="0" rspace="0">|</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mi>b</mi><mo stretchy="false" lspace="0" rspace="0">|</mo></math>? Can you find the optimal solution for <math><mi>b</mi></math>?</li>
 </ol>
 </li>
-<li>Prove that the affine functions that can be expressed by <code class="language-math math-inline">\mathbf{x}^\top \mathbf{w} + b</code> are equivalent to linear functions on <code class="language-math math-inline">(\mathbf{x}, 1)</code>.</li>
-<li>Assume that you want to find quadratic functions of <code class="language-math math-inline">\mathbf{x}</code>, i.e., <code class="language-math math-inline">f(\mathbf{x}) = b + \sum_i w_i x_i + \sum_{j \leq i} w_{ij} x_{i} x_{j}</code>. How would you formulate this in a deep network?</li>
-<li>Recall that one of the conditions for the linear regression problem to be solvable was that the design matrix <code class="language-math math-inline">\mathbf{X}^\top \mathbf{X}</code> has full rank.
+<li>Prove that the affine functions that can be expressed by <math><msup><mi>𝐱</mi><mi>⊤</mi></msup><mi>𝐰</mi><mo>+</mo><mi>b</mi></math> are equivalent to linear functions on <math><mo stretchy="false">(</mo><mi>𝐱</mi><mo>,</mo><mn>1</mn><mo stretchy="false">)</mo></math>.</li>
+<li>Assume that you want to find quadratic functions of <math><mi>𝐱</mi></math>, i.e., <math><mi>f</mi><mo stretchy="false">(</mo><mi>𝐱</mi><mo stretchy="false">)</mo><mo>=</mo><mi>b</mi><mo>+</mo><munder><mo lspace="0">∑</mo><mi>i</mi></munder><msub><mi>w</mi><mi>i</mi></msub><msub><mi>x</mi><mi>i</mi></msub><mo>+</mo><munder><mo lspace="0">∑</mo><mrow><mi>j</mi><mo lspace="0" rspace="0">≤</mo><mi>i</mi></mrow></munder><msub><mi>w</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>x</mi><mi>i</mi></msub><msub><mi>x</mi><mi>j</mi></msub></math>. How would you formulate this in a deep network?</li>
+<li>Recall that one of the conditions for the linear regression problem to be solvable was that the design matrix <math><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐗</mi></math> has full rank.
 <ol>
 <li>What happens if this is not the case?</li>
-<li>How could you fix it? What happens if you add a small amount of coordinate-wise independent Gaussian noise to all entries of <code class="language-math math-inline">\mathbf{X}</code>?</li>
-<li>What is the expected value of the design matrix <code class="language-math math-inline">\mathbf{X}^\top \mathbf{X}</code> in this case?</li>
-<li>What happens with stochastic gradient descent when <code class="language-math math-inline">\mathbf{X}^\top \mathbf{X}</code> does not have full rank?</li>
+<li>How could you fix it? What happens if you add a small amount of coordinate-wise independent Gaussian noise to all entries of <math><mi>𝐗</mi></math>?</li>
+<li>What is the expected value of the design matrix <math><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐗</mi></math> in this case?</li>
+<li>What happens with stochastic gradient descent when <math><msup><mi>𝐗</mi><mi>⊤</mi></msup><mi>𝐗</mi></math> does not have full rank?</li>
 </ol>
 </li>
-<li>Assume that the noise model governing the additive noise <code class="language-math math-inline">\epsilon</code> is the exponential distribution. That is, <code class="language-math math-inline">p(\epsilon) = \frac{1}{2} \exp(-|\epsilon|)</code>.
+<li>Assume that the noise model governing the additive noise <math><mi>ϵ</mi></math> is the exponential distribution. That is, <math><mi>p</mi><mo stretchy="false">(</mo><mi>ϵ</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>exp</mi></mrow><mo>&ApplyFunction;</mo><mo stretchy="false">(</mo></mrow><mo lspace="0" rspace="0">−</mo><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>ϵ</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mo stretchy="false">)</mo></math>.
 <ol>
-<li>Write out the negative log-likelihood of the data under the model <code class="language-math math-inline">-\log P(\mathbf y \mid \mathbf X)</code>.</li>
+<li>Write out the negative log-likelihood of the data under the model <math><mo lspace="0" rspace="0">−</mo><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mi>P</mi></mrow><mo stretchy="false">(</mo><mi>𝐲</mi><mo>∣</mo><mi>𝐗</mi><mo stretchy="false">)</mo></math>.</li>
 <li>Can you find a closed form solution?</li>
 <li>Suggest a minibatch stochastic gradient descent algorithm to solve this problem. What could possibly go wrong (hint: what happens near the stationary point as we keep on updating the parameters)? Can you fix this?</li>
 </ol>
@@ -634,16 +629,16 @@ and ultimately, evaluation on previously unseen data.</p>
 <li>What happens if you want to use regression for realistic price estimation of houses or stock prices?
 <ol>
 <li>Show that the additive Gaussian noise assumption is not appropriate. Hint: can we have negative prices? What about fluctuations?</li>
-<li>Why would regression to the logarithm of the price be much better, i.e., <code class="language-math math-inline">y = \log \textrm{price}</code>?</li>
+<li>Why would regression to the logarithm of the price be much better, i.e., <math><mi>y</mi><mo>=</mo><mrow><mrow><mspace/><mi>log</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mtext><span class="math-core-serif-font">price</span></mtext></mrow></math>?</li>
 <li>What do you need to worry about when dealing with pennystock, i.e., stock with very low prices? Hint: can you trade at all possible prices? Why is this a bigger problem for cheap stock? For more information review the celebrated Black—Scholes model for option pricing :cite:<code>Black.Scholes.1973</code>.</li>
 </ol>
 </li>
 <li>Suppose we want to use regression to estimate the <em>number</em> of apples sold in a grocery store.
 <ol>
 <li>What are the problems with a Gaussian additive noise model? Hint: you are selling apples, not oil.</li>
-<li>The <a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> captures distributions over counts. It is given by <code class="language-math math-inline">p(k \mid \lambda) = \lambda^k e^{-\lambda}/k!</code>. Here <code class="language-math math-inline">\lambda</code> is the rate function and <code class="language-math math-inline">k</code> is the number of events you see. Prove that <code class="language-math math-inline">\lambda</code> is the expected value of counts <code class="language-math math-inline">k</code>.</li>
+<li>The <a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> captures distributions over counts. It is given by <math><mi>p</mi><mo stretchy="false">(</mo><mi>k</mi><mo>∣</mo><mi>λ</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>λ</mi><mi>k</mi></msup><msup><mi>e</mi><mrow><mo lspace="0" rspace="0">−</mo><mi>λ</mi></mrow></msup><mo lspace="0" rspace="0">/</mo><mi>k</mi><mo form="postfix">!</mo></math>. Here <math><mi>λ</mi></math> is the rate function and <math><mi>k</mi></math> is the number of events you see. Prove that <math><mi>λ</mi></math> is the expected value of counts <math><mi>k</mi></math>.</li>
 <li>Design a loss function associated with the Poisson distribution.</li>
-<li>Design a loss function for estimating <code class="language-math math-inline">\log \lambda</code> instead.</li>
+<li>Design a loss function for estimating <math><mrow><mrow><mspace/><mi>log</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mi>λ</mi></mrow></math> instead.</li>
 </ol>
 </li>
 </ol>

@@ -794,7 +794,7 @@ attention, and so a tooltip via <a href="">remark</a> suffices.</p>
 <h3 id="latex-definitions-for-hiding-LaTeX-declarations-in-HTML">  <code>latex-definitions</code> for hiding LaTeX declarations in HTML</h3>
 <p>To present mathematical formulae in HTML export, we may use
 LaTeX-style commands such as <code>{\color{red} x}</code> by enclosing them in
-<code>$</code>-symbols to obtain <code class="language-math math-inline">{\color{red}x}</code>.  This is known as the MathJax
+<code>$</code>-symbols to obtain <math><mrow style="color:#FF0000;"><mi>x</mi></mrow></math>.  This is known as the MathJax
 tool —Emacs’ default HTML export includes it.  (Unfortunately,
 MathJax does not directly support arbitrary HTML elements to occur
 within the <code>$</code>-delimiters.)</p>
@@ -804,19 +804,9 @@ undesirable extra whitespace. See the superflous vertical whitespace
 in the <code>Result</code> side below.</p>
 <div class="org-demo">
 <p>Hello, in this blog post I’d like to talk about quantifiers.</p>
-<p><code class="language-math math-display">
-  \def\Plus{\color{teal}\bigoplus}
-  \def\plus{\;\color{teal}\oplus\;}
-  \def\f#1{{\color{brown}f}{\color{violet}(#1)}}
-  \def\xstart{\color{red} a}
-  \def\xend{\color{cyan} b}
-  </code></p>
+<math display="block"></math>
 <p>Anyhow, let’s talk about quantifiers…
-<code class="language-math math-display">
-  \Plus_{{\color{violet} x} = \xstart}^{\xend} \f{x}
-  \; = \;
-  \f{{\xstart}} \plus \f{a+1} \plus \f{a+2} \plus \cdots \plus \f{{\xend}}
-  </code></p>
+<math display="block"><mrow style="color:#008080;"><munderover><mo lspace="0" rspace="0">⨁</mo><mrow><mrow style="color:#800080;"><mi>x</mi></mrow><mo lspace="0" rspace="0">=</mo><mrow style="color:#FF0000;"><mi>a</mi></mrow></mrow><mrow style="color:#00B9F2;"><mi>b</mi></mrow></munderover><mrow style="color:#BF803F;"><mi>f</mi></mrow><mrow style="color:#800080;"><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo></mrow><mspace width="0.2777778em"/><mo>=</mo><mspace width="0.2777778em"/><mrow style="color:#BF803F;"><mi>f</mi></mrow><mrow style="color:#800080;"><mo stretchy="false">(</mo><mrow style="color:#FF0000;"><mi>a</mi></mrow><mo stretchy="false">)</mo></mrow><mspace width="0.2777778em"/><mrow style="color:#008080;"><mo>⊕</mo><mspace width="0.2777778em"/><mrow style="color:#BF803F;"><mi>f</mi></mrow><mrow style="color:#800080;"><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><mspace width="0.2777778em"/><mrow style="color:#008080;"><mo>⊕</mo><mspace width="0.2777778em"/><mrow style="color:#BF803F;"><mi>f</mi></mrow><mrow style="color:#800080;"><mo stretchy="false">(</mo><mi>a</mi><mo>+</mo><mn>2</mn><mo stretchy="false">)</mo></mrow><mspace width="0.2777778em"/><mrow style="color:#008080;"><mo>⊕</mo><mspace width="0.2777778em"/><mo lspace="0" rspace="0.1667em">⋯</mo><mspace width="0.2777778em"/><mrow style="color:#008080;"><mo>⊕</mo><mspace width="0.2777778em"/><mrow style="color:#BF803F;"><mi>f</mi></mrow><mrow style="color:#800080;"><mo stretchy="false">(</mo><mrow style="color:#00B9F2;"><mi>b</mi></mrow><mo stretchy="false">)</mo></mrow></mrow></mrow></mrow></mrow></mrow></math></p>
 <p>The above “quantification” means <a href=""></a>
 <a href=""></a> <a href=""></a>, using <a href=""></a>, <a href=""></a> and <a href=""></a>.</p>
 </div>

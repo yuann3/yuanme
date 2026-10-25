@@ -75,8 +75,6 @@ warning[org/no-effect]: `-n` has no effect in yuanme
 <pre><code>fixed
   width
 </code></pre>
-<code class="language-math math-display">\begin{equation}
-E = mc^2
-\end{equation}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(1)</mtext></mtd></mtr></mtable></math>
 <hr>
 <hr class="fancy">

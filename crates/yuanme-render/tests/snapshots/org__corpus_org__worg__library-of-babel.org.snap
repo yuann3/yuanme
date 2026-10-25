@@ -298,7 +298,7 @@ are optional.</p>
 
 
 
-<table><thead><tr><th>arg</th><th>description</th></tr></thead><tbody><tr><td>table</td><td>a reference to the table</td></tr><tr><td>align</td><td>optional alignment string</td></tr><tr><td>width</td><td>optional width specification string</td></tr><tr><td>hline</td><td>the string to use as hline separator, defaults to ”\<code class="language-math math-inline">\hline</code>“</td></tr><tr><td>head</td><td>optional “head” string</td></tr><tr><td>firsthead</td><td>optional “firsthead” string</td></tr><tr><td>foot</td><td>optional “foot” string</td></tr><tr><td>lastfoot</td><td>optional “lastfoot” string</td></tr></tbody></table>
+<table><thead><tr><th>arg</th><th>description</th></tr></thead><tbody><tr><td>table</td><td>a reference to the table</td></tr><tr><td>align</td><td>optional alignment string</td></tr><tr><td>width</td><td>optional width specification string</td></tr><tr><td>hline</td><td>the string to use as hline separator, defaults to ”\“</td></tr><tr><td>head</td><td>optional “head” string</td></tr><tr><td>firsthead</td><td>optional “firsthead” string</td></tr><tr><td>foot</td><td>optional “foot” string</td></tr><tr><td>lastfoot</td><td>optional “lastfoot” string</td></tr></tbody></table>
 <pre id="longtable"><code class="language-emacs-lisp">(org-fill-template
  "
 \\begin{longtable}%width%align
@@ -356,7 +356,7 @@ span. Note the use of LaTeX, rather than Org-mode, markup.</p>
 
 
 
-<table id="arguments-notes"><tbody><tr><td><code class="language-math math-inline">\multicolumn{2}{l}</code>{This is a footnote to the <code class="language-math math-inline">\emph{arguments}</code> table.}</td></tr></tbody></table>
+<table id="arguments-notes"><tbody><tr><td>{This is a footnote to the <math><mtext><em>arguments</em></mtext></math> table.}</td></tr></tbody></table>
 <pre id="booktabs-notes"><code class="language-emacs-lisp">(cl-flet ((to-tab (tab)
                (orgtbl-to-generic
                 (mapcar (lambda (lis)

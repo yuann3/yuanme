@@ -85,68 +85,38 @@ This suggests that the data do not satisfy the assumption of the ordinary least 
 Deviation from this assumption would compromise the validity of the regression coefficients and standard errors.</p>
 <h2 id="c">c)</h2>
 <h3 id="answer-2">Answer</h3>
-<p><code class="language-math math-display">
-\boldsymbol{Y} = \begin{pmatrix}
-Y_{1,1} \\ Y_{1,2} \\
-Y_{2,1} \\ Y_{2,2} \\
-\vdots \\
-Y_{n,1} \\ Y_{n,2}
-\end{pmatrix}
-\sim \text{multivariate normal} \left( \mathbf{X} \boldsymbol{\beta}, \Sigma \right)
-</code>
+<p><math display="block"><mi>𝒀</mi><mo>=</mo><mrow><mo>(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd><msub><mi>Y</mi><mrow><mn>1</mn><mo rspace="0">,</mo><mn>1</mn></mrow></msub></mtd></mtr><mtr><mtd><msub><mi>Y</mi><mrow><mn>1</mn><mo rspace="0">,</mo><mn>2</mn></mrow></msub></mtd></mtr><mtr><mtd><msub><mi>Y</mi><mrow><mn>2</mn><mo rspace="0">,</mo><mn>1</mn></mrow></msub></mtd></mtr><mtr><mtd><msub><mi>Y</mi><mrow><mn>2</mn><mo rspace="0">,</mo><mn>2</mn></mrow></msub></mtd></mtr><mtr><mtd><mo lspace="0" rspace="0">⋮</mo></mtd></mtr><mtr><mtd><msub><mi>Y</mi><mrow><mi>n</mi><mo rspace="0">,</mo><mn>1</mn></mrow></msub></mtd></mtr><mtr><mtd><msub><mi>Y</mi><mrow><mi>n</mi><mo rspace="0">,</mo><mn>2</mn></mrow></msub></mtd></mtr></mtable><mo>)</mo></mrow><mo form="infix">∼</mo><mtext>multivariate normal</mtext><mrow><mo lspace="0.1667em">(</mo><mi>𝐗</mi><mi>𝜷</mi><mo>,</mo><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mo>)</mo></mrow></math>
 where
-<code class="language-math math-display">
-\Sigma = \sigma^2 \mathbf{C}_{\rho}
-= \sigma^2 \begin{pmatrix}
-1 &#x26; \rho &#x26; 0 &#x26; 0 &#x26; \cdots &#x26; 0 \\
-\rho &#x26; 1 &#x26; 0 &#x26; 0 &#x26; \cdots &#x26; 0 \\
-0 &#x26; 0 &#x26; 1 &#x26; \rho &#x26; \cdots &#x26; 0 \\
-0 &#x26; 0 &#x26; \rho &#x26; 1 &#x26; \cdots &#x26; 0 \\
-\vdots &#x26; \vdots &#x26; \vdots &#x26; \vdots &#x26; \ddots &#x26; \vdots \\
-0 &#x26; 0 &#x26; 0 &#x26; 0 &#x26; \cdots &#x26; 1
-\end{pmatrix}
-</code>
-and <code class="language-math math-inline">\rho</code> is the correlation between the two measurements of the same plant.</p>
-<p>Setting the prior distribution of <code class="language-math math-inline">\beta, \sigma, \rho</code> as follows,</p>
+<math display="block"><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mo>=</mo><msup><mi>σ</mi><mn>2</mn></msup><msub><mi>𝐂</mi><mi>ρ</mi></msub><mo>=</mo><msup><mi>σ</mi><mn>2</mn></msup><mrow><mo lspace="0.1667em">(</mo><mtable displaystyle="false" scriptlevel="0"><mtr><mtd><mn>1</mn></mtd><mtd><mi>ρ</mi></mtd><mtd><mn>0</mn></mtd><mtd><mn>0</mn></mtd><mtd><mo lspace="0.1667em" rspace="0">⋯</mo></mtd><mtd><mn>0</mn></mtd></mtr><mtr><mtd><mi>ρ</mi></mtd><mtd><mn>1</mn></mtd><mtd><mn>0</mn></mtd><mtd><mn>0</mn></mtd><mtd><mo lspace="0.1667em" rspace="0">⋯</mo></mtd><mtd><mn>0</mn></mtd></mtr><mtr><mtd><mn>0</mn></mtd><mtd><mn>0</mn></mtd><mtd><mn>1</mn></mtd><mtd><mi>ρ</mi></mtd><mtd><mo lspace="0.1667em" rspace="0">⋯</mo></mtd><mtd><mn>0</mn></mtd></mtr><mtr><mtd><mn>0</mn></mtd><mtd><mn>0</mn></mtd><mtd><mi>ρ</mi></mtd><mtd><mn>1</mn></mtd><mtd><mo lspace="0.1667em" rspace="0">⋯</mo></mtd><mtd><mn>0</mn></mtd></mtr><mtr><mtd><mo lspace="0" rspace="0">⋮</mo></mtd><mtd><mo rspace="0">⋮</mo></mtd><mtd><mo rspace="0">⋮</mo></mtd><mtd><mo rspace="0">⋮</mo></mtd><mtd><mo rspace="0">⋱</mo></mtd><mtd><mo rspace="0">⋮</mo></mtd></mtr><mtr><mtd><mn>0</mn></mtd><mtd><mn>0</mn></mtd><mtd><mn>0</mn></mtd><mtd><mn>0</mn></mtd><mtd><mo lspace="0.1667em" rspace="0">⋯</mo></mtd><mtd><mn>1</mn></mtd></mtr></mtable><mo>)</mo></mrow></math>
+and <math><mi>ρ</mi></math> is the correlation between the two measurements of the same plant.</p>
+<p>Setting the prior distribution of <math><mi>β</mi><mo>,</mo><mi>σ</mi><mo>,</mo><mi>ρ</mi></math> as follows,</p>
 <ul>
-<li><code class="language-math math-inline">\beta</code>:
-<code class="language-math math-display">
-  \beta \sim \mathcal{N}(\boldsymbol{\beta}_0, \Sigma_0),
-  </code></li>
-<li><code class="language-math math-inline">\sigma</code>:
-<code class="language-math math-display">
-  \sigma \sim \text{inverse-gamma}( \frac{v_0}{2}, \frac{v_0 \sigma_0^2}{2} ),
-  </code></li>
-<li><code class="language-math math-inline">\rho</code>:
-<code class="language-math math-display">
-  \rho \sim \text{uniform}( 0, 1 ),
-  </code></li>
+<li><math><mi>β</mi></math>:
+<math display="block"><mi>β</mi><mo form="infix">∼</mo><mrow><mspace/><mi>𝒩︀</mi></mrow><mo stretchy="false">(</mo><msub><mi>𝜷</mi><mn>0</mn></msub><mo>,</mo><msub><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mn>0</mn></msub><mo stretchy="false">)</mo><mo rspace="0">,</mo></math></li>
+<li><math><mi>σ</mi></math>:
+<math display="block"><mi>σ</mi><mo form="infix">∼</mo><mtext>inverse-gamma</mtext><mo stretchy="false">(</mo><mfrac><msub><mi>v</mi><mn>0</mn></msub><mn>2</mn></mfrac><mo>,</mo><mfrac><mrow><msub><mi>v</mi><mn>0</mn></msub><msubsup><mi>σ</mi><mn>0</mn><mn>2</mn></msubsup></mrow><mn>2</mn></mfrac><mo stretchy="false">)</mo><mo rspace="0">,</mo></math></li>
+<li><math><mi>ρ</mi></math>:
+<math display="block"><mi>ρ</mi><mo form="infix">∼</mo><mtext>uniform</mtext><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false">)</mo><mo rspace="0">,</mo></math></li>
 </ul>
-<p>the posterior distributions of <code class="language-math math-inline">\beta, \sigma</code> are given by</p>
-<code class="language-math math-display">\begin{align*}
-\{\boldsymbol{\beta} | \boldsymbol{y}, \mathbf{X}, \sigma^2, \rho \} &#x26;\sim \text{multivariate normal}(\boldsymbol{\beta}_n, \Sigma_n), \text{ where} \\
-\Sigma_n &#x26;= \left( \mathbf{X}^{\top} \mathbf{C}_{\rho}^{-1} \mathbf{X}/\sigma^2 + \Sigma_0^{-1} \right)^{-1} \\
-\boldsymbol{\beta}_n &#x26;= \Sigma_n \left( \mathbf{X}^{\top} \mathbf{C}_{\rho}^{-1} \boldsymbol{y}/\sigma^2 + \Sigma_0^{-1} \boldsymbol{\beta}_0 \right), \text{ and} \\
-\{\sigma^2 | \boldsymbol{y}, \mathbf{X}, \boldsymbol{\beta}, \rho \} &#x26;\sim \text{inverse-gamma} \left( \frac{ \nu_0 + n }{2}, \frac{ \nu_0 + \mathrm{SSR}_{\rho} }{2} \right), \text{ where} \\
-\mathrm{SSR}_{\rho} &#x26;= \left( \boldsymbol{y} - \mathbf{X} \boldsymbol{\beta} \right)^{\top} \mathbf{C}_{\rho}^{-1} \left( \boldsymbol{y} - \mathbf{X} \boldsymbol{\beta} \right). \\
-\end{align*}</code>
-<p>The posterior distribution of <code class="language-math math-inline">\rho</code> is not analytically tractable, so we use the Metropolis algorithm to sample from the posterior distribution.</p>
-<p>Given <code class="language-math math-inline">\{\boldsymbol{\beta}^{(s)}, \sigma^{2(s)}, \rho^{(s)}\}</code>, we update the parameters as follows:</p>
+<p>the posterior distributions of <math><mi>β</mi><mo>,</mo><mi>σ</mi></math> are given by</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mo stretchy="false">{</mo><mi>𝜷</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒚</mi><mo>,</mo><mi>𝐗</mi><mo>,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo>,</mo><mi>ρ</mi><mo stretchy="false">}</mo></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo form="infix">∼</mo><mtext>multivariate normal</mtext><mo stretchy="false">(</mo><msub><mi>𝜷</mi><mi>n</mi></msub><mo>,</mo><msub><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mi>n</mi></msub><mo stretchy="false">)</mo><mo>,</mo><mtext> where</mtext></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mi>n</mi></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><msup><mrow><mo>(</mo><msup><mi>𝐗</mi><mi>⊤</mi></msup><msubsup><mi>𝐂</mi><mi>ρ</mi><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup><mi>𝐗</mi><mo lspace="0" rspace="0">/</mo><msup><mi>σ</mi><mn>2</mn></msup><mo>+</mo><msubsup><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mn>0</mn><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup><mo>)</mo></mrow><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msup></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>𝜷</mi><mi>n</mi></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><msub><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mi>n</mi></msub><mrow><mo lspace="0.1667em">(</mo><msup><mi>𝐗</mi><mi>⊤</mi></msup><msubsup><mi>𝐂</mi><mi>ρ</mi><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup><mi>𝒚</mi><mo lspace="0" rspace="0">/</mo><msup><mi>σ</mi><mn>2</mn></msup><mo>+</mo><msubsup><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mn>0</mn><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup><msub><mi>𝜷</mi><mn>0</mn></msub><mo rspace="0.1667em">)</mo></mrow><mo>,</mo><mtext> and</mtext></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mo stretchy="false">{</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝒚</mi><mo>,</mo><mi>𝐗</mi><mo>,</mo><mi>𝜷</mi><mo>,</mo><mi>ρ</mi><mo stretchy="false">}</mo></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo form="infix">∼</mo><mtext>inverse-gamma</mtext><mrow><mo lspace="0.1667em">(</mo><mfrac><mrow><msub><mi>ν</mi><mn>0</mn></msub><mo>+</mo><mi>n</mi></mrow><mn>2</mn></mfrac><mo>,</mo><mfrac><mrow><msub><mi>ν</mi><mn>0</mn></msub><mo>+</mo><msub><mrow><mspace/><mi>SSR</mi></mrow><mi>ρ</mi></msub></mrow><mn>2</mn></mfrac><mo rspace="0.1667em">)</mo></mrow><mo>,</mo><mtext> where</mtext></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mrow><mspace/><mi>SSR</mi></mrow><mi>ρ</mi></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo>=</mo><mpadded style="padding-right:0.1667em;"><msup><mrow><mo>(</mo><mi>𝒚</mi><mo>−</mo><mi>𝐗</mi><mi>𝜷</mi><mo>)</mo></mrow><mi>⊤</mi></msup></mpadded><msubsup><mi>𝐂</mi><mi>ρ</mi><mrow><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msubsup><mrow><mo lspace="0.1667em">(</mo><mi>𝒚</mi><mo>−</mo><mi>𝐗</mi><mi>𝜷</mi><mo rspace="0.1667em">)</mo></mrow><mi>.</mi></mtd><mtd style="width: 50%"></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
+<p>The posterior distribution of <math><mi>ρ</mi></math> is not analytically tractable, so we use the Metropolis algorithm to sample from the posterior distribution.</p>
+<p>Given <math><mo stretchy="false">{</mo><msup><mi>𝜷</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msup><mi>σ</mi><mrow><mn>2</mn><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">}</mo></math>, we update the parameters as follows:</p>
 <ol>
-<li>Update <code class="language-math math-inline">\boldsymbol{\beta}</code>:
-Sample <code class="language-math math-inline">\boldsymbol{\beta}^{(s+1)} \sim \text{multivariate normal}(\boldsymbol{\beta}_n, \Sigma_n)</code>,
-where <code class="language-math math-inline">\boldsymbol{\beta}_n </code> and <code class="language-math math-inline">\Sigma_n</code> depend on <code class="language-math math-inline">\sigma^{2(s)}</code> and <code class="language-math math-inline">\rho^{(s)}</code>.</li>
-<li>Update <code class="language-math math-inline">\sigma^2</code>:
-Sample <code class="language-math math-inline">\sigma^{2(s+1)} \sim \text{inverse-gamma}([\nu_0 + n]/2, [\nu_0 \sigma_0^2 + \mathrm{SSR}_{\rho}] / 2)</code>,
-where <code class="language-math math-inline">\mathrm{SSR}_{\rho}</code> depends on <code class="language-math math-inline">\boldsymbol{\beta}^{(s+1)}</code> and <code class="language-math math-inline">\rho^{(s)}</code>.</li>
-<li>Update <code class="language-math math-inline">\rho</code>:
-a. Propose <code class="language-math math-inline">\rho^{\ast} \sim \text{uniform}(\rho^{(s)} - \delta, \rho^{(s)} + \delta)</code>.
-If <code class="language-math math-inline">\rho^{\ast} \lt 0</code> then reassin it to be <code class="language-math math-inline">|\rho^{\ast}|</code>.
-If <code class="language-math math-inline">\rho^{\ast} > 1</code> reassin it to be <code class="language-math math-inline">2 - \rho^{\ast}</code>.
+<li>Update <math><mi>𝜷</mi></math>:
+Sample <math><msup><mi>𝜷</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo form="infix">∼</mo><mtext>multivariate normal</mtext><mo stretchy="false">(</mo><msub><mi>𝜷</mi><mi>n</mi></msub><mo>,</mo><msub><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mi>n</mi></msub><mo stretchy="false">)</mo></math>,
+where <math><msub><mi>𝜷</mi><mi>n</mi></msub></math> and <math><msub><mrow><mspace/><mi mathvariant="normal">Σ</mi></mrow><mi>n</mi></msub></math> depend on <math><msup><mi>σ</mi><mrow><mn>2</mn><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup></math> and <math><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup></math>.</li>
+<li>Update <math><msup><mi>σ</mi><mn>2</mn></msup></math>:
+Sample <math><msup><mi>σ</mi><mrow><mn>2</mn><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo form="infix">∼</mo><mtext>inverse-gamma</mtext><mo stretchy="false">(</mo><mo stretchy="false">[</mo><msub><mi>ν</mi><mn>0</mn></msub><mo>+</mo><mi>n</mi><mo stretchy="false">]</mo><mo lspace="0" rspace="0">/</mo><mn>2</mn><mo>,</mo><mo stretchy="false">[</mo><msub><mi>ν</mi><mn>0</mn></msub><msubsup><mi>σ</mi><mn>0</mn><mn>2</mn></msubsup><mo>+</mo><msub><mrow><mspace/><mi>SSR</mi></mrow><mi>ρ</mi></msub><mo stretchy="false">]</mo><mo lspace="0" rspace="0">/</mo><mn>2</mn><mo stretchy="false">)</mo></math>,
+where <math><msub><mrow><mspace/><mi>SSR</mi></mrow><mi>ρ</mi></msub></math> depends on <math><msup><mi>𝜷</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup></math> and <math><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup></math>.</li>
+<li>Update <math><mi>ρ</mi></math>:
+a. Propose <math><msup><mi>ρ</mi><mo>∗</mo></msup><mo form="infix">∼</mo><mtext>uniform</mtext><mo stretchy="false">(</mo><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo>−</mo><mi>δ</mi><mo>,</mo><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo>+</mo><mi>δ</mi><mo stretchy="false">)</mo></math>.
+If <math><msup><mi>ρ</mi><mo>∗</mo></msup><mo>&lt;</mo><mn>0</mn></math> then reassin it to be <math><mo stretchy="false" lspace="0" rspace="0">|</mo><msup><mi>ρ</mi><mo>∗</mo></msup><mo stretchy="false" lspace="0" rspace="0">|</mo></math>.
+If <math><msup><mi>ρ</mi><mo>∗</mo></msup><mo>&gt;</mo><mn>1</mn></math> reassin it to be <math><mn>2</mn><mo>−</mo><msup><mi>ρ</mi><mo>∗</mo></msup></math>.
 b. Compute the acceptance ratio
-<code class="language-math math-display"> r = \frac{ p(\boldsymbol{y} | \mathbf{X}, \boldsymbol{\beta}^{(s+1)}, \sigma^{2(s+1)}, \rho^{\ast} ) p(\rho^{\ast})}{ p(\boldsymbol{y} | \mathbf{X}, \boldsymbol{\beta}^{(s+1)}, \sigma^{2(s+1)}, \rho^{(s)} ) p(\rho^{(s)})} </code>
-and sample <code class="language-math math-inline">u \sim \text{uniform}(0,1)</code>.
-If <code class="language-math math-inline">u \lt r</code>, set <code class="language-math math-inline">\rho^{(s+1)} = \rho^{\ast}</code>, otherwise set <code class="language-math math-inline">\rho^{(s+1)} = \rho^{(s)}</code>.</li>
+<math display="block"><mi>r</mi><mo>=</mo><mfrac><mrow><mi>p</mi><mo stretchy="false">(</mo><mi>𝒚</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝐗</mi><mo>,</mo><msup><mi>𝜷</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msup><mi>σ</mi><mrow><mn>2</mn><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msup><mi>ρ</mi><mo>∗</mo></msup><mo stretchy="false">)</mo><mi>p</mi><mo stretchy="false">(</mo><msup><mi>ρ</mi><mo>∗</mo></msup><mo stretchy="false">)</mo></mrow><mrow><mi>p</mi><mo stretchy="false">(</mo><mi>𝒚</mi><mo stretchy="false" lspace="0" rspace="0">|</mo><mi>𝐗</mi><mo>,</mo><msup><mi>𝜷</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msup><mi>σ</mi><mrow><mn>2</mn><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>,</mo><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">)</mo><mi>p</mi><mo stretchy="false">(</mo><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup><mo stretchy="false">)</mo></mrow></mfrac></math>
+and sample <math><mi>u</mi><mo form="infix">∼</mo><mtext>uniform</mtext><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false">)</mo></math>.
+If <math><mi>u</mi><mo>&lt;</mo><mi>r</mi></math>, set <math><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>=</mo><msup><mi>ρ</mi><mo>∗</mo></msup></math>, otherwise set <math><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></msup><mo>=</mo><msup><mi>ρ</mi><mrow><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></msup></math>.</li>
 </ol>
 <pre><code class="language-julia">function fit_ar1_linear_model_for_repeated_individuals(y, X, β₀, Σ₀, ν₀, σ₀²; S=5000, δ=1, seed=42, thin=1)
 
@@ -346,10 +316,10 @@ savefig("../../fig/ch10/ex10_3d.png")
 </figure>
 <p>図<a href="#fig:ex10_3d">fig:ex10_3d</a>は、MCMCサンプリングによる事後分布の分布、事後平均、95%信用区間と、
 OLSによる点推定量と95%信頼区間を示している。
-切片(<code class="language-math math-inline">\beta_1</code>), timeの係数(<code class="language-math math-inline">\beta_2</code>), pHの係数(<code class="language-math math-inline">\beta_3</code>)について、MCMCサンプリングによる事後平均とOLS推定量はほぼ一致しているが、95%信用区間とOLSの信頼区間は異なる。
+切片(<math><msub><mi>β</mi><mn>1</mn></msub></math>), timeの係数(<math><msub><mi>β</mi><mn>2</mn></msub></math>), pHの係数(<math><msub><mi>β</mi><mn>3</mn></msub></math>)について、MCMCサンプリングによる事後平均とOLS推定量はほぼ一致しているが、95%信用区間とOLSの信頼区間は異なる。
 もし点推定値のみに関心がある場合、同様な結論が得られるが、推定値の不確実性などを考慮したい場合、今回のベイズモデルとOLSモデルの結論は大きく異なる。</p>
 <p>Figure <a href="#fig:ex10_3d">fig:ex10_3d</a> shows the posterior density, posterior mean, and 95% credible interval of the coefficients obtained by MCMC sampling, as well as the point estimate and 95% confidence interval obtained by OLS.
-The posterior means of <code class="language-math math-inline">\beta_1</code> and <code class="language-math math-inline">\beta_2</code> are almost identical to the OLS estimates, but the 95% credible intervals and OLS confidence intervals differ.
+The posterior means of <math><msub><mi>β</mi><mn>1</mn></msub></math> and <math><msub><mi>β</mi><mn>2</mn></msub></math> are almost identical to the OLS estimates, but the 95% credible intervals and OLS confidence intervals differ.
 If only point estimates are of interest, similar conclusions can be drawn, but if uncertainties in the estimates are to be considered, the conclusions of the Bayesian model and the OLS model differ significantly.</p>
 <p><a href="./10-2.org" class="nav-prev">10.2</a></p>
 <p><a href="./10-4.org" class="nav-next">10.4</a></p>

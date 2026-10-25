@@ -16,7 +16,7 @@ Dates <span class="timestamp-wrapper"><time class="timestamp" datetime="2025-12-
 and <span class="timestamp-wrapper"><time class="timestamp">&#x3C;%%(diary-float t 4 2)></time></span>.
 A break<br>
 after it. Raw <kbd>Ctrl</kbd> and  dropped.
-Math <code class="language-math math-inline">x</code>, <code class="language-math math-inline">y</code>, <code class="language-math math-display">z</code>, <code class="language-math math-display">w</code> and ; <code class="language-math math-inline">n</code>-th is text.</p>
+Math <math><mi>x</mi></math>, <math><mi>y</mi></math>, <math display="block"><mi>z</mi></math>, <math display="block"><mi>w</mi></math> and <a href="#eq:a"></a>; <math><mi>n</mi></math>-th is text.</p>
 <h2 id="first-heading">First heading</h2>
 <p><a id="here"></a> is a target. See <a href="#here">here</a>, <a href="#here">the target</a>, <a href="#custom">Second heading</a>,
 <a href="#custom">Second heading</a> and <a href="#custom">by title</a>.</p>

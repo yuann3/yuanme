@@ -3,42 +3,26 @@ source: crates/yuanme-render/tests/corpus.rs
 expression: render(&path)
 ---
 <h2 id="inline-math-no-label">Inline Math (no label)</h2>
-<p>This is an inline equation: <code class="language-math math-inline">E = mc^2</code>.</p>
+<p>This is an inline equation: <math><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math>.</p>
 <h2 id="display-math-no-label">Display Math (no label)</h2>
-<p><code class="language-math math-display">
-a^2 + b^2 = c^2
-</code></p>
+<math display="block"><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math>
 <h2 id="display-math-with-label-no-alt">Display Math (with label, no alt)</h2>
-<p><code class="language-math math-display">
-E = mc^2
-</code> {#eq-display-math}</p>
+<p><math display="block"><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> {#eq-display-math}</p>
 <p>See @eq-display-math.</p>
 <h2 id="display-math-with-label-and-alt">Display Math (with label and alt)</h2>
-<p><code class="language-math math-display">
-E = mc^2
-</code> {#eq-display-alt alt=“Einsteins mass-energy equivalence equation”}</p>
+<p><math display="block"><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> {#eq-display-alt alt=“Einsteins mass-energy equivalence equation”}</p>
 <p>See @eq-display-alt.</p>
-<p><code class="language-math math-display">
-E = mc^2
-</code> {#eq-display-alt-spaces alt = “Einsteins mass-energy equivalence equation”}</p>
+<p><math display="block"><mi>E</mi><mo>=</mo><mi>m</mi><msup><mi>c</mi><mn>2</mn></msup></math> {#eq-display-alt-spaces alt = “Einsteins mass-energy equivalence equation”}</p>
 <p>See @eq-display-alt-spaces.</p>
 <h2 id="display-math-with-single-quote-in-alt">Display Math (with single quote in alt)</h2>
-<p><code class="language-math math-display">
-F = ma
-</code> {#eq-single-quote alt=“Newton’s second law of motion”}</p>
+<p><math display="block"><mi>F</mi><mo>=</mo><mi>m</mi><mi>a</mi></math> {#eq-single-quote alt=“Newton’s second law of motion”}</p>
 <p>See @eq-single-quote.</p>
 <h2 id="display-math-with-double-quotes-in-alt">Display Math (with double quotes in alt)</h2>
-<p><code class="language-math math-display">
-a^2 + b^2 = c^2
-</code> {#eq-double-quote alt=‘The “Pythagorean” theorem’}</p>
+<p><math display="block"><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></math> {#eq-double-quote alt=‘The “Pythagorean” theorem’}</p>
 <p>See @eq-double-quote.</p>
 <h2 id="display-math-with-mixed-quotes-in-alt">Display Math (with mixed quotes in alt)</h2>
-<p><code class="language-math math-display">
-x + y = z
-</code> {#eq-mixed-quotes alt=“This is using “quotes” but I’m sure it works”}</p>
+<p><math display="block"><mi>x</mi><mo>+</mo><mi>y</mi><mo>=</mo><mi>z</mi></math> {#eq-mixed-quotes alt=“This is using “quotes” but I’m sure it works”}</p>
 <p>See @eq-mixed-quotes.</p>
 <h2 id="display-math-with-single-quotes-in-and-around-alt">Display Math (with single quotes in and around alt)</h2>
-<p><code class="language-math math-display">
-x + y = z
-</code> {#eq-single-quote-alt alt=‘This is using ‘single quotes’ around the “quotes” but I’m sure it works’}</p>
+<p><math display="block"><mi>x</mi><mo>+</mo><mi>y</mi><mo>=</mo><mi>z</mi></math> {#eq-single-quote-alt alt=‘This is using ‘single quotes’ around the “quotes” but I’m sure it works’}</p>
 <p>See @eq-single-quote-alt.</p>

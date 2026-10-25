@@ -180,7 +180,7 @@ write_data(m, "/dev/stdout")$
 tex(ratsimp(diff(%e^(a*x), x)));
 </code></pre>
 <div class="LaTeX">
-<p><code class="language-math math-display">a\,e^{a\,x}</code></p>
+<math display="block"><mi>a</mi><mspace width="0.16666667em"/><msup><mi>e</mi><mrow><mi>a</mi><mspace width="0.16666667em"/><mi>x</mi></mrow></msup></math>
 </div>
 <h2 id="batch">Batch</h2>
 <p>Exercise the <code>:batch</code> header argument. These tests are also defined in

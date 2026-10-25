@@ -122,7 +122,7 @@ example.</p>
 #+END_SRC
 </code></pre>
 <p>HTML export of the result:</p>
-<p><code class="language-math math-display">{{e^ {- x }}\over{x}}</code></p>
+<math display="block"><mfrac><msup><mi>e</mi><mrow><mo lspace="0" rspace="0">−</mo><mi>x</mi></mrow></msup><mi>x</mi></mfrac></math>
 <h3 id="the-batch-header-argument">The <code>:batch</code> header argument</h3>
 <p>Setting the <code>:batch</code> header argument to <code>batch</code>:</p>
 <ul>
@@ -142,8 +142,7 @@ example.</p>
   :lisp $%
 #+END_SRC
 </code></pre>
-<p>The first line of input computes the integral <code class="language-math math-inline">\int_0^{\infty}
-t^z\,e^{-t}\,dt</code>, assuming that <code class="language-math math-inline">z</code> is positive.  The second input
+<p>The first line of input computes the integral <math><msubsup><mo lspace="0">∫</mo><mn>0</mn><mi>∞</mi></msubsup><msup><mi>t</mi><mi>z</mi></msup><mspace width="0.16666667em"/><msup><mi>e</mi><mrow><mo lspace="0" rspace="0">−</mo><mi>t</mi></mrow></msup><mspace width="0.16666667em"/><mi>d</mi><mi>t</mi></math>, assuming that <math><mi>z</mi></math> is positive.  The second input
 line uses the <code>:lisp</code> reader to print the internal representation of
 that result as a sexp.</p>
 <p>HTML export of results:</p>
@@ -218,11 +217,10 @@ read in the initialization code that was just tangled.</p>
 <div class="maximablock">
 <pre><code>(%o1)
 </code></pre>
-<p><code class="language-math math-display">\int_{0}^{\infty }{t^{z}\,e^ {- t }\;dt}=\Gamma\left(z+1\right)</code></p>
+<math display="block"><msubsup><mo lspace="0" rspace="0">∫</mo><mn>0</mn><mi>∞</mi></msubsup><mrow><msup><mi>t</mi><mi>z</mi></msup><mspace width="0.16666667em"/><msup><mi>e</mi><mrow><mo lspace="0" rspace="0">−</mo><mi>t</mi></mrow></msup><mspace width="0.2777778em"/><mi>d</mi><mi>t</mi></mrow><mo>=</mo><mrow><mspace/><mi mathvariant="normal">Γ</mi></mrow><mrow><mo lspace="0.1667em">(</mo><mi>z</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></math>
 <pre><code>(%o2)
 </code></pre>
-<p><code class="language-math math-display">\int_{0}^{\infty }{t^{z}\,e^ {- t }\,\log t\;dt}=\psi_{0}(z+1)\,
- \Gamma\left(z+1\right)</code></p>
+<math display="block"><msubsup><mo lspace="0" rspace="0">∫</mo><mn>0</mn><mi>∞</mi></msubsup><mrow><msup><mi>t</mi><mi>z</mi></msup><mspace width="0.16666667em"/><msup><mi>e</mi><mrow><mo lspace="0" rspace="0">−</mo><mi>t</mi></mrow></msup><mspace width="0.16666667em"/><mspace width="0.1667em"/><mrow><mrow><mspace/><mi>log</mi></mrow><mo lspace="0.1667em">&ApplyFunction;</mo><mi>t</mi></mrow><mspace width="0.2777778em"/><mi>d</mi><mi>t</mi></mrow><mo>=</mo><msub><mi>ψ</mi><mn>0</mn></msub><mo stretchy="false">(</mo><mi>z</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mspace width="0.16666667em"/><mrow><mspace/><mi mathvariant="normal">Γ</mi></mrow><mrow><mo lspace="0.1667em">(</mo><mi>z</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></math>
 </div>
 <h4 id="-note"><a id="batch-note"></a> Note</h4>
 <p>Prior to version <code>5.47</code>, Maxima could only pre-load a lisp

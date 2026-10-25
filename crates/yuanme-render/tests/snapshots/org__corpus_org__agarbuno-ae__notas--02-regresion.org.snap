@@ -128,7 +128,7 @@ error[math/unsupported]: unknown command "\definecolor"
 <strong>Lectura recomendada</strong>: Capítulo 3 de citet:James2021.</p>
 </div>
 <h2 id="introducción">Introducción</h2>
-<p>Aproximamos <code class="language-math math-inline">f(X)</code> como una combinación lineal de las entradas.</p>
+<p>Aproximamos <math><mi>f</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo></math> como una combinación lineal de las entradas.</p>
 <h3 id="datos-de-marketing">Datos de <em>marketing</em></h3>
 <p>¿Qué preguntas serían las que nos interesarían?</p>
 <p><img src="../images/sales.jpeg" alt="sales.jpeg"></p>
@@ -136,24 +136,17 @@ error[math/unsupported]: unknown command "\definecolor"
 <p>¿Hay alguna relación entre datos de entrada? En especial, ¿hay alguna relación entre cuánto se le dedica al presupuesto de <em>marketing</em> y las ventas observadas? ¿Qué tipo de <em>marketing</em> contribuye mas a las ventas? ¿Qué tan precisos podemos ser con nuestras predicciones? La relación es lineal? ¿Hay algún tipo de sinergia?</p>
 </div>
 <h2 id="el-modelo-simple">El modelo simple</h2>
-<code class="language-math math-display">\begin{align}
-Y = \beta_0 + \beta_1 X + \varepsilon\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>Y</mi><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mi>X</mi><mo>+</mo><mi>ε</mi><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(1)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
-<p>Si tuvieramos un estimador <code class="language-math math-inline">\hat \beta</code>, ¿cómo podemos realizar predicciones?</p>
+<p>Si tuvieramos un estimador <math><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover></math>, ¿cómo podemos realizar predicciones?</p>
 </div>
 <h3 id="estimación-de-parámetros">Estimación de parámetros</h3>
-<code class="language-math math-display">\begin{align}
-\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mover accent="true"><mi>y</mi><mo stretchy="false">ˆ</mo></mover><mi>i</mi></msub><mo>=</mo><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>0</mn></msub><mo>+</mo><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>1</mn></msub><msub><mi>x</mi><mi>i</mi></msub><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(2)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
 <p>Formulación de problema de optimización. Conexiones interesantes.</p>
 </div>
 <h3 id="solución">Solución</h3>
-<code class="language-math math-display">\begin{gather}
-\hat \beta_1 = \frac{\sum_{i = 1}^{n} (x_i - \bar x)(y_i - \bar y)}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\,, \\
-\hat \beta_0 = \bar y - \hat \beta_1 \bar x\,.
-\end{gather}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>1</mn></msub><mo>=</mo><mfrac><mrow><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover accent="true"><mi>x</mi><mo stretchy="false">¯</mo></mover><mo stretchy="false">)</mo><mo stretchy="false">(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><mover accent="true"><mi>y</mi><mo stretchy="false">¯</mo></mover><mo stretchy="false">)</mo></mrow><mrow><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover accent="true"><mi>x</mi><mo stretchy="false">¯</mo></mover><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow></mfrac><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(3)</mtext></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>0</mn></msub><mo>=</mo><mover accent="true"><mi>y</mi><mo stretchy="false">¯</mo></mover><mo>−</mo><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>1</mn></msub><mover accent="true"><mi>x</mi><mo stretchy="false">¯</mo></mover><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(4)</mtext></mtd></mtr></mtable></math>
 <figure>
 <img src="../images/residuals.jpeg" alt="residuals.jpeg">
 <figcaption>Ajuste y residuales a la recta de mínimos cuadrados.</figcaption>
@@ -162,10 +155,7 @@ Y = \beta_0 + \beta_1 X + \varepsilon\,.
 <p>Qué deficiencia encuentras en el ajuste?</p>
 </div>
 <h3 id="precisión-en-los-estimadores">¿Precisión en los estimadores?</h3>
-<code class="language-math math-display">\begin{gather}
-\mathsf{SE}(\hat \beta_1)^2 = \frac{\sigma^2}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\,,\\
-\mathsf{SE}(\hat \beta_0)^2 = \sigma^2 \left[ \frac{1}{n} + \frac{\bar x^2}{\sum_{i = 1}^{n}(x_i - \bar x)^2}\right]\,.
-\end{gather}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><mrow><mspace/><mi>𝖲𝖤</mi></mrow><mo stretchy="false">(</mo><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>1</mn></msub><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo>=</mo><mfrac><msup><mi>σ</mi><mn>2</mn></msup><mrow><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover accent="true"><mi>x</mi><mo stretchy="false">¯</mo></mover><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow></mfrac><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(5)</mtext></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd><mrow><mspace/><mi>𝖲𝖤</mi></mrow><mo stretchy="false">(</mo><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>0</mn></msub><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo>=</mo><msup><mi>σ</mi><mn>2</mn></msup><mrow><mo lspace="0.1667em">[</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><mo>+</mo><mfrac><msup><mover accent="true"><mi>x</mi><mo stretchy="false">¯</mo></mover><mn>2</mn></msup><mrow><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover accent="true"><mi>x</mi><mo stretchy="false">¯</mo></mover><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow></mfrac><mo rspace="0.1667em">]</mo></mrow><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(6)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
 <p>¿A qué se debe esta variabilidad? Se pueden construir <strong>intervalos de confianza</strong>.</p>
 </div>
@@ -201,47 +191,30 @@ ajusta_modelo &#x3C;- function(datos){
 <figcaption>Simulación de ajuste (variación en datos).</figcaption>
 </figure>
 <h3 id="prueba-de-hipótesis">Prueba de hipótesis</h3>
-<code class="language-math math-display">\begin{align}
-H_0&#x26;: \qquad \text{ No hay relación entre } X \text{ y } Y\,,\\
-H_1&#x26;: \qquad \text{ Existe una hay relación entre } X \text{ y } Y\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>H</mi><mn>0</mn></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo lspace="0.2778em" rspace="0.2778em">:</mo><mspace width="2em"/><mtext> No hay relación entre </mtext><mi>X</mi><mtext> y </mtext><mi>Y</mi><mspace width="0.16666667em"/><mo rspace="0">,</mo></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(7)</mtext></mtd></mtr><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msub><mi>H</mi><mn>1</mn></msub></mtd><mtd style="text-align: left;justify-items: start;padding-left: 0;"><mo lspace="0.2778em" rspace="0.2778em">:</mo><mspace width="2em"/><mtext> Existe una hay relación entre </mtext><mi>X</mi><mtext> y </mtext><mi>Y</mi><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(8)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
 <p>La prueba de hipótesis se efectúa en el contexto del modelo que estamos proponiendo.</p>
 </div>
-<h3 id="el-valor-p">El valor-<code class="language-math math-inline">p</code></h3>
-<code class="language-math math-display">\begin{align}
-t = \frac{\hat \beta_1 - 0}{\textsf{SE}(\hat \beta_1)}, \qquad \text{ distribución } t_{n  - 2}\,.
-\end{align}</code>
+<h3 id="el-valor-p">El valor-<math><mi>p</mi></math></h3>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>t</mi><mo>=</mo><mfrac><mrow><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>1</mn></msub><mo>−</mo><mn>0</mn></mrow><mrow><mtext><span class="math-core-sans-serif-font">SE</span></mtext><mo stretchy="false">(</mo><msub><mover accent="true"><mi>β</mi><mo stretchy="false">ˆ</mo></mover><mn>1</mn></msub><mo stretchy="false">)</mo></mrow></mfrac><mo>,</mo><mspace width="2em"/><mtext> distribución </mtext><msub><mi>t</mi><mrow><mi>n</mi><mo lspace="0" rspace="0">−</mo><mn>2</mn></mrow></msub><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(9)</mtext></mtd></mtr></mtable></math>
 <h3 id="midiendo-la-precisión-del-modelo">Midiendo la precisión del modelo</h3>
-<code class="language-math math-display">\begin{align}
-\textsf{RSE} = \sqrt{\frac{1}{n-2} \textsf{RSS}}\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext><span class="math-core-sans-serif-font">RSE</span></mtext><mo>=</mo><msqrt><mrow><mfrac><mn>1</mn><mrow><mi>n</mi><mo>−</mo><mn>2</mn></mrow></mfrac><mtext><span class="math-core-sans-serif-font">RSS</span></mtext></mrow></msqrt><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(10)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
-<code class="language-math math-display">\begin{align*}
-\textsf{RSS} =\sum_{i = 1}^{n}(y_i - \hat y_i)^2\,.
-\end{align*}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext><span class="math-core-sans-serif-font">RSS</span></mtext><mo>=</mo><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><msub><mover accent="true"><mi>y</mi><mo stretchy="false">ˆ</mo></mover><mi>i</mi></msub><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
 <p>Es una métrica usual de ajuste. Nos dice qué tan precisos podemos ser al calcular una nueva predicción. Tiene sentido cuando comparamos con las unidades de la variable respuesta. Es decir, no es una métrica absoluta.</p>
 </div>
-<code class="language-math math-display">\begin{align}
-R^2 = \frac{\textsf{TSS} - \textsf{RSS}}{\textsf{TSS}}\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><msup><mi>R</mi><mn>2</mn></msup><mo>=</mo><mfrac><mrow><mtext><span class="math-core-sans-serif-font">TSS</span></mtext><mo>−</mo><mtext><span class="math-core-sans-serif-font">RSS</span></mtext></mrow><mtext><span class="math-core-sans-serif-font">TSS</span></mtext></mfrac><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(11)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
-<code class="language-math math-display">\begin{align*}
-\textsf{TSS} = \sum_{i = 1}^{n}(y_i - \bar y)^2\,.
-\end{align*}</code>
-<p>Hay que tener cuidado pues la <code class="language-math math-inline">R^2</code> es una métrica de correlación lineal, no de ajuste. Esto lo podemos ver en el caso sencillo de una variable respuesta y un modelo lineal. También está sujeta a la variación de la respuesta. Depende la aplicación para determinar cuándo tenemos un buen coeficiente de variación explicada.</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mtext><span class="math-core-sans-serif-font">TSS</span></mtext><mo>=</mo><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>i</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><mover accent="true"><mi>y</mi><mo stretchy="false">¯</mo></mover><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%"></mtd></mtr></mtable></math>
+<p>Hay que tener cuidado pues la <math><msup><mi>R</mi><mn>2</mn></msup></math> es una métrica de correlación lineal, no de ajuste. Esto lo podemos ver en el caso sencillo de una variable respuesta y un modelo lineal. También está sujeta a la variación de la respuesta. Depende la aplicación para determinar cuándo tenemos un buen coeficiente de variación explicada.</p>
 </div>
 <h2 id="el-modelo-multivariado">El modelo multivariado</h2>
-<code class="language-math math-display">\begin{align}
-Y = \beta_0 + \beta_1 X_1 + \cdots + \beta_p X_p + \varepsilon\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>Y</mi><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>X</mi><mn>1</mn></msub><mo>+</mo><mo lspace="0" rspace="0">⋯</mo><mo>+</mo><msub><mi>β</mi><mi>p</mi></msub><msub><mi>X</mi><mi>p</mi></msub><mo>+</mo><mi>ε</mi><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(12)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
 <p>Cuando tenemos multiples predictores nos gustaría poder entender la relación de cada uno con la respuesta. ¿Ajustaríamos un modelo independiente con sólo un predictor?</p>
 </div>
 <h3 id="interpretación">Interpretación</h3>
-<code class="language-math math-display">\begin{align}
-\mathsf{sales} = \beta_0 + \beta_1 \times \mathsf{TV} + \beta_2 \times \mathsf{radio} + \beta_3 \times\mathsf{newspaper} + \varepsilon\,.
-\end{align}</code>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mrow><mspace/><mi>𝗌𝖺𝗅𝖾𝗌</mi></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><mrow><mspace/><mi>𝖳𝖵</mi></mrow><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><mrow><mspace/><mi>𝗋𝖺𝖽𝗂𝗈</mi></mrow><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo lspace="0.2222em" rspace="0.2222em">×</mo><mrow><mspace/><mi>𝗇𝖾𝗐𝗌𝗉𝖺𝗉𝖾𝗋</mi></mrow><mo>+</mo><mi>ε</mi><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(13)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
 <p>El modelo de regresión lineal usualmente se interpreta como los efectos
 (¿promedio, esperados?) de cada variable al mantener todas las demás
@@ -264,12 +237,10 @@ datos observacionales.</p>
 <p>Desarollo de verosimilitud.</p>
 </div>
 <h3 id="existe-una-relación-entre-la-respuesta-y-los-predictores">¿Existe una relación entre la respuesta y los predictores?</h3>
-<p>Nos preguntamos si es que existe alguna <code class="language-math math-inline">\beta_j \neq 0</code> .</p>
-<code class="language-math math-display">\begin{align}
-F = \frac{(\mathsf{TSS} - \mathsf{RSS})/p}{\mathsf{RSS}/(n - p -1)} \sim F_{p, n-p-1}\,.
-\end{align}</code>
+<p>Nos preguntamos si es que existe alguna <math><msub><mi>β</mi><mi>j</mi></msub><mo>≠</mo><mn>0</mn></math> .</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd style="text-align: right;justify-items: end;padding-right: 0;"><mi>F</mi><mo>=</mo><mfrac><mrow><mo stretchy="false">(</mo><mrow><mspace/><mi>𝖳𝖲𝖲</mi></mrow><mo>−</mo><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo stretchy="false">)</mo><mo lspace="0" rspace="0">/</mo><mi>p</mi></mrow><mrow><mrow><mspace/><mi>𝖱𝖲𝖲</mi></mrow><mo lspace="0" rspace="0">/</mo><mo stretchy="false">(</mo><mi>n</mi><mo>−</mo><mi>p</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo></mrow></mfrac><mo form="infix">∼</mo><msub><mi>F</mi><mrow><mi>p</mi><mo rspace="0">,</mo><mi>n</mi><mo lspace="0" rspace="0">−</mo><mi>p</mi><mo lspace="0" rspace="0">−</mo><mn>1</mn></mrow></msub><mspace width="0.16666667em"/><mi>.</mi></mtd><mtd style="width: 50%;text-align: right;justify-items: end;"><mtext>(14)</mtext></mtd></mtr></mtable></math>
 <div class="NOTES">
-<p>La prueba de hipótesis que formularíamos sería probar contra alguna <code class="language-math math-inline">\beta_j \neq 0</code> . Se puede probar que si el supuesto del modelo lineal es correcto y bajo la hipótesis nula el cociente será cercano a 1. En caso de que la hipótesis <code>alternativa</code> sea cierta entonces <code class="language-math math-inline">F > 1</code>.</p>
+<p>La prueba de hipótesis que formularíamos sería probar contra alguna <math><msub><mi>β</mi><mi>j</mi></msub><mo>≠</mo><mn>0</mn></math> . Se puede probar que si el supuesto del modelo lineal es correcto y bajo la hipótesis nula el cociente será cercano a 1. En caso de que la hipótesis <code>alternativa</code> sea cierta entonces <math><mi>F</mi><mo>&gt;</mo><mn>1</mn></math>.</p>
 </div>
 <figure>
 <figcaption>Resumen global del modelo (<em>tidy</em>).</figcaption>
@@ -295,11 +266,11 @@ construir modelos de manera secuencial . Usualmente ajustando y comparando con
 respecto a <em>alguna métrica</em>. Mas adelante lo estudiaremos.</p>
 </div>
 <h3 id="qué-tan-bien-ajusta-el-modelo">¿Qué tan bien ajusta el modelo?</h3>
-<p>Podemos usar las métricas típicas como el <code class="language-math math-inline">\mathsf{RSE}</code> o la <code class="language-math math-inline">R^2</code>.</p>
+<p>Podemos usar las métricas típicas como el <math><mrow><mspace/><mi>𝖱𝖲𝖤</mi></mrow></math> o la <math><msup><mi>R</mi><mn>2</mn></msup></math>.</p>
 <div class="NOTES">
 <p></p>
-<p><code class="language-math math-inline">R^2</code>: Agregar predictores siempre ayuda (en datos de entrenamiento).</p>
-<p><code class="language-math math-inline">\mathsf{RSE}</code>: Podemos tener problemas pues mientras mas variables agregemos si el cambio en residuales es pequeño en relación al aumento de <code class="language-math math-inline">p</code>.</p>
+<p><math><msup><mi>R</mi><mn>2</mn></msup></math>: Agregar predictores siempre ayuda (en datos de entrenamiento).</p>
+<p><math><mrow><mspace/><mi>𝖱𝖲𝖤</mi></mrow></math>: Podemos tener problemas pues mientras mas variables agregemos si el cambio en residuales es pequeño en relación al aumento de <math><mi>p</mi></math>.</p>
 </div>
 <h3 id="cómo-predecimos-y-que-tan-precisa-es-nuestra-predicción">¿Cómo predecimos y que tan precisa es nuestra predicción?</h3>
 <div class="NOTES">
@@ -354,7 +325,7 @@ model.2 &#x3C;- lm(sales ~ TV + radio + TV:radio, data)
 <p>El efecto de incrementar el presupuesto en un canal de ventas puede aumentar la efectividad de otro.</p>
 </div>
 <h3 id="jerarquías">Jerarquías</h3>
-<p>¿Qué pasa cuando un valor-<code class="language-math math-inline">p</code> de una interacción es pequeño, pero de los términos individuales no?</p>
+<p>¿Qué pasa cuando un valor-<math><mi>p</mi></math> de una interacción es pequeño, pero de los términos individuales no?</p>
 <h3 id="interacciones-y-modelos-múltiples">Interacciones y modelos múltiples</h3>
 <figure>
 <img src="../images/students.jpeg" alt="students.jpeg">
