@@ -20,7 +20,8 @@ use yuanme_diag::{Code, Diagnostic, FileId, Files, Span, codes};
 
 pub use check::context_schemas;
 use context::Context;
-use filters::{Coded, escape};
+use filters::Coded;
+pub use filters::escape;
 
 /// The built-in feed Template. `templates/rss.xml` replaces it.
 const RSS: (&str, &str) = ("rss.xml", include_str!("rss.xml"));
@@ -47,8 +48,9 @@ pub struct Page {
 /// Renders every Route, then the sitemap. `templates` is every file of
 /// `templates/` in `files`, by its path there; `statics` is the URL of
 /// every Static file, which `url()` accepts as well as Routes; `code` is
-/// each Entry's highlighted code blocks. Any error fails the whole render,
-/// after every Page has been tried.
+/// each Entry's highlighted code blocks, and `pictures` its processed
+/// images. Any error fails the whole render, after every Page has been
+/// tried.
 pub fn render(
     config: &Config,
     site: &Site,
@@ -56,6 +58,7 @@ pub fn render(
     templates: &BTreeMap<String, FileId>,
     statics: &BTreeSet<String>,
     code: &[crate::highlight::Code],
+    pictures: &[crate::html::Pictures],
 ) -> (Vec<Page>, Vec<Diagnostic>) {
     let origin = config.site.url.trim_end_matches('/').to_string();
     let sitemap = sitemap(site, &origin);
@@ -143,7 +146,7 @@ pub fn render(
     }
 
     let uses = uses(&sources);
-    let context = Context::new(config, site, code, &origin);
+    let context = Context::new(config, site, code, pictures, &origin);
     let threads = rayon::ThreadPoolBuilder::new()
         .stack_size(STACK)
         .build()

@@ -37,7 +37,7 @@ pub struct Config {
 }
 
 /// `[images]` (#28). Each quality is on its encoder's own scale.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Images {
     /// Ascending, each once.
     pub widths: Vec<u32>,

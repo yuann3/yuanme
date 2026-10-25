@@ -6,6 +6,7 @@ mod cache;
 mod highlight;
 mod host;
 pub mod image;
+mod images;
 mod link;
 mod links;
 #[cfg(test)]
@@ -92,7 +93,23 @@ pub enum Mode {
     /// A build with Drafts, as `yuanme build --drafts` makes: only `Dev`
     /// adds what a browser asks the dev server for.
     Drafts,
+    /// A build that encodes no image, for `yuanme check`: its Pages name
+    /// every variant, which [`Build::images`] lists.
+    Check {
+        drafts: bool,
+    },
+    /// With Drafts, encoding no image until a browser asks for it.
     Dev,
+}
+
+impl Mode {
+    fn drafts(self) -> bool {
+        !matches!(self, Mode::Build | Mode::Check { drafts: false })
+    }
+
+    fn encodes(self) -> bool {
+        matches!(self, Mode::Build | Mode::Drafts)
+    }
 }
 
 /// Every file of one Site, or the Diagnostics that stopped it.
@@ -110,6 +127,11 @@ pub struct Build {
     pub site: Option<Site>,
     /// What went into each Script bundle, for the build report (#20).
     pub scripts: Vec<Bundle>,
+    /// Every image variant the Pages name, by its path in the output
+    /// directory, with the settings that encode it. A build that encodes
+    /// no image has none of them in `files`, and `yuanme dev` encodes one
+    /// with [`image::encode`] when a browser asks for it.
+    pub images: BTreeMap<String, (image::Variant, image::Settings)>,
 }
 
 /// One Script bundle of the Site.
@@ -159,15 +181,15 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         config,
         site,
         scripts: Vec::new(),
+        images: BTreeMap::new(),
     };
     let (config, mut diagnostics) = site_config(inputs, cache.engine_version(), &mut sources);
     let Some(config) = config else {
         return failed(diagnostics, sources, None, None);
     };
     // Entries are parsed afresh each build until #47 caches them. `mode` is
-    // also for images on request, through `image::encode` (#63), and the
-    // unsubset font (#52).
-    let (site, more) = resolve(inputs, &config, mode != Mode::Build, &mut sources);
+    // also for the unsubset font (#52).
+    let (site, more) = resolve(inputs, &config, mode.drafts(), &mut sources);
     diagnostics.extend(more);
     let Some(site) = site else {
         return failed(diagnostics, sources, Some(config), None);
@@ -180,10 +202,21 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     }
     let (code, more) = highlight::code(&site, &sources, cache);
     diagnostics.extend(more);
-    let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
-    let (pages, more) =
-        yuanme_render::template::render(&config, &site, &sources, &templates, &static_urls, &code);
+    let images = images::Images::new(inputs, cache, &config);
+    let (pictures, more) = images.bodies(&site);
     diagnostics.extend(more);
+    let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
+    let (pages, more) = yuanme_render::template::render(
+        &config,
+        &site,
+        &sources,
+        &templates,
+        &static_urls,
+        &code,
+        &pictures,
+    );
+    diagnostics.extend(more);
+    let used = images.into_used();
     // Routes were checked against Static files before render; this is the
     // sitemap's files.
     for page in &pages {
@@ -219,7 +252,23 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     highlight::stylesheet(&mut pages, &mut assets);
     let mut files = link(pages, assets);
     files.extend(statics);
-    let more = links::links(&config, &site, &rendered, &files, &templates, &sources);
+    files.extend(images::copies(inputs, &used));
+    if mode.encodes() {
+        let fallback = Span {
+            file: config.file,
+            range: 0..0,
+        };
+        diagnostics.extend(images::encode(inputs, cache, &used, &mut files, &fallback));
+    }
+    let more = links::links(
+        &config,
+        &site,
+        &rendered,
+        &files,
+        &used.variants,
+        &templates,
+        &sources,
+    );
     diagnostics.extend(more);
     let (files, more) = host::host(&config, files, mode != Mode::Dev, cache);
     diagnostics.extend(more);
@@ -234,6 +283,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         config: Some(config),
         site: Some(site),
         scripts: stage.scripts,
+        images: used.variants,
     };
     if !build.failed() {
         cache.sweep();

@@ -371,6 +371,21 @@ codes! {
         example: "eval(\"1 + 1\");",
         fix: "Change the code as the message says. A warning in a package can only be fixed in the package.",
     }
+    IMAGE_NOT_FOUND = "image/not-found" {
+        meaning: "An image in an Entry's body, an `image` field or `image()` names a path where no image is. In an Entry, a relative path starts from the Entry's folder, so in `content/posts/sea/index.md`, `![](plot.png)` is `content/posts/sea/plot.png`; a path starting with `/` starts from the project's root, as every path `image()` takes does.",
+        example: "![Sales by month](plt.png)\n(with plot.png beside the Entry)",
+        fix: "Correct the path, here `plot.png`, or put the image where the path points.",
+    }
+    IMAGE_MISSING_ALT = "image/missing-alt" {
+        meaning: "An image in an Entry's body has no alt text, so a screen reader can only say that an image is there. In Org, the file's name, which Emacs writes when nothing else is given, counts as none.",
+        example: "![](plot.png)",
+        fix: "Describe what the image shows: `![Sales by month, rising through June](plot.png)`. In Org, write a `#+CAPTION:` or `#+ATTR_HTML: :alt …` line above the link.",
+    }
+    IMAGE_INVALID = "image/invalid" {
+        meaning: "An image can't be processed: it isn't an image yuanme reads, it is damaged, or it is over 100 megapixels. yuanme resizes JPEG, PNG, WebP and GIF, and copies SVG, AVIF and animated images as they are.",
+        example: "![Sales by month](plot.png)\n(where plot.png is really a PDF)",
+        fix: "Export the image again as JPEG or PNG, under 100 megapixels.",
+    }
     LINK_REDIRECTED = "link/redirected" {
         meaning: "A Page links to a URL of the Site that hosts answer with a redirect, which costs the visitor a round trip: a Page's URL without its trailing `/` or with `index.html` on the end, a `.html` file, a `[[host.redirects]]` rule's `from`, or the Site's address with or without `www.`. Every internal link should be the URL a Page is served at, such as `/about/`.",
         example: "<a href=\"/about\">About</a>\n(with a Page at /about/)",

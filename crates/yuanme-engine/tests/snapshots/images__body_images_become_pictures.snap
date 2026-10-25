@@ -1,0 +1,53 @@
+---
+source: crates/yuanme-engine/tests/images.rs
+expression: show(&build)
+---
+=== _headers
+<171 bytes>
+=== assets/beach-240-74779adb2f758509.jpg
+<1795 bytes>
+=== assets/beach-240-f9a368816919d563.avif
+<871 bytes>
+=== assets/beach-480-147683c334df07d7.jpg
+<5716 bytes>
+=== assets/beach-480-bc2bbef45e4a063a.avif
+<1624 bytes>
+=== assets/costs-200-28dfc657d1986fe1.avif
+<588 bytes>
+=== assets/costs-200-a8c92196504f0081.jpg
+<1437 bytes>
+=== assets/logo-577d7422ea94ce1f.svg
+<66 bytes>
+=== assets/roof-240-d2ef8dae8aa3d234.avif
+<1082 bytes>
+=== assets/roof-240-f42f448bc10133bd.png
+<1003 bytes>
+=== assets/roof-300-45a7ee5d57926517.avif
+<1407 bytes>
+=== assets/roof-300-b5b7cd1f66083102.png
+<817 bytes>
+=== assets/sales-200-28dfc657d1986fe1.avif
+<588 bytes>
+=== assets/sales-200-a8c92196504f0081.jpg
+<1437 bytes>
+=== assets/spinner-c4cf0e4135b96cdf.gif
+<120 bytes>
+=== blog/plots/index.html
+<figure>
+<picture><source type="image/avif" srcset="/assets/sales-200-28dfc657d1986fe1.avif 200w" sizes="100vw"><img src="/assets/sales-200-a8c92196504f0081.jpg" srcset="/assets/sales-200-a8c92196504f0081.jpg 200w" sizes="100vw" width="200" height="100" alt="Sales by month" loading="eager" decoding="async"></picture>
+<figcaption>Sales by month</figcaption>
+</figure>
+<p><picture><source type="image/avif" srcset="/assets/costs-200-28dfc657d1986fe1.avif 200w" sizes="100vw"><img src="/assets/costs-200-a8c92196504f0081.jpg" srcset="/assets/costs-200-a8c92196504f0081.jpg 200w" sizes="100vw" width="200" height="100" alt="Costs by month" loading="lazy" decoding="async" class="wide"></picture></p>
+=== blog/sea/index.html
+<p><picture><source type="image/avif" srcset="/assets/beach-240-f9a368816919d563.avif 240w, /assets/beach-480-bc2bbef45e4a063a.avif 480w" sizes="100vw"><img src="/assets/beach-480-147683c334df07d7.jpg" srcset="/assets/beach-240-74779adb2f758509.jpg 240w, /assets/beach-480-147683c334df07d7.jpg 480w" sizes="100vw" width="480" height="320" alt="A beach at noon" loading="eager" decoding="async" title="The beach"></picture></p>
+<p><picture><source type="image/avif" srcset="/assets/roof-240-d2ef8dae8aa3d234.avif 240w, /assets/roof-300-45a7ee5d57926517.avif 300w" sizes="100vw"><img src="/assets/roof-300-b5b7cd1f66083102.png" srcset="/assets/roof-240-f42f448bc10133bd.png 240w, /assets/roof-300-b5b7cd1f66083102.png 300w" sizes="100vw" width="300" height="200" alt="Rooftops at dusk" loading="lazy" decoding="async"></picture></p>
+<p><img src="/assets/spinner-c4cf0e4135b96cdf.gif" width="30" height="20" alt="A spinner" loading="lazy" decoding="async"></p>
+<p><img src="/assets/logo-577d7422ea94ce1f.svg" width="40" height="30" alt="The logo" loading="lazy" decoding="async"></p>
+<p><img src="https://example.com/cat.jpg" alt="A cat"></p>
+<p><img src="/favicon.png" alt="The favicon"></p>
+=== favicon.png
+<211 bytes>
+=== sitemap-0.xml
+<204 bytes>
+=== sitemap-index.xml
+<180 bytes>

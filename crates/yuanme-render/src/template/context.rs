@@ -14,6 +14,7 @@ use yuanme_content::slug;
 
 use super::filters::absolute_url;
 use crate::highlight::Code;
+use crate::html::Pictures;
 
 /// The objects every Page sees, and the ones Pages share.
 pub(super) struct Context {
@@ -33,7 +34,13 @@ fn map(pairs: impl IntoIterator<Item = (&'static str, Value)>) -> Value {
 }
 
 impl Context {
-    pub fn new(config: &Config, site: &Site, code: &[Code], origin: &str) -> Context {
+    pub fn new(
+        config: &Config,
+        site: &Site,
+        code: &[Code],
+        pictures: &[Pictures],
+        origin: &str,
+    ) -> Context {
         let mut lists: BTreeMap<String, Vec<String>> = BTreeMap::new();
         let mut term_pages: BTreeMap<(String, usize), Vec<String>> = BTreeMap::new();
         let mut index = BTreeMap::new();
@@ -62,8 +69,9 @@ impl Context {
             .par_iter()
             .zip(&site.links)
             .zip(code)
-            .map(|((e, links), code)| {
-                crate::html::body(&e.document, links, code, &Default::default())
+            .zip(pictures)
+            .map(|(((e, links), code), pictures)| {
+                crate::html::body(&e.document, links, code, pictures)
             })
             .collect();
         let entries: Vec<Value> = site

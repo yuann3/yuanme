@@ -10,6 +10,7 @@ use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 
 use crate::assets::{has_scheme, normalize, percent_decode, suffix};
+use crate::image::{Settings, Variant};
 use crate::{Body, Output};
 
 /// What a link on the Site's origin finds.
@@ -21,12 +22,14 @@ enum Verdict {
 }
 
 /// The links of each HTML Page in `pages`, by output path with the
-/// Templates it rendered, and the `to` of each redirect, against `files`.
+/// Templates it rendered, and the `to` of each redirect, against `files`
+/// and the image variants a build that encodes none leaves out of them.
 pub(crate) fn links(
     config: &Config,
     site: &Site,
     pages: &BTreeMap<String, Vec<String>>,
     files: &BTreeMap<String, Output>,
+    images: &BTreeMap<String, (Variant, Settings)>,
     templates: &BTreeMap<String, FileId>,
     sources: &Files,
 ) -> Vec<Diagnostic> {
@@ -89,7 +92,7 @@ pub(crate) fn links(
                     d.help(format!("link to `{fix}`"))
                 }
             };
-            let d = match verdict(&path, files, config) {
+            let d = match verdict(&path, files, images, config) {
                 Verdict::Ok if on_origin(url, absolute, origin) => continue,
                 Verdict::Ok => redirected(path.clone()),
                 Verdict::Redirect(to) => redirected(to),
@@ -120,7 +123,7 @@ pub(crate) fn links(
             file: config.file,
             range: r.to_at.clone(),
         };
-        match verdict(&path, files, config) {
+        match verdict(&path, files, images, config) {
             Verdict::Ok => {}
             Verdict::Redirect(to) => push(
                 Diagnostic::warning(
@@ -204,9 +207,14 @@ fn on_origin(url: &str, absolute: bool, origin: &str) -> bool {
 
 /// A file of the Site wins over a redirect from its URL, which is an error
 /// of its own (`host/redirect-conflict`).
-fn verdict(path: &str, files: &BTreeMap<String, Output>, config: &Config) -> Verdict {
+fn verdict(
+    path: &str,
+    files: &BTreeMap<String, Output>,
+    images: &BTreeMap<String, (Variant, Settings)>,
+    config: &Config,
+) -> Verdict {
     let file = &path[1..];
-    let has = |p: &str| files.contains_key(p);
+    let has = |p: &str| files.contains_key(p) || images.contains_key(p);
     let redirect = config.host.redirects.iter().find(|r| r.from == path);
     if file.is_empty() || file.ends_with('/') {
         if has(&format!("{file}index.html")) {

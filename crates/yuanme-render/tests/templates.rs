@@ -75,6 +75,7 @@ fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
         &project.templates,
         &project.statics,
         &project.code,
+        &vec![Default::default(); project.site.entries.len()],
     );
     (project.files, pages, diagnostics)
 }
@@ -213,6 +214,7 @@ fn every_page_sees_what_its_context_schema_says() {
         &project.templates,
         &project.statics,
         &project.code,
+        &vec![Default::default(); project.site.entries.len()],
     );
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
     let mut kinds = BTreeSet::new();

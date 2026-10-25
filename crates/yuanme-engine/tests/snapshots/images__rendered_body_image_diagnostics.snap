@@ -1,0 +1,35 @@
+---
+source: crates/yuanme-engine/tests/images.rs
+expression: rendered(&inputs)
+---
+warning[image/missing-alt]: `plot.png` has no alt text
+ --> content/posts/costs/index.org:3:1
+  |
+3 | [[file:plot.png]]
+  | ^^^^^^^^^^^^^^^^^
+  |
+  = help: describe what it shows in a `#+CAPTION:`, or `#+ATTR_HTML: :alt …`, above it
+  = note: run `yuanme docs image/missing-alt` for more
+error[image/not-found]: no image at `content/posts/plots/plt.png`; did you mean `content/posts/plots/plot.png`?
+ --> content/posts/plots/index.md:4:1
+  |
+4 | ![Sales by month](plt.png)
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: a relative path starts from the Entry's folder, and one starting with `/` from the project root
+  = note: run `yuanme docs image/not-found` for more
+warning[image/missing-alt]: `plot.png` has no alt text
+ --> content/posts/plots/index.md:6:1
+  |
+6 | ![](plot.png)
+  | ^^^^^^^^^^^^^
+  |
+  = help: describe what it shows between the brackets: `![a chart of …](…)`
+  = note: run `yuanme docs image/missing-alt` for more
+error[image/invalid]: `content/posts/plots/notes.png`: can't decode the image: The image format could not be determined
+ --> content/posts/plots/index.md:8:1
+  |
+8 | ![Notes](notes.png)
+  | ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: run `yuanme docs image/invalid` for more

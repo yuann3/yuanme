@@ -1,0 +1,11 @@
+---
+source: crates/yuanme-engine/tests/images.rs
+expression: rendered(&inputs)
+---
+error[image/invalid]: `content/posts/cut/cut.png`: can't decode the image: unexpected end of file
+ --> content/posts/cut/index.md:6:1
+  |
+6 | ![A cut image](cut.png)
+  | ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: run `yuanme docs image/invalid` for more
