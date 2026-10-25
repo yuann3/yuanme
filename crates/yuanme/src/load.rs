@@ -26,11 +26,11 @@ const EXTENSIONS: &[&str] = &[
 const STREAMED: &[&str] = &["avif", "gif", "jpeg", "jpg", "png", "webp"];
 
 /// Walks the project at `root`, honouring `.gitignore` and `.ignore`, and
-/// hashes every file a build could read. `out` is the output directory,
-/// as a path under `root`.
-pub fn load(root: &Path, out: &Path) -> io::Result<Inputs> {
+/// hashes every file a build could read. `skip` are folders under `root`
+/// that yuanme writes, such as the output directory.
+pub fn load(root: &Path, skip: &[PathBuf]) -> io::Result<Inputs> {
     let mut inputs = Inputs::at(root.to_path_buf());
-    let (files, dirs) = walk(root, out, "", None)?;
+    let (files, dirs) = walk(root, skip, "", None)?;
     for dir in dirs {
         inputs.insert_dir(dir);
     }
@@ -46,7 +46,7 @@ pub fn load(root: &Path, out: &Path) -> io::Result<Inputs> {
 pub fn refresh(
     inputs: &mut Inputs,
     root: &Path,
-    out: &Path,
+    skip: &[PathBuf],
     paths: &BTreeSet<PathBuf>,
     rescan: bool,
 ) -> io::Result<bool> {
@@ -56,7 +56,7 @@ pub fn refresh(
             .is_some_and(|n| n == ".gitignore" || n == ".ignore")
     });
     if rescan || ignores {
-        *inputs = load(root, out)?;
+        *inputs = load(root, skip)?;
         return Ok(true);
     }
     // In order, so a folder comes before what is in it.
@@ -68,7 +68,7 @@ pub fn refresh(
     let mut changed = false;
     for path in &paths {
         if path.is_empty() {
-            *inputs = load(root, out)?;
+            *inputs = load(root, skip)?;
             return Ok(true);
         }
         // The nearest folder the walk took that is still there, and its
@@ -81,7 +81,7 @@ pub fn refresh(
             .map(|i| (parts[..i].join("/"), parts[..=i].join("/")))
             .find(|(dir, _)| inputs.contains_dir(dir) && root.join(dir).is_dir())
             .expect("the project's folder is there while it is watched");
-        let (files, dirs) = walk(root, out, &dir, Some(1))?;
+        let (files, dirs) = walk(root, skip, &dir, Some(1))?;
         let was: Vec<_> = inputs
             .remove_dir(&child)
             .into_iter()
@@ -91,7 +91,7 @@ pub fn refresh(
         if files.contains(&child) {
             add(inputs, root, vec![child.clone()])?;
         } else if dirs.contains(&child) {
-            let (files, dirs) = walk(root, out, &child, None)?;
+            let (files, dirs) = walk(root, skip, &child, None)?;
             for dir in dirs {
                 inputs.insert_dir(dir);
             }
@@ -112,11 +112,12 @@ pub fn refresh(
 /// in the folder `dir` of the project at `root`, down to `depth`.
 fn walk(
     root: &Path,
-    out: &Path,
+    skip: &[PathBuf],
     dir: &str,
     depth: Option<usize>,
 ) -> io::Result<(Vec<String>, Vec<String>)> {
-    let skip = [out.to_path_buf(), root.join("node_modules")];
+    let mut skip = skip.to_vec();
+    skip.push(root.join("node_modules"));
     let walk = WalkBuilder::new(root.join(dir))
         .hidden(false)
         .require_git(false)

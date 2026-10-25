@@ -103,7 +103,7 @@ fn rendered(build: &Build) -> Vec<String> {
 /// A clean build of the project as it is on disk now, with dev
 /// visibility and a cache of its own.
 fn clean(root: &Path) -> Build {
-    let inputs = load(root, &root.join("dist")).unwrap();
+    let inputs = load(root, &[root.join("dist")]).unwrap();
     yuanme_engine::build(&inputs, &mut Cache::memory("test"), Mode::Dev)
 }
 
@@ -148,7 +148,7 @@ fn every_edit_serves_what_a_clean_build_makes() {
     reference(root);
     let (_watcher, batches) = watch(root, false).unwrap();
     let mut session =
-        Session::start(root.clone(), root.join("dist"), Cache::memory("test")).unwrap();
+        Session::start(root.clone(), vec![root.join("dist")], Cache::memory("test")).unwrap();
     assert_served_is_clean(&session, root, "the first build");
     let post = root.join("content/posts/extending_c_stdlib.md");
 
@@ -299,7 +299,7 @@ fn a_prose_edit_rebuilds_in_at_most_50_ms_p95() {
     let root = &dir.path().canonicalize().unwrap();
     reference(root);
     let mut session =
-        Session::start(root.clone(), root.join("dist"), Cache::memory("test")).unwrap();
+        Session::start(root.clone(), vec![root.join("dist")], Cache::memory("test")).unwrap();
     let post = root.join("content/posts/extending_c_stdlib.md");
     let text = fs::read_to_string(&post).unwrap();
     let batch = Batch {

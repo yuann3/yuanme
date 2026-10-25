@@ -18,7 +18,7 @@ fn write(path: &Path, bytes: impl AsRef<[u8]>) {
 }
 
 fn build(root: &Path) -> Build {
-    let inputs = load(root, &root.join("dist")).unwrap();
+    let inputs = load(root, &[root.join("dist")]).unwrap();
     let mut cache = Cache::open(root.join(".yuanme/cache"), "test").unwrap();
     let build = yuanme_engine::build(&inputs, &mut cache, Mode::Build);
     cache.save().unwrap();
@@ -78,7 +78,7 @@ fn load_reads_what_a_build_could_use_and_streams_images() {
     write(&root.join(".gitignore"), "private/\n");
     write(&root.join("content/posts/IMG_1.JPG"), "jpeg bytes");
 
-    let inputs = load(root, &root.join("dist")).unwrap();
+    let inputs = load(root, &[root.join("dist")]).unwrap();
 
     let paths: Vec<_> = inputs.iter().map(|(path, _)| path).collect();
     assert_eq!(

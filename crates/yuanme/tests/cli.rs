@@ -1380,6 +1380,37 @@ fn dev_runs_in_the_background_until_it_is_stopped() {
     assert_eq!(status(root)["pid"], ready["pid"]);
 }
 
+/// `yuanme dev --write DIR` writes each build that succeeds to DIR,
+/// which its watcher leaves out, but never to the output directory, which
+/// never holds Drafts.
+#[test]
+fn dev_writes_each_build_with_write() {
+    let dir = project(SITE);
+    let root = dir.path();
+    for (write, why) in [
+        ("dist", "output directory"),
+        (".", "the project itself"),
+        ("..", "the project itself"),
+    ] {
+        let out = yuanme(root, &["dev", "--write", write, "--port", "0"]);
+        assert_eq!(out.code, 2, "--write {write}: {}", out.stderr);
+        assert!(out.stderr.contains(why), "{}", out.stderr);
+    }
+    let dev = Dev::start_with(root, &["--write", "mirror"], &[]);
+    let page = || fs::read_to_string(root.join("mirror/blog/first/index.html")).unwrap();
+    assert!(page().contains("Hello."));
+    assert!(!page().contains("data-yuanme-client"), "only as served");
+    assert!(root.join("mirror/blog/wip/index.html").exists(), "a Draft");
+    let post = root.join("content/posts/first.md");
+    let text = fs::read_to_string(&post).unwrap();
+    fs::write(&post, text.replace("Hello.", "Hello, again.")).unwrap();
+    dev.until("reload");
+    assert!(page().contains("Hello, again."));
+    // What it wrote is no change.
+    let next = dev.events.recv_timeout(std::time::Duration::from_secs(1));
+    assert!(next.is_err(), "{next:?}");
+}
+
 /// Interrupted, `yuanme dev` saves its cache and exits 0.
 #[cfg(unix)]
 #[test]

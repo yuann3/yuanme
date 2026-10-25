@@ -47,6 +47,7 @@ Each line is one event with a `type`:
 - **Every save rebuilds the whole Site**, in milliseconds, and what changed is shown in the browser without a reload where it can be: a stylesheet is swapped where it is, and with the Router on, a Page is swapped in place, keeping its scroll and what the Site keeps between Pages, and its Sidecar scripts are mounted again, their new code included. Any other change, such as to a Site Script, is a full load. What it serves is what `yuanme build --drafts` makes, but for two things that would slow a save: an image is encoded when a browser first asks for it, and math uses the whole math font rather than a subset. A small dev-only script is added to each HTML file as it is served.
 - **An error keeps the last good build served**, with an overlay on the Page that shows its Diagnostics until a save fixes it. They are printed too, as `build` prints them. With `[typescript] check = true`, types are checked after each build that succeeds, and the overlay shows the type errors.
 - **What a browser logs reaches the terminal**: console output and uncaught errors, as `browser-console` events with `--json`.
+- **`--write DIR`** also writes each build that succeeds to `DIR`, from the project root, for a tool that wants the files. It holds Drafts, so it can't be the output directory. Images are encoded only when a browser asks for them, so it has none of their variants, and its Pages have no dev script.
 - **`--poll`** looks at every file every 100 ms, for file systems that never say a file changed, such as some network and container mounts.
 
 One dev server runs for a project. While it runs, `.yuanme/dev.json` says where: its `pid`, `port`, `url`, Engine `version`, when it `started`, and its `log`. Another `yuanme dev` prints its URL, as `server-ready`, and exits 0 rather than starting a second.
@@ -109,6 +110,7 @@ yuanme dev [OPTIONS]
 - `--port PORT`: The port on 127.0.0.1. By default 4590, or the next free one.
 - `--poll`: Look for changes every 100 ms instead of being told of them, for file systems that tell nothing, such as some network and container mounts.
 - `--background`: Run in the background, and return once the first build has finished. `yuanme dev status`, `logs` and `stop` manage it.
+- `--write DIR`: Also write each build that succeeds to DIR, from the project root, for a look at its files. Never the output directory: dev includes Drafts.
 
 ### `yuanme dev status`
 

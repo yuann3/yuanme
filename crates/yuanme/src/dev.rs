@@ -11,7 +11,7 @@ mod tests;
 use std::collections::BTreeSet;
 use std::io;
 use std::net::{Ipv4Addr, SocketAddr};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
@@ -28,16 +28,36 @@ const PORT: u16 = 4590;
 
 /// `yuanme dev`: builds, serves on 127.0.0.1 and rebuilds on every change
 /// until it is interrupted or stopped, unless a server already runs for
-/// the project. `port` is tried alone when it is given; `log` is where
-/// `--background` sends what it prints.
+/// the project. `port` is tried alone when it is given; each build that
+/// succeeds is written to `write`, a path from the project root, too; and
+/// `log` is where `--background` sends what it prints.
 pub fn run(
     root: &Path,
     port: Option<u16>,
     poll: bool,
+    write: Option<&Path>,
     log: Option<&str>,
     out: Out,
 ) -> Result<u8, Error> {
     let root = root.canonicalize()?;
+    // Without `..`, which `starts_with` takes as a name.
+    let write = write.map(|w| {
+        let mut dir = PathBuf::new();
+        for part in root.join(w).components() {
+            match part {
+                Component::ParentDir => drop(dir.pop()),
+                Component::CurDir => {}
+                part => dir.push(part),
+            }
+        }
+        dir
+    });
+    if let Some(dir) = write.as_ref().filter(|w| root.starts_with(w)) {
+        return Err(Error::BadCommand(format!(
+            "--write {} would hold the project itself",
+            dir.display()
+        )));
+    }
     if let Some(running) = running::find(&root) {
         running::already(&running, out);
         return Ok(0);
@@ -48,13 +68,34 @@ pub fn run(
         .map_err(|e| Error::Io(io::Error::other(format!("can't watch the project: {e}"))))?;
     out.event(Event::BuildStarted { command: "dev" });
     let cache = Cache::open(root.join(".yuanme/cache"), ENGINE_VERSION)?;
-    let session = Session::start(root.clone(), root.join("dist"), cache)?;
+    let dist = root.join("dist");
+    let skip = [Some(dist.clone()), write.clone()]
+        .into_iter()
+        .flatten()
+        .collect();
+    let session = Session::start(root.clone(), skip, cache)?;
     let snapshot = session.snapshot();
+    let build_out = snapshot
+        .build
+        .config
+        .as_ref()
+        .map_or(dist, |c| root.join(c.host.adapter.out_dir()));
+    if let Some(dir) = write.as_ref().filter(|w| **w == build_out) {
+        return Err(Error::BadCommand(format!(
+            "--write {} is the output directory, which never holds Drafts",
+            dir.display()
+        )));
+    }
     crate::schemas::write(
         &root.join(".yuanme/schemas"),
         snapshot.build.config.as_ref(),
         snapshot.build.site.as_ref(),
     )?;
+    if let Some(dir) = &write
+        && !snapshot.build.failed()
+    {
+        mirror(&root, dir, &snapshot.build);
+    }
     let status = report(&snapshot.build, started, Vec::new(), out);
     session.cache.lock().expect("no build is running").save()?;
 
@@ -100,7 +141,7 @@ pub fn run(
         let _ = checks.send((0, snapshot));
     }
     let builder = shared.clone();
-    std::thread::spawn(move || rebuild(session, &batches, &builder, &checks));
+    std::thread::spawn(move || rebuild(session, &batches, &builder, &checks, write.as_deref()));
     let stopping = shared.clone();
     runtime.block_on(async {
         axum::serve(listener, serve::router(shared.clone()))
@@ -151,6 +192,7 @@ fn rebuild(
     batches: &Receiver<Batch>,
     shared: &serve::Shared,
     checks: &Sender<Check>,
+    write: Option<&Path>,
 ) {
     let out = shared.out;
     let mut rescan = false;
@@ -187,6 +229,10 @@ fn rebuild(
                 if !urls.is_empty() {
                     tell(serde_json::json!({ "type": "reload", "urls": urls }).to_string());
                 }
+                // Before `build-finished`, which says it is there.
+                if let Some(dir) = write {
+                    mirror(&session.root, dir, &snapshot.build);
+                }
                 let mut status = report(&snapshot.build, started, urls.clone(), out);
                 status.build = builds;
                 let overlay = status.overlay.clone();
@@ -212,6 +258,16 @@ fn rebuild(
                 *shared.status.write().expect("never poisoned") = status;
             }
         }
+    }
+}
+
+/// `--write`: writes `build` to `dir` as `yuanme build` writes its output
+/// directory, with a manifest of its own.
+fn mirror(root: &Path, dir: &Path, build: &Build) {
+    let key = blake3::hash(dir.as_os_str().as_encoded_bytes()).to_hex();
+    let manifest = root.join(format!(".yuanme/cache/write-{}.manifest", &key[..16]));
+    if let Err(e) = crate::sync::sync(build, root, dir, &manifest) {
+        eprintln!("warning: can't write the Site to {}: {e}", dir.display());
     }
 }
 
@@ -284,8 +340,9 @@ pub struct Snapshot {
 
 pub struct Session {
     root: PathBuf,
-    /// The output directory of `yuanme build`, which the walk leaves out.
-    out: PathBuf,
+    /// What the walk leaves out: the output directory of `yuanme build`,
+    /// and `--write`'s.
+    skip: Vec<PathBuf>,
     inputs: Inputs,
     /// Shared with the requests that encode images.
     pub cache: Arc<Mutex<Cache>>,
@@ -303,8 +360,8 @@ pub enum Update {
 impl Session {
     /// Loads and builds the project at `root`, which must be canonical,
     /// as the watcher's paths are.
-    pub fn start(root: PathBuf, out: PathBuf, cache: Cache) -> io::Result<Session> {
-        let inputs = load::load(&root, &out)?;
+    pub fn start(root: PathBuf, skip: Vec<PathBuf>, cache: Cache) -> io::Result<Session> {
+        let inputs = load::load(&root, &skip)?;
         let mut cache = cache;
         let build = yuanme_engine::build(&inputs, &mut cache, Mode::Dev);
         let snapshot = Arc::new(Snapshot {
@@ -313,7 +370,7 @@ impl Session {
         });
         Ok(Session {
             root,
-            out,
+            skip,
             inputs,
             cache: Arc::new(Mutex::new(cache)),
             snapshot,
@@ -330,7 +387,7 @@ impl Session {
         load::refresh(
             &mut self.inputs,
             &self.root,
-            &self.out,
+            &self.skip,
             &batch.paths,
             batch.rescan,
         )

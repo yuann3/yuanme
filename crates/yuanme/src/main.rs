@@ -138,6 +138,10 @@ struct DevArgs {
     /// `yuanme dev status`, `logs` and `stop` manage it.
     #[arg(long)]
     background: bool,
+    /// Also write each build that succeeds to DIR, from the project root, for
+    /// a look at its files. Never the output directory: dev includes Drafts.
+    #[arg(long, value_name = "DIR")]
+    write: Option<PathBuf>,
     /// Where a server started with `--background` prints, which it records.
     #[arg(long, hide = true, value_name = "FILE")]
     log: Option<String>,
@@ -311,9 +315,20 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
                 if args.poll {
                     forwarded.push("--poll".to_string());
                 }
+                if let Some(dir) = &args.write {
+                    let dir = root.join(dir).to_string_lossy().into_owned();
+                    forwarded.extend(["--write".to_string(), dir]);
+                }
                 dev::running::background(&root, &forwarded, *out)
             }
-            None => dev::run(&root, args.port, args.poll, args.log.as_deref(), *out),
+            None => dev::run(
+                &root,
+                args.port,
+                args.poll,
+                args.write.as_deref(),
+                args.log.as_deref(),
+                *out,
+            ),
         },
         Command::New {
             collection,
@@ -347,7 +362,7 @@ fn engine_build(
 ) -> io::Result<Run> {
     let started = Instant::now();
     let dist = root.join("dist");
-    let inputs = load::load(root, out.unwrap_or(&dist))?;
+    let inputs = load::load(root, &[out.unwrap_or(&dist).to_path_buf()])?;
     let load = started.elapsed();
     let mut cache = Cache::open(root.join(".yuanme/cache"), ENGINE_VERSION)?;
     let mut build = yuanme_engine::build(&inputs, &mut cache, mode);
