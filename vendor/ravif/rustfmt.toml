@@ -1,0 +1,2 @@
+# ravif is kept as its fork has it, which rustfmt would change.
+disable_all_formatting = true

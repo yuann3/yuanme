@@ -1207,21 +1207,6 @@ dependencies = [
  "simd_helpers",
  "thiserror",
  "v_frame",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "ravif"
-version = "0.13.0"
-source = "git+https://github.com/yuann3/cavif-rs?rev=80886cdf01620d7c934bd18ade6e54744ebe366e#80886cdf01620d7c934bd18ade6e54744ebe366e"
-dependencies = [
- "avif-serialize",
- "imgref",
- "loop9",
- "quick-error",
- "rav1e",
- "rayon",
- "rgb",
 ]
 
 [[package]]
@@ -1726,9 +1711,9 @@ dependencies = [
  "libwebp-sys",
  "moxcms",
  "mozjpeg-rs",
- "ravif",
  "rayon",
  "yuanme-diag",
+ "yuanme-ravif",
 ]
 
 [[package]]
@@ -1774,6 +1759,19 @@ version = "0.0.0"
 dependencies = [
  "insta",
  "nom 7.1.3",
+]
+
+[[package]]
+name = "yuanme-ravif"
+version = "0.0.0"
+dependencies = [
+ "avif-serialize",
+ "imgref",
+ "loop9",
+ "quick-error",
+ "rav1e",
+ "rayon",
+ "rgb",
 ]
 
 [[package]]

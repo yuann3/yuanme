@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/*", "vendor/organic", "xtask"]
+members = ["crates/*", "vendor/*", "xtask"]
 
 [workspace.package]
 version = "0.0.0"
@@ -17,6 +17,9 @@ yuanme-render = { path = "crates/yuanme-render", version = "0.0.0" }
 yuanme-assets = { path = "crates/yuanme-assets", version = "0.0.0", default-features = false }
 yuanme-diag = { path = "crates/yuanme-diag", version = "0.0.0" }
 yuanme-org = { path = "vendor/organic", version = "0.0.0" }
+# Forks the published crates need, vendored because `[patch]` doesn't reach
+# `cargo install` (#27). Each one's manifest says where its fork is.
+ravif = { package = "yuanme-ravif", path = "vendor/ravif", version = "0.0.0" }
 
 # The image pipeline's tests encode real photos, which takes minutes
 # unoptimised. At release's opt-level, they hash release's bytes.
@@ -29,15 +32,12 @@ moxcms.opt-level = 3
 mozjpeg-rs.opt-level = 3
 png.opt-level = 3
 rav1e.opt-level = 3
-ravif.opt-level = 3
+yuanme-ravif.opt-level = 3
 zune-jpeg.opt-level = 3
 yuanme-assets.opt-level = 3
 
-# `Encoder::with_tiles`, so AVIF bytes don't depend on the core count (#28),
-# at a pinned commit on ravif 0.13.0 until upstream releases it (#27).
-[patch.crates-io]
-ravif = { git = "https://github.com/yuann3/cavif-rs", rev = "80886cdf01620d7c934bd18ade6e54744ebe366e" }
 # parse_document_bounded and the slow-path fixes that hold #15's parse-time
 # bound (#47), at a pinned commit on comrak 0.57.0. Rebase the branch onto
 # each comrak release before bumping the pin in yuanme-content.
+[patch.crates-io]
 comrak = { git = "https://github.com/yuann3/comrak", rev = "5c14241418654c10b6a5129ee535b5831c231d9b" }
