@@ -5,7 +5,7 @@ description: LaTeX math in Markdown and Org, rendered to MathML at build time, w
 
 yuanme converts every piece of math in an Entry to MathML when it builds the Site. A Page carries no TeX and no math script: browsers render MathML themselves. Math that can't be converted fails the build with `math/unsupported`; yuanme never falls back to showing the TeX.
 
-yuanme doesn't add a math font to the Site yet, so browsers draw math with their own fonts.
+Every Page that shows math gets a stylesheet that draws its math in yuanme NCM Math, New Computer Modern Math with math-core's fixes for browsers. `yuanme build` puts one subset of the font in the Site, as WOFF2, with only the characters the Site's math shows, so a Site's math costs one font file whichever Pages a reader opens. `yuanme dev` serves the whole font, so an edit never waits for a subset. The font is under the GUST Font License; its notice is in the font and in `THIRD_PARTY_NOTICES.md`.
 
 ## Math in Markdown
 

@@ -9,6 +9,7 @@ pub mod image;
 mod images;
 mod link;
 mod links;
+mod math;
 #[cfg(test)]
 mod tests;
 
@@ -254,6 +255,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     }
     let (mut pages, mut assets) = (stage.pages, stage.assets);
     highlight::stylesheet(&mut pages, &mut assets);
+    math::stylesheet(&site, mode, cache, &mut pages, &mut assets);
     let mut files = link(pages, assets);
     files.extend(statics);
     files.extend(images::copies(inputs, &used));

@@ -413,3 +413,95 @@ fn code_is_highlighted_through_the_cache_and_styled_by_one_stylesheet() {
     let again = super::build(&inputs, &mut cache, Mode::Build);
     assert_eq!(text(&again.files["blog/pew/index.html"].body), page);
 }
+
+#[test]
+fn pages_with_math_get_one_font_subset_for_the_site_and_its_stylesheet() {
+    let mut inputs = project();
+    inputs.insert(
+        "yuanme.toml",
+        [
+            CONFIG,
+            b"[collections.posts]\nroute = \"/blog/{slug}/\"\n".as_slice(),
+        ]
+        .concat(),
+    );
+    inputs.insert(
+        "content/posts/a.md",
+        b"---\ntitle: A\n---\n$x$\n".as_slice(),
+    );
+    inputs.insert(
+        "content/posts/b.md",
+        b"---\ntitle: B\n---\n$\\sum y$\n".as_slice(),
+    );
+    inputs.insert(
+        "content/posts/c.md",
+        b"---\ntitle: C\n---\nNo math.\n".as_slice(),
+    );
+    inputs.insert(
+        "templates/posts/entry.html",
+        b"<html><head></head><body>{{ entry.content }}</body></html>".as_slice(),
+    );
+
+    let mut cache = Cache::memory("1.0.0");
+    let build = super::build(&inputs, &mut cache, Mode::Build);
+    assert!(!build.failed(), "{:#?}", build.diagnostics);
+    let find = |files: &BTreeMap<String, Output>, prefix: &str, ext: &str| {
+        let found: Vec<String> = files
+            .keys()
+            .filter(|p| p.starts_with(prefix) && p.ends_with(ext))
+            .cloned()
+            .collect();
+        let [one] = &found[..] else {
+            panic!("{found:?}")
+        };
+        one.clone()
+    };
+    let css = find(&build.files, "assets/math-", ".css");
+    let font = find(&build.files, "assets/math-", ".woff2");
+    for page in ["blog/a/index.html", "blog/b/index.html"] {
+        let head = text(&build.files[page].body)
+            .split_once("</head>")
+            .unwrap()
+            .0;
+        assert!(
+            head.ends_with(&format!("<link rel=\"stylesheet\" href=\"/{css}\">")),
+            "{head}"
+        );
+    }
+    assert!(!text(&build.files["blog/c/index.html"].body).contains("<link"));
+    let sheet = text(&build.files[&css].body);
+    assert!(
+        sheet.starts_with(&format!(
+            "@font-face{{font-family:\"yuanme NCM Math\";src:url(\"/{font}\") format(\"woff2\")"
+        )),
+        "{sheet}"
+    );
+    assert!(sheet.contains("math{font-family:\"yuanme NCM Math\",math}"));
+    // One subset for both Pages, of what their math shows, its italics and
+    // what browsers measure.
+    let chars = BTreeSet::from([
+        ' ', '\u{AF}', '1', 'X', 'o', '\u{2212}', '\u{221A}', 'x', '𝑥', '∑', 'y', '𝑦',
+    ]);
+    let subset = yuanme_assets::font::subset(yuanme_assets::font::NCM_MATH, &chars);
+    let expected = yuanme_assets::font::woff2(&subset);
+    assert_eq!(build.files[&font].hash, blake3::hash(&expected));
+
+    // `yuanme dev` serves the whole font.
+    let dev = super::build(&inputs, &mut cache, Mode::Dev);
+    let otf = find(&dev.files, "assets/math-", ".otf");
+    assert_eq!(
+        dev.files[&otf].hash,
+        blake3::hash(yuanme_assets::font::NCM_MATH)
+    );
+    let sheet = text(&dev.files[&find(&dev.files, "assets/math-", ".css")].body);
+    assert!(
+        sheet.contains(&format!("src:url(\"/{otf}\") format(\"opentype\")")),
+        "{sheet}"
+    );
+
+    // A Site without math gets neither.
+    inputs.insert("content/posts/a.md", b"---\ntitle: A\n---\nx\n".as_slice());
+    inputs.insert("content/posts/b.md", b"---\ntitle: B\n---\ny\n".as_slice());
+    let plain = super::build(&inputs, &mut cache, Mode::Build);
+    assert!(!plain.files.keys().any(|p| p.starts_with("assets/math-")));
+}
