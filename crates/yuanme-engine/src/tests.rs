@@ -265,3 +265,51 @@ fn content_is_resolved_and_its_errors_fail_the_build() {
     );
     assert_eq!(codes(&inputs, Mode::Build), ["entry/syntax"]);
 }
+
+#[test]
+fn templates_render_each_route_and_the_sitemap_and_sidecars_are_not_templates() {
+    let mut inputs = project();
+    inputs.insert(
+        "yuanme.toml",
+        [
+            CONFIG,
+            b"[collections.posts]\nroute = \"/blog/{slug}/\"\n".as_slice(),
+        ]
+        .concat(),
+    );
+    inputs.insert(
+        "content/posts/pew.md",
+        b"---\ntitle: Pew\n---\nHi.".as_slice(),
+    );
+    inputs.insert(
+        "templates/posts/entry.html",
+        b"<h1>{{ entry.title }}</h1>{{ entry.content }}".as_slice(),
+    );
+    // A Sidecar, which is CSS, not Jinja: `{#` would open a comment.
+    inputs.insert("templates/posts/entry.css", b"a{#x}".as_slice());
+    inputs.insert("static/robots.txt", b"".as_slice());
+
+    let build = build(&inputs, &mut Cache::memory("1.0.0"), Mode::Build);
+
+    assert!(!build.failed(), "{:#?}", build.diagnostics);
+    let paths: Vec<_> = build.files.keys().map(String::as_str).collect();
+    assert_eq!(
+        paths,
+        [
+            "blog/pew/index.html",
+            "robots.txt",
+            "sitemap-0.xml",
+            "sitemap-index.xml"
+        ]
+    );
+    assert_eq!(
+        text(&build.files["blog/pew/index.html"].body),
+        "<h1>Pew</h1><p>Hi.</p>"
+    );
+
+    // The sitemap is the Engine's, so a Static file can't take its name.
+    inputs.insert("static/sitemap-index.xml", b"".as_slice());
+    let build = super::build(&inputs, &mut Cache::memory("1.0.0"), Mode::Build);
+    let codes: Vec<_> = build.diagnostics.iter().map(|d| d.code.name).collect();
+    assert_eq!(codes, ["entry/output-collision"]);
+}

@@ -142,12 +142,42 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     };
     let statics = static_files(inputs);
     diagnostics.extend(static_collisions(&config, &site, &statics));
+    let templates = templates(inputs, &mut sources, &mut diagnostics);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources);
     }
-    // The assets stage (#56) runs alongside render and hands link its
-    // bundles.
-    let mut files = link(render(&site), Vec::new());
+    let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
+    let (pages, more) =
+        yuanme_render::template::render(&config, &site, &sources, &templates, &static_urls);
+    diagnostics.extend(more);
+    // Routes were checked against Static files before render; this is the
+    // sitemap's files.
+    for page in &pages {
+        if statics.iter().any(|(p, _)| *p == page.output) {
+            let message = format!(
+                "`static/{0}` and the sitemap would both write `{0}`",
+                page.output
+            );
+            let span = Span {
+                file: config.file,
+                range: 0..0,
+            };
+            diagnostics.push(
+                Diagnostic::error(&codes::ENTRY_OUTPUT_COLLISION, message, span)
+                    .help("rename the Static file: yuanme writes the sitemap itself"),
+            );
+        }
+    }
+    if diagnostics.iter().any(|d| d.level == Level::Error) {
+        return failed(diagnostics, sources);
+    }
+    // The assets stage (#56) runs alongside render, hands link its bundles
+    // and gives each Page the Sidecars of `page.templates`.
+    let pages = pages
+        .into_iter()
+        .map(|p| (p.output, p.text.into_bytes()))
+        .collect();
+    let mut files = link(pages, Vec::new());
     files.extend(statics);
 
     let build = Build {
@@ -269,9 +299,36 @@ fn static_collisions(
         .collect()
 }
 
-/// Pages with asset placeholders, by output path. Templates arrive with #54.
-fn render(_site: &Site) -> Vec<(String, Vec<u8>)> {
-    Vec::new()
+/// Every Template, by its path in `templates/`: every text file there but
+/// the Sidecars beside them.
+fn templates(
+    inputs: &Inputs,
+    sources: &mut Files,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> BTreeMap<String, FileId> {
+    let mut out = BTreeMap::new();
+    for (path, input) in inputs.iter() {
+        let Some(name) = path.strip_prefix("templates/") else {
+            continue;
+        };
+        if [".css", ".js", ".mjs", ".ts", ".mts"]
+            .iter()
+            .any(|e| name.ends_with(e))
+        {
+            continue;
+        }
+        // An image, which is streamed, is no Template.
+        let Some(bytes) = input.bytes.as_deref() else {
+            continue;
+        };
+        match utf8(path, bytes, &codes::TEMPLATE_SYNTAX, sources) {
+            Ok(file) => {
+                out.insert(name.to_string(), file);
+            }
+            Err(d) => diagnostics.push(d),
+        }
+    }
+    out
 }
 
 /// `static/` is copied to the same path, unhashed.

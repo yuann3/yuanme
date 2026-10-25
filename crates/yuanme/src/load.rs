@@ -13,7 +13,7 @@ use yuanme_engine::Inputs;
 /// such as `#a.md#`, `a.md~` and Vim's `4913` never reach a build.
 const EXTENSIONS: &[&str] = &[
     "md", "org", // Source formats
-    "html", "css", "js", "mjs", "ts", "mts", // Templates, Sidecars, Scripts
+    "html", "xml", "txt", "css", "js", "mjs", "ts", "mts", // Templates, Sidecars, Scripts
     "toml", "yaml", "yml", "json", // Site config, Data files
     "avif", "gif", "jpeg", "jpg", "png", "webp", "svg", "ico", // images
     "woff", "woff2", "ttf", "otf", // fonts
