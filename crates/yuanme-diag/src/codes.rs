@@ -376,6 +376,16 @@ codes! {
         example: "eval(\"1 + 1\");",
         fix: "Change the code as the message says. A warning in a package can only be fixed in the package.",
     }
+    ASSET_UNMATCHED_SELECTOR = "asset/unmatched-selector" {
+        meaning: "A selector in a Sidecar stylesheet can match no tag its own Template writes. A Sidecar's styles are scoped to the tags written in its Template's own file, so an element written in another Template, a Partial it includes, the content passed into a Component or an Entry's rendered body is out of its reach. `check` compares the selector's type, classes and id with each tag; attributes and pseudo-classes are left out, since Scripts set them. A class printed with `{{ }}` may be any class, so it matches every class. The Page still builds.",
+        example: ".card .title { font-weight: 600 }\n(in components/card.css, when the title is written by components/title.html)",
+        fix: "Move the rule to the Sidecar of the Template that writes the element, fix the typo, or reach outside the Template on purpose with `:global()`: `.card :global(.title)`.",
+    }
+    ASSET_SCOPE_COLLISION = "asset/scope-collision" {
+        meaning: "Two Sidecar stylesheets have the same scope attribute, which yuanme makes from each one's path, so each one's styles would reach the other's Template. It is about one chance in two billion for a pair.",
+        example: "templates/components/a.css and another Sidecar whose path hashes the same",
+        fix: "Rename one of the two Templates and its Sidecar.",
+    }
     IMAGE_NOT_FOUND = "image/not-found" {
         meaning: "An image in an Entry's body, an `image` field or `image()` names a path where no image is. In an Entry, a relative path starts from the Entry's folder, so in `content/posts/sea/index.md`, `![](plot.png)` is `content/posts/sea/plot.png`; a path starting with `/` starts from the project's root, as every path `image()` takes does.",
         example: "![Sales by month](plt.png)\n(with plot.png beside the Entry)",

@@ -534,6 +534,22 @@ const ERRORS: &[(&str, Over, &str, &str)] = &[
         "templates/components/row.css",
         "",
     ),
+    // Two Sidecars whose paths hash alike.
+    (
+        "asset/scope-collision",
+        &[
+            ("templates/components/c388214.html", b"<p class=\"a\">a</p>"),
+            ("templates/components/c388214.css", b".a {}"),
+            ("templates/components/c517339.html", b"<p class=\"b\">b</p>"),
+            ("templates/components/c517339.css", b".b {}"),
+            (
+                "templates/home.html",
+                b"{% extends \"layouts/base.html\" %}{% block body %}{% include \"components/c388214.html\" %}{% include \"components/c517339.html\" %}{% endblock %}",
+            ),
+        ],
+        "templates/components/c517339.css",
+        "",
+    ),
     (
         "asset/not-found",
         &[("scripts/site.ts", b"import { x } from \"./nope\";\nconsole.log(x);\n")],
@@ -594,7 +610,13 @@ const ERRORS: &[(&str, Over, &str, &str)] = &[
         "scripts/site.ts",
         "",
     ),
-    // A warning: the build goes on.
+    // Warnings: the build goes on.
+    (
+        "asset/unmatched-selector",
+        &[("templates/components/row.css", b".row { color: red }\n\n.row .titel,\n.row:hover { color: blue }\n")],
+        "templates/components/row.css",
+        ".row .titel,\n.row:hover",
+    ),
     (
         "asset/script-warning",
         &[("scripts/site.ts", b"export const two = eval(\"1 + 1\");\n")],
@@ -635,7 +657,7 @@ fn each_mistake_is_one_diagnostic_on_the_url_it_is_about() {
                     )
                 })
                 .collect();
-            let fails = *code != "asset/script-warning";
+            let fails = !["asset/script-warning", "asset/unmatched-selector"].contains(code);
             let ok = build.failed() == fails
                 && build.files.is_empty() == fails
                 && got == [(*code, *file, *under)];

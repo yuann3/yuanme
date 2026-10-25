@@ -80,6 +80,19 @@ pub(crate) fn assets(
             .collect(),
     };
     let mut diagnostics = Diagnostics::default();
+    let mut files = SourceFiles::default();
+    let mut seen: BTreeMap<&str, &str> = BTreeMap::new();
+    for (path, attribute) in &scopes {
+        if let Some(other) = seen.insert(attribute, path) {
+            let message =
+                format!("`{other}` and `{path}` have the same scope attribute, `{attribute}`");
+            let span = files.span(&project, sources, path, 1, 1, "");
+            diagnostics.push(
+                Diagnostic::error(&codes::ASSET_SCOPE_COLLISION, message, span)
+                    .help("rename one of their Templates, and its Sidecar"),
+            );
+        }
+    }
 
     // What each Page names.
     let scans: Vec<Option<html::Scan>> = pages
@@ -219,7 +232,6 @@ pub(crate) fn assets(
             css::bundle(&project, entry, &config.build.targets, scopes)
         })
         .collect();
-    let mut files = SourceFiles::default();
     // Each bundle's code, and where its `url()`s go.
     let mut codes: Vec<(String, Vec<(String, Use)>)> = Vec::new();
     for ((_, entry), result) in bundles.iter().zip(bundled) {
@@ -230,6 +242,11 @@ pub(crate) fn assets(
                 continue;
             }
         };
+        for compound in &bundle.compounds {
+            if let Some(d) = unmatched(compound, templates, &project, sources, &mut files) {
+                diagnostics.push(d);
+            }
+        }
         let mut urls = Vec::new();
         for url in &bundle.urls {
             let use_ = match project.resolve(&url.url, &format!("/{}", url.file)) {
@@ -386,6 +403,55 @@ pub(crate) fn assets(
         scripts: scripts.report,
         diagnostics: diagnostics.0,
     }
+}
+
+/// A warning for a compound selector of a Sidecar that no tag its
+/// Template writes can match.
+fn unmatched(
+    compound: &css::Compound,
+    templates: &BTreeMap<String, FileId>,
+    project: &Project<'_>,
+    sources: &mut Files,
+    files: &mut SourceFiles,
+) -> Option<Diagnostic> {
+    let mut own = templates
+        .iter()
+        .filter(|(name, _)| scope::sidecar(name) == compound.at.file)
+        .peekable();
+    let template = own.peek()?.0.clone();
+    let matched = own.any(|(_, &file)| {
+        scope::elements(sources.text(file))
+            .iter()
+            .any(|e| e.matches(compound.name.as_deref(), &compound.classes, &compound.ids))
+    });
+    if matched {
+        return None;
+    }
+    let mut what = compound.name.clone().unwrap_or_default();
+    for id in &compound.ids {
+        what += &format!("#{id}");
+    }
+    for class in &compound.classes {
+        what += &format!(".{class}");
+    }
+    if what.is_empty() {
+        what = "*".into();
+    }
+    let at = &compound.at;
+    let mut span = files.span(project, sources, &at.file, at.line, at.column, "");
+    // The selectors, up to the rule's `{`.
+    let text = sources.text(span.file);
+    let end = text[span.range.start..]
+        .find('{')
+        .map_or(span.range.start, |i| {
+            span.range.start + text[span.range.start..][..i].trim_end().len()
+        });
+    span.range.end = end;
+    let message = format!("`{what}` matches no tag that `templates/{template}` writes");
+    Some(
+        Diagnostic::warning(&codes::ASSET_UNMATCHED_SELECTOR, message, span)
+            .help("a Sidecar styles only the tags its own Template writes: style other elements with `:global()`"),
+    )
 }
 
 /// `text` with each range replaced, in order.
