@@ -22,3 +22,9 @@ template = "projects.html"
 [routes.missing]
 path = "/404.html"
 template = "404.html"
+
+# Its Pages load a stylesheet, Scripts and Sidecar scripts for the feel
+# checks, and in "swap" mode the Router's Script and chunk: more than the
+# Starters' 4 requests.
+[budgets]
+requests = 7
