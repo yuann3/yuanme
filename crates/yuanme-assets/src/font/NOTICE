@@ -1,0 +1,52 @@
+yuanme-ncm-math.otf is yuanme NCM Math, the math font the Engine embeds and subsets
+for each Site. crates/yuanme-assets/math-font.py builds it; don't edit it by hand.
+
+yuanme NCM Math is New Computer Modern Math Book 8.1.1 by Antonis Tsolomitis,
+renamed for yuanme. math-core-fonts (https://github.com/tmke8/math-core-fonts,
+commit 2af58a8fcfd0) changed it for MathML in browsers: the primes are their
+script-size forms, the accents are centred or lowered in their glyph boxes,
+breve and caron are drawn from their combining forms, and U+FE00 variation
+sequences are declared on the calligraphic capitals. No other glyph changed, and
+no outline was redrawn. The authors of New Computer Modern don't support this
+version: report problems to https://github.com/yuann3/yuanme/issues. The
+original is at https://ctan.org/pkg/newcomputermodern.
+
+Built from:  https://github.com/tmke8/math-core-fonts at 2af58a8fcfd00dd250bdf9b67caaa8bc4751ccb8,
+             NewComputerModernMath/NewCMMath-Book.sfd (sha256 1c1b7ea3a940412fced8a3b8ef403c0f99ae70a9fa07001c69d33f74c9cda755)
+Built with:  FontForge 20230101, SOURCE_DATE_EPOCH=0
+Output:      sha256 ebd96cb52c9ac9472384a5cb16ef6e8404a93401f1d55a311389ee135e501a60
+
+Each subset the Engine writes keeps the font's copyright, description and licence
+names.
+
+The font is under the GUST Font License, which follows:
+
+% This is version 1.0, dated 22 June 2009, of the GUST Font License.
+% (GUST is the Polish TeX Users Group, https://www.gust.org.pl)
+%
+% For the most recent version of this license see
+% https://www.gust.org.pl/fonts/licenses/GUST-FONT-LICENSE.txt
+% or
+% https://tug.org/fonts/licenses/GUST-FONT-LICENSE.txt
+%
+% This work may be distributed and/or modified under the conditions
+% of the LaTeX Project Public License, either version 1.3c of this
+% license or (at your option) any later version.
+% 
+% Please also observe the following clause:
+% 1) it is requested, but not legally required, that derived works be
+%    distributed only after changing the names of the fonts comprising this
+%    work and given in an accompanying "manifest", and that the
+%    files comprising the Work, as listed in the manifest, also be given
+%    new names. Any exceptions to this request are also given in the
+%    manifest.
+%    
+%    We recommend the manifest be given in a separate file named
+%    MANIFEST-<fontid>.txt, where <fontid> is some unique identification
+%    of the font family. If a separate "readme" file accompanies the Work, 
+%    we recommend a name of the form README-<fontid>.txt.
+%
+% The latest version of the LaTeX Project Public License is in
+% https://www.latex-project.org/lppl.txt and version 1.3c or later
+% is part of all distributions of LaTeX version 2006/05/20 or later.
+
