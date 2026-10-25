@@ -1,3 +1,4 @@
 /target
 /.worktrees
 /THIRD_PARTY_NOTICES.md
+/parity/browser/node_modules
