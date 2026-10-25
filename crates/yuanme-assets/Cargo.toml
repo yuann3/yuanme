@@ -39,6 +39,8 @@ oxc_span = "=0.155.0"
 # rolldown runs on it; one current-thread runtime per build.
 tokio = { version = "1.52.3", features = ["rt"] }
 elsa = "1.11.2"
+# Checks Managed tool downloads (ADR 0003). The version ferriki uses.
+sha2 = "0.10.9"
 # The math font's subset (#29). Exact, as their output is the Site's bytes.
 read-fonts = "=0.46.0"
 write-fonts = { version = "=0.55.0", features = ["read"] }
@@ -55,5 +57,6 @@ asm = ["ravif/asm"]
 [dev-dependencies]
 blake3 = "1.8.7"
 insta = "1.49.0"
+tempfile = "3.27.0"
 # skera 0.9.0's, to draw the subset's glyphs.
 skrifa = "=0.49.0"
