@@ -2,6 +2,7 @@
 //! project into every file of the Site, in memory (ADR 0011).
 
 mod assets;
+mod budgets;
 mod cache;
 mod highlight;
 mod host;
@@ -17,7 +18,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use yuanme_content::config::{self, Config};
+use yuanme_content::config::{self, Budget, Config};
 use yuanme_content::site::{self, Project, RouteKind, Site};
 use yuanme_diag::{Code, Diagnostic, FileId, Files, Level, Span, codes};
 
@@ -133,6 +134,20 @@ pub struct Build {
     /// no image has none of them in `files`, and `yuanme dev` encodes one
     /// with [`image::encode`] when a browser asks for it.
     pub images: BTreeMap<String, (image::Variant, image::Settings)>,
+    /// Each HTML Page measured against the Site budgets, in the order of
+    /// the Site's Routes: only by a build that encodes images, which is
+    /// `yuanme build`'s, and never with `budgets = false` (#15).
+    pub budgets: Vec<Measured>,
+}
+
+/// One HTML Page's number for each Site budget.
+pub struct Measured {
+    pub url: String,
+    /// Bytes of Brotli at quality 11, or for `requests` a count.
+    pub values: BTreeMap<Budget, u64>,
+    /// An Entry's Page's body, which its first-flight HTML leaves out, in
+    /// bytes of Brotli.
+    pub body: Option<u64>,
 }
 
 /// One Script bundle of the Site.
@@ -183,6 +198,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         site,
         scripts: Vec::new(),
         images: BTreeMap::new(),
+        budgets: Vec::new(),
     };
     let (config, mut diagnostics) = site_config(inputs, cache.engine_version(), &mut sources);
     let Some(config) = config else {
@@ -248,6 +264,11 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         .filter(|p| p.output.ends_with(".html"))
         .map(|p| (p.output.clone(), p.templates.clone()))
         .collect();
+    let mut pages = pages;
+    let bodies: BTreeMap<String, String> = pages
+        .iter_mut()
+        .filter_map(|p| Some((p.output.clone(), p.body.take()?)))
+        .collect();
     let stage = assets::assets(inputs, &config, &site.data, pages, &templates, &mut sources);
     diagnostics.extend(stage.diagnostics);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
@@ -255,7 +276,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     }
     let (mut pages, mut assets) = (stage.pages, stage.assets);
     highlight::stylesheet(&mut pages, &mut assets);
-    math::stylesheet(&site, mode, cache, &mut pages, &mut assets);
+    let math_font = math::stylesheet(&site, mode, cache, &mut pages, &mut assets);
     let mut files = link(pages, assets);
     files.extend(statics);
     files.extend(images::copies(inputs, &used));
@@ -280,6 +301,16 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     diagnostics.extend(more);
     let more = images::in_css(inputs, &files, &heavy, &mut sources, &fallback);
     diagnostics.extend(more);
+    let budgets = match &config.budgets {
+        Some(budgets) if mode.encodes() => {
+            let math_font = math_font.as_deref();
+            let (measured, more) =
+                budgets::measure(&config, budgets, &site, &files, &bodies, math_font, cache);
+            diagnostics.extend(more);
+            measured
+        }
+        _ => Vec::new(),
+    };
     let (files, more) = host::host(&config, files, mode != Mode::Dev, cache);
     diagnostics.extend(more);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
@@ -294,6 +325,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         site: Some(site),
         scripts: stage.scripts,
         images: used.variants,
+        budgets,
     };
     if !build.failed() {
         cache.sweep();

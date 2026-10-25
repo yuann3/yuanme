@@ -160,7 +160,7 @@ pub(crate) fn links(
 /// on the Site's origin, decoded and without its query and fragment, and
 /// whether `url` was absolute. `None` for another origin, a scheme such as
 /// `mailto:`, or a fragment alone.
-fn internal(url: &str, base: &str, origin: &str) -> Option<(String, bool)> {
+pub(crate) fn internal(url: &str, base: &str, origin: &str) -> Option<(String, bool)> {
     if url.is_empty() || url.starts_with('#') {
         return None;
     }

@@ -154,6 +154,12 @@ impl Context {
         }
     }
 
+    /// The `i`th Entry's `content`.
+    pub fn body(&self, i: usize) -> String {
+        let content = self.entries[i].get_attr("content");
+        content.expect("every Entry has content").to_string()
+    }
+
     /// The context of one Route's Page.
     pub fn page(&self, route: &Route) -> Value {
         let mut ctx = self.globals.clone();

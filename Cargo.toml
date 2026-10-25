@@ -32,6 +32,8 @@ fast_image_resize.opt-level = 3
 # Highlighting the corpus, and Shiki's 500 ms per line limit.
 ferriki.opt-level = 3
 ferriki-textmate.opt-level = 3
+# Every `yuanme build` measures its Site budgets in Brotli at quality 11.
+brotli.opt-level = 3
 ferroni.opt-level = 3
 image.opt-level = 3
 image-webp.opt-level = 3

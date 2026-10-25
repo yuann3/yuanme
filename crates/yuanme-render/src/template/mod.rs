@@ -46,6 +46,9 @@ pub struct Page {
     /// extends, includes or imports, at any depth. The Page gets their
     /// Sidecars (#56).
     pub templates: Vec<String>,
+    /// An Entry's Page's body, as `entry.content` writes it, which its
+    /// first-flight HTML budget leaves out (#15).
+    pub body: Option<String>,
 }
 
 /// Renders every Route, then the sitemap. `templates` is every file of
@@ -181,6 +184,10 @@ pub fn render(
                             output: route.output.clone(),
                             text,
                             templates: closure(name, &uses),
+                            body: match route.kind {
+                                RouteKind::Entry(i) => Some(context.body(i)),
+                                _ => None,
+                            },
                         })
                     }
                     Err(e) => Err(diagnostic(&e, files, templates, Some(at))
@@ -438,6 +445,7 @@ fn sitemap(site: &Site, origin: &str) -> Vec<Page> {
             output,
             text,
             templates: Vec::new(),
+            body: None,
         });
     }
     index.push_str("</sitemapindex>\n");
@@ -445,6 +453,7 @@ fn sitemap(site: &Site, origin: &str) -> Vec<Page> {
         output: "sitemap-index.xml".into(),
         text: index,
         templates: Vec::new(),
+        body: None,
     });
     pages
 }

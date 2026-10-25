@@ -396,6 +396,41 @@ codes! {
         example: "<img src=\"/photos/sea.jpg\" alt=\"The sea\">\n(where static/photos/sea.jpg is 400 KB)",
         fix: "Move the image out of `static/` and write it with `image()` or as a body image, which make smaller copies of it. Make an animated image a video, or smaller. List an image that must be served as it is, such as a favicon, in `[images] allow_unoptimized`.",
     }
+    BUDGET_HTML = "budget/html" {
+        meaning: "A Page's first-flight HTML is over its Site budget, `budgets.html`: the whole document in kB of Brotli at quality 11, but an Entry's Page without its body, which the build report lists apart. The first 14 kB is what a server sends before it waits for the browser, so a Page over it takes another round trip to show. The Starters' budget is 14 kB.",
+        example: "<!doctype html>\n<style>/* 40 kB of CSS inline */</style>\n(in a Template)",
+        fix: "Move what the Page doesn't need at first out of its HTML: inline CSS and SVG into files, a long list into pages with `paginate`. If the Page is right as it is, raise `budgets.html`, or let this one Page go over with an Acknowledged overage, as the help shows.",
+    }
+    BUDGET_CSS = "budget/css" {
+        meaning: "The CSS a Page loads is over its Site budget, `budgets.css`: its stylesheets and `<style>` elements, each in kB of Brotli at quality 11. The Starters' budget is 6 kB.",
+        example: "<link rel=\"stylesheet\" href=\"/styles/all-of-bootstrap.css\">",
+        fix: "Load less CSS: drop rules no Page uses, and move a Component's styles into its Sidecar, which only the Pages that render it load. If the Page is right as it is, raise `budgets.css`, or let this one Page go over with an Acknowledged overage, as the help shows.",
+    }
+    BUDGET_JS = "budget/js" {
+        meaning: "The JS a Page runs as it loads is over its Site budget, `budgets.js`: its Scripts, the chunks they import and its inline `<script>`s, each in kB of Brotli at quality 11. A chunk imported with `import()` doesn't count until it loads, nor does a script from another origin. The Starters' budget is 3 kB.",
+        example: "<script type=\"module\" src=\"/scripts/charts.ts\"></script>\n(where charts.ts imports a charting library)",
+        fix: "Load the code only when it is needed, with `import()`, such as when the element that uses it scrolls into view, or replace a large package with a smaller one. If the Page is right as it is, raise `budgets.js`, or let this one Page go over with an Acknowledged overage, as the help shows.",
+    }
+    BUDGET_FONTS = "budget/fonts" {
+        meaning: "The text fonts a Page loads are over their Site budget, `budgets.fonts`: every font file that a stylesheet the Page loads names in `url()`, or that the Page preloads, but the math font, in kB of Brotli at quality 11. A font counts whether or not the Page's text uses it. The Starters' budget is 30 kB.",
+        example: "@font-face { font-family: Inter; src: url(\"/fonts/inter-all-weights.woff2\"); }",
+        fix: "Use fewer weights and styles, subset each font to the characters the Site shows, and serve WOFF2. If the Page is right as it is, raise `budgets.fonts`, or let this one Page go over with an Acknowledged overage, as the help shows.",
+    }
+    BUDGET_MATH_FONT = "budget/math-font" {
+        meaning: "The math font a Page that shows math loads is over its Site budget, `budgets.math_font`, in kB of Brotli at quality 11. yuanme subsets it once for the whole Site, to every character the Site's math shows, so one Entry's rare symbols make it larger on every Page with math. The Starters' budget is 55 kB.",
+        example: "$$\\mathfrak{A} \\boxtimes \\mathscr{B}$$\n(with many other alphabets elsewhere on the Site)",
+        fix: "Use fewer alphabets and symbols across the Site's math. If the Site's math needs them, raise `budgets.math_font`, or let the Pages go over with Acknowledged overages, as the help shows.",
+    }
+    BUDGET_REQUESTS = "budget/requests" {
+        meaning: "A Page makes more requests on its render path than its Site budget, `budgets.requests`, allows. They are the Page itself, each stylesheet, each Script and chunk it imports, each font its stylesheets name, and each `<link rel=\"preload\">`, such as of the image a visitor sees first, whatever their origin. The Starters' budget is 4.",
+        example: "<link rel=\"stylesheet\" href=\"/styles/a.css\">\n<link rel=\"stylesheet\" href=\"/styles/b.css\">\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter\">",
+        fix: "Load fewer files: `@import` one stylesheet from another, which yuanme bundles into one, import one Script from another, and self-host fonts and scripts from other origins. If the Page is right as it is, raise `budgets.requests`, or let this one Page go over with an Acknowledged overage, as the help shows.",
+    }
+    BUDGET_UNKNOWN_PAGE = "budget/unknown-page" {
+        meaning: "An Acknowledged overage in `[budgets.overages]` names a URL that is no HTML Page of the Site, so it silences nothing.",
+        example: "[budgets.overages.\"/abuot/\"]\njs = 3",
+        fix: "Use the Page's URL, as `yuanme routes` lists it, such as the one the help suggests, or delete the overage if the Page is gone.",
+    }
     LINK_REDIRECTED = "link/redirected" {
         meaning: "A Page links to a URL of the Site that hosts answer with a redirect, which costs the visitor a round trip: a Page's URL without its trailing `/` or with `index.html` on the end, a `.html` file, a `[[host.redirects]]` rule's `from`, or the Site's address with or without `www.`. Every internal link should be the URL a Page is served at, such as `/about/`.",
         example: "<a href=\"/about\">About</a>\n(with a Page at /about/)",

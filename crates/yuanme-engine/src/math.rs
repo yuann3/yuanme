@@ -6,7 +6,7 @@ use std::sync::Arc;
 use yuanme_assets::font::{self, NCM_MATH};
 use yuanme_content::site::Site;
 
-use crate::link::Asset;
+use crate::link::{Asset, hashed_path};
 use crate::{Body, Cache, Mode};
 
 const KIND: &str = "math-font";
@@ -25,19 +25,20 @@ const MATHML_FIXES: &str = include_str!("math/mathmlfixes.css");
 /// The math font, as an asset, and a stylesheet for it, linked at the end
 /// of the head of each HTML Page that shows math. A build gets one subset
 /// for the whole Site, of every character its Entries' math shows; `yuanme
-/// dev` serves the whole font, so an edit never waits for a subset.
+/// dev` serves the whole font, so an edit never waits for a subset. Returns
+/// the font's path, for the math font budget (#15).
 pub(crate) fn stylesheet(
     site: &Site,
     mode: Mode,
     cache: &mut Cache,
     pages: &mut [(String, Vec<u8>)],
     assets: &mut Vec<Asset>,
-) {
+) -> Option<String> {
     let showing: Vec<usize> = (0..pages.len())
         .filter(|&i| pages[i].0.ends_with(".html") && has_math(&pages[i].1))
         .collect();
     if showing.is_empty() {
-        return;
+        return None;
     }
     let (name, format, bytes) = if mode == Mode::Dev {
         ("math.otf", "opentype", Arc::from(NCM_MATH))
@@ -48,9 +49,11 @@ pub(crate) fn stylesheet(
         }
         ("math.woff2", "woff2", subset(cache, &chars))
     };
+    let hash = blake3::hash(&bytes);
+    let path = hashed_path(name, &hash);
     assets.push(Asset::Copy {
         name: name.into(),
-        hash: blake3::hash(&bytes),
+        hash,
         body: Body::Bytes(bytes),
     });
     let css = format!(
@@ -75,6 +78,7 @@ pub(crate) fn stylesheet(
             .unwrap_or(0);
         bytes.splice(at..at, tag.bytes());
     }
+    Some(path)
 }
 
 /// The subset WOFF2 for `chars`, through the cache: Brotli at quality 11

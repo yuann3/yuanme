@@ -15,3 +15,8 @@ template = "404.html"
 [feeds.rss]
 collections = ["posts"]
 path = "/rss.xml"
+
+# A Page here loads one of every kind of asset: more files than the
+# Starters' 4 requests.
+[budgets]
+requests = 6

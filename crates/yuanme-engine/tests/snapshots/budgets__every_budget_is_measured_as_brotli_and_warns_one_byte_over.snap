@@ -1,0 +1,57 @@
+---
+source: crates/yuanme-engine/tests/budgets.rs
+expression: "over.diagnostics.iter().map(|d|\nd.render(&over.sources, false)).collect::<Vec<_>>().join(\"\\n\\n\")"
+---
+warning[budget/html]: `/blog/sea/` has 0.28 kB of first-flight HTML, over its budget of 0.279 kB
+ --> yuanme.toml:3:8
+  |
+3 | html = 0.279
+  |        ^^^^^
+  |
+  = help: make it smaller, raise `budgets.html`, or acknowledge it: `[budgets.overages."/blog/sea/"] html = 0.1`
+  = note: run `yuanme docs budget/html` for more
+
+warning[budget/css]: `/blog/sea/` loads 1.267 kB of CSS, over its budget of 1.266 kB
+ --> yuanme.toml:4:7
+  |
+4 | css = 1.266
+  |       ^^^^^
+  |
+  = help: make it smaller, raise `budgets.css`, or acknowledge it: `[budgets.overages."/blog/sea/"] css = 0.1`
+  = note: run `yuanme docs budget/css` for more
+
+warning[budget/js]: `/blog/sea/` loads 0.79 kB of JS, over its budget of 0.789 kB
+ --> yuanme.toml:5:6
+  |
+5 | js = 0.789
+  |      ^^^^^
+  |
+  = help: make it smaller, raise `budgets.js`, or acknowledge it: `[budgets.overages."/blog/sea/"] js = 0.1`
+  = note: run `yuanme docs budget/js` for more
+
+warning[budget/fonts]: `/blog/sea/` loads 1.317 kB of text fonts, over its budget of 1.316 kB
+ --> yuanme.toml:6:9
+  |
+6 | fonts = 1.316
+  |         ^^^^^
+  |
+  = help: make it smaller, raise `budgets.fonts`, or acknowledge it: `[budgets.overages."/blog/sea/"] fonts = 0.1`
+  = note: run `yuanme docs budget/fonts` for more
+
+warning[budget/math-font]: `/blog/sea/` loads 6.652 kB of math font, over its budget of 6.651 kB
+ --> yuanme.toml:7:13
+  |
+7 | math_font = 6.651
+  |             ^^^^^
+  |
+  = help: make it smaller, raise `budgets.math_font`, or acknowledge it: `[budgets.overages."/blog/sea/"] math_font = 0.1`
+  = note: run `yuanme docs budget/math-font` for more
+
+warning[budget/requests]: `/blog/sea/` makes 9 requests on its render path, over its budget of 8
+ --> yuanme.toml:8:12
+  |
+8 | requests = 8
+  |            ^
+  |
+  = help: make fewer, raise `budgets.requests`, or acknowledge it: `[budgets.overages."/blog/sea/"] requests = 1`
+  = note: run `yuanme docs budget/requests` for more

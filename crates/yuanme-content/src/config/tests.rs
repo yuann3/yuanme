@@ -365,7 +365,10 @@ requests = 1
         .collect();
     assert_eq!(
         overages,
-        [("/about/", Budget::Js, 250), ("/about/", Budget::Requests, 1)]
+        [
+            ("/about/", Budget::Js, 250),
+            ("/about/", Budget::Requests, 1)
+        ]
     );
     assert_eq!(
         &text[budgets.overages[0].at.clone()],
