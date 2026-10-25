@@ -2,43 +2,80 @@
 source: crates/yuanme-engine/tests/images.rs
 expression: rendered(&inputs)
 ---
-error[template/bad-filter-argument]: `image` takes `width` for one width or `widths` for several, not both
+error[template/bad-filter-argument]: `image` takes `width` or `widths`, not both
  --> templates/both.html:1:4
   |
 1 | {{ image("/photos/logo.svg", width=240, widths=[480]) | picture(alt="") }}
-  |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |    ^^^^^
   |
-  = note: while rendering `/both/`
+  = note: checked as the Template of the Route `both`
   = note: run `yuanme docs template/bad-filter-argument` for more
+error[template/unknown-field]: `this value` has no field `widht`
+ --> templates/field.html:1:30
+  |
+1 | {{ image("/photos/logo.svg").widht }}
+  |                              ^^^^^ not a field of `Image`
+  |
+  = note: checked as the Template of the Route `field`
+  = note: run `yuanme docs template/unknown-field` for more
+help: did you mean `width`?
+  |
+1 - {{ image("/photos/logo.svg").widht }}
+1 + {{ image("/photos/logo.svg").width }}
+  |
 error[image/not-found]: `image`: no image at `photos/lgo.svg`; did you mean `photos/logo.svg`?
- --> templates/missing.html:1:4
+ --> templates/missing.html:1:10
   |
 1 | {{ image("/photos/lgo.svg") | picture(alt="") }}
-  |    ^^^^^^^^^^^^^^^^^^^^^^^^
+  |          ^^^^^^^^^^^^^^^^^
   |
-  = note: while rendering `/missing/`
+  = note: checked as the Template of the Route `missing`
   = note: run `yuanme docs image/not-found` for more
-error[template/bad-filter-argument]: `picture` needs `alt`, which says what the image shows; `alt=""` marks one that is only decoration
+error[template/bad-filter-argument]: `picture` needs `alt`, which says what the image shows
  --> templates/no-alt.html:1:32
   |
 1 | {{ image("/photos/logo.svg") | picture(class="logo") }}
-  |                                ^^^^^^^^^^^^^^^^^^^^^
+  |                                ^^^^^^^
   |
-  = note: while rendering `/no-alt/`
+  = note: checked as the Template of the Route `no-alt`
+  = help: write `alt=""` for an image that is only decoration
   = note: run `yuanme docs template/bad-filter-argument` for more
-error[template/bad-filter-argument]: `picture` takes an Image from `image()`, such as `image(entry.cover) | picture(alt="…")`, not string
+error[template/wrong-type]: `picture` takes an Image from `image()`, not `string`
  --> templates/not-an-image.html:1:25
   |
 1 | {{ "/photos/logo.svg" | picture(alt="") }}
-  |                         ^^^^^^^^^^^^^^^
+  |                         ^^^^^^^
   |
-  = note: while rendering `/not-an-image/`
+  = note: checked as the Template of the Route `not-an-image`
+  = help: write `image(entry.cover) | picture(alt="…")`
+  = note: run `yuanme docs template/wrong-type` for more
+error[template/bad-filter-argument]: `image` has no option `widht`
+ --> templates/option.html:1:30
+  |
+1 | {{ image("/photos/logo.svg", widht=240) | picture(alt="", loading="soon") }}
+  |                              ^^^^^
+  |
+  = note: checked as the Template of the Route `option`
+  = help: its options are `width`, `widths`, `format`, `formats`, `quality` and `sizes`
+  = note: run `yuanme docs template/bad-filter-argument` for more
+help: did you mean `width`?
+  |
+1 - {{ image("/photos/logo.svg", widht=240) | picture(alt="", loading="soon") }}
+1 + {{ image("/photos/logo.svg", width=240) | picture(alt="", loading="soon") }}
+  |
+error[template/bad-filter-argument]: `loading` is "lazy" or "eager", not "soon"
+ --> templates/option.html:1:67
+  |
+1 | {{ image("/photos/logo.svg", widht=240) | picture(alt="", loading="soon") }}
+  |                                                                   ^^^^^^
+  |
+  = note: checked as the Template of the Route `option`
   = note: run `yuanme docs template/bad-filter-argument` for more
 error[image/remote]: `image`: `https://example.com/cat.jpg` is remote, and yuanme never fetches an image to size it
- --> templates/remote.html:1:4
+ --> templates/remote.html:1:10
   |
 1 | {{ image("https://example.com/cat.jpg") | picture(alt="A cat") }}
-  |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
-  = note: while rendering `/remote/`
+  = note: checked as the Template of the Route `remote`
   = note: run `yuanme docs image/remote` for more

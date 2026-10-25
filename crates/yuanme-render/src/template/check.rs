@@ -25,6 +25,7 @@ use yuanme_content::site::{self, RouteKind, Site};
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Span, codes};
 
 use super::filters::{known_format, unknown_format};
+use crate::image::Images;
 
 /// What every Page sees, and so what a Component may read besides its props.
 const GLOBALS: [&str; 5] = ["site", "data", "collections", "taxonomies", "page"];
@@ -38,8 +39,10 @@ const FILTERS: &[&str] = &[
     "length", "lines", "list", "lower", "map", "max", "min", "pprint", "reject", "rejectattr",
     "replace", "reverse", "round", "safe", "select", "selectattr", "slice", "sort", "split",
     "string", "sum", "title", "tojson", "trim", "unique", "upper", "urlencode", "zip",
-    "sort_by", "dateformat", "pluralize", "attrs", "markdown", "org",
+    "sort_by", "dateformat", "pluralize", "attrs", "markdown", "org", "picture",
 ];
+/// The type `image()` returns, by the name `picture` knows it by.
+const IMAGE: &str = "Image";
 #[rustfmt::skip]
 const TESTS: &[&str] = &[
     "defined", "undefined", "none", "safe", "escaped", "boolean", "odd", "even", "divisibleby",
@@ -902,6 +905,7 @@ pub(super) fn check(
     files: &Files,
     templates: &BTreeMap<String, FileId>,
     chosen: &[(String, Span)],
+    images: &dyn Images,
 ) -> Vec<Diagnostic> {
     let syntax = env.syntax().clone();
     let asts: BTreeMap<&str, Stmt<'_>> = templates
@@ -927,6 +931,7 @@ pub(super) fn check(
         templates,
         asts: &asts,
         known: &known,
+        images,
         functions: env.globals().map(|(n, _)| n.to_string()).collect(),
         named: schema.named(),
         globals: schema.globals.clone(),
@@ -996,6 +1001,7 @@ struct Checker<'a> {
     asts: &'a BTreeMap<&'a str, Stmt<'a>>,
     /// Whether the Environment has a filter, or with `true` a test.
     known: &'a dyn Fn(bool, &str) -> bool,
+    images: &'a dyn Images,
     functions: BTreeSet<String>,
     named: BTreeMap<String, Ty>,
     globals: Vec<(&'static str, Ty)>,
@@ -2313,7 +2319,7 @@ impl<'a> Checker<'a> {
             "lower" | "upper" | "trim" | "string" | "title" | "capitalize" | "replace" | "join"
             | "format" | "indent" | "dateformat" | "pluralize" | "tojson" | "urlencode"
             | "pprint" => Ty::Str,
-            "safe" | "escape" | "e" | "markdown" | "org" | "attrs" => Ty::Slot,
+            "safe" | "escape" | "e" | "markdown" | "org" | "attrs" | "picture" => Ty::Slot,
             "split" | "lines" => Ty::List(Rc::new(Ty::Str)),
             "abs" | "round" => input,
             _ => Ty::Any,
@@ -2454,6 +2460,7 @@ impl<'a> Checker<'a> {
                     self.key(f.name, input, &key, at);
                 }
             }
+            "picture" => self.picture(f, input, at),
             "attrs" if !assignable(input, &Ty::Attrs) => {
                 let d = self.error(
                     &codes::TEMPLATE_WRONG_TYPE,
@@ -2463,6 +2470,65 @@ impl<'a> Checker<'a> {
                 self.push(d);
             }
             _ => {}
+        }
+    }
+
+    /// `image | picture(…)`: an Image, with an `alt`.
+    fn picture(&mut self, f: &'a Spanned<ast::Filter<'a>>, input: &Ty, at: Range<usize>) {
+        const KWARGS: [&str; 5] = ["alt", "priority", "class", "loading", "attrs"];
+        let bad = |c: &Self, message: String, at: Range<usize>| {
+            c.error(&codes::TEMPLATE_BAD_FILTER_ARGUMENT, message, at)
+        };
+        if !matches!(input, Ty::Any) && !matches!(input, Ty::Obj(o) if o.name == IMAGE) {
+            let d = self
+                .error(
+                    &codes::TEMPLATE_WRONG_TYPE,
+                    format!("`picture` takes an Image from `image()`, not `{input}`"),
+                    at.clone(),
+                )
+                .help("write `image(entry.cover) | picture(alt=\"…\")`");
+            self.push(d);
+        }
+        let mut alt = false;
+        for a in &f.args {
+            match a {
+                CallArg::Kwarg(k, e) if KWARGS.contains(k) => {
+                    alt |= *k == "alt";
+                    let loading = e.as_const().and_then(|v| v.as_str().map(String::from));
+                    if *k == "loading"
+                        && let Some(loading) = loading.filter(|l| l != "lazy" && l != "eager")
+                    {
+                        let d = bad(
+                            self,
+                            format!("`loading` is \"lazy\" or \"eager\", not \"{loading}\""),
+                            range(e),
+                        );
+                        self.push(d);
+                    }
+                }
+                CallArg::Kwarg(k, e) => {
+                    let k_at = self.kwarg_at(k, e);
+                    let d = bad(self, format!("`picture` has no option `{k}`"), k_at.clone())
+                        .help("its options are `alt`, `priority`, `class`, `loading` and `attrs`; `attrs` takes any other attribute");
+                    let d = Self::near(d, self.span(k_at), k, KWARGS);
+                    self.push(d);
+                }
+                CallArg::Pos(e) => {
+                    let d = bad(self, "`picture` takes its options by name".into(), range(e))
+                        .help("write `picture(alt=\"…\")`");
+                    self.push(d);
+                }
+                CallArg::PosSplat(_) | CallArg::KwargSplat(_) => return,
+            }
+        }
+        if !alt {
+            let d = bad(
+                self,
+                "`picture` needs `alt`, which says what the image shows".into(),
+                at,
+            )
+            .help("write `alt=\"\"` for an image that is only decoration");
+            self.push(d);
         }
     }
 
@@ -2511,6 +2577,9 @@ impl<'a> Checker<'a> {
                         return (Ty::Any, false);
                     }
                     None => {}
+                }
+                if name == "image" && self.functions.contains(name) {
+                    return (self.image(&c.args, callee), false);
                 }
                 self.args(&c.args);
                 match name {
@@ -2594,6 +2663,96 @@ impl<'a> Checker<'a> {
                 (Ty::Any, false)
             }
         }
+    }
+
+    /// `image(src, …)`, whose `src` a literal lets `check` judge before
+    /// any Page is rendered.
+    fn image(&mut self, args: &'a [CallArg<'a>], callee: Range<usize>) -> Ty {
+        const KWARGS: [&str; 6] = ["width", "widths", "format", "formats", "quality", "sizes"];
+        let bad = |c: &Self, message: String, at: Range<usize>| {
+            c.error(&codes::TEMPLATE_BAD_FILTER_ARGUMENT, message, at)
+        };
+        let mut src = None;
+        let mut given = BTreeSet::new();
+        for a in args {
+            match a {
+                CallArg::Pos(e) if src.is_none() => src = Some(e),
+                CallArg::Kwarg(k, e) => {
+                    self.expr(e, Mode::Pass);
+                    if KWARGS.contains(k) {
+                        given.insert(*k);
+                        continue;
+                    }
+                    let at = self.kwarg_at(k, e);
+                    let d = bad(self, format!("`image` has no option `{k}`"), at.clone())
+                        .help("its options are `width`, `widths`, `format`, `formats`, `quality` and `sizes`");
+                    let d = Self::near(d, self.span(at), k, KWARGS);
+                    self.push(d);
+                }
+                CallArg::Pos(e) => {
+                    self.expr(e, Mode::Pass);
+                    let d = bad(
+                        self,
+                        "`image` takes one image, then its options by name".into(),
+                        range(e),
+                    );
+                    self.push(d);
+                }
+                CallArg::PosSplat(e) | CallArg::KwargSplat(e) => {
+                    self.expr(e, Mode::Pass);
+                }
+            }
+        }
+        for (one, many) in [("width", "widths"), ("format", "formats")] {
+            if given.contains(one) && given.contains(many) {
+                let d = bad(
+                    self,
+                    format!("`image` takes `{one}` or `{many}`, not both"),
+                    callee.clone(),
+                );
+                self.push(d);
+            }
+        }
+        match src {
+            None if !args.iter().any(|a| matches!(a, CallArg::PosSplat(_))) => {
+                let d = bad(self, "`image` needs an image".into(), callee)
+                    .help("write `image(entry.cover)` or `image(\"/photos/sea.jpg\")`");
+                self.push(d);
+            }
+            None => {}
+            Some(e) => {
+                let (ty, _) = self.expr(e, Mode::Use);
+                if !assignable(&ty, &Ty::Image) {
+                    let d = self.error(
+                        &codes::TEMPLATE_WRONG_TYPE,
+                        format!("`image` takes a path or an `image` field, not `{ty}`"),
+                        range(e),
+                    );
+                    self.push(d);
+                }
+                if let Some(path) = e.as_const().and_then(|v| v.as_str().map(String::from))
+                    && let Err((code, message)) = self.images.check(&path)
+                {
+                    let d = self.error(code, format!("`image`: {message}"), range(e));
+                    self.push(d);
+                }
+            }
+        }
+        let source = obj(
+            "an Image's source",
+            [("type", Ty::Str, false), ("srcset", Ty::Str, false)],
+        );
+        obj(
+            IMAGE,
+            [
+                ("width", Ty::Int, false),
+                ("height", Ty::Int, false),
+                ("url", Ty::Url, false),
+                ("srcset", Ty::Str, false),
+                ("sizes", Ty::Str, false),
+                ("sources", Ty::List(Rc::new(source)), false),
+            ],
+        )
     }
 
     fn macro_call(

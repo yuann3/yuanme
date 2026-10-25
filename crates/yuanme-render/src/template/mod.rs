@@ -147,7 +147,7 @@ pub fn render(
             diagnostics.push(d);
         }
     }
-    for d in check::check(&env, config, site, files, templates, &chosen) {
+    for d in check::check(&env, config, site, files, templates, &chosen, &*images) {
         diagnostics.push(d);
     }
     if !diagnostics.0.is_empty() {

@@ -320,6 +320,11 @@ fn rendered_image_function_diagnostics() {
             "not-an-image",
             r#"{{ "/photos/logo.svg" | picture(alt="") }}"#,
         ),
+        (
+            "option",
+            r#"{{ image("/photos/logo.svg", widht=240) | picture(alt="", loading="soon") }}"#,
+        ),
+        ("field", r#"{{ image("/photos/logo.svg").widht }}"#),
     ];
     for (name, text) in templates {
         writeln!(
