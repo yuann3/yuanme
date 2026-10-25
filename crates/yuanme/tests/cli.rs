@@ -1072,6 +1072,21 @@ fn dev_serves_the_site_and_reloads_what_a_save_changed() {
     assert_eq!(events.last().unwrap()["ok"], false);
     assert!(events.iter().any(|e| e["type"] == "diagnostic"));
     assert!(dev.get("/blog/first/").2.contains("Hello, again."));
+    fs::write(&post, &text).unwrap();
+    assert_eq!(dev.until("build-finished")["ok"], true);
+
+    // Site config deleted and written again, as some editors save it.
+    let config = root.join("yuanme.toml");
+    let saved = fs::read_to_string(&config).unwrap();
+    fs::remove_file(&config).unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(200));
+    fs::write(
+        &config,
+        saved.replace("title = \"Example\"", "title = \"Examples\""),
+    )
+    .unwrap();
+    assert_eq!(dev.until("build-finished")["ok"], true);
+    assert!(dev.get("/").2.contains("Examples"));
 }
 
 /// Interrupted, `yuanme dev` saves its cache and exits 0.

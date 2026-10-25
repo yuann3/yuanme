@@ -80,6 +80,10 @@ impl Inputs {
         self.root.as_deref()
     }
 
+    pub fn get(&self, path: &str) -> Option<&Input> {
+        self.files.get(path)
+    }
+
     /// Whether the walk found the folder `dir`; the project's own is `""`.
     pub fn contains_dir(&self, dir: &str) -> bool {
         self.dirs.contains(dir)

@@ -131,6 +131,11 @@ fn rebuild(mut session: Session, batches: &Receiver<Batch>, shared: &serve::Shar
                 continue;
             }
         }
+        // Such as between an editor's delete and its write.
+        if session.inputs.get("yuanme.toml").is_none() {
+            out.say("yuanme.toml is gone: the next change builds once it is back");
+            continue;
+        }
         out.event(Event::BuildStarted { command: "dev" });
         match session.build() {
             Update::Built(urls) => {
