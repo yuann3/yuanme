@@ -448,7 +448,7 @@ fn image(s: &str, path: &str, at: Range<usize>, cx: &mut Cx<'_>) -> Option<Image
     }
     let message = format!("`{path}`: no image at `{local}`");
     cx.push(cx
-        .error(&codes::ENTRY_INVALID_VALUE, message, at)
+        .error(&codes::IMAGE_NOT_FOUND, message, at)
         .help("a relative path starts from the Entry's folder, and one starting with `/` from the project root"));
     None
 }

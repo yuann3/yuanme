@@ -121,7 +121,7 @@ The types, and the keys each one takes:
 - `enum`: one of the strings in `values`.
 - `list`: a list of values of the type `items` names. `unique = true` forbids repeats.
 - `object`: a mapping with its own `fields`, declared as a Collection's are.
-- `image`: a path to an image file, relative to the Entry's folder or, starting with `/`, to the project root, or a remote URL. The file must exist.
+- `image`: a path to an image file, relative to the Entry's folder or, starting with `/`, to the project root, or a remote URL. A path that names no file is `image/not-found`.
 
 Declaring `date`, with `type = "date"`, makes the built-in `date` required. Declaring any other built-in field is an error.
 

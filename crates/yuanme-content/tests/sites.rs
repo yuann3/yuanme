@@ -538,7 +538,7 @@ const CASES: &[(&str, &str, &str, &str)] = &[
         "eassy",
     ),
     (
-        "entry/invalid-value",
+        "image/not-found",
         "---\ntitle: A\ncover: ./missing.png\n---\n",
         "content/posts/a.md",
         "./missing.png",
@@ -931,7 +931,8 @@ fn every_entry_code_has_a_case_here() {
     let tested: BTreeSet<&str> = CASES
         .iter()
         .map(|c| c.0)
-        .filter(|c| !c.starts_with("config/"))
+        // The Engine has more of `image/`, for body images, and tests them.
+        .filter(|c| !c.starts_with("config/") && !c.starts_with("image/"))
         .chain([
             "markdown/no-effect",
             "math/tex-delimiter",

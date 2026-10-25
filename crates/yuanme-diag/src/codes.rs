@@ -102,7 +102,7 @@ codes! {
         fix: "Use a value inside the range, or change the range in `yuanme.toml`.",
     }
     ENTRY_INVALID_VALUE = "entry/invalid-value" {
-        meaning: "A field's value has the right type but isn't allowed: an `enum` value not in its list, a URL that isn't absolute, an image that doesn't exist, or an item repeated in a `unique` list.",
+        meaning: "A field's value has the right type but isn't allowed: an `enum` value not in its list, a URL that isn't absolute, or an item repeated in a `unique` list. An image that doesn't exist is `image/not-found`.",
         example: "---\ntitle: Pew\nkind: esay\n---\n(with kind = { type = \"enum\", values = [\"essay\", \"note\"] })",
         fix: "Change the value as the message says. Here `kind: essay`.",
     }

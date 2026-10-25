@@ -108,9 +108,9 @@ cover: /static/img/cat.svg
 Some text.
 ```
 
-yuanme checks that a path names a file of the project. One that doesn't is `entry/invalid-value`:
+yuanme checks that a path names a file of the project. One that doesn't is `image/not-found`:
 
-```md fail entry/invalid-value content/posts/trip.md
+```md fail image/not-found content/posts/trip.md
 ---
 title: Trip
 cover: cat.svg
