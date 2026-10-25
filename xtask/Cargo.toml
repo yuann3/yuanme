@@ -6,5 +6,11 @@ rust-version.workspace = true
 license.workspace = true
 publish = false
 
+[dependencies]
+# hyperfine's results, and yuanme dev's events.
+serde_json = "1.0.154"
+# wait4, for the peak RSS of a build.
+libc = "0.2.191"
+
 [dev-dependencies]
 tempfile = "3.27.0"

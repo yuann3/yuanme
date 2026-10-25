@@ -1,3 +1,4 @@
+mod gates;
 mod scale;
 
 use std::collections::BTreeMap;
@@ -23,6 +24,26 @@ fn main() -> ExitCode {
                 ExitCode::FAILURE
             }
         },
+        Some("gates") => {
+            let args: Vec<String> = std::env::args().skip(2).collect();
+            match args.as_slice() {
+                [head] => gates::run(Path::new(head), None),
+                [head, flag, base] if flag == "--main" => {
+                    gates::run(Path::new(head), Some(Path::new(base)))
+                }
+                _ => {
+                    eprintln!("usage: cargo xtask gates YUANME [--main YUANME]");
+                    ExitCode::FAILURE
+                }
+            }
+        }
+        Some("first-page") => match (std::env::args().nth(2), std::env::args().nth(3)) {
+            (Some(bin), Some(dir)) => gates::first_page(Path::new(&bin), Path::new(&dir)),
+            _ => {
+                eprintln!("usage: cargo xtask first-page YUANME DIR");
+                ExitCode::FAILURE
+            }
+        },
         Some("release-version") => match std::env::args().nth(2) {
             Some(version) => release_version(&version),
             None => {
@@ -32,7 +53,7 @@ fn main() -> ExitCode {
         },
         _ => {
             eprintln!(
-                "usage: cargo xtask package-check | vendor-check | docs | notices | scale-site DIR | release-version X.Y.Z"
+                "usage: cargo xtask package-check | vendor-check | docs | notices | scale-site DIR | gates YUANME [--main YUANME] | release-version X.Y.Z"
             );
             ExitCode::FAILURE
         }
