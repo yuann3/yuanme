@@ -17,7 +17,7 @@ This reverses the highlighter choice in [Which Rust syntax highlighter gives Cat
 
 ## Consequences
 
-- **ferriki's `Highlighter` is `!Send`.** The Engine keeps one per rayon thread. On 16 threads that costs about 0.4 s of CPU on a cold build, for regexes compiled again in each thread. At steady state its speed equals giallo's.
+- **ferriki's `Highlighter` is `!Send`.** The Engine keeps one per rayon thread, for the grammar it last highlighted, and highlights code blocks in order of grammar. One that kept every grammar it compiled held about 250 MB a thread on a cold build of the Scale Site (#92). Each thread compiles again the regexes of each grammar it highlights. At steady state its speed equals giallo's.
 - **Grammars are precompiled at Engine release time.** ferriki's bundled catalogue lacks Lean, Coq, LaTeX and OCaml, so the Engine compiles Shiki 3.19's grammars with `ferriki-asset-gen` and embeds them. This adds about 7 MB to the binary. The four under GPL-3.0 (ada, gnuplot, nginx and racket) are left out, so no GPL data is in the binary; a block in one of those languages is plain text with a warning (#53).
 - **ferriki has one maintainer, AI-assisted.** Its 1.0 shipped on 2026-10-10, and it has 3 stars. It stays behind the Engine's highlight module and is pinned exactly. Its licence lets the Engine fork it if upstream stalls.
 - **Fonts and grammars.** The math font (New Computer Modern Math, GUST Font License) is shipped patched and subset under a new name, with a notice of the changes, as that licence asks. The Engine never subsets New Computer Modern's GPL-3-with-exceptions files: removing glyphs voids their distribution exception. Each grammar's own licence goes into the third-party notices.
