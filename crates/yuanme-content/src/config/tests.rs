@@ -427,6 +427,11 @@ requests = 1
     assert_eq!(config.typescript.check, None);
     let (off, _) = check(&format!("{MINIMAL}[typescript]\ncheck = false\n"));
     assert_eq!(off.unwrap().typescript.check, None);
+    // `dev`, `build` and `check` keep the AGENTS.md block current unless
+    // the Author turns that off (#21).
+    assert!(config.agents.manage_agents_md);
+    let (off, _) = check(&format!("{MINIMAL}[agents]\nmanage_agents_md = false\n"));
+    assert!(!off.unwrap().agents.manage_agents_md);
     // Workers static assets is the default host (#25).
     assert_eq!(config.host.adapter, Adapter::Cloudflare);
     assert!(config.host.headers.is_empty() && config.host.redirects.is_empty());

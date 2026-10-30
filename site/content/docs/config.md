@@ -44,6 +44,12 @@ Collections and their fields have their own page, `yuanme docs collections`.
 - `data` (table of types, below): Schemas for Data files: `[data.nav]` checks `data/nav.toml`, `.yaml` or `.json`. A Data file without one is not checked.
 - `yuanme` (string): The oldest yuanme release this project works with, as "X.Y". A newer minor release in the same major builds it; before 1.0, only the same 0.Y does.
 
+### `[agents]`
+
+The files `yuanme init` writes for coding agents.
+
+- `manage_agents_md` (boolean): Rewrite the block between `<!-- BEGIN:yuanme -->` and `<!-- END:yuanme -->` in `AGENTS.md` when `yuanme dev`, `build` or `check` is a different version from the one that wrote it, and nothing else in the file. Defaults to true.
+
 ### `[budgets]`
 
 The Site budgets every Page of `yuanme build` is measured against, in kB of Brotli at quality 11 (1 kB is 1,000 bytes). A breach is a warning; `budgets = false` turns them off.

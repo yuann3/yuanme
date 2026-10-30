@@ -153,6 +153,11 @@ pub(crate) const ROOT: &[Key] = &[
         Shape::Table(TYPESCRIPT),
         "Whether yuanme checks the types of the Site's TypeScript Scripts.",
     ),
+    Key::optional(
+        "agents",
+        Shape::Table(AGENTS),
+        "The files `yuanme init` writes for coding agents.",
+    ),
     Key::optional("math", Shape::Table(MATH), "How math renders."),
     Key::optional(
         "images",
@@ -380,6 +385,12 @@ const TYPESCRIPT: &[Key] = &[Key::optional(
     "check",
     Shape::Bool,
     "Check the types of every TypeScript Script with TypeScript 7's `tsc` in `yuanme check` and `yuanme build`, and fail on a type error. yuanme downloads `tsc` on first use. Defaults to false: yuanme strips the types and doesn't check them.",
+)];
+
+const AGENTS: &[Key] = &[Key::optional(
+    "manage_agents_md",
+    Shape::Bool,
+    "Rewrite the block between `<!-- BEGIN:yuanme -->` and `<!-- END:yuanme -->` in `AGENTS.md` when `yuanme dev`, `build` or `check` is a different version from the one that wrote it, and nothing else in the file. Defaults to true.",
 )];
 
 /// The browsers `targets` names, which both the CSS and the JS pipeline know.

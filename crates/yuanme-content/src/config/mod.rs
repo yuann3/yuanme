@@ -35,6 +35,7 @@ pub struct Config {
     pub router: RouterMode,
     pub tailwind: Tailwind,
     pub typescript: TypeScript,
+    pub agents: Agents,
     pub host: Host,
     pub math: Math,
     pub images: Images,
@@ -313,6 +314,14 @@ pub struct Tailwind {
 pub struct TypeScript {
     /// Where `check = true` is, when it is: `tsc` checks the Scripts.
     pub check: Option<Range<usize>>,
+}
+
+/// `[agents]` (#21).
+#[derive(Debug)]
+pub struct Agents {
+    /// `dev`, `build` and `check` rewrite the yuanme block in `AGENTS.md`
+    /// when another version wrote it.
+    pub manage_agents_md: bool,
 }
 
 /// Tailwind v4's baseline (#20), so a Site with Tailwind gets the same
@@ -691,6 +700,12 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
             .map(|v| v.span()),
     };
 
+    let agents = Agents {
+        manage_agents_md: table(root, "agents")
+            .and_then(|t| t.get("manage_agents_md"))
+            .is_none_or(|v| v.get_ref().as_bool() == Some(true)),
+    };
+
     let host = host(table(root, "host"), checker);
     let images = images(table(root, "images"), checker);
     let budgets = match root.get("budgets") {
@@ -723,6 +738,7 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
         router,
         tailwind,
         typescript,
+        agents,
         host,
         math: Math { macros, theorems },
         images,

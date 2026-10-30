@@ -89,6 +89,16 @@ fn with_block(text: &str, version: &str) -> String {
     }
 }
 
+/// The version that wrote `text`'s yuanme block, if it has a whole one.
+fn block_version(text: &str) -> Option<&str> {
+    let (_, rest) = text.split_once(BEGIN)?;
+    let (block, _) = rest.split_once(END)?;
+    block
+        .strip_prefix(WRITTEN_BY)?
+        .split_once(',')
+        .map(|(v, _)| v)
+}
+
 /// The two workflow skills (#21), in `.agents/skills/` for every client
 /// that reads the Agent Skills standard, and in `.claude/skills/`, the
 /// only place Claude Code reads.
@@ -110,6 +120,50 @@ fn skill(source: &str, version: &str) -> String {
     let unhashed = format!("---\n{front}\nmetadata:\n  yuanme-version: \"{version}\"\n---\n{body}");
     let hash = blake3::hash(unhashed.as_bytes()).to_hex();
     unhashed.replacen("\n---\n", &format!("\n{HASH_KEY}\"{hash}\"\n---\n"), 1)
+}
+
+/// Whether `text` is a skill another version of yuanme wrote and no one
+/// changed since: the hash it keeps is still that of the rest of it.
+fn stale_skill(text: &str) -> bool {
+    let text = text.replace("\r\n", "\n");
+    let mut hash = None;
+    let mut rest = String::new();
+    for line in text.split_inclusive('\n') {
+        match line.strip_prefix(HASH_KEY) {
+            Some(h) => hash = Some(h.trim().trim_matches('"')),
+            None => rest.push_str(line),
+        }
+    }
+    let current = format!("  yuanme-version: \"{ENGINE_VERSION}\"\n");
+    hash.is_some_and(|h| blake3::hash(rest.as_bytes()).to_hex().as_str() == h)
+        && !rest.contains(&current)
+}
+
+/// Rewrites the files `init` wrote for agents that another version of
+/// yuanme wrote, as `dev`, `build` and `check` do (#21): the block of
+/// `AGENTS.md` unless `[agents] manage_agents_md = false`, and each skill
+/// the Author hasn't edited. It never makes one that isn't there.
+pub fn refresh(root: &Path, manage_agents_md: bool, out: &Out) -> io::Result<()> {
+    let agents = root.join("AGENTS.md");
+    if manage_agents_md
+        && let Ok(text) = fs::read_to_string(&agents)
+        && block_version(&text).is_some_and(|v| v != ENGINE_VERSION)
+    {
+        fs::write(&agents, with_block(&text, ENGINE_VERSION))?;
+        out.say(&format!(
+            "updated AGENTS.md's yuanme block for yuanme {ENGINE_VERSION}"
+        ));
+    }
+    for dir in SKILL_DIRS {
+        for (name, source) in SKILLS {
+            let path = format!("{dir}/{name}/SKILL.md");
+            if fs::read_to_string(root.join(&path)).is_ok_and(|t| stale_skill(&t)) {
+                fs::write(root.join(&path), skill(source, ENGINE_VERSION))?;
+                out.say(&format!("updated {path} for yuanme {ENGINE_VERSION}"));
+            }
+        }
+    }
+    Ok(())
 }
 
 /// A Worker's or a Pages project's name, from the Site's folder: lowercase

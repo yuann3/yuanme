@@ -314,6 +314,18 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     docs::write(&root.join(".yuanme/docs"), ENGINE_VERSION)?;
     // For the Author's editor, whether or not the build checks types.
     yuanme_engine::write_types(&root)?;
+    if let Command::Build { .. } | Command::Check(_) | Command::Dev(DevArgs { manage: None, .. }) =
+        cli.command
+    {
+        // Only for a project this Engine can build: an older one's files
+        // are right for it.
+        let text = fs::read_to_string(root.join("yuanme.toml"))?;
+        let mut files = Files::default();
+        let file = files.add("yuanme.toml", text);
+        if let (Some(config), _) = config::parse(&files, file, ENGINE_VERSION) {
+            init::refresh(&root, config.agents.manage_agents_md, out)?;
+        }
+    }
     match cli.command {
         Command::Build {
             check,

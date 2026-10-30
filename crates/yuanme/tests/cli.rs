@@ -738,6 +738,81 @@ fn init_writes_each_hosts_deploy_files() {
     assert_eq!(yuanme(root, &["init", "x", "--starter", "docs"]).code, 2);
 }
 
+/// A skill as an older yuanme would have written it: `version`, its
+/// `body` and the hash of the rest, which the Author left alone.
+fn old_skill(current: &str, version: &str, body: (&str, &str)) -> String {
+    let unhashed: String = current
+        .lines()
+        .filter(|l| !l.starts_with("  yuanme-hash: "))
+        .map(|l| format!("{l}\n"))
+        .collect::<String>()
+        .replace(
+            &format!("yuanme-version: \"{version}\""),
+            "yuanme-version: \"0.0.1\"",
+        )
+        .replace(body.0, body.1);
+    let hash = blake3::hash(unhashed.as_bytes()).to_hex();
+    unhashed.replacen("\n---\n", &format!("\n  yuanme-hash: \"{hash}\"\n---\n"), 1)
+}
+
+#[test]
+fn another_version_rewrites_the_agent_files_init_wrote() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    json(root, &["init"]);
+    let version = yuanme(root, &["--version"]).stdout;
+    let version = version.trim().strip_prefix("yuanme ").unwrap();
+    let read = |path: &str| fs::read_to_string(root.join(path)).unwrap();
+    let block = read("AGENTS.md");
+    let verify = read(".agents/skills/yuanme-verify/SKILL.md");
+    let migrate = read(".agents/skills/yuanme-migrate/SKILL.md");
+
+    // What an older yuanme left: its block, between the Author's notes;
+    // a skill no one edited; one the Author edited; and one they deleted.
+    let old_block = block
+        .replace(version, "0.0.1")
+        .replace("## Work loop", "## Loop");
+    let notes = "# Notes\n\nUse British spelling.\n\n";
+    fs::write(
+        root.join("AGENTS.md"),
+        format!("{notes}{old_block}\nMore.\n"),
+    )
+    .unwrap();
+    let old_verify = old_skill(&verify, version, ("# Verify a change", "# Verify"));
+    fs::write(
+        root.join(".agents/skills/yuanme-verify/SKILL.md"),
+        &old_verify,
+    )
+    .unwrap();
+    let edited = old_skill(&migrate, version, ("", "")) + "Also keep the old feed's URL.\n";
+    fs::write(root.join(".agents/skills/yuanme-migrate/SKILL.md"), &edited).unwrap();
+    fs::remove_file(root.join(".claude/skills/yuanme-verify/SKILL.md")).unwrap();
+
+    let check = yuanme(root, &["check"]);
+    assert_eq!(check.code, 0, "{}", check.stderr);
+    assert!(
+        check.stderr.starts_with(&format!(
+            "updated AGENTS.md's yuanme block for yuanme {version}\nupdated .agents/skills/yuanme-verify/SKILL.md for yuanme {version}\n"
+        )),
+        "{}",
+        check.stderr
+    );
+    assert_eq!(read("AGENTS.md"), format!("{notes}{block}\nMore.\n"));
+    assert_eq!(read(".agents/skills/yuanme-verify/SKILL.md"), verify);
+    assert_eq!(read(".agents/skills/yuanme-migrate/SKILL.md"), edited);
+    assert!(!root.join(".claude/skills/yuanme-verify/SKILL.md").exists());
+    // Once current, nothing is said.
+    let check = yuanme(root, &["check"]);
+    assert!(!check.stderr.contains("updated"), "{}", check.stderr);
+
+    // `manage_agents_md = false` leaves the block as it is.
+    fs::write(root.join("AGENTS.md"), &old_block).unwrap();
+    let config = read("yuanme.toml") + "\n[agents]\nmanage_agents_md = false\n";
+    fs::write(root.join("yuanme.toml"), config).unwrap();
+    assert_eq!(yuanme(root, &["build"]).code, 0);
+    assert_eq!(read("AGENTS.md"), old_block);
+}
+
 #[test]
 fn exit_codes_and_the_project_folder() {
     let dir = project(SITE);

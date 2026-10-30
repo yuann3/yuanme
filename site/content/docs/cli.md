@@ -22,6 +22,12 @@ It also writes the files a coding agent reads:
 - `.gitignore`, with `.yuanme/` and the output directory, or those two lines added to yours.
 - `.yuanme/`: these docs, the JSON Schemas and the types for Scripts, which every command rewrites.
 
+`yuanme dev`, `build` and `check` keep the block and the skills in step with the yuanme that runs them, and say what they rewrote:
+
+- When another version wrote the block, they rewrite it, and nothing else in `AGENTS.md`. `[agents] manage_agents_md = false` in Site config turns that off.
+- They rewrite a skill another version wrote, unless you edited it, which they tell from the hash in its `metadata`. An edited skill is yours from then on.
+- They never make a file you removed, and never touch `CLAUDE.md`.
+
 `init` never overwrites a file. If any file it would create is already there, it lists them all, exits 2 and changes nothing. A folder that holds other files, such as a Git repository's, is fine.
 
 ## Output
