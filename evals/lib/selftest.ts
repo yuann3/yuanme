@@ -34,7 +34,8 @@ for (const task of tasks().filter((t) => t.startsWith(args.filter))) {
 	cases.push({ task, name: 'solution', pass: true, layers: [solution] });
 	const bad = join(dir, 'bad');
 	for (const name of existsSync(bad) ? readdirSync(bad) : []) {
-		cases.push({ task, name: `bad/${name}`, pass: false, layers: [solution, [join(bad, name), '']] });
+		const layer: [string, string] = name.endsWith('.sh') ? ['', join(bad, name)] : [join(bad, name), ''];
+		cases.push({ task, name: `bad/${name}`, pass: false, layers: [solution, layer] });
 	}
 }
 

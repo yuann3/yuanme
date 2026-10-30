@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+{% set title = "Series" %}
+{% block content %}
+<h1>Series</h1>
+<ul class="rows">
+{% for term in terms %}
+  <li><a href="{{ term.url }}">{{ term.name }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

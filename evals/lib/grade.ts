@@ -9,7 +9,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, relative } from 'node:path';
-import { parse, type HTMLElement } from 'node-html-parser';
+import { parse as parseHtml, type HTMLElement } from 'node-html-parser';
 import { expect, test } from 'vitest';
 
 export type Diagnostic = {
@@ -58,19 +58,27 @@ export type Route = {
 	collection?: string;
 	/** An Entry's file, from the project root. */
 	entry?: string;
+	taxonomy?: string;
+	term?: string;
 };
 
-let routed: Route[] | undefined;
+const routed = new Map<boolean, Route[]>();
 
-/** Every Route of the Site, as `yuanme routes` lists it. */
-export function routes(): Route[] {
-	routed ??= execFileSync('yuanme', ['routes', '--json'], { encoding: 'utf8', maxBuffer: 64 << 20 })
-		.split('\n')
-		.filter((line) => line.startsWith('{'))
-		.map((line) => JSON.parse(line))
-		.filter((e) => e.type === 'route');
-	return routed!;
+/** Every Route of the Site, as `yuanme routes` lists it, with Drafts if `drafts`. */
+export function routes(drafts = false): Route[] {
+	if (!routed.has(drafts)) {
+		const args = ['routes', '--json', ...(drafts ? ['--drafts'] : [])];
+		const lines = execFileSync('yuanme', args, { encoding: 'utf8', maxBuffer: 64 << 20 }).split('\n');
+		routed.set(
+			drafts,
+			lines.filter((line) => line.startsWith('{')).map((line) => JSON.parse(line)).filter((e) => e.type === 'route'),
+		);
+	}
+	return routed.get(drafts)!;
 }
+
+// node-html-parser leaves what is in a <pre> unparsed by default.
+const parse = (html: string) => parseHtml(html, { blockTextElements: { script: true, noscript: true, style: true } });
 
 function outputPath(url: string): string {
 	return join(build().out, url.endsWith('/') ? `${url}index.html` : url);

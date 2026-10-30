@@ -9,7 +9,8 @@
 //   start.sh      optional: run after that, for what an overlay can't do
 //   solution/     a known-good end state, laid over the start
 //   solution.sh   optional: run after that, such as to delete a file
-//   bad/NAME/     optional: known-bad end states, each laid over the solution
+//   bad/NAME/     optional: known-bad end states, each laid over the solution,
+//   bad/NAME.sh   or run after it
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

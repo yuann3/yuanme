@@ -1,0 +1,11 @@
+{% extends "layouts/base.html" %}
+{% from "components/post-row.html" import post_row %}
+{% set title = term.name %}
+{% block content %}
+<h1>The series “{{ term.name }}”</h1>
+<ul class="rows">
+{% for post in entries %}
+  {{ post_row(post=post) }}
+{% endfor %}
+</ul>
+{% endblock %}
