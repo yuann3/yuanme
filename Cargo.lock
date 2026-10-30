@@ -5832,6 +5832,7 @@ dependencies = [
  "insta",
  "libwebp-sys",
  "lightningcss",
+ "memchr",
  "moxcms",
  "mozjpeg-rs",
  "oxc_allocator",

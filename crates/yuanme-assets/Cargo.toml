@@ -11,6 +11,7 @@ include = ["/src"]
 [dependencies]
 yuanme-diag.workspace = true
 rayon = "1.12.0"
+memchr = "2.8.3"
 # Exact pins: their output is the Site's bytes, so a bump is an output
 # change, reviewed as one (#27).
 image = { version = "=0.25.10", default-features = false, features = ["gif", "jpeg", "png", "webp"] }

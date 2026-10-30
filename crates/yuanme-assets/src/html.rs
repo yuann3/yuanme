@@ -77,16 +77,16 @@ pub fn scan(html: &str) -> Scan {
         let name_end = html[i..]
             .find(|c: char| c.is_ascii_whitespace() || c == '/' || c == '>')
             .map_or(bytes.len(), |e| i + e);
-        let name = html[i..name_end].to_ascii_lowercase();
+        let name = &html[i..name_end];
         let (attributes, end) = attributes(html, name_end);
         i = end;
-        let get = |name: &str| attributes.iter().find(|a| a.name == name);
+        let get = |name: &str| attributes.iter().find(|a| a.is(html, name));
         if let Some(class) = get("class") {
             classes.push(decode(class.value(html)));
         }
         // Whether the element's text is a script, else a stylesheet.
         let mut text_is = None;
-        match name.as_str() {
+        match &*name.to_ascii_lowercase() {
             "link" => {
                 let rels = get("rel").map_or(String::new(), |a| a.value(html).to_ascii_lowercase());
                 let has = |rel: &str| rels.split_ascii_whitespace().any(|r| r == rel);
@@ -129,9 +129,12 @@ pub fn scan(html: &str) -> Scan {
             "style" => text_is = Some(false),
             _ => {}
         }
-        if ["script", "style", "textarea", "title"].contains(&name.as_str()) {
+        if ["script", "style", "textarea", "title"]
+            .iter()
+            .any(|n| n.eq_ignore_ascii_case(name))
+        {
             let start = i;
-            i = closing(html, i, &name);
+            i = closing(html, i, name);
             if let Some(script) = text_is {
                 // Just before `</`, unless the element is never closed.
                 let end = if i < bytes.len() { i - 1 } else { i };
@@ -151,11 +154,16 @@ pub fn scan(html: &str) -> Scan {
 }
 
 struct Attribute {
-    name: String,
+    name: Range<usize>,
     value: Range<usize>,
 }
 
 impl Attribute {
+    /// Whether its name is `name`, which is lower-case, in any case.
+    fn is(&self, html: &str, name: &str) -> bool {
+        html[self.name.clone()].eq_ignore_ascii_case(name)
+    }
+
     fn value<'h>(&self, html: &'h str) -> &'h str {
         &html[self.value.clone()]
     }
@@ -195,7 +203,7 @@ fn attributes(html: &str, mut i: usize) -> (Vec<Attribute>, usize) {
         {
             i += 1;
         }
-        let name = html[start..i].to_ascii_lowercase();
+        let name = start..i;
         let mut j = i;
         while bytes.get(j).is_some_and(u8::is_ascii_whitespace) {
             j += 1;
@@ -225,7 +233,7 @@ fn attributes(html: &str, mut i: usize) -> (Vec<Attribute>, usize) {
         } else {
             i..i
         };
-        if !out.iter().any(|a| a.name == name) {
+        if !out.iter().any(|a| a.is(html, &html[name.clone()])) {
             out.push(Attribute { name, value });
         }
     }
@@ -254,11 +262,7 @@ fn starts_with_tag(text: &str, name: &str) -> bool {
 }
 
 fn memchr(needle: u8, bytes: &[u8], from: usize) -> Option<usize> {
-    bytes
-        .get(from..)?
-        .iter()
-        .position(|&b| b == needle)
-        .map(|p| from + p)
+    memchr::memchr(needle, bytes.get(from..)?).map(|p| from + p)
 }
 
 /// Character references in an attribute value: the ones an escaping
@@ -340,13 +344,13 @@ pub fn urls(html: &str) -> Vec<Url> {
         let name_end = html[i..]
             .find(|c: char| c.is_ascii_whitespace() || c == '/' || c == '>')
             .map_or(bytes.len(), |e| i + e);
-        let name = html[i..name_end].to_ascii_lowercase();
+        let name = &html[i..name_end];
         let (attributes, end) = attributes(html, name_end);
         i = end;
         // A data block's `src` is never fetched.
-        let data_block = name == "script"
+        let data_block = name.eq_ignore_ascii_case("script")
             && attributes.iter().any(|a| {
-                a.name == "type" && {
+                a.is(html, "type") && {
                     let ty = a.value(html).trim().to_ascii_lowercase();
                     !["", "module"].contains(&ty.as_str())
                         && !ty.contains("javascript")
@@ -354,33 +358,34 @@ pub fn urls(html: &str) -> Vec<Url> {
                 }
             });
         for a in &attributes {
-            match a.name.as_str() {
-                "href" | "src" | "poster" if !data_block => out.push(Url {
+            if !data_block && ["href", "src", "poster"].iter().any(|n| a.is(html, n)) {
+                out.push(Url {
                     url: decode(a.value(html)),
                     at: a.value.clone(),
-                    loaded: a.name != "href" || name == "link",
-                }),
-                "srcset" | "imagesrcset" => {
-                    let mut at = a.value.start;
-                    for candidate in a.value(html).split(',') {
-                        let lead = candidate.len() - candidate.trim_start().len();
-                        let url = candidate.trim_start().split_ascii_whitespace().next();
-                        if let Some(url) = url {
-                            let start = at + lead;
-                            out.push(Url {
-                                url: decode(url),
-                                at: start..start + url.len(),
-                                loaded: true,
-                            });
-                        }
-                        at += candidate.len() + 1;
+                    loaded: !a.is(html, "href") || name.eq_ignore_ascii_case("link"),
+                });
+            } else if a.is(html, "srcset") || a.is(html, "imagesrcset") {
+                let mut at = a.value.start;
+                for candidate in a.value(html).split(',') {
+                    let lead = candidate.len() - candidate.trim_start().len();
+                    let url = candidate.trim_start().split_ascii_whitespace().next();
+                    if let Some(url) = url {
+                        let start = at + lead;
+                        out.push(Url {
+                            url: decode(url),
+                            at: start..start + url.len(),
+                            loaded: true,
+                        });
                     }
+                    at += candidate.len() + 1;
                 }
-                _ => {}
             }
         }
-        if ["script", "style", "textarea", "title"].contains(&name.as_str()) {
-            i = closing(html, i, &name);
+        if ["script", "style", "textarea", "title"]
+            .iter()
+            .any(|n| n.eq_ignore_ascii_case(name))
+        {
+            i = closing(html, i, name);
         }
     }
     out
