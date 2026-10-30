@@ -1,7 +1,8 @@
 //! The Site budgets (#15, ADR 0004): each HTML Page of a build measured in
 //! bytes of Brotli at quality 11, by type wherever they sit, and in
 //! requests on its render path, against `[budgets]`. A breach is a warning;
-//! strict mode, which the CLI applies, makes it an error.
+//! strict mode, which the CLI applies, makes it an error. A number under
+//! half its limit is estimated at quality 5 instead (#91).
 
 use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
@@ -16,6 +17,14 @@ use crate::links::internal;
 use crate::{Body, Cache, Measured, Output, host};
 
 const FONTS: &[&str] = &[".woff2", ".woff", ".ttf", ".otf"];
+
+/// Quality 11 takes about a second per MB, which was 61% of a cold build
+/// of the Scale Site, and most numbers are far under their limits (#91).
+/// Quality 5 takes 2–4% of that time. For one input of the corpus, the
+/// Reference site or the Scale Site, quality 11 was 0.76–1.13 times it,
+/// so only a number under half its limit is estimated: an estimate can't
+/// hide a breach.
+const ESTIMATE: i32 = 5;
 
 /// What one Page's numbers are made of.
 struct Plan<'a> {
@@ -83,20 +92,58 @@ pub(crate) fn measure(
                 .collect()
         })
         .collect();
-    let sizes: Vec<u64> = host::brotli(&blobs, 11, cache)
+    let sizes = |texts: &[&[u8]], quality, cache: &mut Cache| -> Vec<u64> {
+        host::brotli(texts, quality, cache)
+            .iter()
+            .map(|br| br.len() as u64)
+            .collect()
+    };
+    let estimates = sizes(&blobs, ESTIMATE, cache);
+    // The body goes with its Page's HTML.
+    let budget_of = |b: Option<Budget>| b.unwrap_or(Budget::Html);
+    let estimated: Vec<BTreeSet<Budget>> = parts
         .iter()
-        .map(|br| br.len() as u64)
+        .map(|parts| {
+            let mut sums: BTreeMap<Budget, u64> = BTreeMap::new();
+            for (b, id) in parts {
+                if let Some(b) = b {
+                    *sums.entry(*b).or_default() += estimates[*id];
+                }
+            }
+            // Not its limit and allowance: a number over its limit is
+            // listed even when an Acknowledged overage allows it.
+            sums.into_iter()
+                .filter(|(b, sum)| 2 * sum <= budgets.limit(*b))
+                .map(|(b, _)| b)
+                .collect()
+        })
         .collect();
+    let mut wanted = vec![false; blobs.len()];
+    for (parts, estimated) in parts.iter().zip(&estimated) {
+        for (b, id) in parts {
+            wanted[*id] |= !estimated.contains(&budget_of(*b));
+        }
+    }
+    let ids: Vec<usize> = (0..blobs.len()).filter(|i| wanted[*i]).collect();
+    let texts: Vec<&[u8]> = ids.iter().map(|i| blobs[*i]).collect();
+    let mut exact = vec![0; blobs.len()];
+    for (i, size) in ids.into_iter().zip(sizes(&texts, 11, cache)) {
+        exact[i] = size;
+    }
 
     let mut measured = Vec::with_capacity(plans.len());
     let mut diagnostics = Vec::new();
-    for (plan, parts) in plans.iter().zip(parts) {
+    for ((plan, parts), estimated) in plans.iter().zip(parts).zip(estimated) {
         let mut values: BTreeMap<Budget, u64> = Budget::ALL.map(|b| (b, 0)).into();
         let mut body = None;
         for (budget, id) in parts {
+            let size = match estimated.contains(&budget_of(budget)) {
+                true => estimates[id],
+                false => exact[id],
+            };
             match budget {
-                Some(b) => *values.get_mut(&b).expect("every Budget") += sizes[id],
-                None => body = Some(sizes[id]),
+                Some(b) => *values.get_mut(&b).expect("every Budget") += size,
+                None => body = Some(size),
             }
         }
         // The Page itself is a request too.
@@ -110,6 +157,7 @@ pub(crate) fn measure(
             url: plan.url.to_string(),
             values,
             body,
+            estimated,
         });
     }
     let urls: Vec<&str> = measured.iter().map(|m| m.url.as_str()).collect();

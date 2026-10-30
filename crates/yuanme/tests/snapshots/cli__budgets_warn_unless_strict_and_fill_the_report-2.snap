@@ -7,8 +7,8 @@ Bytes are Brotli at quality 11. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 10 B
 
 | Page | HTML | Body | CSS | JS | Text fonts | Math font | Requests |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| `/about/` | 56 B |  | 0 B | 48 B, acknowledged | 0 B | 0 B | 1 |
-| `/` | 51 B |  | 0 B | 50 B, over | 0 B | 0 B | 1 |
+| `/about/` | 67 B |  | 0 B | 48 B, acknowledged | 0 B | 0 B | 1 |
+| `/` | 61 B |  | 0 B | 50 B, over | 0 B | 0 B | 1 |
 
 Over budget:
 

@@ -20,6 +20,8 @@ Bytes are counted as Brotli at quality 11, the smallest a host could send, so a 
 
 A file counts once per Page, however many times the Page names it. `yuanme check` measures nothing: Budgets need the built Site.
 
+Quality 11 is slow, about a second per MB on one core, so a number under half its limit is estimated at quality 5 instead, which takes about 3% of the time. An estimate is about 15% more than quality 11 would be: on yuanme's test Sites, 13–15% more on HTML and 5–20% more on Entries' bodies, and for one file from 11% less to 31% more. Half the limit leaves room for that, so an estimate is never over a limit, and every number at or over half of one is exact. An Entry's body is estimated when its Page's HTML is.
+
 ## Changing them
 
 `[budgets]` in Site config sets any number, in kB, or for `requests` a count. A number left out keeps the Starters':
@@ -136,8 +138,8 @@ Bytes are Brotli at quality 11. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 3.0 
 
 | Page | HTML | Body | CSS | JS | Text fonts | Math font | Requests |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| `/blog/hello/` | 86 B | 73 B | 0 B | 72 B | 0 B | 0 B | 2 |
-| `/blog/` | 73 B |  | 0 B | 0 B | 0 B | 0 B | 1 |
+| `/blog/hello/` | 90 B | 83 B | 0 B | 71 B | 0 B | 0 B | 2 |
+| `/blog/` | 76 B |  | 0 B | 0 B | 0 B | 0 B | 1 |
 ```
 
 The 6 files are the two Pages, the bundle, the sitemap's two files and the cloudflare adapter's `_headers`. `report.json` has the same numbers, its keys sorted:
@@ -148,8 +150,8 @@ The 6 files are the two Pages, the bundle, the sitemap's two files and the cloud
     "limits": { "css": 6000, "fonts": 30000, "html": 14000, "js": 3000, "math_font": 55000, "requests": 4 },
     "over": [],
     "pages": [
-      { "body": 73, "css": 0, "fonts": 0, "html": 86, "js": 72, "math_font": 0, "requests": 2, "url": "/blog/hello/" },
-      { "body": null, "css": 0, "fonts": 0, "html": 73, "js": 0, "math_font": 0, "requests": 1, "url": "/blog/" }
+      { "body": 83, "css": 0, "fonts": 0, "html": 90, "js": 71, "math_font": 0, "requests": 2, "url": "/blog/hello/" },
+      { "body": null, "css": 0, "fonts": 0, "html": 76, "js": 0, "math_font": 0, "requests": 1, "url": "/blog/" }
     ]
   },
   "bytes": 1015,

@@ -1,7 +1,7 @@
 //! The Site budgets (#15, ADR 0004), measured through the Engine's one
 //! seam. Each expected number is worked out here from the built files with
 //! the `brotli` crate, and each Budget is tried at its number and one byte,
-//! or one request, under it.
+//! or one request, under it, and far under it, where it is estimated (#91).
 
 use std::collections::BTreeSet;
 
@@ -11,8 +11,18 @@ use yuanme_engine::{Body, Build, Cache, Inputs, Measured, Mode, build};
 
 /// Bytes of Brotli at quality 11, as #15 counts them.
 fn br(bytes: &[u8]) -> u64 {
+    brotli_at(11, bytes)
+}
+
+/// Bytes of Brotli at quality 5, which a number under half its limit is
+/// estimated with (#91).
+fn estimate(bytes: &[u8]) -> u64 {
+    brotli_at(5, bytes)
+}
+
+fn brotli_at(quality: i32, bytes: &[u8]) -> u64 {
     let params = brotli::enc::BrotliEncoderParams {
-        quality: 11,
+        quality,
         lgwin: 22,
         ..Default::default()
     };
@@ -57,9 +67,10 @@ fn project(budgets: &str) -> Inputs {
     let config = format!(
         "{budgets}\n[site]\nurl = \"https://e.com\"\n\n[collections.posts]\nroute = \"/blog/{{slug}}/\"\n"
     );
+    // A body of more than half the HTML budget, which isn't the HTML's.
     let body = format!(
         "---\ntitle: Sea\n---\nThe sea is $x^2 + y_1$ deep.\n\n{}\n",
-        noise(1, 3000)
+        noise(1, 12000)
     );
     let css = format!(
         "@font-face {{ font-family: Text; src: url(\"/fonts/text.woff2\") format(\"woff2\"); }}\nbody {{ font-family: Text, serif; }}\n.n::after {{ content: \"{}\"; }}\n",
@@ -115,9 +126,9 @@ fn text<'b>(build: &'b Build, path: &str) -> &'b str {
     }
 }
 
-fn file(build: &Build, path: &str) -> u64 {
+fn file(build: &Build, path: &str, size: fn(&[u8]) -> u64) -> u64 {
     match &build.files[path.trim_start_matches('/')].body {
-        Body::Bytes(bytes) => br(bytes),
+        Body::Bytes(bytes) => size(bytes),
         _ => panic!("{path} is held in memory"),
     }
 }
@@ -138,8 +149,9 @@ fn page<'b>(build: &'b Build, url: &str) -> &'b Measured {
         .unwrap_or_else(|| panic!("{url} wasn't measured"))
 }
 
-/// Each Budget's number for `/blog/sea/`, from its files.
-fn expected(build: &Build) -> ([(Budget, u64); 6], u64) {
+/// Each Budget's number for `/blog/sea/`, from its files, each measured
+/// in bytes by `size`.
+fn expected(build: &Build, size: fn(&[u8]) -> u64) -> ([(Budget, u64); 6], u64) {
     let html = text(build, "blog/sea/index.html");
     let (head, rest) = html.split_once("<body>").unwrap();
     let (body, tail) = rest.split_once("</body>").unwrap();
@@ -155,25 +167,29 @@ fn expected(build: &Build) -> ([(Budget, u64); 6], u64) {
     let [math_font] = font_urls(&stylesheets[1]).try_into().unwrap();
     assert!(math_font.contains("math"), "{math_font}");
 
-    let css: u64 = stylesheets.iter().map(|s| file(build, s)).sum::<u64>() + br(b"body{margin:0}");
+    let css: u64 = stylesheets
+        .iter()
+        .map(|s| file(build, s, size))
+        .sum::<u64>()
+        + size(b"body{margin:0}");
     let js: u64 = modules
         .iter()
         .chain(&preloaded)
-        .map(|s| file(build, s))
+        .map(|s| file(build, s, size))
         .sum::<u64>()
-        + br(b"window.page = 1");
+        + size(b"window.page = 1");
     // The Page, 2 stylesheets and the one from the CDN, 2 Scripts and the
     // chunk they share, and 2 fonts: the preload is the font's own URL.
     let requests = 1 + 3 + 3 + 2;
     let numbers = [
-        (Budget::Html, br(first_flight.as_bytes())),
+        (Budget::Html, size(first_flight.as_bytes())),
         (Budget::Css, css),
         (Budget::Js, js),
-        (Budget::Fonts, file(build, &text_font)),
-        (Budget::MathFont, file(build, &math_font)),
+        (Budget::Fonts, file(build, &text_font, size)),
+        (Budget::MathFont, file(build, &math_font, size)),
         (Budget::Requests, requests),
     ];
-    (numbers, br(body.as_bytes()))
+    (numbers, size(body.as_bytes()))
 }
 
 /// `[budgets]` with each limit given in kB, as an Author writes it.
@@ -206,13 +222,35 @@ fn every_budget_is_measured_as_brotli_and_warns_one_byte_over() {
         build.budgets.is_empty(),
         "`budgets = false` measures nothing"
     );
-    let (numbers, body) = expected(&build);
+    let (numbers, body) = expected(&build, br);
+
+    // Under half the Starters' limits, each number is an estimate (#91).
+    let starters = run(&project(""));
+    let (estimates, estimated_body) = expected(&starters, estimate);
+    assert_ne!(
+        (estimates, estimated_body),
+        (numbers, body),
+        "an estimate differs from Brotli at quality 11"
+    );
+    let measured = page(&starters, "/blog/sea/");
+    let got: Vec<(Budget, u64)> = measured.values.iter().map(|(b, n)| (*b, *n)).collect();
+    assert_eq!(got, estimates);
+    assert_eq!(measured.body, Some(estimated_body));
+    let bytes: BTreeSet<Budget> = Budget::ALL
+        .into_iter()
+        .filter(|b| *b != Budget::Requests)
+        .collect();
+    assert_eq!(measured.estimated, bytes);
 
     let at = run(&project(&limits(&numbers, 0)));
     let measured = page(&at, "/blog/sea/");
     let got: Vec<(Budget, u64)> = measured.values.iter().map(|(b, n)| (*b, *n)).collect();
     assert_eq!(got, numbers);
     assert_eq!(measured.body, Some(body), "the body is reported");
+    assert!(
+        measured.estimated.is_empty(),
+        "every number is at its limit"
+    );
     assert_eq!(budget_codes(&at), [] as [&str; 0], "a Page at its limits");
     assert_eq!(at.budgets.len(), 1, "only HTML Pages are measured");
 
@@ -301,7 +339,13 @@ fn with_no_budget_config_a_site_gets_the_starters_numbers() {
     inputs.insert("templates/at.html", script_of(3000).into_bytes());
     let build = run(&inputs);
     assert_eq!(page(&build, "/over/").values[&Budget::Js], 3001);
-    assert_eq!(page(&build, "/at/").values[&Budget::Js], 3000);
+    let at = page(&build, "/at/");
+    assert_eq!(at.values[&Budget::Js], 3000);
+    // Its HTML, under half its limit, is estimated, but not its JS.
+    let html = text(&build, "at/index.html").as_bytes();
+    assert_ne!(estimate(html), br(html));
+    assert_eq!(at.values[&Budget::Html], estimate(html));
+    assert_eq!(at.estimated, BTreeSet::from([Budget::Html]));
     let warned: Vec<&str> = build
         .diagnostics
         .iter()

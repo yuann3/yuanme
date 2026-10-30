@@ -196,6 +196,9 @@ pub struct Measured {
     /// An Entry's Page's body, which its first-flight HTML leaves out, in
     /// bytes of Brotli.
     pub body: Option<u64>,
+    /// The Budgets whose numbers are under half their limits, and so
+    /// estimated at Brotli quality 5. The body is estimated with the HTML.
+    pub estimated: BTreeSet<Budget>,
 }
 
 /// One Script bundle of the Site.
