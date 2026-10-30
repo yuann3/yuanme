@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160" font-family="system-ui, sans-serif" font-size="18" text-anchor="middle">
+  <style>
+    rect { fill: #eef2f8; stroke: #1a5fb4; stroke-width: 2; }
+    text { fill: #1d1d1f; }
+    path { stroke: #1a5fb4; stroke-width: 2; fill: none; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #1e2633; stroke: #8ab4ff; }
+      text { fill: #e8e8ea; }
+      path { stroke: #8ab4ff; }
+    }
+  </style>
+  <rect x="10" y="50" width="160" height="60" rx="8"/>
+  <text x="90" y="86">Markdown, Org</text>
+  <rect x="240" y="50" width="160" height="60" rx="8"/>
+  <text x="320" y="86">yuanme</text>
+  <rect x="470" y="50" width="160" height="60" rx="8"/>
+  <text x="550" y="86">Site</text>
+  <path d="M170 80h62m-8-6 8 6-8 6M400 80h62m-8-6 8 6-8 6"/>
+</svg>

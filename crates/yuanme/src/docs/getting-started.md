@@ -15,7 +15,14 @@ cargo install --locked --git https://github.com/yuann3/yuanme yuanme
 
 ## Start from a Starter
 
-`yuanme init my-site` makes a project in `my-site/` from a Starter, ready to build, with the files a coding agent reads. `yuanme docs cli` shows what it writes. The rest of this page makes one by hand instead.
+`yuanme init my-site` makes a project in `my-site/` from the `blog` Starter: Posts in Markdown and Org with math and code, projects, tags, an about Page and an RSS feed, ready to build, with the files a coding agent reads. `yuanme init my-site --starter minimal` makes one with a Layout, a home Page and nothing else, to design your own. Then:
+
+```sh
+cd my-site
+yuanme dev
+```
+
+`yuanme dev` serves the Site and rebuilds it on every save. The first `check` or `build` of the `blog` Starter downloads TypeScript's `tsc`, about 9 MB, to check the types of its copy button's Script; `yuanme docs scripts` says how to check offline. `yuanme docs cli` shows what `init` writes. The rest of this page makes a project by hand instead.
 
 ## Site config
 

@@ -1,0 +1,14 @@
+{% extends "layouts/base.html" %}
+{% set title = entry.title %}
+{% set description = entry.description %}
+{% block content %}
+<article>
+  <header class="entry-header">
+    <h1>{{ entry.title }}</h1>
+    <p class="meta">{{ entry.description }}{% if entry.repository %} · <a href="{{ entry.repository }}">Source</a>{% endif %}</p>
+  </header>
+  <div class="prose">
+{{ entry.content }}
+  </div>
+</article>
+{% endblock %}

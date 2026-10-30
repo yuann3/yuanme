@@ -7,7 +7,12 @@ description: "Every command and flag, the exit codes, and the JSON that --json p
 
 ## Starting a Site
 
-`yuanme init DIR` creates a Site in `DIR`, or in the current folder without one, from a Starter. It asks nothing, so it runs the same for a person and for a coding agent. The `minimal` Starter, the only one so far, is `yuanme.toml`, a Layout, a home Page, a 404 Page and a stylesheet. `yuanme.toml` starts with two lines that `init` writes:
+`yuanme init DIR` creates a Site in `DIR`, or in the current folder without one, from a Starter. It asks nothing, so it runs the same for a person and for a coding agent. `--starter` picks one:
+
+- `blog`, the default: a personal site. Its Collections are `posts`, paginated at `/blog/`, and `projects`, with a `tags` Taxonomy, an about Page in the built-in `pages` Collection, a home Page, a 404 Page and an RSS feed. Its two Posts, one in Markdown and one in Org, show an equation with a Label, a Theorem block, a reference to each and a highlighted code block, and its project is an Entry folder with an image beside it. Its one stylesheet, `styles/site.css`, is plain CSS with its colours and fonts as custom properties, light and dark. Its one Script, the Sidecar `templates/components/code-copy.ts`, puts a copy button on each code block, and its types are checked (`[typescript] check = true`, with a `tsconfig.json`). Moving between its Pages is a View Transition with no JS (`[router] mode = "native"`).
+- `minimal`: `yuanme.toml`, a Layout, a home Page, a 404 Page and a stylesheet, to build your own design from.
+
+Each builds with no Diagnostic under `yuanme build --strict-budgets`, and passes axe-core's accessibility checks in light and dark. Its files are yours under MIT-0: change or delete any of them. `yuanme.toml` starts with two lines that `init` writes:
 
 - `#:schema ./.yuanme/schemas/yuanme.toml.json`, which editors with a TOML language server, such as Taplo or Tombi, read to complete and check keys.
 - `yuanme = "X.Y"`, the yuanme release the project needs, which `check` holds every later release to.
@@ -108,7 +113,7 @@ yuanme init [OPTIONS] [DIR]
 ```
 
 - `DIR`: The Site's folder, which may hold other files already. Defaults to the current one.
-- `--starter STARTER`: The Starter to begin from. One of `minimal`. Defaults to `minimal`.
+- `--starter STARTER`: The Starter to begin from. One of `blog`, `minimal`. Defaults to `blog`.
 - `--host HOST`: Deploy to this host: set `[host] adapter`, and write its GitHub Actions deploy workflow and files. One of `cloudflare`, `netlify`, `vercel`, `github-pages`, `cloudflare-pages`, `static`.
 
 ### `yuanme build`

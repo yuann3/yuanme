@@ -1,0 +1,13 @@
+{% extends "layouts/base.html" %}
+{% set title = "Projects" %}
+{% block content %}
+<h1>Projects</h1>
+<ul class="rows">
+{% for project in entries %}
+  <li>
+    <a href="{{ project.url }}">{{ project.title }}</a>
+    <p>{{ project.description }}</p>
+  </li>
+{% endfor %}
+</ul>
+{% endblock %}

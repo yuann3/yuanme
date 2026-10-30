@@ -1,0 +1,19 @@
+{% extends "layouts/base.html" %}
+{% from "components/tag-list.html" import tag_list %}
+{% from "components/code-copy.html" import code_copy %}
+{% set title = entry.title %}
+{% set description = entry.description %}
+{% set og_type = "article" %}
+{% block content %}
+<article>
+  <header class="entry-header">
+    <h1>{{ entry.title }}</h1>
+    <p class="meta"><time datetime="{{ entry.date }}">{{ entry.date | dateformat(format="%-d %B %Y") }}</time> · {{ entry.reading_time }} min read</p>
+    {{ tag_list(tags=entry.tags) }}
+  </header>
+  <div class="prose">
+{{ entry.content }}
+  </div>
+</article>
+{{ code_copy() }}
+{% endblock %}

@@ -83,7 +83,7 @@ enum Command {
         #[arg(value_name = "DIR")]
         folder: Option<PathBuf>,
         /// The Starter to begin from.
-        #[arg(long, value_enum, default_value_t = init::Starter::Minimal)]
+        #[arg(long, value_enum, default_value_t = init::Starter::Blog)]
         starter: init::Starter,
         /// Deploy to this host: set `[host] adapter`, and write its GitHub Actions deploy workflow and files.
         #[arg(long, value_parser = Adapter::ALL.map(Adapter::name))]

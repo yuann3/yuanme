@@ -1,0 +1,35 @@
+#+TITLE: Hello from Org
+#+DATE: 2026-01-02
+#+DESCRIPTION: The same ideas as the first Post, written in Org.
+#+FILETAGS: :meta:org:
+
+This Post is Org. Its math, Theorem blocks and code are the ones the first Post has, in Org's own syntax.
+
+* An equation
+
+The sum of the first \(n\) odd numbers is a square:
+
+\begin{equation}
+\sum_{k=1}^{n} (2k - 1) = n^2 \label{eq:odd}
+\end{equation}
+
+* A theorem
+
+#+NAME: thm:gauss
+#+begin_theorem Gauss
+For every \(n \ge 1\), \(\sum_{k=1}^{n} k = \frac{n(n+1)}{2}\), and so \eqref{eq:odd} holds.
+#+end_theorem
+
+#+begin_proof
+Each \(k\) pairs with \(n + 1 - k\), and the \(n\) pairs, which count the sum twice, each add up to \(n + 1\). Then the odd numbers sum to \(2 \cdot \frac{n(n+1)}{2} - n = n^2\).
+#+end_proof
+
+A link with no description to a Label shows its number: [[thm:gauss]].
+
+* Some code
+
+#+begin_src rust
+fn odd_sum(n: u64) -> u64 {
+    (1..=n).map(|k| 2 * k - 1).sum()
+}
+#+end_src

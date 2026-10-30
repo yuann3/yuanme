@@ -595,7 +595,7 @@ fn show_files(files: &std::collections::BTreeMap<String, String>) -> String {
 #[test]
 fn init_creates_a_site_that_checks_clean() {
     let dir = tempfile::tempdir().unwrap();
-    let (code, events) = json(dir.path(), &["init", "my-site"]);
+    let (code, events) = json(dir.path(), &["init", "my-site", "--starter", "minimal"]);
     assert_eq!(code, 0);
     let root = dir.path().join("my-site");
     let files = texts(&root);
@@ -657,6 +657,30 @@ fn init_creates_a_site_that_checks_clean() {
     );
 }
 
+/// `blog` is the default Starter (#36). Offline, with no `tsc`, it checks
+/// clean but for its types.
+#[test]
+fn init_makes_a_blog_by_default() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let (code, events) = json(root, &["init"]);
+    assert_eq!(code, 0);
+    assert_eq!(events[0]["starter"], "blog");
+    // Without what every Starter gets, which `init_minimal` shows.
+    let mut files = texts(root);
+    files.retain(|path, _| {
+        !path.starts_with(".agents/")
+            && !path.starts_with(".claude/")
+            && ![".gitignore", "AGENTS.md", "CLAUDE.md"].contains(&path.as_str())
+    });
+    insta::assert_snapshot!("init_blog", show_files(&files));
+
+    let missing = root.join("no-such-tsc");
+    let out = yuanme_with(root, &["check", "--json"], &[("YUANME_TSC_BIN", &missing)]);
+    let found: Vec<String> = codes(&out.stdout).into_iter().map(|(c, _)| c).collect();
+    assert_eq!(found, ["asset/tool-unavailable"], "{}", out.stdout);
+}
+
 #[test]
 fn init_overwrites_nothing() {
     let dir = tempfile::tempdir().unwrap();
@@ -704,7 +728,7 @@ fn init_overwrites_nothing() {
 fn init_writes_each_hosts_deploy_files() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
-    json(root, &["init", "default"]);
+    json(root, &["init", "default", "--starter", "minimal"]);
     let default = texts(&root.join("default"));
     for host in [
         "cloudflare",
@@ -714,7 +738,8 @@ fn init_writes_each_hosts_deploy_files() {
         "cloudflare-pages",
         "static",
     ] {
-        let (code, events) = json(root, &["init", host, "--host", host]);
+        let args = ["init", host, "--starter", "minimal", "--host", host];
+        let (code, events) = json(root, &args);
         assert_eq!(code, 0);
         assert_eq!(events[0]["host"], host);
         let site = root.join(host);
@@ -759,7 +784,7 @@ fn old_skill(current: &str, version: &str, body: (&str, &str)) -> String {
 fn another_version_rewrites_the_agent_files_init_wrote() {
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path();
-    json(root, &["init"]);
+    json(root, &["init", "--starter", "minimal"]);
     let version = yuanme(root, &["--version"]).stdout;
     let version = version.trim().strip_prefix("yuanme ").unwrap();
     let read = |path: &str| fs::read_to_string(root.join(path)).unwrap();

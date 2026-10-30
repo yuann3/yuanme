@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+{% set title = entry.title %}
+{% block content %}
+<article>
+  <h1>{{ entry.title }}</h1>
+  <div class="prose">
+{{ entry.content }}
+  </div>
+</article>
+{% endblock %}

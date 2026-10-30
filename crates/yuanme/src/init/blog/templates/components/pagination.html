@@ -1,0 +1,10 @@
+{# props: paginator: paginator #}
+{% macro pagination(paginator) %}
+{% if paginator.prev or paginator.next %}
+<nav class="pagination" aria-label="Pages">
+  {% if paginator.prev %}<a href="{{ paginator.prev }}" rel="prev">Newer</a>{% endif %}
+  <span>Page {{ paginator.number }} of {{ paginator.total }}</span>
+  {% if paginator.next %}<a href="{{ paginator.next }}" rel="next">Older</a>{% endif %}
+</nav>
+{% endif %}
+{% endmacro %}

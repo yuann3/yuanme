@@ -1,0 +1,43 @@
+{# vars: title: string, description?: string, og_type?: string, noindex?: bool #}
+<!doctype html>
+<html lang="{{ site.language | default('en') }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page.url == "/" %}{{ site.title | default(title) }}{% else %}{{ title }} | {{ site.title | default(title) }}{% endif %}</title>
+{% set summary = description | default(site.description | default(none)) %}
+{% if summary %}<meta name="description" content="{{ summary }}">{% endif %}
+{% if noindex %}
+<meta name="robots" content="noindex">
+{% else %}
+<link rel="canonical" href="{{ page.canonical }}">
+<meta property="og:url" content="{{ page.canonical }}">
+{% endif %}
+<meta property="og:title" content="{{ title }}">
+{% if summary %}<meta property="og:description" content="{{ summary }}">{% endif %}
+<meta property="og:type" content="{{ og_type | default('website') }}">
+{% if site.title %}<meta property="og:site_name" content="{{ site.title }}">{% endif %}
+<link rel="alternate" type="application/rss+xml" title="{{ site.title | default('RSS') }}" href="{{ url('/rss.xml') }}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="{{ url('/') }}">{{ site.title | default("Home") }}</a>
+  <nav aria-label="Main">
+    <ul>
+    {% for link in [{"href": "/blog/", "name": "Blog"}, {"href": "/projects/", "name": "Projects"}, {"href": "/tags/", "name": "Tags"}, {"href": "/about/", "name": "About"}] %}
+      <li><a href="{{ url(link.href) }}"{{ {"aria-current": "page" if page.url == link.href else ("true" if page.url is startingwith(link.href) else none)} | attrs }}>{{ link.name }}</a></li>
+    {% endfor %}
+    </ul>
+  </nav>
+</header>
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+  <p>{% if site.author %}&copy; {{ site.author }}. {% endif %}<a href="{{ url('/rss.xml') }}">RSS</a></p>
+</footer>
+</body>
+</html>

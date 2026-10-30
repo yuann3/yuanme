@@ -1,0 +1,10 @@
+{# props: tags: list<string> #}
+{% macro tag_list(tags) %}
+{% if tags %}
+<ul class="tag-list" aria-label="Tags">
+  {% for term in taxonomies.tags.terms if term.name in tags %}
+  <li><a href="{{ term.url }}" rel="tag">{{ term.name }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}

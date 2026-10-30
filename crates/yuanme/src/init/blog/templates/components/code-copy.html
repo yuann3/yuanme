@@ -1,0 +1,7 @@
+{# A Page that shows code blocks calls this once. Its Sidecar script,
+   code-copy.ts, gives each block a button that copies its code, and tells
+   screen readers through this element when it has. #}
+{# props: label?: string, copied?: string #}
+{% macro code_copy(label="Copy", copied="Copied") %}
+<p class="visually-hidden" role="status" data-code-copy="{{ label }}" data-copied="{{ copied }}"></p>
+{% endmacro %}

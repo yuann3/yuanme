@@ -14,11 +14,22 @@ use yuanme_engine::Mode;
 use crate::events::Event;
 use crate::{ENGINE_VERSION, Error, Out, docs, schemas};
 
+/// Each of a Starter's files, by its path from the project root, as
+/// `crates/yuanme/src/init/STARTER/` holds it.
+macro_rules! files {
+    ($starter:literal: $($path:literal),* $(,)?) => {
+        &[$(($path, include_str!(concat!("init/", $starter, "/", $path)))),*]
+    };
+}
+
 /// The Starters embedded in the binary (#36). Each is its files, from the
 /// project root; `init` adds the `#:schema` line and `yuanme = "X.Y"` to
 /// the top of its `yuanme.toml`.
 #[derive(Clone, Copy, ValueEnum)]
 pub enum Starter {
+    /// A personal site: Posts in Markdown and Org with math and code,
+    /// projects, tags, an about Page and an RSS feed.
+    Blog,
     /// `yuanme.toml`, one Layout, a home Page, a 404 Page and a stylesheet.
     Minimal,
 }
@@ -26,31 +37,46 @@ pub enum Starter {
 impl Starter {
     fn name(self) -> &'static str {
         match self {
+            Starter::Blog => "blog",
             Starter::Minimal => "minimal",
         }
     }
 
     fn files(self) -> &'static [(&'static str, &'static str)] {
         match self {
-            Starter::Minimal => &[
-                ("yuanme.toml", include_str!("init/minimal/yuanme.toml")),
-                (
-                    "templates/layouts/base.html",
-                    include_str!("init/minimal/templates/layouts/base.html"),
-                ),
-                (
-                    "templates/home.html",
-                    include_str!("init/minimal/templates/home.html"),
-                ),
-                (
-                    "templates/404.html",
-                    include_str!("init/minimal/templates/404.html"),
-                ),
-                (
-                    "styles/site.css",
-                    include_str!("init/minimal/styles/site.css"),
-                ),
-            ],
+            Starter::Blog => files!("blog":
+                "yuanme.toml",
+                "tsconfig.json",
+                "content/posts/hello.md",
+                "content/posts/hello-org.org",
+                "content/projects/example/index.md",
+                "content/projects/example/pipeline.svg",
+                "content/pages/about.md",
+                "templates/layouts/base.html",
+                "templates/home.html",
+                "templates/404.html",
+                "templates/posts/entry.html",
+                "templates/posts/list.html",
+                "templates/projects/entry.html",
+                "templates/projects/list.html",
+                "templates/tags/term.html",
+                "templates/tags/index.html",
+                "templates/pages/entry.html",
+                "templates/components/post-row.html",
+                "templates/components/pagination.html",
+                "templates/components/tag-list.html",
+                "templates/components/code-copy.html",
+                "templates/components/code-copy.ts",
+                "styles/site.css",
+                "static/favicon.svg",
+            ),
+            Starter::Minimal => files!("minimal":
+                "yuanme.toml",
+                "templates/layouts/base.html",
+                "templates/home.html",
+                "templates/404.html",
+                "styles/site.css",
+            ),
         }
     }
 }
@@ -360,7 +386,9 @@ pub fn run(
     // What an agent reads before its first build.
     docs::write(&root.join(".yuanme/docs"), ENGINE_VERSION)?;
     yuanme_engine::write_types(&root)?;
-    let run = crate::engine_build(&root, None, Mode::Check { drafts: false }, false, false)?;
+    // As `yuanme dev` builds, which checks no types: `init` works offline,
+    // and leaves downloading `tsc` to the first check.
+    let run = crate::engine_build(&root, None, Mode::Dev, false, false)?;
     schemas::write(
         &root.join(".yuanme/schemas"),
         run.build.config.as_ref(),

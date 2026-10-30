@@ -1,0 +1,324 @@
+/* The Site's one stylesheet. Change the tokens to restyle it. */
+
+:root {
+  color-scheme: light dark;
+  --bg: #fdfdfc;
+  --fg: #1d1d1f;
+  --muted: #5c5c66;
+  --accent: #1a5fb4;
+  --rule: #dcdce2;
+  --surface: #f2f2f5;
+  --font-text: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-code: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  /* A readable line of prose, about 70 characters. */
+  --measure: 40rem;
+  --space: 1rem;
+  --radius: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161618;
+    --fg: #e8e8ea;
+    --muted: #a6a6b0;
+    --accent: #8ab4ff;
+    --rule: #34343b;
+    --surface: #222227;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  max-width: calc(var(--measure) + 2 * var(--space));
+  margin: 0 auto;
+  padding: 0 var(--space);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-text);
+  line-height: 1.6;
+  text-size-adjust: 100%;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.15em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 2rem 0 0.5rem;
+}
+
+code,
+pre {
+  font-family: var(--font-code);
+  font-size: 0.9em;
+}
+
+img,
+svg,
+picture {
+  max-width: 100%;
+  height: auto;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space);
+  top: -3rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg);
+  border-radius: var(--radius);
+}
+
+.skip-link:focus {
+  top: var(--space);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Header, navigation and footer. */
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem var(--space);
+  padding: var(--space) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-title {
+  color: var(--fg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-header ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-header nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.site-header nav a:hover,
+.site-header nav a[aria-current] {
+  color: var(--fg);
+  text-decoration: underline;
+}
+
+.site-footer {
+  margin-top: 3rem;
+  padding: var(--space) 0 2rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Lists of Posts, projects and tags. */
+
+.lede,
+.meta {
+  color: var(--muted);
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rows > li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.rows p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.post-row time {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.tag-list a::before {
+  content: "#";
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space);
+  margin-top: var(--space);
+}
+
+/* An Entry's body. */
+
+.entry-header {
+  margin-bottom: 1.5rem;
+}
+
+.prose :where(p, ul, ol, blockquote, pre, table) {
+  margin: 0 0 1rem;
+}
+
+.prose blockquote {
+  margin-left: 0;
+  padding-left: var(--space);
+  border-left: 3px solid var(--rule);
+  color: var(--muted);
+}
+
+.prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose :where(th, td) {
+  padding: 0.25rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.prose :not(pre) > code {
+  padding: 0.1em 0.3em;
+  background: var(--surface);
+  border-radius: 4px;
+}
+
+/* Code blocks. yuanme's own stylesheet colours their code, for light and
+   dark; on the Page's background, more of its colours pass WCAG AA than
+   on the theme's own. */
+
+pre.y-code {
+  background-color: var(--bg);
+  border: 1px solid var(--rule);
+  padding: var(--space);
+  overflow-x: auto;
+  border-radius: var(--radius);
+  line-height: 1.5;
+}
+
+.code-block {
+  position: relative;
+}
+
+.code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Math, and Theorem blocks. */
+
+math[display="block"] {
+  overflow-x: auto;
+  padding: 0.25rem 0;
+}
+
+.theorem,
+.proof {
+  margin: 0 0 1rem;
+}
+
+.theorem {
+  padding-left: var(--space);
+  border-left: 3px solid var(--accent);
+}
+
+.theorem p:last-child,
+.proof p:last-child {
+  margin-bottom: 0;
+}
+
+.theorem[data-kind="definition"],
+.theorem[data-kind="example"],
+.theorem[data-kind="remark"],
+.theorem[data-kind="note"] {
+  border-left-color: var(--rule);
+}
+
+.theorem-name,
+.proof-head {
+  font-weight: 600;
+}
+
+.theorem-title {
+  font-weight: 400;
+}
+
+.proof-head {
+  font-style: italic;
+}
+
+.qed {
+  float: right;
+}
+
+/* Moving between Pages fades, unless the visitor asks for less motion. */
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}

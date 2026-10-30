@@ -1,0 +1,14 @@
+{% extends "layouts/base.html" %}
+{% from "components/post-row.html" import post_row %}
+{% from "components/pagination.html" import pagination %}
+{% set title = "Tagged " ~ term.name %}
+{% block content %}
+<h1>Tagged “{{ term.name }}”</h1>
+<ul class="rows">
+{% for post in entries %}
+  {{ post_row(post=post) }}
+{% endfor %}
+</ul>
+{{ pagination(paginator=paginator) }}
+<p><a href="{{ taxonomy.url }}">Every tag</a></p>
+{% endblock %}

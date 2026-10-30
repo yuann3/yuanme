@@ -1,0 +1,14 @@
+{% extends "layouts/base.html" %}
+{% from "components/post-row.html" import post_row %}
+{% set title = site.title | default("Home") %}
+{% block content %}
+<h1>{{ site.title | default("Home") }}</h1>
+{% if site.description %}<p class="lede">{{ site.description }}</p>{% endif %}
+<h2>Recent Posts</h2>
+<ul class="rows">
+{% for post in collections.posts[:5] %}
+  {{ post_row(post=post) }}
+{% endfor %}
+</ul>
+<p><a href="{{ url('/blog/') }}">Every Post</a> · <a href="{{ url('/rss.xml') }}">RSS</a></p>
+{% endblock %}

@@ -1,0 +1,766 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: show_files(&files)
+---
+=== content/pages/about.md
+---
+title: About
+---
+
+Say who you are and what you write about here. This Page is `content/pages/about.md`, an Entry of the built-in `pages` Collection, so it is served at `/about/`.
+=== content/posts/hello-org.org
+#+TITLE: Hello from Org
+#+DATE: 2026-01-02
+#+DESCRIPTION: The same ideas as the first Post, written in Org.
+#+FILETAGS: :meta:org:
+
+This Post is Org. Its math, Theorem blocks and code are the ones the first Post has, in Org's own syntax.
+
+* An equation
+
+The sum of the first \(n\) odd numbers is a square:
+
+\begin{equation}
+\sum_{k=1}^{n} (2k - 1) = n^2 \label{eq:odd}
+\end{equation}
+
+* A theorem
+
+#+NAME: thm:gauss
+#+begin_theorem Gauss
+For every \(n \ge 1\), \(\sum_{k=1}^{n} k = \frac{n(n+1)}{2}\), and so \eqref{eq:odd} holds.
+#+end_theorem
+
+#+begin_proof
+Each \(k\) pairs with \(n + 1 - k\), and the \(n\) pairs, which count the sum twice, each add up to \(n + 1\). Then the odd numbers sum to \(2 \cdot \frac{n(n+1)}{2} - n = n^2\).
+#+end_proof
+
+A link with no description to a Label shows its number: [[thm:gauss]].
+
+* Some code
+
+#+begin_src rust
+fn odd_sum(n: u64) -> u64 {
+    (1..=n).map(|k| 2 * k - 1).sum()
+}
+#+end_src
+=== content/posts/hello.md
+---
+title: Hello
+date: 2026-01-01
+description: A first Post, with an equation, a theorem and some code.
+tags: [meta]
+---
+
+This Post is Markdown. Its math is LaTeX, which becomes MathML when the Site is built, so no script draws it.
+
+## An equation
+
+The sum of the first $n$ odd numbers is a square:
+
+$$
+\begin{equation}
+\sum_{k=1}^{n} (2k - 1) = n^2 \label{eq:odd}
+\end{equation}
+$$
+
+## A theorem
+
+:::theorem[Gauss]{#thm:gauss}
+For every $n \ge 1$, $\sum_{k=1}^{n} k = \frac{n(n+1)}{2}$, and so [](#eq:odd) holds.
+:::
+
+:::proof
+Each $k$ pairs with $n + 1 - k$, and the $n$ pairs, which count the sum twice, each add up to $n + 1$. Then the odd numbers sum to $2 \cdot \frac{n(n+1)}{2} - n = n^2$.
+:::
+
+A link with no text to a Label shows its number, as [](#eq:odd) and [](#thm:gauss) do here. In Org, `\eqref` in prose does the same.
+
+## Some code
+
+```rust
+fn odd_sum(n: u64) -> u64 {
+    (1..=n).map(|k| 2 * k - 1).sum()
+}
+```
+
+`hello-org.org` says the same in Org.
+=== content/projects/example/index.md
+---
+title: Example project
+date: 2026-01-01
+description: A project in a folder of its own, with an image beside it.
+repository: https://github.com/example/example
+---
+
+A project whose text is `index.md` in its own folder, so its images sit beside it.
+
+![Three boxes in a row, joined by arrows: Markdown and Org, the Engine, and the Site](pipeline.svg)
+
+Replace this with what you made, why, and what you learned.
+=== content/projects/example/pipeline.svg
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160" font-family="system-ui, sans-serif" font-size="18" text-anchor="middle">
+  <style>
+    rect { fill: #eef2f8; stroke: #1a5fb4; stroke-width: 2; }
+    text { fill: #1d1d1f; }
+    path { stroke: #1a5fb4; stroke-width: 2; fill: none; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #1e2633; stroke: #8ab4ff; }
+      text { fill: #e8e8ea; }
+      path { stroke: #8ab4ff; }
+    }
+  </style>
+  <rect x="10" y="50" width="160" height="60" rx="8"/>
+  <text x="90" y="86">Markdown, Org</text>
+  <rect x="240" y="50" width="160" height="60" rx="8"/>
+  <text x="320" y="86">yuanme</text>
+  <rect x="470" y="50" width="160" height="60" rx="8"/>
+  <text x="550" y="86">Site</text>
+  <path d="M170 80h62m-8-6 8 6-8 6M400 80h62m-8-6 8 6-8 6"/>
+</svg>
+=== static/favicon.svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1a5fb4"/><path d="M9 9l7 8 7-8M16 17v7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+=== styles/site.css
+/* The Site's one stylesheet. Change the tokens to restyle it. */
+
+:root {
+  color-scheme: light dark;
+  --bg: #fdfdfc;
+  --fg: #1d1d1f;
+  --muted: #5c5c66;
+  --accent: #1a5fb4;
+  --rule: #dcdce2;
+  --surface: #f2f2f5;
+  --font-text: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-code: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  /* A readable line of prose, about 70 characters. */
+  --measure: 40rem;
+  --space: 1rem;
+  --radius: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161618;
+    --fg: #e8e8ea;
+    --muted: #a6a6b0;
+    --accent: #8ab4ff;
+    --rule: #34343b;
+    --surface: #222227;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  max-width: calc(var(--measure) + 2 * var(--space));
+  margin: 0 auto;
+  padding: 0 var(--space);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-text);
+  line-height: 1.6;
+  text-size-adjust: 100%;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.15em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 2rem 0 0.5rem;
+}
+
+code,
+pre {
+  font-family: var(--font-code);
+  font-size: 0.9em;
+}
+
+img,
+svg,
+picture {
+  max-width: 100%;
+  height: auto;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space);
+  top: -3rem;
+  padding: 0.5rem 1rem;
+  background: var(--bg);
+  border-radius: var(--radius);
+}
+
+.skip-link:focus {
+  top: var(--space);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Header, navigation and footer. */
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem var(--space);
+  padding: var(--space) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-title {
+  color: var(--fg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-header ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-header nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.site-header nav a:hover,
+.site-header nav a[aria-current] {
+  color: var(--fg);
+  text-decoration: underline;
+}
+
+.site-footer {
+  margin-top: 3rem;
+  padding: var(--space) 0 2rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Lists of Posts, projects and tags. */
+
+.lede,
+.meta {
+  color: var(--muted);
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rows > li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.rows p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.post-row time {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.tag-list a::before {
+  content: "#";
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space);
+  margin-top: var(--space);
+}
+
+/* An Entry's body. */
+
+.entry-header {
+  margin-bottom: 1.5rem;
+}
+
+.prose :where(p, ul, ol, blockquote, pre, table) {
+  margin: 0 0 1rem;
+}
+
+.prose blockquote {
+  margin-left: 0;
+  padding-left: var(--space);
+  border-left: 3px solid var(--rule);
+  color: var(--muted);
+}
+
+.prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose :where(th, td) {
+  padding: 0.25rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.prose :not(pre) > code {
+  padding: 0.1em 0.3em;
+  background: var(--surface);
+  border-radius: 4px;
+}
+
+/* Code blocks. yuanme's own stylesheet colours their code, for light and
+   dark; on the Page's background, more of its colours pass WCAG AA than
+   on the theme's own. */
+
+pre.y-code {
+  background-color: var(--bg);
+  border: 1px solid var(--rule);
+  padding: var(--space);
+  overflow-x: auto;
+  border-radius: var(--radius);
+  line-height: 1.5;
+}
+
+.code-block {
+  position: relative;
+}
+
+.code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Math, and Theorem blocks. */
+
+math[display="block"] {
+  overflow-x: auto;
+  padding: 0.25rem 0;
+}
+
+.theorem,
+.proof {
+  margin: 0 0 1rem;
+}
+
+.theorem {
+  padding-left: var(--space);
+  border-left: 3px solid var(--accent);
+}
+
+.theorem p:last-child,
+.proof p:last-child {
+  margin-bottom: 0;
+}
+
+.theorem[data-kind="definition"],
+.theorem[data-kind="example"],
+.theorem[data-kind="remark"],
+.theorem[data-kind="note"] {
+  border-left-color: var(--rule);
+}
+
+.theorem-name,
+.proof-head {
+  font-weight: 600;
+}
+
+.theorem-title {
+  font-weight: 400;
+}
+
+.proof-head {
+  font-style: italic;
+}
+
+.qed {
+  float: right;
+}
+
+/* Moving between Pages fades, unless the visitor asks for less motion. */
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}
+=== templates/404.html
+{% extends "layouts/base.html" %}
+{% set title = "Not found" %}
+{% set noindex = true %}
+{% block content %}
+<h1>Not found</h1>
+<p>Nothing is here. <a href="{{ url('/') }}">Go to the home Page</a>, or read <a href="{{ url('/blog/') }}">the Blog</a>.</p>
+{% endblock %}
+=== templates/components/code-copy.html
+{# A Page that shows code blocks calls this once. Its Sidecar script,
+   code-copy.ts, gives each block a button that copies its code, and tells
+   screen readers through this element when it has. #}
+{# props: label?: string, copied?: string #}
+{% macro code_copy(label="Copy", copied="Copied") %}
+<p class="visually-hidden" role="status" data-code-copy="{{ label }}" data-copied="{{ copied }}"></p>
+{% endmacro %}
+=== templates/components/code-copy.ts
+import type { MountContext } from "yuanme:mount";
+
+/** A copy button on each code block of a Page that calls `code_copy`. */
+export function mount(ctx: MountContext) {
+  const status = document.querySelector<HTMLElement>("[data-code-copy]");
+  if (!status) return;
+  const label = status.dataset.codeCopy ?? "Copy";
+  const copied = status.dataset.copied ?? "Copied";
+  for (const pre of document.querySelectorAll<HTMLElement>("pre.y-code")) {
+    const block = document.createElement("div");
+    block.className = "code-block";
+    pre.replaceWith(block);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "code-copy";
+    button.textContent = label;
+    block.append(pre, button);
+    let reset: ReturnType<typeof setTimeout> | undefined;
+    button.addEventListener(
+      "click",
+      async () => {
+        await navigator.clipboard.writeText(pre.querySelector("code")?.textContent ?? "");
+        button.textContent = copied;
+        status.textContent = copied;
+        clearTimeout(reset);
+        reset = setTimeout(() => {
+          button.textContent = label;
+          status.textContent = "";
+        }, 2000);
+      },
+      { signal: ctx.signal },
+    );
+  }
+}
+=== templates/components/pagination.html
+{# props: paginator: paginator #}
+{% macro pagination(paginator) %}
+{% if paginator.prev or paginator.next %}
+<nav class="pagination" aria-label="Pages">
+  {% if paginator.prev %}<a href="{{ paginator.prev }}" rel="prev">Newer</a>{% endif %}
+  <span>Page {{ paginator.number }} of {{ paginator.total }}</span>
+  {% if paginator.next %}<a href="{{ paginator.next }}" rel="next">Older</a>{% endif %}
+</nav>
+{% endif %}
+{% endmacro %}
+=== templates/components/post-row.html
+{# props: post: entry<posts> #}
+{% macro post_row(post) %}
+<li class="post-row">
+  <a href="{{ post.url }}">{{ post.title }}</a>
+  <time datetime="{{ post.date }}">{{ post.date | dateformat(format="%-d %B %Y") }}</time>
+  <p>{{ post.description }}</p>
+</li>
+{% endmacro %}
+=== templates/components/tag-list.html
+{# props: tags: list<string> #}
+{% macro tag_list(tags) %}
+{% if tags %}
+<ul class="tag-list" aria-label="Tags">
+  {% for term in taxonomies.tags.terms if term.name in tags %}
+  <li><a href="{{ term.url }}" rel="tag">{{ term.name }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}
+=== templates/home.html
+{% extends "layouts/base.html" %}
+{% from "components/post-row.html" import post_row %}
+{% set title = site.title | default("Home") %}
+{% block content %}
+<h1>{{ site.title | default("Home") }}</h1>
+{% if site.description %}<p class="lede">{{ site.description }}</p>{% endif %}
+<h2>Recent Posts</h2>
+<ul class="rows">
+{% for post in collections.posts[:5] %}
+  {{ post_row(post=post) }}
+{% endfor %}
+</ul>
+<p><a href="{{ url('/blog/') }}">Every Post</a> · <a href="{{ url('/rss.xml') }}">RSS</a></p>
+{% endblock %}
+=== templates/layouts/base.html
+{# vars: title: string, description?: string, og_type?: string, noindex?: bool #}
+<!doctype html>
+<html lang="{{ site.language | default('en') }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page.url == "/" %}{{ site.title | default(title) }}{% else %}{{ title }} | {{ site.title | default(title) }}{% endif %}</title>
+{% set summary = description | default(site.description | default(none)) %}
+{% if summary %}<meta name="description" content="{{ summary }}">{% endif %}
+{% if noindex %}
+<meta name="robots" content="noindex">
+{% else %}
+<link rel="canonical" href="{{ page.canonical }}">
+<meta property="og:url" content="{{ page.canonical }}">
+{% endif %}
+<meta property="og:title" content="{{ title }}">
+{% if summary %}<meta property="og:description" content="{{ summary }}">{% endif %}
+<meta property="og:type" content="{{ og_type | default('website') }}">
+{% if site.title %}<meta property="og:site_name" content="{{ site.title }}">{% endif %}
+<link rel="alternate" type="application/rss+xml" title="{{ site.title | default('RSS') }}" href="{{ url('/rss.xml') }}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="{{ url('/') }}">{{ site.title | default("Home") }}</a>
+  <nav aria-label="Main">
+    <ul>
+    {% for link in [{"href": "/blog/", "name": "Blog"}, {"href": "/projects/", "name": "Projects"}, {"href": "/tags/", "name": "Tags"}, {"href": "/about/", "name": "About"}] %}
+      <li><a href="{{ url(link.href) }}"{{ {"aria-current": "page" if page.url == link.href else ("true" if page.url is startingwith(link.href) else none)} | attrs }}>{{ link.name }}</a></li>
+    {% endfor %}
+    </ul>
+  </nav>
+</header>
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+  <p>{% if site.author %}&copy; {{ site.author }}. {% endif %}<a href="{{ url('/rss.xml') }}">RSS</a></p>
+</footer>
+</body>
+</html>
+=== templates/pages/entry.html
+{% extends "layouts/base.html" %}
+{% set title = entry.title %}
+{% block content %}
+<article>
+  <h1>{{ entry.title }}</h1>
+  <div class="prose">
+{{ entry.content }}
+  </div>
+</article>
+{% endblock %}
+=== templates/posts/entry.html
+{% extends "layouts/base.html" %}
+{% from "components/tag-list.html" import tag_list %}
+{% from "components/code-copy.html" import code_copy %}
+{% set title = entry.title %}
+{% set description = entry.description %}
+{% set og_type = "article" %}
+{% block content %}
+<article>
+  <header class="entry-header">
+    <h1>{{ entry.title }}</h1>
+    <p class="meta"><time datetime="{{ entry.date }}">{{ entry.date | dateformat(format="%-d %B %Y") }}</time> · {{ entry.reading_time }} min read</p>
+    {{ tag_list(tags=entry.tags) }}
+  </header>
+  <div class="prose">
+{{ entry.content }}
+  </div>
+</article>
+{{ code_copy() }}
+{% endblock %}
+=== templates/posts/list.html
+{% extends "layouts/base.html" %}
+{% from "components/post-row.html" import post_row %}
+{% from "components/pagination.html" import pagination %}
+{% set title = "Blog" %}
+{% block content %}
+<h1>Blog</h1>
+<ul class="rows">
+{% for post in entries %}
+  {{ post_row(post=post) }}
+{% endfor %}
+</ul>
+{{ pagination(paginator=paginator) }}
+{% endblock %}
+=== templates/projects/entry.html
+{% extends "layouts/base.html" %}
+{% set title = entry.title %}
+{% set description = entry.description %}
+{% block content %}
+<article>
+  <header class="entry-header">
+    <h1>{{ entry.title }}</h1>
+    <p class="meta">{{ entry.description }}{% if entry.repository %} · <a href="{{ entry.repository }}">Source</a>{% endif %}</p>
+  </header>
+  <div class="prose">
+{{ entry.content }}
+  </div>
+</article>
+{% endblock %}
+=== templates/projects/list.html
+{% extends "layouts/base.html" %}
+{% set title = "Projects" %}
+{% block content %}
+<h1>Projects</h1>
+<ul class="rows">
+{% for project in entries %}
+  <li>
+    <a href="{{ project.url }}">{{ project.title }}</a>
+    <p>{{ project.description }}</p>
+  </li>
+{% endfor %}
+</ul>
+{% endblock %}
+=== templates/tags/index.html
+{% extends "layouts/base.html" %}
+{% set title = "Tags" %}
+{% block content %}
+<h1>Tags</h1>
+<ul class="rows">
+{% for term in terms %}
+  <li><a href="{{ term.url }}">{{ term.name }}</a> <span class="meta">{{ term.count }} {{ term.count | pluralize("Post", "Posts") }}</span></li>
+{% endfor %}
+</ul>
+{% endblock %}
+=== templates/tags/term.html
+{% extends "layouts/base.html" %}
+{% from "components/post-row.html" import post_row %}
+{% from "components/pagination.html" import pagination %}
+{% set title = "Tagged " ~ term.name %}
+{% block content %}
+<h1>Tagged “{{ term.name }}”</h1>
+<ul class="rows">
+{% for post in entries %}
+  {{ post_row(post=post) }}
+{% endfor %}
+</ul>
+{{ pagination(paginator=paginator) }}
+<p><a href="{{ taxonomy.url }}">Every tag</a></p>
+{% endblock %}
+=== tsconfig.json
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": { "/*": ["./*"] }
+  },
+  "include": ["**/*.ts", ".yuanme/types/yuanme.d.ts"],
+  "exclude": ["dist", "static", "node_modules"]
+}
+=== yuanme.toml
+#:schema ./.yuanme/schemas/yuanme.toml.json
+yuanme = "[X.Y]"
+
+[site]
+# Where the Site is served from: canonical links, feeds and the sitemap use it.
+url = "https://example.com"
+title = "My Site"
+description = "Notes on programming and mathematics."
+language = "en"
+author = "Your Name"
+
+[collections.posts]
+route = "/blog/{slug}/"
+list_route = "/blog/"
+paginate = 10
+
+[collections.posts.fields]
+date = { type = "date" }
+description = { type = "string" }
+
+[collections.projects]
+route = "/projects/{slug}/"
+list_route = "/projects/"
+
+[collections.projects.fields]
+date = { type = "date" }
+description = { type = "string" }
+repository = { type = "url", optional = true }
+
+[taxonomies.tags]
+collections = ["posts"]
+route = "/tags/{term}/"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"
+
+[feeds.rss]
+collections = ["posts"]
+path = "/rss.xml"
+
+# Moving between Pages is a full page load, which the browser animates with
+# no JS. "swap" keeps what a Page holds, such as a playing video, from Page
+# to Page, at the cost of the Router's Script on every Page.
+[router]
+mode = "native"
+
+# components/code-copy.ts is TypeScript, checked when the Site is.
+[typescript]
+check = true
+
+# A Post with math and code loads 6 files on its render path: the Page,
+# styles/site.css, the copy button's Script, and the stylesheets yuanme adds
+# for code, for math and the math font. Every other Page loads 2 or 3.
+[budgets]
+requests = 6
+
+# The width of the text column, so phones fetch smaller images.
+[images]
+sizes = "(min-width: 44rem) 40rem, 100vw"

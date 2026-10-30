@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+{% set title = "Tags" %}
+{% block content %}
+<h1>Tags</h1>
+<ul class="rows">
+{% for term in terms %}
+  <li><a href="{{ term.url }}">{{ term.name }}</a> <span class="meta">{{ term.count }} {{ term.count | pluralize("Post", "Posts") }}</span></li>
+{% endfor %}
+</ul>
+{% endblock %}

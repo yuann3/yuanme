@@ -1,0 +1,13 @@
+{% extends "layouts/base.html" %}
+{% from "components/post-row.html" import post_row %}
+{% from "components/pagination.html" import pagination %}
+{% set title = "Blog" %}
+{% block content %}
+<h1>Blog</h1>
+<ul class="rows">
+{% for post in entries %}
+  {{ post_row(post=post) }}
+{% endfor %}
+</ul>
+{{ pagination(paginator=paginator) }}
+{% endblock %}

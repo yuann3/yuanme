@@ -1,0 +1,61 @@
+[site]
+# Where the Site is served from: canonical links, feeds and the sitemap use it.
+url = "https://example.com"
+title = "My Site"
+description = "Notes on programming and mathematics."
+language = "en"
+author = "Your Name"
+
+[collections.posts]
+route = "/blog/{slug}/"
+list_route = "/blog/"
+paginate = 10
+
+[collections.posts.fields]
+date = { type = "date" }
+description = { type = "string" }
+
+[collections.projects]
+route = "/projects/{slug}/"
+list_route = "/projects/"
+
+[collections.projects.fields]
+date = { type = "date" }
+description = { type = "string" }
+repository = { type = "url", optional = true }
+
+[taxonomies.tags]
+collections = ["posts"]
+route = "/tags/{term}/"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"
+
+[feeds.rss]
+collections = ["posts"]
+path = "/rss.xml"
+
+# Moving between Pages is a full page load, which the browser animates with
+# no JS. "swap" keeps what a Page holds, such as a playing video, from Page
+# to Page, at the cost of the Router's Script on every Page.
+[router]
+mode = "native"
+
+# components/code-copy.ts is TypeScript, checked when the Site is.
+[typescript]
+check = true
+
+# A Post with math and code loads 6 files on its render path: the Page,
+# styles/site.css, the copy button's Script, and the stylesheets yuanme adds
+# for code, for math and the math font. Every other Page loads 2 or 3.
+[budgets]
+requests = 6
+
+# The width of the text column, so phones fetch smaller images.
+[images]
+sizes = "(min-width: 44rem) 40rem, 100vw"
