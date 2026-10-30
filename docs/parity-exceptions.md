@@ -33,6 +33,7 @@ Escaping style, kept comments, attribute order and whitespace all decode to the 
 - **Matrix:** every Page × widths 390, 900 and 1280 px (the ≤ 767, 768–1099 and ≥ 1100 bands, at heights 844, 1024 and 800) × light and dark. Each is the full page, plus one screenshot per screen of the panel, which scrolls inside the window.
 - **Engines:** Chromium on every PR; Firefox and WebKit at releases. Both sides run in the same pinned Playwright browser.
 - **Motion:** screenshots are taken with `prefers-reduced-motion: reduce`, once `document.getAnimations()` has settled. With that setting the Film doesn't start, so its deterministic fallback CSS is what's compared. The Film itself is covered by the behaviour checks.
+- **Text antialiasing:** Chromium runs with `--disable-lcd-text`, so text is antialiased in grayscale on every OS. On Linux, Chromium otherwise picks LCD antialiasing for text with an opaque background of its own, such as Shiki's dark-theme token spans ([#75](https://github.com/yuann3/yuanme/issues/75)).
 - **Fonts:** the harness serves the baseline's Google Fonts requests from the baseline's snapshot of them, and the Reference site self-hosts those same woff2 files.
 - **Threshold:** pixelmatch 8 with a per-pixel threshold of 0.1, an OKLab distance. A screenshot fails if more than 0.05 % of its pixels differ. Re-encoded photos use a per-pixel threshold of 0.25: the four About photos (`about-image-bytes`) and the hero images (`hero-images`).
 

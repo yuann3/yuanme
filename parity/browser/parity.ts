@@ -111,7 +111,10 @@ const engines = values.engines!.split(',') as (keyof typeof ENGINES)[];
 const baseline = await serve(join(baselineDir, 'site'));
 let ok = true;
 for (const engine of engines) {
-	const browser = await ENGINES[engine].launch();
+	// Grayscale text antialiasing, as on macOS: on Linux, Chromium's LCD
+	// antialiasing depends on whether a text run has an opaque background
+	// of its own, which isn't what the pixel diff is for.
+	const browser = await ENGINES[engine].launch(engine === 'chromium' ? { args: ['--disable-lcd-text'] } : {});
 	console.log(`${engine} ${browser.version()}`);
 	const side = { server: baseline, remote, cache: new Map() };
 	if (command === 'check' && siteDir) {
