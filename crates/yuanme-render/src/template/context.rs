@@ -64,22 +64,17 @@ impl Context {
             }
         }
 
-        let bodies: Vec<String> = site
+        let entries: Vec<Value> = site
             .entries
             .par_iter()
             .zip(&site.links)
             .zip(code)
             .zip(pictures)
-            .map(|(((e, links), code), pictures)| {
-                crate::html::body(&e.document, links, code, pictures)
-            })
-            .collect();
-        let entries: Vec<Value> = site
-            .entries
-            .iter()
-            .zip(bodies)
             .zip(&entry_urls)
-            .map(|((e, body), url)| entry(config, site, e, url, body))
+            .map(|((((e, links), code), pictures), url)| {
+                let body = crate::html::body(&e.document, links, code, pictures);
+                entry(config, site, e, url, body)
+            })
             .collect();
 
         let mut terms = BTreeMap::new();
