@@ -1,0 +1,12 @@
+[site]
+# Where the Site is served from: canonical links, feeds and the sitemap use it.
+url = "https://example.com"
+title = "My Site"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"

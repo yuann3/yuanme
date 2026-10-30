@@ -555,6 +555,151 @@ fn docs_prints_pages_by_code() {
     );
 }
 
+/// Every file under `dir` but `.yuanme/`'s, with its text, and the Engine's
+/// version written as `[version]`, its release as `[release]` and the
+/// `yuanme = "X.Y"` it makes as `[X.Y]`, so a release changes no snapshot.
+fn texts(dir: &Path) -> std::collections::BTreeMap<String, String> {
+    let version = yuanme(dir, &["--version"]).stdout;
+    let version = version.trim().strip_prefix("yuanme ").unwrap().to_string();
+    let release = version.split('+').next().unwrap().to_string();
+    let minor = release.rsplit_once('.').unwrap().0.to_string();
+    files_under(dir)
+        .into_iter()
+        .filter(|path| !path.starts_with(".yuanme/"))
+        .map(|path| {
+            let text = fs::read_to_string(dir.join(&path)).unwrap();
+            let text = text
+                .replace(&version, "[version]")
+                .replace(&release, "[release]")
+                .replace(&format!("yuanme = \"{minor}\""), "yuanme = \"[X.Y]\"");
+            // The hash a skill keeps of itself, which holds the version.
+            let text = text
+                .lines()
+                .map(|l| match l.split_once("yuanme-hash: ") {
+                    Some((indent, _)) => format!("{indent}yuanme-hash: [hash]\n"),
+                    None => format!("{l}\n"),
+                })
+                .collect();
+            (path, text)
+        })
+        .collect()
+}
+
+fn show_files(files: &std::collections::BTreeMap<String, String>) -> String {
+    files
+        .iter()
+        .map(|(path, text)| format!("=== {path}\n{text}"))
+        .collect()
+}
+
+#[test]
+fn init_creates_a_site_that_checks_clean() {
+    let dir = tempfile::tempdir().unwrap();
+    let (code, events) = json(dir.path(), &["init", "my-site"]);
+    assert_eq!(code, 0);
+    let root = dir.path().join("my-site");
+    let files = texts(&root);
+    // `.claude/skills/` holds the same skills, as is checked below.
+    let mut shown = files.clone();
+    shown.retain(|path, _| !path.starts_with(".claude/"));
+    insta::assert_snapshot!("init_minimal", show_files(&shown));
+    let [created] = events.as_slice() else {
+        panic!("{events:?}")
+    };
+    assert_eq!(created["type"], "site-created");
+    assert_eq!(created["dir"], "my-site");
+    assert_eq!(created["starter"], "minimal");
+    assert_eq!(created["host"], Value::Null);
+    assert_eq!(created["updated"], serde_json::json!([]));
+    let listed: Vec<&str> = created["created"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|p| p.as_str().unwrap())
+        .collect();
+    assert_eq!(listed, files.keys().map(String::as_str).collect::<Vec<_>>());
+
+    // It builds with no Diagnostic, and a project made by this Engine
+    // accepts it.
+    let (code, events) = json(&root, &["check"]);
+    assert_eq!((code, events.len()), (0, 2), "{events:?}");
+    let (code, events) = json(&root, &["build"]);
+    assert_eq!((code, events.len()), (0, 2), "{events:?}");
+    assert!(root.join("dist/index.html").is_file());
+    assert!(root.join("dist/404.html").is_file());
+    // And what an agent reads before its first command.
+    assert!(root.join(".yuanme/schemas/yuanme.toml.json").is_file());
+    assert!(root.join(".yuanme/docs/templates.md").is_file());
+    assert!(root.join(".yuanme/types/yuanme.d.ts").is_file());
+    let agents = &files["AGENTS.md"];
+    assert!(agents.len() <= 8 * 1024, "{} bytes", agents.len());
+    for skill in ["yuanme-verify", "yuanme-migrate"] {
+        let path = format!("skills/{skill}/SKILL.md");
+        assert_eq!(
+            files[&format!(".agents/{path}")],
+            files[&format!(".claude/{path}")]
+        );
+    }
+
+    // Into the current folder, it says what to run next.
+    let here = tempfile::tempdir().unwrap();
+    let out = yuanme(here.path(), &["init"]);
+    assert_eq!(out.code, 0, "{}", out.stderr);
+    assert!(out.stderr.contains("\n  yuanme.toml\n"), "{}", out.stderr);
+    assert!(out.stderr.ends_with("next: yuanme dev\n"), "{}", out.stderr);
+    let out = yuanme(here.path(), &["init", "nested/site", "-q"]);
+    assert_eq!((out.code, out.stderr.as_str()), (0, ""));
+    let out = yuanme(here.path(), &["init", "other"]);
+    assert!(
+        out.stderr.ends_with("next: cd other && yuanme dev\n"),
+        "{}",
+        out.stderr
+    );
+}
+
+#[test]
+fn init_overwrites_nothing() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    write(
+        root,
+        "=== yuanme.toml\n[site]\n=== templates/home.html\nmine\n=== AGENTS.md\nmine\n",
+    );
+    let before = texts(root);
+    let out = yuanme(root, &["init"]);
+    assert_eq!(out.code, 2);
+    assert_eq!(
+        out.stderr,
+        "error: yuanme init would overwrite 2 files, so it changed nothing:\n  templates/home.html\n  yuanme.toml\n"
+    );
+    assert_eq!(texts(root), before);
+
+    // An AGENTS.md, CLAUDE.md or .gitignore of the Author's is kept, and
+    // gains only what yuanme needs.
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let agents = "# My notes\n\nUse British spelling.\n";
+    let gitignore = "node_modules\n.yuanme/\n";
+    write(
+        root,
+        &format!("=== AGENTS.md\n{agents}=== CLAUDE.md\nmine\n=== .gitignore\n{gitignore}"),
+    );
+    let (code, events) = json(root, &["init"]);
+    assert_eq!(code, 0);
+    assert_eq!(
+        events[0]["updated"],
+        serde_json::json!([".gitignore", "AGENTS.md"])
+    );
+    let created = events[0]["created"].as_array().unwrap();
+    assert!(!created.contains(&"CLAUDE.md".into()), "{created:?}");
+    let files = texts(root);
+    assert_eq!(files["CLAUDE.md"], "mine\n");
+    assert_eq!(files[".gitignore"], format!("{gitignore}dist/\n"));
+    let block = files["AGENTS.md"].strip_prefix(agents).unwrap();
+    assert!(block.starts_with("\n<!-- BEGIN:yuanme -->\n"), "{block}");
+    assert!(block.ends_with("<!-- END:yuanme -->\n"), "{block}");
+}
+
 #[test]
 fn exit_codes_and_the_project_folder() {
     let dir = project(SITE);

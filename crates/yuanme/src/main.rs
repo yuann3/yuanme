@@ -1,6 +1,7 @@
 mod dev;
 mod docs;
 mod events;
+mod init;
 mod load;
 mod new;
 mod report;
@@ -75,6 +76,16 @@ enum Color {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Create a Site from a Starter, with the files coding agents read. It overwrites no file.
+    Init {
+        /// The Site's folder, which may hold other files already. Defaults to the current one.
+        // Not `dir`, which is `-C`'s id.
+        #[arg(value_name = "DIR")]
+        folder: Option<PathBuf>,
+        /// The Starter to begin from.
+        #[arg(long, value_enum, default_value_t = init::Starter::Minimal)]
+        starter: init::Starter,
+    },
     /// Build the Site into the output directory.
     Build {
         #[command(flatten)]
@@ -273,6 +284,9 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     let dir = cli.dir.map_or(cwd.clone(), |d| cwd.join(d));
     match cli.command {
         Command::Docs { topic } => return docs(topic.as_deref().unwrap_or("index"), out),
+        Command::Init { folder, starter } => {
+            return init::run(&dir, folder.as_deref(), starter, out);
+        }
         Command::Schema {
             which: Which::Config,
         } => return Ok(print_schema(out, "config", config::json_schema())),
@@ -337,7 +351,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
         } => new(&root, &collection, &title, format, out),
         Command::Routes { drafts } => routes(&root, drafts, out),
         Command::Schema { which } => schema(&root, which, out),
-        Command::Docs { .. } => unreachable!("answered without a project"),
+        Command::Docs { .. } | Command::Init { .. } => unreachable!("answered without a project"),
     }
 }
 

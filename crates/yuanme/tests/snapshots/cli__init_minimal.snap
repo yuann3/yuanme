@@ -1,0 +1,165 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: show_files(&shown)
+---
+=== .agents/skills/yuanme-migrate/SKILL.md
+---
+name: yuanme-migrate
+description: Bring a blog or site from Astro, Hugo (ox-hugo Org included), Jekyll or Zola into this yuanme Site, keeping every URL. Maps front matter, dates, Slugs and Taxonomies. Use when asked to migrate, import or port content from another site generator.
+metadata:
+  yuanme-version: "[version]"
+  yuanme-hash: [hash]
+---
+
+# Migrate a site to yuanme
+
+Read `yuanme docs collections` and `yuanme docs config` first. Then take the steps in order.
+
+1. **Save the old URLs.** List every URL the old site serves, from its sitemap or its built output. Each one must still work at the end.
+2. **Declare the Collections and Taxonomies** in `yuanme.toml`. Give each Collection the `route` its URLs already have: Hugo's `/posts/:slug/` is `route = "/posts/{slug}/"`, and a Taxonomy's `route` is like `/tags/{term}/`. Declare each front matter key the content uses as a field with its type, rather than dropping it: an undeclared key is an error.
+3. **Move the content** into `content/COLLECTION/`. Markdown stays Markdown and Org stays Org. Map the front matter:
+   - `title`, `date` and `draft` keep their names. A date without an offset is in `[site] timezone`.
+   - The Slug comes from the file name. Keep the old one with `slug:`, or rename the file: Jekyll's `2024-05-01-hello.md` becomes `hello.md`, and Hugo's and Zola's `slug` stays `slug`.
+   - Tags and categories go under the Taxonomy's name.
+   - Hugo's `summary`, and Astro's and Zola's `description`, become a field you declare.
+   - Hugo's `aliases` and Jekyll's `redirect_from` become `[[host.redirects]]` in Site config.
+4. **ox-hugo.** One Entry is one file. Split a file of many posts into one Org file per subtree that has `:EXPORT_FILE_NAME:`, which gives the Slug. Turn `#+HUGO_TAGS` or the subtree's tags into `#+FILETAGS: :a:b:` when the Taxonomy is `tags`, and drop the `HUGO_` export keywords. `yuanme docs org` lists what renders.
+5. **Rewrite what isn't content.** Shortcodes, Liquid tags and MDX components don't run in a body: write them as Markdown or Org, or move them into a Template or Component (`yuanme docs templates`, `yuanme docs components`). Labels and cross-references follow `yuanme docs math`.
+6. **Check the URLs.** Run `yuanme check --json` until it exits 0. Then compare `yuanme routes --json` with the saved list: each old URL must be a Route or the `from` of a redirect. Add a redirect for each one that moved.
+=== .agents/skills/yuanme-verify/SKILL.md
+---
+name: yuanme-verify
+description: Check that a change to this yuanme Site works before calling it done. Runs yuanme check, builds the Site, reads the build report against the Site budgets, and looks at the Pages that changed. Use after editing content, Templates, styles, Scripts or yuanme.toml.
+metadata:
+  yuanme-version: "[version]"
+  yuanme-hash: [hash]
+---
+
+# Verify a change to the Site
+
+Take the steps in order, and fix what one finds before going on to the next.
+
+1. **Check.** Run `yuanme check --json`. Fix every `diagnostic` whose `level` is `error`, then each warning you caused. Apply a suggestion whose `applicability` is `machine-applicable` as it is; for any other, run `yuanme docs CODE` and fix what it names. Run it again until it exits 0.
+2. **Build.** Run `yuanme build --json`. It reports what `check` does, a `budget` event for each Page over a Site budget, and writes `.yuanme/report.md`.
+3. **Read the report.** `.yuanme/report.md` lists each Page's HTML, CSS, JS, fonts and requests against its Site budgets (`yuanme docs budgets`), and the modules in each Script bundle. For each Page over a budget:
+   - Find what made it heavier: a stylesheet, Script, font or image the change added.
+   - Make it smaller if you can: drop what the Page doesn't use, move a Script to the Pages that need it, or load it later.
+   - Acknowledge the overage only when the weight is what the Page is for, such as an interactive demo or a Page of plots, and the Author agrees. Add `[budgets.overages."/its/url/"]` with the kB over, no more than the build reported. An Acknowledged overage stays listed in the report.
+4. **Look at the Pages.** `yuanme routes --json` gives the URLs a changed file makes. If `yuanme dev status --json` says no dev server runs, start one with `yuanme dev --background --json` and take its URL from `server-ready`. Open each changed Page, or fetch its HTML and check that the change is there. `yuanme dev --write DIR` also writes each build to `DIR` for a look at the files.
+5. **Report** the commands you ran and their exit codes, and each overage you acknowledged and why.
+=== .gitignore
+# What yuanme writes: its caches, docs and schemas, and the built Site.
+.yuanme/
+dist/
+=== AGENTS.md
+<!-- BEGIN:yuanme -->
+<!-- Written by yuanme [version], which rewrites this block when another version runs here. Write your own notes outside it. -->
+
+# yuanme
+
+This project is a Site that yuanme builds: a static site generator for Markdown and Org, with math. `yuanme.toml` is the Site config, Entries are Markdown or Org files in `content/`, and Templates are Jinja files in `templates/`.
+
+## Work loop
+
+1. Edit the files.
+2. Run `yuanme check --json`. Each line it prints is one JSON event. A `diagnostic` has a `code`, the place in a file, and often a fix: apply a suggestion whose `applicability` is `machine-applicable` as it is, and for any other, read `yuanme docs CODE` and fix what the code names.
+3. Repeat until `check` exits 0. Exit 1 means the Site has errors, and 2 that the command itself was wrong.
+4. To see the Pages, run `yuanme dev --background --json`. It returns after the first build, with a `server-ready` event that holds the URL: never assume the port. `yuanme dev status --json` says whether a dev server runs and how its last build went, `.yuanme/dev.json` says where it runs, `.yuanme/dev.log` holds what it printed, and `yuanme dev stop` stops it.
+5. `yuanme build --json` writes the Site, and `.yuanme/report.md`, which measures each Page against the Site budgets.
+
+More commands that print JSON with `--json`:
+
+- `yuanme routes`: every URL, and the Entry or Template that makes it.
+- `yuanme new COLLECTION "Title"`: a new Entry with its required fields filled in.
+- `yuanme schema config`, `entry COLLECTION`, `data NAME` or `context KIND`: the JSON Schema of Site config, a Collection's front matter, a Data file, or what a kind of Route's Template sees. `.yuanme/schemas/` holds them too.
+
+## Rules agents get wrong
+
+- An Entry's body is Markdown or Org, never Jinja: `{{ }}` and `{% %}` in a body are text. Logic goes in Templates.
+- Org outside the Org subset is an error, never dropped. `yuanme docs org` lists the subset.
+- Label an equation with `\label{eq:name}` inside its math, and cite it with `\eqref{eq:name}`, in both Source formats. A link with no text to a Label, `[](#thm:name)` in Markdown or `[[thm:name]]` in Org, shows the target's number.
+- A key that Site config or a Collection doesn't declare is an error, and the help names the key meant. Read the schema rather than guessing.
+- Never edit `.yuanme/`: yuanme rewrites everything in it.
+- A Page over a Site budget is a warning. Make the Page smaller before you acknowledge it in `[budgets.overages]`.
+
+## Docs
+
+These pages are for this version of yuanme. Read the one for a task before you start it; `yuanme docs NAME` prints the same.
+
+- `.yuanme/docs/getting-started.md`: Install yuanme, make a Site with one Post, check it and build it.
+- `.yuanme/docs/config.md`: yuanme.toml, the one file that declares the Site, with every key it takes.
+- `.yuanme/docs/collections.md`: Collections and their Entries, the fields every Entry has and the ones a Collection declares, Slugs, Taxonomies, Data files, and yuanme new.
+- `.yuanme/docs/markdown.md`: The Markdown yuanme reads: CommonMark with GFM, heading ids and Labels, links between Entries, raw HTML, code blocks and ::: blocks.
+- `.yuanme/docs/org.md`: How an Org file becomes an Entry, which Org yuanme renders, what it rejects or warns about, and where it differs from Emacs.
+- `.yuanme/docs/math.md`: LaTeX math in Markdown and Org, rendered to MathML at build time, with numbered equations, Labels, references and macros.
+- `.yuanme/docs/templates.md`: The Jinja files that make each Page, what each kind of Route sees, the filters yuanme adds, Layouts and Partials, and what check finds in them.
+- `.yuanme/docs/components.md`: Reusable pieces of Templates with declared props, how to call them, how they differ from Partials, and the Sidecars beside them.
+- `.yuanme/docs/styles.md`: Link stylesheets from a Template; yuanme bundles their imports, runs Tailwind for one that imports it, adds prefixes for your browsers, minifies and hashes them, and copies Static files as they are.
+- `.yuanme/docs/scripts.md`: Load TypeScript or JavaScript modules from a Template; yuanme bundles them, with packages from node_modules, into minified and hashed chunks.
+- `.yuanme/docs/images.md`: How Entry bodies name images, what yuanme makes of them, the image field type, and the [images] settings.
+- `.yuanme/docs/deploying.md`: What yuanme build writes, the Host adapter for each static host, the cache policy, headers, redirects and the 404 Page.
+- `.yuanme/docs/cli.md`: Every command and flag, the exit codes, and the JSON that --json prints.
+- `.yuanme/docs/budgets.md`: The Site budgets yuanme build measures every Page against, how to change them, strict mode, and the build report.
+
+Each Diagnostic code has a page too, such as `.yuanme/docs/entry/unknown-key.md` for `entry/unknown-key`.
+<!-- END:yuanme -->
+=== CLAUDE.md
+@AGENTS.md
+=== styles/site.css
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+=== templates/404.html
+{% extends "layouts/base.html" %}
+{% set title = "Not found" %}
+{% block content %}
+<h1>Not found</h1>
+<p>Nothing is here. <a href="/">Go to the home Page</a>.</p>
+{% endblock %}
+=== templates/home.html
+{% extends "layouts/base.html" %}
+{% set title = "My Site" %}
+{% block content %}
+<h1>My Site</h1>
+<p>Change this Page in <code>templates/home.html</code>.</p>
+{% endblock %}
+=== templates/layouts/base.html
+{# vars: title: string #}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>
+=== yuanme.toml
+#:schema ./.yuanme/schemas/yuanme.toml.json
+yuanme = "[X.Y]"
+
+[site]
+# Where the Site is served from: canonical links, feeds and the sitemap use it.
+url = "https://example.com"
+title = "My Site"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"

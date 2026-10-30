@@ -13,6 +13,10 @@ Until the first release, install from the repository with Rust's `cargo`:
 cargo install --locked --git https://github.com/yuann3/yuanme yuanme
 ```
 
+## Start from a Starter
+
+`yuanme init my-site` makes a project in `my-site/` from a Starter, ready to build, with the files a coding agent reads. `yuanme docs cli` shows what it writes. The rest of this page makes one by hand instead.
+
 ## Site config
 
 `yuanme.toml` is the Site config. It declares the Site and its Collections: here one Collection, `posts`, whose Entries are the files in `content/posts/`.

@@ -31,6 +31,15 @@ pub enum Event<'a> {
         /// image, which needs a file.
         unfilled: Vec<String>,
     },
+    SiteCreated {
+        /// As the command named it, or `.`.
+        dir: String,
+        starter: &'static str,
+        host: Option<&'static str>,
+        created: Vec<String>,
+        /// Files of the Author's that gained what yuanme needs.
+        updated: Vec<String>,
+    },
     Schema {
         name: String,
         schema: Value,
@@ -169,6 +178,20 @@ impl Event<'_> {
                 "url": url,
                 "collection": collection,
                 "unfilled": unfilled,
+            }),
+            Event::SiteCreated {
+                dir,
+                starter,
+                host,
+                created,
+                updated,
+            } => json!({
+                "type": "site-created",
+                "dir": dir,
+                "starter": starter,
+                "host": host,
+                "created": created,
+                "updated": updated,
             }),
             Event::Schema { name, schema } => {
                 json!({ "type": "schema", "name": name, "schema": schema })
@@ -439,6 +462,30 @@ pub fn schema() -> Value {
                 (
                     "unfilled",
                     json!({ "type": "array", "items": { "type": "string" }, "description": "Required fields left for the Author, such as an image, which needs a file." }),
+                ),
+            ],
+            &[],
+        ),
+        event(
+            Some("site-created"),
+            "`yuanme init` made a Site.",
+            &[
+                (
+                    "dir",
+                    json!({ "type": "string", "description": "The Site's folder, as the command named it." }),
+                ),
+                ("starter", string.clone()),
+                (
+                    "host",
+                    json!({ "type": ["string", "null"], "description": "The adapter `--host` named, whose deploy files it wrote." }),
+                ),
+                (
+                    "created",
+                    json!({ "type": "array", "items": { "type": "string" }, "description": "The files it made, from the Site's folder, leaving out `.yuanme/`." }),
+                ),
+                (
+                    "updated",
+                    json!({ "type": "array", "items": { "type": "string" }, "description": "Files that were there, such as `AGENTS.md` and `.gitignore`, which it added to." }),
                 ),
             ],
             &[],

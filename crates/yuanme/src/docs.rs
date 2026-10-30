@@ -107,16 +107,20 @@ pub fn get(name: &str) -> Option<Page> {
         .map(|c| code_page(c))
 }
 
+/// Each topic's name and description, in the index's order.
+pub fn topics() -> impl Iterator<Item = (&'static str, String)> {
+    TOPICS
+        .iter()
+        .map(|(name, source)| (*name, topic(name, source).description))
+}
+
 /// The index, `yuanme docs` with no argument.
 pub fn index() -> String {
     let mut out = String::from(
         "# yuanme docs\n\nRun `yuanme docs NAME` for a page; each one is also in `.yuanme/docs/NAME.md`.\n\n## Topics\n\n",
     );
-    for (name, source) in TOPICS {
-        out.push_str(&format!(
-            "- `{name}`: {}\n",
-            topic(name, source).description
-        ));
+    for (name, description) in topics() {
+        out.push_str(&format!("- `{name}`: {description}\n"));
     }
     out.push_str("\n## Diagnostic codes\n\n");
     for code in codes::ALL {

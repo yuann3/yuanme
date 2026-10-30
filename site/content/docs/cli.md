@@ -5,6 +5,23 @@ description: "Every command and flag, the exit codes, and the JSON that --json p
 
 `yuanme` runs in the project's folder, the one with `yuanme.toml`, or in the folder `-C DIR` names. Every command that reads the project first writes these docs to `.yuanme/docs/` when they are for another version of yuanme.
 
+## Starting a Site
+
+`yuanme init DIR` creates a Site in `DIR`, or in the current folder without one, from a Starter. It asks nothing, so it runs the same for a person and for a coding agent. The `minimal` Starter, the only one so far, is `yuanme.toml`, a Layout, a home Page, a 404 Page and a stylesheet. `yuanme.toml` starts with two lines that `init` writes:
+
+- `#:schema ./.yuanme/schemas/yuanme.toml.json`, which editors with a TOML language server, such as Taplo or Tombi, read to complete and check keys.
+- `yuanme = "X.Y"`, the yuanme release the project needs, which `check` holds every later release to.
+
+It also writes the files a coding agent reads:
+
+- `AGENTS.md`, with a block between `<!-- BEGIN:yuanme -->` and `<!-- END:yuanme -->` that teaches the commands to run, the mistakes to avoid and where the docs are. An `AGENTS.md` of yours keeps its text and gains the block at its end.
+- `CLAUDE.md`, which holds `@AGENTS.md` so Claude Code reads it, unless you have one.
+- Two skills, `yuanme-verify`, the check, build and look loop, and `yuanme-migrate`, for bringing a site in from Astro, Hugo, Jekyll or Zola. They are in `.agents/skills/` and, for Claude Code, `.claude/skills/`.
+- `.gitignore`, with `.yuanme/` and the output directory, or those two lines added to yours.
+- `.yuanme/`: these docs, the JSON Schemas and the types for Scripts, which every command rewrites.
+
+`init` never overwrites a file. If any file it would create is already there, it lists them all, exits 2 and changes nothing. A folder that holds other files, such as a Git repository's, is fine.
+
 ## Output
 
 What yuanme prints depends on where it goes, never on guessing who runs it:
@@ -19,7 +36,7 @@ Human text always goes to stderr, so stdout holds only what a command prints as 
 
 - `0`: success. Warnings are allowed.
 - `1`: the Site has errors.
-- `2`: the command can't be carried out as written: a bad flag, no `yuanme.toml`, or a name that matches nothing.
+- `2`: the command can't be carried out as written: a bad flag, no `yuanme.toml`, a name that matches nothing, or a file `init` or `new` would overwrite.
 - `101`: yuanme failed, such as when it can't write a file, or crashed.
 
 ## `--json`
@@ -33,6 +50,7 @@ Each line is one event with a `type`:
 - `browser-console`: a browser on `yuanme dev` logged something or threw an uncaught error.
 - `dev-status`: from `yuanme dev status`, whether a dev server runs for the project, and if one does, where, and its last build as `/__yuanme/status` returns it. `yuanme dev stop` prints one once it has stopped.
 - `route`: one line of `yuanme routes`.
+- `site-created`: what `yuanme init` wrote: the Site's `dir`, its `starter`, the files it `created`, and the files of yours it `updated`.
 - `entry-created`: what `yuanme new` wrote.
 - `schema`: what `yuanme schema` prints.
 - `docs`: a page of these docs.
@@ -72,6 +90,17 @@ The loop is: edit, run `yuanme check --json`, and fix each Diagnostic by its cod
 - `-q, --quiet`: Print only errors.
 - `-h, --help`: Print help.
 - `-V, --version`: Print version.
+
+### `yuanme init`
+
+Create a Site from a Starter, with the files coding agents read. It overwrites no file.
+
+```text
+yuanme init [OPTIONS] [DIR]
+```
+
+- `DIR`: The Site's folder, which may hold other files already. Defaults to the current one.
+- `--starter STARTER`: The Starter to begin from. One of `minimal`. Defaults to `minimal`.
 
 ### `yuanme build`
 
