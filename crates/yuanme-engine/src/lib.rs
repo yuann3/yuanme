@@ -395,10 +395,10 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         images: used.variants,
         budgets,
     };
-    // A dev build reads no image variant, and none of what only `yuanme
-    // build` reads, such as Brotli and the font subset, so counting the
-    // builds of each save would evict them all.
-    if !build.failed() && mode != Mode::Dev {
+    // A dev build or a check reads no image variant, and a dev build none
+    // of what only `yuanme build` reads, such as Brotli and the font
+    // subset, so counting their builds would evict them all (#67, #93).
+    if !build.failed() && mode.encodes() {
         cache.sweep();
     }
     build

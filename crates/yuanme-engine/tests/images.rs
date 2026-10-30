@@ -200,6 +200,66 @@ fn a_check_names_every_variant_and_encodes_none() {
     );
 }
 
+/// A check reads no variant, so only the builds that encode count towards
+/// deleting one (#93): those still delete the variants of an image no
+/// Page names any more.
+#[test]
+fn only_builds_that_encode_age_variants_out() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("cache");
+    let run = |inputs: &Inputs, mode: Mode| {
+        let mut cache = Cache::open(path.clone(), "1.0.0").unwrap();
+        let build = build(inputs, &mut cache, mode);
+        assert!(!build.failed(), "{}", diagnostics(&build));
+        cache.save().unwrap();
+        build
+    };
+    let files = |build: &Build, source: &str| -> Vec<std::path::PathBuf> {
+        let large = path.join("large");
+        let variants = build.images.values().map(|(variant, _)| variant);
+        variants
+            .filter(|v| v.source.ends_with(source))
+            .map(|v| large.join(v.key.to_hex().as_str()))
+            .collect()
+    };
+    let post = |body: &str| {
+        project(&[
+            ("content/posts/sea/index.md", body.as_bytes()),
+            ("content/posts/sea/beach.jpg", &jpeg(600, 400)),
+            ("content/posts/sea/roof.png", &png(300, 200, false)),
+        ])
+    };
+    let both = post("---\ntitle: Sea\n---\n![A beach](beach.jpg)\n\n![A roof](roof.png)\n");
+    let beach = post("---\ntitle: Sea\n---\n![A beach](beach.jpg)\n");
+
+    let built = run(&both, Mode::Build);
+    let (beaches, roofs) = (files(&built, "beach.jpg"), files(&built, "roof.png"));
+    assert_eq!((beaches.len(), roofs.len()), (4, 4));
+    // Encoding a variant again writes a new file, which moves this.
+    let encoded = std::time::SystemTime::UNIX_EPOCH;
+    for file in beaches.iter().chain(&roofs) {
+        let file = std::fs::File::options().write(true).open(file).unwrap();
+        file.set_modified(encoded).unwrap();
+    }
+    let modified = |file: &std::path::PathBuf| std::fs::metadata(file).ok()?.modified().ok();
+
+    // One more than the builds a cache entry outlives unread.
+    for _ in 0..11 {
+        run(&both, Mode::Check { drafts: false });
+    }
+    run(&both, Mode::Build);
+    for file in beaches.iter().chain(&roofs) {
+        assert_eq!(modified(file), Some(encoded), "{}", file.display());
+    }
+
+    // Ten builds after the last that named it, as for any cache entry.
+    for _ in 0..10 {
+        run(&beach, Mode::Build);
+    }
+    assert!(roofs.iter().all(|f| !f.exists()));
+    assert!(beaches.iter().all(|f| modified(f) == Some(encoded)));
+}
+
 fn rendered(inputs: &Inputs) -> String {
     let build = build(inputs, &mut Cache::memory("1.0.0"), Mode::Build);
     diagnostics(&build)
