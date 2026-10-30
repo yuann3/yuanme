@@ -21,7 +21,8 @@ targets = [
 installers = ["shell", "powershell", "homebrew"]
 install-path = "~/.local/bin"
 tap = "yuann3/homebrew-tap"
-publish-jobs = ["homebrew", "./release-crates"]
+# docs deploys the docs site, with this release at / (#72).
+publish-jobs = ["homebrew", "./release-crates", "./docs"]
 auto-includes = false
 # THIRD_PARTY_NOTICES.md is written by .github/build-setup.yml.
 include = ["README.md", "LICENSE-MIT", "LICENSE-APACHE", "THIRD_PARTY_NOTICES.md"]
@@ -31,7 +32,7 @@ github-build-setup = "../build-setup.yml"
 # plan-jobs: when one of those fails, dist skips the builds, and a skipped
 # build lets `host` make the release.
 global-artifacts-jobs = ["./ci", "./release-smoke", "./release-sign"]
-github-custom-job-permissions = { "release-crates" = { contents = "read" } }
+github-custom-job-permissions = { "release-crates" = { contents = "read" }, "docs" = { contents = "read" } }
 # GitHub attaches the source to every release already.
 source-tarball = false
 # Made only for a real release, so a dry run leaves no record.

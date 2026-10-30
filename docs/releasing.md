@@ -11,7 +11,7 @@ How the Engine is built, signed and shipped. Decided in [How is yuanme distribut
    - `ci.yml`, all of it;
    - `release-smoke.yml`: each archive, on its own platform, has its checksum and exactly those files, and its binary reports the release's version and builds a Site. The Linux binaries are static. The run's summary lists each platform's hash of that Site. Its `starters-lab` job makes each Starter with the `x86_64` Linux binary and checks, in Chromium on Lighthouse's mobile throttling, that the home Pages and the blog's Post have an LCP of at most 2.0 s and a CLS of at most 0.01 (#36);
    - `release-sign.yml`: writes `sha256.txt`, the hash of each archive, and signs it as `sha256.txt.minisig`, with the trusted comment `yuanme vX.Y.Z`.
-3. **Publish.** The GitHub Release, with GitHub attestations for every file, which also makes the tag. Then `release-crates.yml` publishes every crate to crates.io, and dist commits the formula to `yuann3/homebrew-tap`.
+3. **Publish.** The GitHub Release, with GitHub attestations for every file, which also makes the tag. Then `release-crates.yml` publishes every crate to crates.io, dist commits the formula to `yuann3/homebrew-tap`, and `docs.yml` deploys the docs site with this release at `/`. A prerelease does none of these but the GitHub Release.
 
 The default tag, `dry-run`, does steps 1 and 2 and publishes nothing. It signs with a key it makes and throws away, and makes no attestations.
 
@@ -57,6 +57,12 @@ These need the owner's accounts, once.
    git add crates/yuanme/src/minisign.pub
    ```
    Keep a copy of the secret key offline. A key made with `-W` has no password; then leave `MINISIGN_PASSWORD` unset.
+5. **The docs site's Cloudflare secrets** (#72). `docs.yml` deploys the Worker `yuanme-docs` on every push to `main` and every release, and only warns until both are set. The token needs *Account · Workers Scripts · Edit* and *Account · Account Settings · Read* on the account alone, or the *Edit Cloudflare Workers* template limited to it:
+   ```sh
+   gh secret set CLOUDFLARE_API_TOKEN --repo yuann3/yuanme
+   gh secret set CLOUDFLARE_ACCOUNT_ID --repo yuann3/yuanme --body 337851642f9a39a7999e95ed7f339693
+   ```
+   The site is at <https://yuanme-docs.yuann3.workers.dev> until it has a domain. To give it one, set `[site] url` in `site/yuanme.toml`, and add the domain to `site/wrangler.jsonc` as `"routes": [{ "pattern": "docs.example.com", "custom_domain": true }]`, which also needs *Zone · Workers Routes · Edit* on its zone.
 
 ## Each release
 
