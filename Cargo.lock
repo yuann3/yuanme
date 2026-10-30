@@ -5879,6 +5879,7 @@ dependencies = [
  "insta",
  "jiff",
  "jsonschema",
+ "rayon",
  "saphyr-parser",
  "serde",
  "serde_json",

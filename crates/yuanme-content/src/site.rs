@@ -6,6 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
 use jiff::tz::TimeZone;
+use rayon::prelude::*;
 use yuanme_diag::{Diagnostic, FileId, Files, Level, Span, codes};
 
 use crate::config::{Collection, Config, SortKey, Taxonomy};
@@ -622,7 +623,7 @@ fn links(
         .collect();
     // Every id a fragment can name: headings', and Org's targets and names.
     let anchors: Vec<Vec<String>> = entries
-        .iter()
+        .par_iter()
         .map(|e| {
             let headings = e.document.headings().into_iter().map(|h| h.id);
             headings
@@ -633,7 +634,7 @@ fn links(
     // Where an Org `::search` finds a headline: Org's titles as written, and
     // a Markdown heading's text.
     let titles: Vec<BTreeMap<String, String>> = entries
-        .iter()
+        .par_iter()
         .map(|e| match e.format {
             SourceFormat::Org => e.document.names.titles.clone(),
             SourceFormat::Markdown => {
@@ -666,10 +667,13 @@ fn links(
             ids.insert(id, (i, anchor, span));
         }
     }
-    entries
-        .iter()
+    // Each Entry on a thread of its own, since this walks every node of
+    // every Document on every build.
+    let found: Vec<(Links, Vec<Diagnostic>)> = entries
+        .par_iter()
         .enumerate()
         .map(|(i, e)| {
+            let mut reported = Vec::new();
             let doc = &e.document;
             let org = e.format == SourceFormat::Org;
             let mut out = Links::new();
@@ -684,7 +688,7 @@ fn links(
                             let href = if anchor.is_empty() { route.to_string() } else { format!("{route}#{anchor}") };
                             out.insert(id, Link { href, text: None });
                         }
-                        None => diagnostics.push(
+                        None => reported.push(
                             Diagnostic::error(&codes::LINK_UNRESOLVED, format!("no Entry or heading has the ID `{key}`"), span)
                                 .help("an `id:` link leads to the Entry or headline whose `:PROPERTIES:` drawer has that `:ID:`"),
                         ),
@@ -711,7 +715,7 @@ fn links(
                         Some(&j) => j,
                         None if left_out.contains(&resolved) => {
                             let message = format!("`{resolved}` is a Draft, which this build leaves out");
-                            diagnostics.push(
+                            reported.push(
                                 Diagnostic::error(&codes::LINK_UNRESOLVED, message, span)
                                     .help("publish it by removing `draft: true`, or remove the link until it is"),
                             );
@@ -719,7 +723,7 @@ fn links(
                         }
                         None => {
                             let message = format!("no Entry is written in `{resolved}`");
-                            diagnostics.push(
+                            reported.push(
                                 Diagnostic::error(&codes::LINK_UNRESOLVED, message, span)
                                     .help("link to an Entry's file by its path from this one; a URL or a `/` path is left as it is"),
                             );
@@ -743,7 +747,7 @@ fn links(
                             Some(anchor) => Some(anchor.clone()),
                             None => {
                                 let message = format!("`{page}` has nothing `::{query}` finds: no headline with that title, `<<target>>` or `#+NAME`");
-                                diagnostics.push(Diagnostic::error(&codes::LINK_UNRESOLVED, message, span));
+                                reported.push(Diagnostic::error(&codes::LINK_UNRESOLVED, message, span));
                                 continue;
                             }
                         }
@@ -758,7 +762,7 @@ fn links(
                                 if let Some(near) = crate::config::similar(&fragment, anchors[target].iter().map(String::as_str)) {
                                     d = d.help(format!("the closest id is `{near}`"));
                                 }
-                                diagnostics.push(d);
+                                reported.push(d);
                                 continue;
                             }
                             Some(f.to_string())
@@ -782,6 +786,13 @@ fn links(
                     out.insert(id, Link { href, text });
                 }
             }
+            (out, reported)
+        })
+        .collect();
+    found
+        .into_iter()
+        .map(|(out, found)| {
+            diagnostics.extend(found);
             out
         })
         .collect()

@@ -15,6 +15,7 @@ comrak = { workspace = true, features = ["attributes"] }
 # math-core 0.9.0 with each snippet's labels and a bound on nesting (#50).
 math-core.workspace = true
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always", "serde"] }
+rayon = "1.12.0"
 saphyr-parser = "0.2"
 # A parsed Entry is cached on disk (ADR 0011).
 serde = { version = "1.0.229", features = ["derive", "rc"] }
