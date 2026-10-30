@@ -1,0 +1,14 @@
+{
+  "name": "yuanme-evals",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "dependencies": {
+    "@vercel/agent-eval": "2.6.0",
+    "esbuild": "0.28.2",
+    "node-html-parser": "9.0.5",
+    "vitest": "3.2.7"
+  }
+}

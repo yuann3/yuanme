@@ -1,0 +1,14 @@
+#+TITLE: Why I write in Org
+#+DATE: 2026-02-01
+#+DESCRIPTION: Plain text, outlines, and math that renders.
+#+FILETAGS: :org:
+
+Org files are plain text that Emacs folds into an outline, and they hold prose, code and math side by side.
+
+* Math
+
+\begin{equation}
+e^{i\pi} + 1 = 0 \label{eq:euler}
+\end{equation}
+
+Equation \eqref{eq:euler} renders without a script.

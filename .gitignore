@@ -5,3 +5,5 @@
 /crates/yuanme-engine/tests/router/node_modules
 /crates/yuanme/tests/client/node_modules
 /crates/yuanme/tests/starters/node_modules
+/evals/node_modules
+/evals/.run

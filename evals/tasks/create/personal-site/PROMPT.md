@@ -1,0 +1,1 @@
+Make me a personal site: I'm Ada Lovelace, I write about mathematics and computing, and I want a blog and a page listing my two projects, my notes on the Analytical Engine and a program for the Bernoulli numbers.
