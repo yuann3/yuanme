@@ -116,6 +116,10 @@ body {
   max-width: 40rem;
   margin: 0 auto;
   padding: 2rem 1rem;
+  /* The browser's own colours for each scheme, set rather than left to
+     the canvas, so that links are read against the right background. */
+  background: Canvas;
+  color: CanvasText;
 }
 === templates/404.html
 {% extends "layouts/base.html" %}
