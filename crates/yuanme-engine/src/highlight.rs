@@ -71,7 +71,9 @@ pub(crate) fn code(
         .flatten()
         .filter(|b| cache.get(KIND, &b.key).is_none())
         .collect();
-    missing.sort_unstable_by_key(|b| *b.key.as_bytes());
+    // By grammar: a thread's highlighter compiles a grammar again after
+    // it highlights another.
+    missing.sort_unstable_by_key(|b| (b.grammar, *b.key.as_bytes()));
     missing.dedup_by_key(|b| b.key);
     let highlighted: Vec<(blake3::Hash, String)> = missing
         .into_par_iter()

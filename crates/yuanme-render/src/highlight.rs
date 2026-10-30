@@ -371,13 +371,21 @@ pub fn css<'a>(classes: impl IntoIterator<Item = &'a str>) -> String {
 /// Every code block of `doc` highlighted, a block in a language no grammar
 /// has as plain text. The Engine does this through its cache instead.
 pub fn document(doc: &Document) -> Code {
-    let mut code = Code::new();
-    for id in doc.descendants(Document::ROOT) {
-        if let Kind::CodeBlock { lang, text } = &doc.node(id).kind {
-            code.insert(id, block(grammar(lang.as_deref()), text));
-        }
-    }
-    code
+    let mut blocks: Vec<_> = doc
+        .descendants(Document::ROOT)
+        .into_iter()
+        .filter_map(|id| match &doc.node(id).kind {
+            Kind::CodeBlock { lang, text } => Some((grammar(lang.as_deref()), id, text)),
+            _ => None,
+        })
+        .collect();
+    // By grammar: a thread's highlighter compiles a grammar again after
+    // it highlights another.
+    blocks.sort_by_key(|(grammar, _, _)| *grammar);
+    blocks
+        .into_iter()
+        .map(|(grammar, id, text)| (id, block(grammar, text)))
+        .collect()
 }
 
 /// The grammar a code block's language names, if any.
