@@ -1,7 +1,9 @@
 use std::ops::Range;
 
 /// One file of the project, by its index in [`Files`].
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub struct FileId(u32);
 
 /// A byte range in one original file.

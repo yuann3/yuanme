@@ -9,8 +9,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use crate::Body;
 use crate::assets::tailwind::Watching;
+use crate::{Body, entries};
 
 /// Entries no build has read for this many successful builds are deleted.
 const KEEP: u64 = 10;
@@ -32,6 +32,10 @@ pub struct Cache {
     /// The Tailwind CLIs `yuanme dev` keeps running between builds, by
     /// stylesheet (#59). Dropping the cache stops them.
     pub(crate) tailwind: BTreeMap<String, Watching>,
+    /// The last build's parsed Entries, decoded, by their key in the
+    /// `entry` pack: `yuanme dev` decoding every Entry on each save would
+    /// cost more than parsing the one that changed.
+    pub(crate) entries: HashMap<blake3::Hash, entries::Read>,
 }
 
 #[derive(Default)]
@@ -58,6 +62,7 @@ impl Cache {
             packs: BTreeMap::new(),
             large: Pack::default(),
             tailwind: BTreeMap::new(),
+            entries: HashMap::new(),
         }
     }
 

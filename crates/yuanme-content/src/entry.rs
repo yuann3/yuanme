@@ -6,6 +6,7 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use jiff::civil::Date;
+use serde::{Deserialize, Serialize};
 use yuanme_diag::{Applicability, Diagnostic, Edit, codes};
 
 use crate::config::{Collection, FieldType, Taxonomy};
@@ -14,13 +15,13 @@ use crate::fields::{self, Cx, Value};
 use crate::slug;
 use crate::yaml::{self, Key, Node, Yaml};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SourceFormat {
     Markdown,
     Org,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Entry {
     pub file: yuanme_diag::FileId,
     /// From the project root.

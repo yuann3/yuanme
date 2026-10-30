@@ -5880,6 +5880,7 @@ dependencies = [
  "jiff",
  "jsonschema",
  "saphyr-parser",
+ "serde",
  "serde_json",
  "strsim",
  "toml",
@@ -5896,6 +5897,7 @@ version = "0.0.0"
 dependencies = [
  "annotate-snippets",
  "insta",
+ "serde",
  "serde_json",
 ]
 
@@ -5912,6 +5914,7 @@ dependencies = [
  "lightningcss",
  "rayon",
  "regex",
+ "serde",
  "serde_json",
  "tempfile",
  "yuanme-assets",

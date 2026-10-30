@@ -9,9 +9,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
+use serde::{Deserialize, Serialize};
 use unicode_normalization::UnicodeNormalization;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct NodeId(pub u32);
 
 /// Each resolved link, by the link's node.
@@ -25,7 +26,7 @@ pub struct Link {
     pub text: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Document {
     nodes: Vec<Node>,
     pub(crate) names: Names,
@@ -35,7 +36,7 @@ pub struct Document {
 /// each with the id it leads to, which is empty for the top of the page. A
 /// Markdown Document names only its numbered equations and directives with
 /// an `{#id}` here.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub(crate) struct Names {
     /// `:ID:` properties, and where each is written.
     pub ids: Vec<(String, String, Range<usize>)>,
@@ -52,7 +53,7 @@ pub(crate) struct Names {
     pub undescribed: BTreeSet<NodeId>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Node {
     pub kind: Kind,
     /// Bytes in the Entry's file.
@@ -63,7 +64,7 @@ pub struct Node {
     pub attrs: Vec<(String, String)>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Kind {
     Root,
     Paragraph,
@@ -196,7 +197,7 @@ impl Kind {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Checkbox {
     Unchecked,
     Checked,
@@ -204,7 +205,7 @@ pub enum Checkbox {
     Partial,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Align {
     None,
     Left,

@@ -10,6 +10,7 @@ include = ["/src"]
 
 [dependencies]
 annotate-snippets = "0.12"
+serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1"
 
 [dev-dependencies]

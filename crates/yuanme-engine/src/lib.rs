@@ -4,6 +4,7 @@
 mod assets;
 mod budgets;
 mod cache;
+mod entries;
 mod highlight;
 mod host;
 pub mod image;
@@ -252,9 +253,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let Some(config) = config else {
         return failed(diagnostics, sources, None, None);
     };
-    // Entries are parsed afresh each build until #47 caches them. `mode` is
-    // also for the unsubset font (#52).
-    let (site, more) = resolve(inputs, &config, mode.drafts(), &mut sources);
+    let (site, more) = resolve(inputs, &config, mode.drafts(), &mut sources, cache);
     diagnostics.extend(more);
     let Some(site) = site else {
         return failed(diagnostics, sources, Some(config), None);
@@ -454,6 +453,7 @@ fn resolve(
     config: &Config,
     drafts: bool,
     sources: &mut Files,
+    cache: &mut Cache,
 ) -> (Option<Site>, Vec<Diagnostic>) {
     let (entries, data) = site::sources(config, inputs.files.keys().map(String::as_str));
     let mut diagnostics = Vec::new();
@@ -476,10 +476,7 @@ fn resolve(
     }
     let is_file = |p: &str| inputs.files.contains_key(p);
     let is_dir = |d: &str| inputs.is_dir(d);
-    let entries = entries
-        .into_iter()
-        .map(|(c, file)| site::read(config, &c, file, sources, &is_file))
-        .collect();
+    let entries = entries::read(inputs, config, &entries, sources, cache);
     let project = Project {
         files: sources,
         entries,

@@ -509,3 +509,177 @@ fn pages_with_math_get_one_font_subset_for_the_site_and_its_stylesheet() {
     let plain = super::build(&inputs, &mut cache, Mode::Build);
     assert!(!plain.files.keys().any(|p| p.starts_with("assets/math-")));
 }
+
+/// A project whose two Posts, one in each Source format, use every kind of
+/// field and most of what a body parses into.
+fn every_field() -> Inputs {
+    let mut inputs = project();
+    inputs.insert(
+        "yuanme.toml",
+        [
+            CONFIG,
+            br#"timezone = "Asia/Singapore"
+
+[collections.posts]
+route = "/blog/{slug}/"
+
+[collections.posts.fields]
+rating = { type = "float", optional = true }
+stars = { type = "int", optional = true }
+at = { type = "datetime", optional = true }
+local = { type = "datetime", optional = true }
+home = { type = "url", optional = true }
+cover = { type = "image", optional = true }
+links = { type = "list", items = { type = "string" }, optional = true }
+by = { type = "object", fields = { name = { type = "string" } }, optional = true }
+
+[taxonomies.tags]
+collections = ["posts"]
+route = "/tags/{term}/"
+
+[math.macros]
+R = '\mathbb{R}'
+"#
+            .as_slice(),
+        ]
+        .concat(),
+    );
+    inputs.insert(
+        "content/posts/pew.md",
+        br#"---
+title: "Pew"
+date: 2026-01-02
+updated: 2026-02-03
+rating: .nan
+stars: 3
+at: 2026-01-02T09:30:00+08:00
+local: 2026-01-02T09:30:00
+home: https://example.com/pew
+cover: cat.svg
+links: [a, b]
+by: { name: Yuan }
+tags: [Rust, C#]
+---
+
+## Sums {#sums}
+
+"Quoted" -- text with `code`, *emphasis* and a [link](org.org#top)[^1].
+
+$$
+\sum_{x \in \R} x
+$$ {#eq:sum}
+
+- [x] done
+- [ ] not
+
+| a | b |
+|:--|--:|
+| 1 | 2 |
+
+```rust
+fn main() {}
+```
+
+[^1]: A footnote.
+"#
+        .as_slice(),
+    );
+    inputs.insert(
+        "content/posts/org.org",
+        b"#+TITLE: Org\n#+DATE: 2026-01-04\n#+FILETAGS: :rust:\n\n* Top\n:PROPERTIES:\n:ID: top\n:END:\n\nSee <<here>> and [[id:top]], \\(x^2\\).\n\n#+BEGIN_QUOTE\nQuoted.\n#+END_QUOTE\n"
+            .as_slice(),
+    );
+    for template in ["posts/entry.html", "tags/index.html", "tags/term.html"] {
+        inputs.insert(format!("templates/{template}"), b"<p>x</p>".as_slice());
+    }
+    inputs.insert(
+        "content/posts/cat.svg",
+        b"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 4 3\"></svg>".as_slice(),
+    );
+    inputs
+}
+
+/// ADR 0011: a parsed Entry is a leaf cache, so a build that finds it on
+/// disk or in memory gets the Entry a fresh read makes.
+#[test]
+fn a_cached_entry_is_the_entry_a_fresh_read_makes() {
+    let inputs = every_field();
+    let mode = Mode::Check { drafts: false };
+    let entries = |build: &Build| {
+        assert!(!build.failed(), "{:#?}", build.diagnostics);
+        assert!(build.diagnostics.is_empty(), "{:#?}", build.diagnostics);
+        let site = build.site.as_ref().unwrap();
+        assert_eq!(site.entries.len(), 2);
+        format!("{:#?}", site.entries)
+    };
+    let fresh = entries(&build(&inputs, &mut Cache::memory("v"), mode));
+
+    let dir = tempfile::tempdir().unwrap();
+    let mut cache = Cache::open(dir.path().into(), "v").unwrap();
+    assert_eq!(entries(&build(&inputs, &mut cache, mode)), fresh);
+    cache.save().unwrap();
+
+    // Another process finds them on disk, and the next build in memory.
+    let mut cache = Cache::open(dir.path().into(), "v").unwrap();
+    for path in ["content/posts/pew.md", "content/posts/org.org"] {
+        let bytes = cache.get("entry", &entries::key(&cache, &inputs, path));
+        let read = bytes.and_then(|b| entries::decode(&b, path));
+        assert!(read.is_some(), "{path} isn't cached");
+    }
+    assert_eq!(entries(&build(&inputs, &mut cache, mode)), fresh);
+    assert_eq!(entries(&build(&inputs, &mut cache, mode)), fresh);
+}
+
+/// ADR 0011: a cached Entry is keyed by everything its read reads, so a
+/// change to any of it reads the Entry again.
+#[test]
+fn an_entry_is_read_again_when_anything_it_read_changes() {
+    let mut inputs = every_field();
+    let mut cache = Cache::memory("v");
+    let mode = Mode::Check { drafts: false };
+    let mut codes = |inputs: &Inputs| {
+        let build = build(inputs, &mut cache, mode);
+        let codes: Vec<&str> = build.diagnostics.iter().map(|d| d.code.name).collect();
+        (build, codes)
+    };
+    assert_eq!(codes(&inputs).1, [] as [&str; 0]);
+
+    // The Collection's schema, in Site config.
+    let config = inputs.get("yuanme.toml").unwrap().bytes.clone().unwrap();
+    let config = std::str::from_utf8(&config).unwrap();
+    inputs.insert(
+        "yuanme.toml",
+        config
+            .replace("stars = { type = \"int\"", "stars = { type = \"bool\"")
+            .as_bytes(),
+    );
+    assert_eq!(codes(&inputs).1, ["entry/wrong-type"]);
+    // The Site's timezone, which a datetime without an offset is in.
+    inputs.insert(
+        "yuanme.toml",
+        config.replace("Asia/Singapore", "Europe/London").as_bytes(),
+    );
+    let (build, _) = codes(&inputs);
+    let local = |build: &Build| {
+        let site = build.site.as_ref().unwrap();
+        let pew = site.entries.iter().find(|e| e.slug == "pew").unwrap();
+        pew.fields["local"].clone()
+    };
+    let london = local(&build);
+    inputs.insert("yuanme.toml", config.as_bytes());
+    assert_ne!(local(&codes(&inputs).0), london);
+
+    // A file the Entry names, which is gone.
+    let cat = inputs.remove("content/posts/cat.svg").unwrap();
+    assert_eq!(codes(&inputs).1, ["image/not-found"]);
+    inputs.insert("content/posts/cat.svg", cat.bytes.unwrap());
+    assert_eq!(codes(&inputs).1, [] as [&str; 0]);
+
+    // A new file read before it, which shifts the id of the Entry's file.
+    inputs.insert("content/posts/a.md", b"---\ntitle: A\n---\nA.\n".as_slice());
+    let (build, codes) = codes(&inputs);
+    assert_eq!(codes, [] as [&str; 0]);
+    for e in &build.site.as_ref().unwrap().entries {
+        assert_eq!(build.sources.path(e.file), e.path);
+    }
+}

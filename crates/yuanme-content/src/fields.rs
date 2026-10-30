@@ -10,16 +10,17 @@ use jiff::Zoned;
 use jiff::civil::{Date, DateTime};
 use jiff::fmt::temporal::{Pieces, PiecesOffset};
 use jiff::tz::{Offset, TimeZone};
+use serde::{Deserialize, Serialize};
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Span, codes};
 
 use crate::config::{Field, FieldType, similar};
 use crate::yaml::{Key, Node, Yaml};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Value {
     String(String),
     Int(i64),
-    Float(f64),
+    Float(#[serde(with = "bits")] f64),
     Bool(bool),
     Date(Date),
     Datetime(Zoned),
@@ -29,11 +30,25 @@ pub enum Value {
     Object(BTreeMap<String, Value>),
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Image {
     /// A project file, by its path from the project root.
     Local(String),
     Remote(String),
+}
+
+/// A float as its bits, for the cache of parsed Entries: JSON has no NaN
+/// or infinity, which YAML's `.nan` and `.inf` are.
+mod bits {
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S: Serializer>(f: &f64, s: S) -> Result<S::Ok, S::Error> {
+        s.serialize_u64(f.to_bits())
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<f64, D::Error> {
+        u64::deserialize(d).map(f64::from_bits)
+    }
 }
 
 /// Orders two values of one field, for Collection `sort`. Values of
