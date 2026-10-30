@@ -271,3 +271,21 @@ fn a_rule_whose_exception_is_missing_fails_the_test() {
     let err = compare(s.path(), s.path(), &without).unwrap_err();
     assert!(err.contains("apex-origin"), "{err}");
 }
+
+#[test]
+fn a_url_inside_a_data_url_is_not_a_link() {
+    let css = r#"=== a.css
+.grain{background-image:url("data:image/svg+xml,%3Csvg%3E%3Crect filter='url(%23n)'/%3E%3C/svg%3E")}
+"#;
+    let other = r#"=== a.css
+.grain{background-image:url(data:image/svg+xml,%3Csvg%3E%3Crect%20filter=%22url(%2523n)%22/%3E%3C/svg%3E)}
+"#;
+    let html = format!(
+        "=== index.html\n{}",
+        page(r#"<link rel="stylesheet" href="/a.css">"#, "")
+    );
+    assert_eq!(
+        run(&format!("{html}{css}"), &format!("{html}{other}")).differences,
+        []
+    );
+}

@@ -70,8 +70,10 @@ static ASTRO_ASSET: LazyLock<Regex> = LazyLock::new(|| {
 /// The Engine's `/assets/site-0123456789abcdef.css`.
 static YUANME_ASSET: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^/assets/(.+)-[0-9a-f]{16}\.([A-Za-z0-9]+)$").unwrap());
+/// A `url()`, quoted or not. A quoted one is read whole, so a `url()`
+/// inside a `data:` URL isn't taken for a link.
 static CSS_URL: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"url\(\s*['"]?([^'")]+)['"]?\s*\)"#).unwrap());
+    LazyLock::new(|| Regex::new(r#"url\(\s*(?:"([^"]*)"|'([^']*)'|([^'")\s]+))\s*\)"#).unwrap());
 
 #[derive(Debug, PartialEq)]
 pub enum Difference {
@@ -302,7 +304,8 @@ impl Side {
             if path.ends_with(".css") {
                 let css = String::from_utf8_lossy(&bytes);
                 for m in CSS_URL.captures_iter(&css) {
-                    side.add_ref(&m[1], &path);
+                    let url = m.get(1).or(m.get(2)).or(m.get(3)).expect("one matches");
+                    side.add_ref(url.as_str(), &path);
                 }
             } else {
                 let dom = html5ever::parse_document(RcDom::default(), Default::default())
