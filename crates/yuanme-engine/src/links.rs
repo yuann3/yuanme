@@ -4,6 +4,8 @@
 
 use std::collections::BTreeMap;
 
+use rayon::prelude::*;
+
 use yuanme_assets::html;
 use yuanme_content::config::{self, Config};
 use yuanme_content::site::{RouteKind, Site};
@@ -58,74 +60,84 @@ pub(crate) fn links(
         }
     };
 
-    for (output, used) in pages {
-        let Some(Output {
-            body: Body::Bytes(bytes),
-            ..
-        }) = files.get(output)
-        else {
-            continue;
-        };
-        let Ok(text) = std::str::from_utf8(bytes) else {
-            continue;
-        };
-        let base = url_of(output);
-        for link in html::urls(text) {
-            let url = link.url.trim();
-            let Some((path, absolute)) = internal(url, &base, origin) else {
-                continue;
+    // Each Page on a thread of its own, since this pass reads every byte
+    // of the Site's HTML on every build.
+    let found: Vec<Vec<Diagnostic>> = pages
+        .par_iter()
+        .map(|(output, used)| {
+            let mut found = Vec::new();
+            let Some(Output {
+                body: Body::Bytes(bytes),
+                ..
+            }) = files.get(output)
+            else {
+                return found;
             };
-            let raw = &text[link.at.clone()];
-            // Searching the Templates and the Entry for each link costs
-            // more than the rest of the pass, so only a Diagnostic does.
-            let place = || span(raw, used, entries.get(output.as_str()), templates, sources);
-            let fixed = |to: &str| {
-                let prefix = if absolute { origin } else { "" };
-                format!("{prefix}{to}{}", suffix(url))
+            let Ok(text) = std::str::from_utf8(bytes) else {
+                return found;
             };
-            let redirected = |to: String| {
-                let (span, found) = place();
-                let fix = fixed(&to);
-                let d = Diagnostic::warning(
-                    &codes::LINK_REDIRECTED,
-                    format!("`{url}` redirects to `{fix}`"),
-                    span.clone(),
-                );
-                if found && raw == url {
-                    let edit = Edit {
-                        span: span.clone(),
-                        replacement: fix.clone(),
-                    };
-                    let message = format!("link to `{fix}`");
-                    d.suggest(message, Applicability::MaybeIncorrect, vec![edit])
-                } else {
-                    d.help(format!("link to `{fix}`"))
-                }
-            };
-            if link.loaded
-                && let Some(h) = heavy.get(&path[1..])
-            {
-                let d = images::unoptimized(url, h, place().0);
-                push(d.note(format!("in the Page written to `{output}`")));
-            }
-            let d = match verdict(&path, files, images, config) {
-                Verdict::Ok if on_origin(url, absolute, origin) => continue,
-                Verdict::Ok => redirected(path.clone()),
-                Verdict::Redirect(to) => redirected(to),
-                Verdict::Broken => {
+            let base = url_of(output);
+            for link in html::urls(text) {
+                let url = link.url.trim();
+                let Some((path, absolute)) = internal(url, &base, origin) else {
+                    continue;
+                };
+                let raw = &text[link.at.clone()];
+                // Searching the Templates and the Entry for each link costs
+                // more than the rest of the pass, so only a Diagnostic does.
+                let place = || span(raw, used, entries.get(output.as_str()), templates, sources);
+                let fixed = |to: &str| {
+                    let prefix = if absolute { origin } else { "" };
+                    format!("{prefix}{to}{}", suffix(url))
+                };
+                let redirected = |to: String| {
+                    let (span, found) = place();
+                    let fix = fixed(&to);
                     let d = Diagnostic::warning(
-                        &codes::LINK_BROKEN,
-                        format!("`{url}` is no file of the Site"),
-                        place().0,
+                        &codes::LINK_REDIRECTED,
+                        format!("`{url}` redirects to `{fix}`"),
+                        span.clone(),
                     );
-                    match config::similar(&path, urls.iter().map(String::as_str)) {
-                        Some(near) => d.help(format!("did you mean `{}`?", fixed(near))),
-                        None => d,
+                    if found && raw == url {
+                        let edit = Edit {
+                            span: span.clone(),
+                            replacement: fix.clone(),
+                        };
+                        let message = format!("link to `{fix}`");
+                        d.suggest(message, Applicability::MaybeIncorrect, vec![edit])
+                    } else {
+                        d.help(format!("link to `{fix}`"))
                     }
+                };
+                if link.loaded
+                    && let Some(h) = heavy.get(&path[1..])
+                {
+                    let d = images::unoptimized(url, h, place().0);
+                    found.push(d.note(format!("in the Page written to `{output}`")));
                 }
-            };
-            push(d.note(format!("in the Page written to `{output}`")));
-        }
+                let d = match verdict(&path, files, images, config) {
+                    Verdict::Ok if on_origin(url, absolute, origin) => continue,
+                    Verdict::Ok => redirected(path.clone()),
+                    Verdict::Redirect(to) => redirected(to),
+                    Verdict::Broken => {
+                        let d = Diagnostic::warning(
+                            &codes::LINK_BROKEN,
+                            format!("`{url}` is no file of the Site"),
+                            place().0,
+                        );
+                        match config::similar(&path, urls.iter().map(String::as_str)) {
+                            Some(near) => d.help(format!("did you mean `{}`?", fixed(near))),
+                            None => d,
+                        }
+                    }
+                };
+                found.push(d.note(format!("in the Page written to `{output}`")));
+            }
+            found
+        })
+        .collect();
+    for d in found.into_iter().flatten() {
+        push(d);
     }
 
     for r in &config.host.redirects {
