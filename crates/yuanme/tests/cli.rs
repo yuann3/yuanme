@@ -941,6 +941,11 @@ js = 1
     let event = events.iter().find(|e| e["page"] == "/").unwrap();
     assert_eq!(home["js"], event["value"]);
     assert_eq!(home["requests"], 1);
+    assert_eq!(
+        home["estimated"],
+        serde_json::json!(["html"]),
+        "far under its limit"
+    );
     let over: Vec<(&str, bool)> = budgets["over"]
         .as_array()
         .unwrap()

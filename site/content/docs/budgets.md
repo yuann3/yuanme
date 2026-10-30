@@ -60,7 +60,7 @@ The report lists:
 - How many files the build wrote and deleted, and the files in the output directory that yuanme didn't write and left as they are.
 - Each Page's URL and the size of its file, largest first. Every Route counts, feeds included.
 - Each Script bundle in `assets/`, its size, and the modules in it, in the order they run, with each module's size before minifying, so the modules can add up to more than the bundle. A package from `node_modules/` shows up here by its path.
-- Each HTML Page's number for every Site budget, an Entry's body apart, and each Budget a Page is over, acknowledged or not.
+- Each HTML Page's number for every Site budget, an Entry's body apart, which numbers are estimates, and each Budget a Page is over, acknowledged or not.
 
 A build with errors writes nothing into the output directory, but still writes the report: it says the build failed, with its counts and stage times, and lists no Pages. When strict mode failed it, the Budgets are still there.
 
@@ -134,12 +134,12 @@ My first Post, with some *emphasis* and a [link](https://commonmark.org).
 
 ## Budgets
 
-Bytes are Brotli at quality 11. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 3.0 kB of JS, 30.0 kB of text fonts, 55.0 kB of math font, 4 requests. An Entry's body isn't part of its Page's HTML.
+Bytes are Brotli at quality 11, but a number with `~` is under half its limit, and estimated at quality 5, which is about 15% more. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 3.0 kB of JS, 30.0 kB of text fonts, 55.0 kB of math font, 4 requests. An Entry's body isn't part of its Page's HTML.
 
 | Page | HTML | Body | CSS | JS | Text fonts | Math font | Requests |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| `/blog/hello/` | 90 B | 83 B | 0 B | 71 B | 0 B | 0 B | 2 |
-| `/blog/` | 76 B |  | 0 B | 0 B | 0 B | 0 B | 1 |
+| `/blog/hello/` | ~90 B | ~83 B | 0 B | ~71 B | 0 B | 0 B | 2 |
+| `/blog/` | ~76 B |  | 0 B | 0 B | 0 B | 0 B | 1 |
 ```
 
 The 6 files are the two Pages, the bundle, the sitemap's two files and the cloudflare adapter's `_headers`. `report.json` has the same numbers, its keys sorted:
@@ -150,8 +150,8 @@ The 6 files are the two Pages, the bundle, the sitemap's two files and the cloud
     "limits": { "css": 6000, "fonts": 30000, "html": 14000, "js": 3000, "math_font": 55000, "requests": 4 },
     "over": [],
     "pages": [
-      { "body": 83, "css": 0, "fonts": 0, "html": 90, "js": 71, "math_font": 0, "requests": 2, "url": "/blog/hello/" },
-      { "body": null, "css": 0, "fonts": 0, "html": 76, "js": 0, "math_font": 0, "requests": 1, "url": "/blog/" }
+      { "body": 83, "css": 0, "estimated": ["body", "html", "js"], "fonts": 0, "html": 90, "js": 71, "math_font": 0, "requests": 2, "url": "/blog/hello/" },
+      { "body": null, "css": 0, "estimated": ["html"], "fonts": 0, "html": 76, "js": 0, "math_font": 0, "requests": 1, "url": "/blog/" }
     ]
   },
   "bytes": 1015,
@@ -181,7 +181,7 @@ The 6 files are the two Pages, the bundle, the sitemap's two files and the cloud
 ```
 
 - `pages`, `scripts` and `unknown` are lists; `written` and `deleted` are counts.
-- `budgets` has each limit in bytes, or requests; each HTML Page's numbers, where `body` is `null` except on an Entry's Page; and `over`, each Budget a Page is over, with its `value`, `limit`, `allowance` from an Acknowledged overage, and whether that `acknowledged` it. It is `null` when nothing was measured: with `budgets = false`, or when the build failed before it got there.
+- `budgets` has each limit in bytes, or requests; each HTML Page's numbers, where `body` is `null` except on an Entry's Page, and `estimated` lists the numbers estimated at quality 5; and `over`, each Budget a Page is over, with its `value`, `limit`, `allowance` from an Acknowledged overage, and whether that `acknowledged` it. It is `null` when nothing was measured: with `budgets = false`, or when the build failed before it got there.
 - After a failed build, `ok` is `false`, `pages` is empty, and `written`, `deleted` and `unknown` are `null`.
 
 Read the report after a change to see what it cost: a Page that grew, a Budget it's now close to, or a module that a new import pulled into a bundle.

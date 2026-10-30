@@ -210,6 +210,11 @@ fn budgets_json(build: &Build) -> Value {
             for (b, value) in &m.values {
                 page[b.key()] = (*value).into();
             }
+            let mut estimated: Vec<&str> = m.estimated.iter().map(|b| b.key()).collect();
+            if m.body.is_some() && m.estimated.contains(&Budget::Html) {
+                estimated.insert(0, "body");
+            }
+            page["estimated"] = estimated.into();
             page
         })
         .collect();
@@ -262,22 +267,29 @@ fn budgets_md(build: &Build, md: &mut String) {
         .map(|b| phrase(*b, budgets.limit(*b)))
         .collect();
     md.push_str(&format!(
-        "\n## Budgets\n\nBytes are Brotli at quality 11. The limits: {}. An Entry's body isn't part of its Page's HTML.\n\n",
+        "\n## Budgets\n\nBytes are Brotli at quality 11, but a number with `~` is under half its limit, and estimated at quality 5, which is about 15% more. The limits: {}. An Entry's body isn't part of its Page's HTML.\n\n",
         limits.join(", ")
     ));
     md.push_str("| Page | HTML | Body | CSS | JS | Text fonts | Math font | Requests |\n");
     md.push_str("|---|---:|---:|---:|---:|---:|---:|---:|\n");
     let over = over(&build.budgets, budgets);
     for page in &build.budgets {
+        let estimated = |b: Budget| match page.estimated.contains(&b) {
+            true => "~",
+            false => "",
+        };
         let cell = |b: Budget| {
             let n = page.values[&b];
             match over.iter().find(|o| o.page == page.url && o.budget == b) {
                 Some(o) if o.acknowledged => format!("{}, acknowledged", amount(b, n)),
                 Some(_) => format!("{}, over", amount(b, n)),
-                None => amount(b, n),
+                None => format!("{}{}", estimated(b), amount(b, n)),
             }
         };
-        let body = page.body.map(human).unwrap_or_default();
+        let body = page
+            .body
+            .map(|n| format!("{}{}", estimated(Budget::Html), human(n)))
+            .unwrap_or_default();
         md.push_str(&format!(
             "| `{}` | {} | {body} | {} | {} | {} | {} | {} |\n",
             page.url,
