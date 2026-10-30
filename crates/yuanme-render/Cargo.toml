@@ -16,7 +16,7 @@ yuanme-diag.workspace = true
 # Shiki's tokens. ferroni 2.2.2 is the one ADR 0014 measured.
 ferriki = "=1.1.1"
 ferriki-textmate = "=1.1.1"
-ferroni = "=2.2.2"
+ferroni = "=2.8.0"
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
 memchr = "2.8.3"
 # Exact: `unstable_machinery` has no stability promise (#19).
