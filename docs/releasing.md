@@ -9,7 +9,7 @@ How the Engine is built, signed and shipped. Decided in [How is yuanme distribut
 1. **Build.** Six archives: `x86_64` and `aarch64` for `unknown-linux-musl`, `apple-darwin` and `pc-windows-msvc`. Each holds the binary, `README.md`, `LICENSE-MIT`, `LICENSE-APACHE` and `THIRD_PARTY_NOTICES.md`, and has a `.sha256`. dist also writes the shell and PowerShell installers, the Homebrew formula and `sha256.sum`.
 2. **Gate.** Three jobs must pass before anything is published:
    - `ci.yml`, all of it;
-   - `release-smoke.yml`: each archive, on its own platform, has its checksum and exactly those files, and its binary reports the release's version and builds a Site. The Linux binaries are static. The run's summary lists each platform's hash of that Site;
+   - `release-smoke.yml`: each archive, on its own platform, has its checksum and exactly those files, and its binary reports the release's version and builds a Site. The Linux binaries are static. The run's summary lists each platform's hash of that Site. Its `starters-lab` job makes each Starter with the `x86_64` Linux binary and checks, in Chromium on Lighthouse's mobile throttling, that the home Pages and the blog's Post have an LCP of at most 2.0 s and a CLS of at most 0.01 (#36);
    - `release-sign.yml`: writes `sha256.txt`, the hash of each archive, and signs it as `sha256.txt.minisig`, with the trusted comment `yuanme vX.Y.Z`.
 3. **Publish.** The GitHub Release, with GitHub attestations for every file, which also makes the tag. Then `release-crates.yml` publishes every crate to crates.io, and dist commits the formula to `yuann3/homebrew-tap`.
 

@@ -14,6 +14,29 @@ permissions:
   contents: read
 
 jobs:
+  # #36's lab check of the Starters, made and built by this release's Linux
+  # binary: mobile LCP ≤ 2.0 s and CLS ≤ 0.01 on each Starter's home Page
+  # and the blog's Post, in Chromium on Lighthouse's mobile throttling.
+  starters-lab:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: artifacts-build-local-x86_64-unknown-linux-musl
+          path: artifacts
+      - run: mkdir unpacked && tar -xf artifacts/yuanme-x86_64-unknown-linux-musl.tar.xz -C unpacked --strip-components 1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - working-directory: crates/yuanme/tests/starters
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          node starters.ts --lab --yuanme ../../../../unpacked/yuanme
+
   smoke:
     strategy:
       fail-fast: false
