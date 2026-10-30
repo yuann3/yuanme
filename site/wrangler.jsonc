@@ -1,0 +1,12 @@
+// The Worker that serves the docs site, at yuanme-docs.yuann3.workers.dev.
+// .github/workflows/docs.yml deploys dist/ as site/assemble.ts writes it:
+// the latest release at / and main at /next/.
+{
+  "name": "yuanme-docs",
+  "compatibility_date": "2026-10-30",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

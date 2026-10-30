@@ -1,0 +1,25 @@
+# yuanme
+
+> {{ site.description }}
+
+{% if site.extra.version == "main" %}
+These docs are for yuanme's main branch, which may be ahead of the latest release.
+{% else %}
+These docs are for yuanme {{ site.extra.version }}.
+{% endif %}
+A project's own docs, for the yuanme it uses, are in its `.yuanme/docs/` folder, and `yuanme docs` prints them.
+
+{% for section in data.nav.sections %}
+## {{ section.title }}
+
+{% for slug in section.pages %}
+{% set doc = collections.docs | selectattr("slug", "eq", slug) | first %}
+- [{{ doc.title }}]({{ absolute_url(doc.url) }}): {{ doc.description }}
+{% endfor %}
+
+{% endfor %}
+## Diagnostic codes
+
+{% for code in collections.codes %}
+- [{{ code.title }}]({{ absolute_url(code.url) }}): {{ code.description }}
+{% endfor %}

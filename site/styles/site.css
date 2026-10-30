@@ -1,0 +1,343 @@
+/* The docs site's one stylesheet, plain CSS in the blog Starter's manner. */
+
+:root {
+  color-scheme: light dark;
+  --bg: #fdfdfc;
+  --fg: #1d1d1f;
+  --muted: #5c5c66;
+  --accent: #1a5fb4;
+  --rule: #dcdce2;
+  --surface: #f2f2f5;
+  --font-text: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-code: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --measure: 46rem;
+  --nav: 13rem;
+  --space: 1rem;
+  --radius: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161618;
+    --fg: #e8e8ea;
+    --muted: #a6a6b0;
+    --accent: #8ab4ff;
+    --rule: #34343b;
+    --surface: #222227;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  max-width: calc(var(--nav) + var(--measure) + 5 * var(--space));
+  margin: 0 auto;
+  padding: 0 var(--space);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-text);
+  line-height: 1.6;
+  text-size-adjust: 100%;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.15em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+h2 {
+  margin-top: 2rem;
+}
+
+code,
+pre {
+  font-family: var(--font-code);
+  font-size: 0.9em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The header: the title, the version the docs are for, and search. */
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem var(--space);
+  padding: var(--space) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-title {
+  color: var(--fg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.version {
+  padding: 0 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--muted);
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+}
+
+.search {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.search input,
+.search button {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+
+.search input {
+  width: 12rem;
+}
+
+.search button {
+  cursor: pointer;
+}
+
+/* The contents: below the page on a phone, beside it on a wider screen. */
+
+.contents-link {
+  font-size: 0.9rem;
+}
+
+.shell {
+  display: grid;
+  /* minmax(0, …): a wide code block scrolls, not the Page. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 calc(2 * var(--space));
+}
+
+.contents {
+  border-top: 1px solid var(--rule);
+  font-size: 0.95rem;
+}
+
+.contents h2 {
+  margin: 1.25rem 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.contents ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contents a {
+  display: block;
+  padding: 0.125rem 0;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.contents a:hover,
+.contents a[aria-current] {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.contents a[aria-current="page"] {
+  font-weight: 600;
+}
+
+@media (min-width: 52rem) {
+  .contents-link {
+    display: none;
+  }
+
+  .shell {
+    grid-template-columns: var(--nav) minmax(0, 1fr);
+    grid-template-areas: "contents main";
+  }
+
+  main {
+    grid-area: main;
+    max-width: var(--measure);
+  }
+
+  .contents {
+    grid-area: contents;
+    align-self: start;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding-bottom: var(--space);
+    border-top: none;
+  }
+}
+
+.site-footer {
+  margin-top: 3rem;
+  padding: var(--space) 0 2rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Pages: the lede, the lists of pages and codes, and search results. */
+
+.lede,
+.crumb {
+  color: var(--muted);
+}
+
+.lede {
+  font-size: 1.125rem;
+}
+
+.crumb {
+  margin: 1.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.crumb + h1 {
+  margin-top: 0.25rem;
+}
+
+.index dt {
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.index dd {
+  margin: 0.125rem 0 0;
+  color: var(--muted);
+}
+
+.results {
+  padding-left: 1.25rem;
+}
+
+.results li {
+  margin-bottom: var(--space);
+}
+
+.results p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.results mark {
+  background: none;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* A page's body. */
+
+.prose :where(p, ul, ol, blockquote, pre, table) {
+  margin: 0 0 1rem;
+}
+
+.prose blockquote {
+  margin-left: 0;
+  padding-left: var(--space);
+  border-left: 3px solid var(--rule);
+  color: var(--muted);
+}
+
+.prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.prose :where(th, td) {
+  padding: 0.25rem 0.75rem;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose :not(pre) > code {
+  padding: 0.1em 0.3em;
+  background: var(--surface);
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+/* Code blocks. yuanme's own stylesheet colours their code, for light and
+   dark; on the Page's background, more of its colours pass WCAG AA than
+   on the theme's own. */
+
+.prose pre {
+  background-color: var(--bg);
+  border: 1px solid var(--rule);
+  padding: var(--space);
+  overflow-x: auto;
+  border-radius: var(--radius);
+  line-height: 1.5;
+}
+
+/* Most of Catppuccin Latte's token colours are under WCAG AA's 4.5:1 even
+   on the Page's background, and the docs are mostly code. Each one is
+   darkened here, towards black, to about 4.6:1 on --bg. A token's class
+   starts with a letter for its Latte colour, its place in the theme's
+   sorted palette (yuanme-render's highlight.rs), so these follow the
+   Engine at the same commit; the axe check fails if they stop matching. */
+
+@media not (prefers-color-scheme: dark) {
+  .prose .y-code [class^="a"] { color: #037cac; } /* #04a5e5 */
+  .prose .y-code [class^="b"] { color: #148087; } /* #179299 */
+  .prose .y-code [class^="d"] { color: #197e8f; } /* #209fb5 */
+  .prose .y-code [class^="e"] { color: #348323; } /* #40a02b */
+  .prose .y-code [class^="h"] { color: #5b6cca; } /* #7287fd */
+  .prose .y-code [class^="i"] { color: #707284; } /* #7c7f93 */
+  .prose .y-code [class^="l"] { color: #9e6356; } /* #dc8a78 */
+  .prose .y-code [class^="m"] { color: #aa5c5c; } /* #dd7878 */
+  .prose .y-code [class^="n"] { color: #a16615; } /* #df8e1d */
+  .prose .y-code [class^="o"] { color: #cf3e4b; } /* #e64553 */
+  .prose .y-code [class^="p"] { color: #a85592; } /* #ea76cb */
+  .prose .y-code [class^="q"] { color: #c44d08; } /* #fe640b */
+}
+
+math[display="block"] {
+  overflow-x: auto;
+  padding: 0.25rem 0;
+}

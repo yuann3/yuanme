@@ -1,0 +1,12 @@
+{% extends "layouts/base.html" %}
+{% set title = entry.title %}
+{% set description = entry.description %}
+{% block content %}
+<article data-pagefind-body>
+<p class="crumb" data-pagefind-ignore><a href="{{ site.extra.base }}codes/">Diagnostic codes</a></p>
+<h1><code>{{ entry.title }}</code></h1>
+<div class="prose">
+{{ entry.content }}
+</div>
+</article>
+{% endblock %}

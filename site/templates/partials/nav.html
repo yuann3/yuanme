@@ -1,0 +1,15 @@
+<nav id="contents" class="contents" aria-label="Docs">
+{% for section in data.nav.sections %}
+  <h2>{{ section.title }}</h2>
+  <ul>
+  {% for slug in section.pages %}
+    {% set doc = collections.docs | selectattr("slug", "eq", slug) | first %}
+    <li><a href="{{ doc.url }}"{{ {"aria-current": "page" if page.url == doc.url else none} | attrs }}>{{ doc.title }}</a></li>
+  {% endfor %}
+  {% if loop.last %}
+    {% set codes = site.extra.base ~ "codes/" %}
+    <li><a href="{{ codes }}"{{ {"aria-current": "page" if page.url == codes else ("true" if page.url is startingwith(codes) else none)} | attrs }}>Diagnostic codes</a></li>
+  {% endif %}
+  </ul>
+{% endfor %}
+</nav>

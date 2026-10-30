@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+{% set title = "Search" %}
+{% set description = "Search yuanme's docs." %}
+{% block content %}
+<h1>Search</h1>
+{# search.ts writes how many pages it found here, and the results below. #}
+<p id="search-status" role="status" data-base="{{ site.extra.base }}"></p>
+<noscript><p>Search runs in your browser, so it needs JavaScript.</p></noscript>
+<ol id="results" class="results"></ol>
+{% endblock %}

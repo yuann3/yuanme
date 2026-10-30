@@ -1,0 +1,59 @@
+#:schema ./.yuanme/schemas/yuanme.toml.json
+
+# yuanme's docs site (#38), built by the Engine at the same commit. The
+# pages in content/ are written by `cargo xtask docs`; don't edit them.
+
+[site]
+# The docs site's one address. Until the owner picks a domain, it is the
+# Worker's workers.dev address (wrangler.jsonc names the Worker).
+url = "https://yuanme-docs.yuann3.workers.dev"
+title = "yuanme"
+description = "A static site generator for programmers' and mathematicians' sites, in Markdown and Org, built to be driven by coding agents."
+language = "en"
+
+# Set by site/assemble.ts for each build it deploys: `version` is the
+# release the pages are for, or "main", and `base` is where the Site is
+# served from, "/" or "/next/". Every Route starts with `base`.
+[site.extra]
+version = "main"
+base = "/"
+
+[collections.docs]
+route = "/docs/{slug}/"
+fields = { description = { type = "string" } }
+
+[collections.codes]
+route = "/codes/{slug}/"
+list_route = "/codes/"
+# By name, so each area's codes are together.
+sort = ["title"]
+fields = { description = { type = "string" } }
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.search]
+path = "/search/"
+template = "search.html"
+
+[routes.llms]
+path = "/llms.txt"
+template = "llms.txt"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"
+
+# A full page load between Pages: the docs keep nothing from one to the next.
+[router]
+mode = "native"
+
+[host]
+adapter = "cloudflare"
+
+# A page with math and code loads 5 files: the Page, styles/site.css, and
+# the stylesheets yuanme adds for code, for math and the math font. Search
+# loads its Script, and Pagefind's, only on /search/.
+[budgets]
+requests = 5

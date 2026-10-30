@@ -1,0 +1,21 @@
+{% extends "layouts/base.html" %}
+{% set title = "yuanme docs" %}
+{% set description = site.description %}
+{% block content %}
+<h1>yuanme docs</h1>
+<p class="lede">{{ site.description }}</p>
+{% for section in data.nav.sections %}
+<h2>{{ section.title }}</h2>
+<dl class="index">
+{% for slug in section.pages %}
+  {% set doc = collections.docs | selectattr("slug", "eq", slug) | first %}
+  <dt><a href="{{ doc.url }}">{{ doc.title }}</a></dt>
+  <dd>{{ doc.description | markdown(inline=true) }}</dd>
+{% endfor %}
+{% if loop.last %}
+  <dt><a href="{{ site.extra.base }}codes/">Diagnostic codes</a></dt>
+  <dd>Each error and warning yuanme reports, with an example and its fix.</dd>
+{% endif %}
+</dl>
+{% endfor %}
+{% endblock %}

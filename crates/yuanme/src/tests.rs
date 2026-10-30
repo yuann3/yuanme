@@ -462,23 +462,41 @@ fn the_docs_site_has_every_page_as_this_binary_makes_it() {
     assert!(size <= 400_000, "the docs are {size} bytes");
 }
 
-/// The pages are yuanme Markdown, which the docs site builds: no math by
-/// accident in a `$`, and every link between pages leads somewhere.
+/// The docs site (#38, #72) is held to the Starters' Gates: `site/`, built
+/// as `yuanme build --strict-budgets` builds it, reports no Diagnostic, so
+/// no Page is over a Budget, there is no math by accident in a `$`, and
+/// every link leads somewhere. Every page is in its navigation, which
+/// `data/nav.toml` orders, and in its `llms.txt`.
 #[test]
-fn the_docs_site_pages_build_clean() {
-    let mut project = Project::default();
-    project.files.insert(
-        "yuanme.toml".into(),
-        "[site]\nurl = \"https://example.com\"\n\n\
-         [collections.docs]\nroute = \"/docs/{slug}/\"\n\
-         fields = { description = { type = \"string\" } }\n\n\
-         [collections.codes]\nroute = \"/codes/{slug}/\"\n\
-         fields = { description = { type = \"string\" } }\n"
-            .into(),
-    );
-    for (path, text) in site_pages() {
-        project.files.insert(format!("content/{path}"), text);
-    }
-    let build = project.build_with_stubs();
+fn the_docs_site_builds_clean() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../site");
+    let inputs = load(&root, &[root.join("dist")]).unwrap();
+    let build = yuanme_engine::build(&inputs, &mut Cache::memory("test"), Mode::Build);
     assert!(build.diagnostics.is_empty(), "{}", rendered(&build));
+    assert!(!build.budgets.is_empty(), "no Page was measured");
+
+    let text = |path: &str| match &build.files[path].body {
+        yuanme_engine::Body::Bytes(bytes) => String::from_utf8(bytes.to_vec()).unwrap(),
+        body => panic!("{path} is {body:?}"),
+    };
+    let (contents, codes, llms) = (
+        text("index.html"),
+        text("codes/index.html"),
+        text("llms.txt"),
+    );
+    let origin = build.config.as_ref().unwrap().site.url.clone();
+    for name in docs::names().filter(|n| *n != "index") {
+        let (url, listed) = match name.contains('/') {
+            true => (format!("/codes/{name}/"), &codes),
+            false => (format!("/docs/{name}/"), &contents),
+        };
+        assert!(
+            listed.contains(&format!("<a href=\"{url}\">")),
+            "the docs site doesn't list {url}; add `{name}` to site/data/nav.toml"
+        );
+        assert!(
+            llms.contains(&format!("({origin}{url})")),
+            "llms.txt doesn't list {url}"
+        );
+    }
 }

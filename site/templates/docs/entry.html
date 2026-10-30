@@ -1,0 +1,12 @@
+{% extends "layouts/base.html" %}
+{% set title = entry.title %}
+{% set description = entry.description %}
+{% block content %}
+<article data-pagefind-body>
+<h1>{{ entry.title }}</h1>
+<p class="lede">{{ entry.description | markdown(inline=true) }}</p>
+<div class="prose">
+{{ entry.content }}
+</div>
+</article>
+{% endblock %}

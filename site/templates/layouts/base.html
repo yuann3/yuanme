@@ -1,0 +1,47 @@
+{# vars: title: string, description?: string, noindex?: bool #}
+<!doctype html>
+<html lang="{{ site.language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page.url == site.extra.base %}yuanme docs{% else %}{{ title }} | yuanme docs{% endif %}</title>
+{% if description %}<meta name="description" content="{{ description }}">{% endif %}
+{# main's pages, at /next/, are for unreleased changes: only a release's are for search engines. #}
+{% if site.extra.base == "/" and not noindex %}
+<link rel="canonical" href="{{ page.canonical }}">
+{% else %}
+<meta name="robots" content="noindex">
+{% endif %}
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="site-title" href="{{ site.extra.base }}">yuanme docs</a>
+  <span class="version">{{ site.extra.version }}</span>
+  <form class="search" role="search" action="{{ site.extra.base }}search/">
+    <label class="visually-hidden" for="q">Search the docs</label>
+    <input id="q" name="q" type="search" placeholder="Search the docs" autocomplete="off">
+    <button>Search</button>
+  </form>
+  <a class="contents-link" href="#contents">Contents</a>
+</header>
+<div class="shell">
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+{% include "partials/nav.html" %}
+</div>
+<footer class="site-footer">
+  <p>
+  {% if site.extra.version == "main" %}
+  These docs are for yuanme's <code>main</code> branch, which may be ahead of the latest release.
+  {% else %}
+  These docs are for yuanme {{ site.extra.version }}.
+  {% endif %}
+  A project's own docs, for the yuanme it uses, are in its <code>.yuanme/docs/</code> folder, and <code>yuanme docs</code> prints them.
+  </p>
+  <p><a href="https://github.com/yuann3/yuanme">yuanme on GitHub</a> · <a href="{{ site.extra.base }}llms.txt">llms.txt</a></p>
+</footer>
+</body>
+</html>

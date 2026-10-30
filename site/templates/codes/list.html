@@ -1,0 +1,19 @@
+{% extends "layouts/base.html" %}
+{% set title = "Diagnostic codes" %}
+{% set description = "Each error and warning yuanme reports, by its code." %}
+{% block content %}
+<h1>Diagnostic codes</h1>
+<p class="lede">Each error and warning yuanme reports has a code, such as <code>link/broken</code>. <code>yuanme docs CODE</code> prints its page.</p>
+{% for code in entries %}
+{% set area = code.slug | split("/") | first %}
+{% if loop.first or (loop.previtem.slug | split("/") | first) != area %}
+<h2 id="{{ area }}">{{ area }}</h2>
+<dl class="index">
+{% endif %}
+  <dt><a href="{{ code.url }}"><code>{{ code.title }}</code></a></dt>
+  <dd>{{ code.description | markdown(inline=true) }}</dd>
+{% if loop.last or (loop.nextitem.slug | split("/") | first) != area %}
+</dl>
+{% endif %}
+{% endfor %}
+{% endblock %}

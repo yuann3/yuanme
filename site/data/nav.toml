@@ -1,0 +1,14 @@
+# The docs pages in the navigation, by Slug, in #38's sections. Every page
+# in content/docs/ is in one; a test fails when one isn't.
+
+[[sections]]
+title = "Getting started"
+pages = ["getting-started", "deploying"]
+
+[[sections]]
+title = "Guides"
+pages = ["collections", "markdown", "org", "math", "templates", "components", "styles", "scripts", "images", "budgets"]
+
+[[sections]]
+title = "Reference"
+pages = ["config", "cli"]
