@@ -223,7 +223,9 @@ impl Pack {
         // Sorted, so the same entries always make the same file.
         let mut entries: Vec<_> = self.entries.iter_mut().collect();
         entries.sort_unstable_by_key(|(key, _)| *key.as_bytes());
-        let mut out = Vec::new();
+        // Sized up front: growing it copied a large pack many times over.
+        let size: usize = entries.iter().map(|(_, e)| 48 + e.bytes.len()).sum();
+        let mut out = Vec::with_capacity(MAGIC.len() + 8 + size);
         out.extend_from_slice(MAGIC);
         out.extend_from_slice(&(entries.len() as u64).to_le_bytes());
         for (key, entry) in entries {
