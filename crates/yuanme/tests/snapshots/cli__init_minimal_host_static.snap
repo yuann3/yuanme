@@ -1,0 +1,23 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: show_files(&changed)
+---
+=== yuanme.toml
+#:schema ./.yuanme/schemas/yuanme.toml.json
+yuanme = "[X.Y]"
+
+[site]
+# Where the Site is served from: canonical links, feeds and the sitemap use it.
+url = "https://example.com"
+title = "My Site"
+
+[routes.home]
+path = "/"
+template = "home.html"
+
+[routes.missing]
+path = "/404.html"
+template = "404.html"
+
+[host]
+adapter = "static"

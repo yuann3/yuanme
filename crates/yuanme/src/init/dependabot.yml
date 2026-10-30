@@ -1,0 +1,9 @@
+# Keeps the actions in .github/workflows/deploy.yml up to date. Bumping
+# YUANME_VERSION there is yours to do.
+# Written by `yuanme init`; it is yours to change.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

@@ -1,5 +1,6 @@
-//! `yuanme init` (#21, #36, #37): a Site from a Starter, and the files
-//! coding agents read in it. It asks nothing and overwrites nothing.
+//! `yuanme init` (#21, #36, #25, #37): a Site from a Starter, the files
+//! coding agents read in it, and with `--host`, the files that deploy it.
+//! It asks nothing and overwrites nothing.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -7,6 +8,7 @@ use std::io;
 use std::path::Path;
 
 use clap::ValueEnum;
+use yuanme_content::config::Adapter;
 use yuanme_engine::Mode;
 
 use crate::events::Event;
@@ -110,6 +112,64 @@ fn skill(source: &str, version: &str) -> String {
     unhashed.replacen("\n---\n", &format!("\n{HASH_KEY}\"{hash}\"\n---\n"), 1)
 }
 
+/// A Worker's or a Pages project's name, from the Site's folder: lowercase
+/// letters, digits and `-`, at most 58, which Pages allows and Workers
+/// allows more of.
+fn host_name(root: &Path) -> String {
+    let folder = root
+        .file_name()
+        .map_or(String::new(), |f| f.to_string_lossy().to_lowercase());
+    let mut name = String::new();
+    for c in folder.chars() {
+        match c {
+            'a'..='z' | '0'..='9' => name.push(c),
+            _ if !name.is_empty() && !name.ends_with('-') => name.push('-'),
+            _ => {}
+        }
+    }
+    name.truncate(58);
+    match name.trim_end_matches('-') {
+        "" => "site".into(),
+        n => n.into(),
+    }
+}
+
+/// `wrangler.jsonc`'s, fixed rather than the day `init` ran, so that what
+/// `init` writes depends only on the Engine. A static-assets Worker runs
+/// no code that a later date would change.
+const COMPATIBILITY_DATE: &str = "2026-10-30";
+
+/// The files `--host` writes besides `[host] adapter`, by path (#25, #37).
+fn host_files(adapter: Adapter, root: &Path) -> Vec<(&'static str, String)> {
+    let workflow = match adapter {
+        Adapter::Cloudflare => include_str!("init/deploy/cloudflare.yml"),
+        Adapter::Netlify => include_str!("init/deploy/netlify.yml"),
+        Adapter::Vercel => include_str!("init/deploy/vercel.yml"),
+        Adapter::GithubPages => include_str!("init/deploy/github-pages.yml"),
+        Adapter::CloudflarePages => include_str!("init/deploy/cloudflare-pages.yml"),
+        // A server of the Author's own, which no workflow can know.
+        Adapter::Static => return Vec::new(),
+    };
+    let name = host_name(root);
+    let fill = |text: &str| {
+        text.replace("@BUILD@\n", include_str!("init/deploy/build.yml"))
+            .replace("@VERSION@", release())
+            .replace("@NAME@", &name)
+            .replace("@DATE@", COMPATIBILITY_DATE)
+    };
+    let mut files = vec![
+        (".github/workflows/deploy.yml", fill(workflow)),
+        (
+            ".github/dependabot.yml",
+            include_str!("init/dependabot.yml").to_string(),
+        ),
+    ];
+    if adapter == Adapter::Cloudflare {
+        files.push(("wrangler.jsonc", fill(include_str!("init/wrangler.jsonc"))));
+    }
+    files
+}
+
 /// The release the Engine is or was built from: its version without the
 /// commit a checkout adds.
 fn release() -> &'static str {
@@ -124,7 +184,13 @@ enum Write {
     Update(String),
 }
 
-pub fn run(cwd: &Path, dir: Option<&Path>, starter: Starter, out: &Out) -> Result<u8, Error> {
+pub fn run(
+    cwd: &Path,
+    dir: Option<&Path>,
+    starter: Starter,
+    host: Option<Adapter>,
+    out: &Out,
+) -> Result<u8, Error> {
     let shown = dir.map_or(".".to_string(), |d| d.display().to_string());
     let root = cwd.join(dir.unwrap_or(Path::new(".")));
     if root.exists() && !root.is_dir() {
@@ -143,12 +209,19 @@ pub fn run(cwd: &Path, dir: Option<&Path>, starter: Starter, out: &Out) -> Resul
         let text = match *path {
             "yuanme.toml" => {
                 let minor = release().rsplit_once('.').expect("X.Y.Z").0;
-                format!(
+                let mut text = format!(
                     "#:schema ./.yuanme/schemas/yuanme.toml.json\nyuanme = \"{minor}\"\n\n{text}"
-                )
+                );
+                if let Some(adapter) = host {
+                    text.push_str(&format!("\n[host]\nadapter = \"{}\"\n", adapter.name()));
+                }
+                text
             }
             _ => text.to_string(),
         };
+        plan.insert(path.to_string(), Write::Create(text));
+    }
+    for (path, text) in host.map_or(Vec::new(), |a| host_files(a, &root)) {
         plan.insert(path.to_string(), Write::Create(text));
     }
     for dir in SKILL_DIRS {
@@ -167,7 +240,11 @@ pub fn run(cwd: &Path, dir: Option<&Path>, starter: Starter, out: &Out) -> Resul
     }
     // Everything under `.yuanme/` is made again, and the output directory
     // is the build's.
-    let ignore = [".yuanme/", "dist/"];
+    let ignore = match host {
+        // `vercel link` and `vercel pull` write there too.
+        Some(Adapter::Vercel) => [".yuanme/", ".vercel/"],
+        _ => [".yuanme/", "dist/"],
+    };
     let gitignore = match read(".gitignore")? {
         None => format!(
             "# What yuanme writes: its caches, docs and schemas, and the built Site.\n{}\n",
@@ -240,7 +317,7 @@ pub fn run(cwd: &Path, dir: Option<&Path>, starter: Starter, out: &Out) -> Resul
         out.event(Event::SiteCreated {
             dir: shown,
             starter: starter.name(),
-            host: None,
+            host: host.map(Adapter::name),
             created,
             updated,
         });

@@ -1,0 +1,50 @@
+# Builds the Site and deploys it to Netlify: a push to main deploys it, and
+# a pull request deploys a preview at its own address. Without the
+# NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID secrets it only builds.
+# Written by `yuanme init`; it is yours to change.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      YUANME_VERSION: "@VERSION@"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+@BUILD@
+      - name: Look for the deploy secrets
+        id: secrets
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -n "$NETLIFY_AUTH_TOKEN" ] && [ -n "$NETLIFY_SITE_ID" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID secrets, so the Site is built but not deployed."
+          fi
+      - name: Deploy
+        if: steps.secrets.outputs.found == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            npx --yes netlify-cli@27 deploy --dir dist --no-build --prod
+          else
+            url=$(npx --yes netlify-cli@27 deploy --dir dist --no-build --alias "pr-$PR" --json | jq -r .deploy_url)
+            echo "Preview at $url" >> "$GITHUB_STEP_SUMMARY"
+          fi

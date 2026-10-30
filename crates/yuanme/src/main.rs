@@ -19,7 +19,7 @@ use std::time::{Duration, Instant};
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use serde_json::Value;
-use yuanme_content::config::{self, Config};
+use yuanme_content::config::{self, Adapter, Config};
 use yuanme_content::site::{RouteKind, Site};
 use yuanme_content::slug;
 use yuanme_diag::{Diagnostic, Files, Level};
@@ -85,6 +85,9 @@ enum Command {
         /// The Starter to begin from.
         #[arg(long, value_enum, default_value_t = init::Starter::Minimal)]
         starter: init::Starter,
+        /// Deploy to this host: set `[host] adapter`, and write its GitHub Actions deploy workflow and files.
+        #[arg(long, value_parser = Adapter::ALL.map(Adapter::name))]
+        host: Option<String>,
     },
     /// Build the Site into the output directory.
     Build {
@@ -284,8 +287,13 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     let dir = cli.dir.map_or(cwd.clone(), |d| cwd.join(d));
     match cli.command {
         Command::Docs { topic } => return docs(topic.as_deref().unwrap_or("index"), out),
-        Command::Init { folder, starter } => {
-            return init::run(&dir, folder.as_deref(), starter, out);
+        Command::Init {
+            folder,
+            starter,
+            host,
+        } => {
+            let host = host.map(|h| Adapter::named(&h).expect("one of its possible values"));
+            return init::run(&dir, folder.as_deref(), starter, host, out);
         }
         Command::Schema {
             which: Which::Config,

@@ -44,7 +44,7 @@ Every adapter renders the same rules: yuanme's cache policy, your `[[host.header
 
 For Cloudflare Workers with static assets, the default. It writes `_headers`, and `_redirects` when Site config has redirects.
 
-The Worker reads `wrangler.jsonc` at the project root. When that file exists, `build` and `check` compare it with what the adapter writes and report `host/wrangler-mismatch`:
+The Worker reads `wrangler.jsonc` at the project root, which `yuanme init --host cloudflare` writes. When that file exists, `build` and `check` compare it with what the adapter writes and report `host/wrangler-mismatch`:
 
 - `assets.directory` must be the output directory, `./dist`.
 - `assets.html_handling`, if set, must be `"auto-trailing-slash"`, the default, since every Page's URL ends in `/`.
@@ -106,6 +106,30 @@ A redirect becomes an HTML page that refreshes to its `to`: `from = "/old/"` wri
 ### `static`
 
 For Caddy, nginx or any other server. It writes no host configuration, so each `[[host.headers]]` rule and `[[host.redirects]]` rule is reported as `host/unsupported`: the server must send them. It can precompress text files; see below.
+
+## Deploying from GitHub Actions
+
+`yuanme init --host ADAPTER` sets `[host] adapter`, and for every adapter but `static` writes a deploy workflow, `.github/workflows/deploy.yml`, and `.github/dependabot.yml`, which keeps the workflow's actions up to date. With `cloudflare` it also writes `wrangler.jsonc`. Once written, the files are yours: yuanme never changes them.
+
+The workflow runs on every push to `main` and every pull request:
+
+1. It installs the yuanme release that ran `init`, the `x86_64-unknown-linux-musl` archive, and checks its GitHub attestation. Change `YUANME_VERSION` to move to another release.
+2. It restores `.yuanme/cache`, and the folder of Managed tools, such as the Tailwind CLI, so a build doesn't download them again.
+3. It runs `bun install --frozen-lockfile` when the project has a `package.json`.
+4. It runs `yuanme build --json`, which fails the run on an error.
+5. A push to `main` deploys the Site. A pull request deploys a preview, where the host has them, and writes its address to the run's summary.
+
+A new push to a branch cancels the run still going for it. Until the host's secrets are set, in the repository's settings under *Secrets and variables*, the workflow builds the Site and deploys nothing, so a fork or a new repository stays green:
+
+| Adapter | Secrets | Previews |
+|---|---|---|
+| `cloudflare` | `CLOUDFLARE_API_TOKEN`, with the *Edit Cloudflare Workers* template, and `CLOUDFLARE_ACCOUNT_ID` | A preview version with the alias `pr-N`, from `wrangler versions upload` |
+| `cloudflare-pages` | `CLOUDFLARE_API_TOKEN`, with *Cloudflare Pages: Edit*, and `CLOUDFLARE_ACCOUNT_ID`. The Pages project has the folder's name and the production branch `main` | A deploy to the branch `pr-N` |
+| `netlify` | `NETLIFY_AUTH_TOKEN`, a personal access token, and `NETLIFY_SITE_ID`, the site's *Project ID* | A deploy with the alias `pr-N` |
+| `vercel` | `VERCEL_TOKEN`, and `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`, from `.vercel/project.json` after `vercel link` | A preview deployment |
+| `github-pages` | None. Set the repository's Pages source to *GitHub Actions* | None: a pull request is built and not deployed |
+
+The deploy tools, `wrangler`, `netlify` and `vercel`, run on the runner's Node. They only upload what `yuanme build` wrote; nothing builds the Site with Node.
 
 ## Cache policy
 

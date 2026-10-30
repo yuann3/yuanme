@@ -12,6 +12,8 @@ description: "Every command and flag, the exit codes, and the JSON that --json p
 - `#:schema ./.yuanme/schemas/yuanme.toml.json`, which editors with a TOML language server, such as Taplo or Tombi, read to complete and check keys.
 - `yuanme = "X.Y"`, the yuanme release the project needs, which `check` holds every later release to.
 
+With `--host ADAPTER`, it also sets `[host] adapter` and writes that host's GitHub Actions deploy workflow and files, which `yuanme docs deploying` describes.
+
 It also writes the files a coding agent reads:
 
 - `AGENTS.md`, with a block between `<!-- BEGIN:yuanme -->` and `<!-- END:yuanme -->` that teaches the commands to run, the mistakes to avoid and where the docs are. An `AGENTS.md` of yours keeps its text and gains the block at its end.
@@ -50,7 +52,7 @@ Each line is one event with a `type`:
 - `browser-console`: a browser on `yuanme dev` logged something or threw an uncaught error.
 - `dev-status`: from `yuanme dev status`, whether a dev server runs for the project, and if one does, where, and its last build as `/__yuanme/status` returns it. `yuanme dev stop` prints one once it has stopped.
 - `route`: one line of `yuanme routes`.
-- `site-created`: what `yuanme init` wrote: the Site's `dir`, its `starter`, the files it `created`, and the files of yours it `updated`.
+- `site-created`: what `yuanme init` wrote: the Site's `dir`, its `starter`, the `host` of `--host`, the files it `created`, and the files of yours it `updated`.
 - `entry-created`: what `yuanme new` wrote.
 - `schema`: what `yuanme schema` prints.
 - `docs`: a page of these docs.
@@ -101,6 +103,7 @@ yuanme init [OPTIONS] [DIR]
 
 - `DIR`: The Site's folder, which may hold other files already. Defaults to the current one.
 - `--starter STARTER`: The Starter to begin from. One of `minimal`. Defaults to `minimal`.
+- `--host HOST`: Deploy to this host: set `[host] adapter`, and write its GitHub Actions deploy workflow and files. One of `cloudflare`, `netlify`, `vercel`, `github-pages`, `cloudflare-pages`, `static`.
 
 ### `yuanme build`
 

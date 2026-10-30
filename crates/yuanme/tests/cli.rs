@@ -663,14 +663,14 @@ fn init_overwrites_nothing() {
     let root = dir.path();
     write(
         root,
-        "=== yuanme.toml\n[site]\n=== templates/home.html\nmine\n=== AGENTS.md\nmine\n",
+        "=== yuanme.toml\n[site]\n=== templates/home.html\nmine\n=== AGENTS.md\nmine\n=== .github/workflows/deploy.yml\nmine\n",
     );
     let before = texts(root);
-    let out = yuanme(root, &["init"]);
+    let out = yuanme(root, &["init", "--host", "netlify"]);
     assert_eq!(out.code, 2);
     assert_eq!(
         out.stderr,
-        "error: yuanme init would overwrite 2 files, so it changed nothing:\n  templates/home.html\n  yuanme.toml\n"
+        "error: yuanme init would overwrite 3 files, so it changed nothing:\n  .github/workflows/deploy.yml\n  templates/home.html\n  yuanme.toml\n"
     );
     assert_eq!(texts(root), before);
 
@@ -698,6 +698,44 @@ fn init_overwrites_nothing() {
     let block = files["AGENTS.md"].strip_prefix(agents).unwrap();
     assert!(block.starts_with("\n<!-- BEGIN:yuanme -->\n"), "{block}");
     assert!(block.ends_with("<!-- END:yuanme -->\n"), "{block}");
+}
+
+#[test]
+fn init_writes_each_hosts_deploy_files() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    json(root, &["init", "default"]);
+    let default = texts(&root.join("default"));
+    for host in [
+        "cloudflare",
+        "netlify",
+        "vercel",
+        "github-pages",
+        "cloudflare-pages",
+        "static",
+    ] {
+        let (code, events) = json(root, &["init", host, "--host", host]);
+        assert_eq!(code, 0);
+        assert_eq!(events[0]["host"], host);
+        let site = root.join(host);
+        // Only what differs from a Site made without `--host`.
+        let changed: std::collections::BTreeMap<String, String> = texts(&site)
+            .into_iter()
+            .filter(|(path, text)| default.get(path) != Some(text))
+            .collect();
+        insta::assert_snapshot!(format!("init_minimal_host_{host}"), show_files(&changed));
+        let (code, events) = json(&site, &["check"]);
+        assert_eq!(code, 0, "{events:?}");
+        let codes: Vec<&str> = events.iter().filter_map(|e| e["code"].as_str()).collect();
+        // GitHub Pages can't send the cache policy's headers.
+        let expected: &[&str] = match host {
+            "github-pages" => &["host/unsupported"],
+            _ => &[],
+        };
+        assert_eq!(codes, expected, "{host}");
+    }
+    assert_eq!(yuanme(root, &["init", "x", "--host", "bunny"]).code, 2);
+    assert_eq!(yuanme(root, &["init", "x", "--starter", "docs"]).code, 2);
 }
 
 #[test]
