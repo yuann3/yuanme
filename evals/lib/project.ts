@@ -11,6 +11,9 @@
 //   solution.sh   optional: run after that, such as to delete a file
 //   bad/NAME/     optional: known-bad end states, each laid over the solution,
 //   bad/NAME.sh   or run after it
+//
+// A task in `fix/` is named after the one Diagnostic its start seeds:
+// `fix/entry-unknown-key` seeds `entry/unknown-key`.
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

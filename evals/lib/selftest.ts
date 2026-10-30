@@ -90,8 +90,16 @@ async function grade(c: Case): Promise<string | undefined> {
 			return false;
 		},
 	);
-	if (passed === c.pass) return undefined;
-	return passed ? 'the grader passed it' : `the grader failed it:\n${output.get(c)}`;
+	if (passed !== c.pass) return passed ? 'the grader passed it' : `the grader failed it:\n${output.get(c)}`;
+	// A fix task seeds one Diagnostic, the code its name spells, so its pass
+	// rate measures how well that code's message and help lead to a fix.
+	if (c.task.startsWith('fix/') && c.name === 'start') {
+		const final = /^YUANME_EVAL_FINAL (.*)$/m.exec(output.get(c) ?? '');
+		const codes = [...new Set<string>(final ? JSON.parse(final[1]).codes : [])];
+		const seeded = c.task.slice('fix/'.length).replace('-', '/');
+		if (codes.join() !== seeded) return `its start reports ${codes.join(', ') || 'nothing'}, not only ${seeded}`;
+	}
+	return undefined;
 }
 
 const output = new Map<Case, string>();
