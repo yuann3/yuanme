@@ -1,8 +1,10 @@
 // The Starters' browser checks (#36, #70): each Starter, made with
 // `yuanme init` and built with `--strict-budgets`, has no axe-core
 // violation on any Page, in light and dark, and the blog's copy button and
-// skip link work. With --lab, the release's check instead: mobile LCP
-// ≤ 2.0 s and CLS ≤ 0.01 on each Starter's home Page and the blog's Post.
+// skip link work. So does the docs site (#72), as site/assemble.ts writes
+// it for a deploy, at / and /next/, and its search finds pages in each.
+// With --lab, the release's check instead: mobile LCP ≤ 2.0 s and
+// CLS ≤ 0.01 on each Starter's home Page and the blog's Post.
 //
 //   node starters.ts --yuanme ../../../../target/debug/yuanme [--lab] [--shots DIR]
 //
@@ -44,6 +46,7 @@ const TYPES: Record<string, string> = {
 	'.svg': 'image/svg+xml',
 	'.woff2': 'font/woff2',
 	'.xml': 'application/xml',
+	'.wasm': 'application/wasm',
 };
 
 /** Serves `root` as a static host does: `/x` redirects to `/x/`, and a missing file gets 404.html. */
@@ -81,7 +84,7 @@ function pages(dist: string): string[] {
 
 const SCHEMES = ['light', 'dark'] as const;
 
-async function accessibility(browser: Browser, starter: Starter, origin: string, urls: string[]) {
+async function accessibility(browser: Browser, starter: string, origin: string, urls: string[]) {
 	const failures: string[] = [];
 	for (const colorScheme of SCHEMES) {
 		const context = await browser.newContext({ colorScheme });
@@ -97,7 +100,7 @@ async function accessibility(browser: Browser, starter: Starter, origin: string,
 			}
 			if (args.shots) {
 				mkdirSync(args.shots, { recursive: true });
-				const name = `${starter}${url.replaceAll('/', '_').replace(/_$/, '')}-${colorScheme}.png`;
+				const name = `${starter.replaceAll(' ', '-')}${url.replaceAll('/', '_').replace(/_$/, '')}-${colorScheme}.png`;
 				await page.screenshot({ path: join(args.shots, name), fullPage: true });
 			}
 			await page.close();
@@ -128,6 +131,32 @@ async function blog(browser: Browser, origin: string) {
 	assert.equal(await page.locator('[role=status]').textContent(), 'Copied');
 	await context.close();
 	console.log('blog: the skip link and the copy button work');
+}
+
+/**
+ * The docs site's search, at / and at /next/: a query in the address finds
+ * pages of that Site's own index, and typing in the header's field
+ * searches again.
+ */
+async function search(browser: Browser, origin: string) {
+	const page = await browser.newPage();
+	for (const base of ['/', '/next/']) {
+		await page.goto(`${origin}${base}search/?q=wrangler`);
+		const first = page.locator('#results a').first();
+		await first.waitFor();
+		const href = (await first.getAttribute('href')) ?? '';
+		assert.ok(href.startsWith(`${base}docs/`) || href.startsWith(`${base}codes/`), `${base}: ${href}`);
+		assert.match((await page.locator('#search-status').textContent()) ?? '', /^\d+ pages? for “wrangler”$/);
+
+		await page.locator('#q').fill('zqxjvw');
+		await page.locator('#search-status', { hasText: '0 pages' }).waitFor();
+		assert.equal(await page.locator('#results li').count(), 0);
+		await page.locator('#q').fill('Theorem');
+		await page.locator('#results li').first().waitFor();
+		assert.match(new URL(page.url()).search, /q=Theorem/);
+	}
+	await page.close();
+	console.log('docs site: search finds pages at / and at /next/');
 }
 
 /**
@@ -168,6 +197,21 @@ async function lab(browser: Browser, url: string) {
 const tmp = mkdtempSync(join(tmpdir(), 'yuanme-starters-'));
 const browser = await chromium.launch();
 try {
+	if (!args.lab) {
+		const site = join(import.meta.dirname, '../../../../site');
+		const yuanme = resolve(args.yuanme);
+		const out = join(tmp, 'docs-site');
+		const assemble = ['--out', out, '--root', site, '--root-yuanme', yuanme, '--version', 'v0.0.0'];
+		assemble.push('--next', site, '--next-yuanme', yuanme);
+		execFileSync(process.execPath, [join(site, 'assemble.ts'), ...assemble], { stdio: 'inherit' });
+		const server = await serve(out);
+		try {
+			await accessibility(browser, 'docs site', server.origin, pages(out));
+			await search(browser, server.origin);
+		} finally {
+			server.close();
+		}
+	}
 	for (const starter of STARTERS) {
 		const dist = build(starter, tmp);
 		const server = await serve(dist);

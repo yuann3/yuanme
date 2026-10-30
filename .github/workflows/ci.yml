@@ -211,7 +211,10 @@ jobs:
   # Diagnostic under --strict-budgets and matches its snapshot, and has no
   # axe-core violation on any Page in light or dark. The blog checks its
   # types, which downloads tsc, so its snapshot test is ignored in the test
-  # job. The release checks their LCP and CLS (release-smoke.yml).
+  # job. The release checks their LCP and CLS (release-smoke.yml). So does
+  # the docs site (#72), at / and /next/ as docs.yml deploys it, with the
+  # Pagefind search site/assemble.ts downloads; the test job builds it
+  # under the same Budgets.
   starters:
     runs-on: ubuntu-latest
     steps:
