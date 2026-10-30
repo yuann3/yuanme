@@ -1,0 +1,3 @@
+perl -pi -e 's|^<body>$|<body class="mx-auto max-w-2xl px-4 bg-white text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">|; s|^<header class="site-header">$|<header class="site-header flex flex-wrap items-baseline justify-between gap-4 py-6">|; s|^  <nav aria-label="Main">$|  <nav aria-label="Main" class="text-zinc-600 dark:text-zinc-400">|; s|^    <ul>$|    <ul class="flex gap-4">|; s|^<footer class="site-footer">$|<footer class="site-footer border-t border-zinc-200 py-6 text-sm dark:border-zinc-700">|' templates/layouts/base.html
+perl -pi -e 's|^<ul class="rows">$|<ul class="rows divide-y divide-zinc-200 dark:divide-zinc-700">|' templates/home.html templates/posts/list.html
+grep -q 'dark:bg-zinc-900' templates/layouts/base.html

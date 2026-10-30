@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+{% set title = "Talks" %}
+{% block content %}
+<h1>Talks</h1>
+<ul class="rows">
+{% for talk in data.talks | sort_by(["-date"]) %}
+  <li>{{ talk.title }} <span class="meta">{{ talk.event }}, <time datetime="{{ talk.date }}">{{ talk.date }}</time></span></li>
+{% endfor %}
+</ul>
+{% endblock %}

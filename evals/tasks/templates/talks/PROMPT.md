@@ -1,0 +1,1 @@
+Add a page listing my talks, newest first: "Typed templates" at Strange Loop on 21 September 2023, "Proofs as programs" at RustConf on 10 September 2024, and "Org for mathematicians" at EmacsConf on 6 December 2025.

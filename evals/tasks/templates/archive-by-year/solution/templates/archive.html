@@ -1,0 +1,14 @@
+{% extends "layouts/base.html" %}
+{% set title = "Archive" %}
+{% block content %}
+<h1>Archive</h1>
+{% set ns = namespace(year="") %}
+{% for post in collections.posts %}
+{% set year = post.date[:4] %}
+{% if year != ns.year %}
+<h2>{{ year }}</h2>
+{% set ns.year = year %}
+{% endif %}
+<p><a href="{{ post.url }}">{{ post.title }}</a></p>
+{% endfor %}
+{% endblock %}

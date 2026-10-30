@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@layer base {
+  a {
+    @apply text-blue-700 underline-offset-2 dark:text-blue-300;
+  }
+  h1 {
+    @apply text-3xl font-semibold;
+  }
+  h2 {
+    @apply mt-8 text-xl font-semibold;
+  }
+  pre {
+    @apply overflow-x-auto rounded-md p-4;
+  }
+}
+
+.visually-hidden {
+  @apply sr-only;
+}
+
+.skip-link {
+  @apply sr-only focus:not-sr-only;
+}

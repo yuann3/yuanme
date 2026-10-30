@@ -1,0 +1,7 @@
+{# props: href: url, title: string, description?: string #}
+{% macro card(href, title, description=none) %}
+<article class="card">
+  <h3><a href="{{ href }}">{{ title }}</a></h3>
+  {% if description %}<p>{{ description }}</p>{% endif %}
+</article>
+{% endmacro %}

@@ -1,0 +1,2 @@
+perl -0pi -e 's/  <div class="prose">\n/  {% set sections = entry.headings | selectattr("level", "eq", 2) | list %}\n  {% if sections | length > 2 %}\n  <nav class="toc" aria-label="Contents">\n    <ol>\n    {% for h in sections %}\n      <li><a href="#{{ h.id }}">{{ h.text }}<\/a><\/li>\n    {% endfor %}\n    <\/ol>\n  <\/nav>\n  {% endif %}\n  <div class="prose">\n/' templates/posts/entry.html
+grep -q 'class="toc"' templates/posts/entry.html
