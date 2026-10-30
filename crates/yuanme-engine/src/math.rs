@@ -3,6 +3,8 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
+use rayon::prelude::*;
+
 use yuanme_assets::font::{self, NCM_MATH};
 use yuanme_content::site::Site;
 
@@ -34,7 +36,9 @@ pub(crate) fn stylesheet(
     pages: &mut [(String, Vec<u8>)],
     assets: &mut Vec<Asset>,
 ) -> Option<String> {
+    // Every Page is read on every build, so on threads of their own.
     let showing: Vec<usize> = (0..pages.len())
+        .into_par_iter()
         .filter(|&i| pages[i].0.ends_with(".html") && has_math(&pages[i].1))
         .collect();
     if showing.is_empty() {
