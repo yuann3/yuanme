@@ -83,7 +83,7 @@ pub(crate) fn measure(
                 .collect()
         })
         .collect();
-    let sizes: Vec<u64> = host::brotli(&blobs, cache)
+    let sizes: Vec<u64> = host::brotli(&blobs, 11, cache)
         .iter()
         .map(|br| br.len() as u64)
         .collect();

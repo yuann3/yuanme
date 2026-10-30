@@ -637,7 +637,7 @@ fn precompressed(files: &BTreeMap<String, Output>, cache: &mut Cache) -> Vec<(St
         })
         .collect();
     let bytes: Vec<&[u8]> = text.iter().map(|(_, bytes)| *bytes).collect();
-    let br = brotli(&bytes, cache);
+    let br = brotli(&bytes, 11, cache);
     let gz: Vec<Vec<u8>> = bytes.par_iter().map(|bytes| gzip(bytes)).collect();
     let mut out = Vec::new();
     for (((path, _), br), gz) in text.iter().zip(br).zip(gz) {
@@ -647,14 +647,15 @@ fn precompressed(files: &BTreeMap<String, Output>, cache: &mut Cache) -> Vec<(St
     out
 }
 
-/// Each of `texts` at Brotli quality 11, which takes about a second per MB,
-/// so it is cached by the input's bytes (ADR 0011). The Site budgets (#15)
-/// share the cache with the `.br` files.
-pub(crate) fn brotli(texts: &[&[u8]], cache: &mut Cache) -> Vec<Arc<[u8]>> {
+/// Each of `texts` at Brotli `quality`, cached by the input's bytes
+/// (ADR 0011): quality 11 takes about a second per MB. The Site budgets
+/// (#15) share the cache with the `.br` files.
+pub(crate) fn brotli(texts: &[&[u8]], quality: i32, cache: &mut Cache) -> Vec<Arc<[u8]>> {
     let keys: Vec<blake3::Hash> = texts
         .iter()
         .map(|bytes| {
             let mut key = cache.key("brotli");
+            key.update(&quality.to_le_bytes());
             key.update(bytes);
             key.finalize()
         })
@@ -665,7 +666,7 @@ pub(crate) fn brotli(texts: &[&[u8]], cache: &mut Cache) -> Vec<Arc<[u8]>> {
         .zip(cached)
         .map(|(bytes, cached)| match cached {
             Some(br) => (br, false),
-            None => (compress(bytes).into(), true),
+            None => (compress(bytes, quality).into(), true),
         })
         .collect();
     let mut out = Vec::with_capacity(made.len());
@@ -678,9 +679,9 @@ pub(crate) fn brotli(texts: &[&[u8]], cache: &mut Cache) -> Vec<Arc<[u8]>> {
     out
 }
 
-fn compress(bytes: &[u8]) -> Vec<u8> {
+fn compress(bytes: &[u8], quality: i32) -> Vec<u8> {
     let params = brotli::enc::BrotliEncoderParams {
-        quality: 11,
+        quality,
         lgwin: 22,
         ..Default::default()
     };
