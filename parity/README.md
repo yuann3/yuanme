@@ -26,7 +26,7 @@ cargo run -p parity -- check target/baseline target/site
 node parity/browser/parity.ts check target/baseline target/site --engines chromium --out target/parity-out
 ```
 
-`build` runs `yuanme build --json --out DIR` and reads its `build-finished` event; the build report is in the project's `.yuanme/report.json`. Failing screenshots are written to `--out` as the baseline's, the candidate's and a diff.
+`build` runs `yuanme build --json --out DIR` and reads its `build-finished` event; the build report is in the project's `.yuanme/report.json`. Failing screenshots are written to `--out` as the baseline's, the candidate's and a diff. `--only pixels` or `--only feel` runs one of the two browser checks.
 
 `self-test BASELINE`, in both tools, compares the baseline with itself (two renders, in the browser) and then seeds changes into a copy: those it must catch, and those that decode to the same DOM or that an exception covers, which it must let through. CI runs it (`.github/workflows/parity.yml`): Chromium on every push, all three engines when called with `engines`.
 
@@ -35,7 +35,7 @@ node parity/browser/parity.ts check target/baseline target/site --engines chromi
 Each rule that lets a difference through names its exception id, and a rule whose id is missing from `docs/parity-exceptions.md` fails the test before it compares anything. A rule normalizes both sides alike, so it never requires a difference and the baseline compared with itself still passes. The rules so far:
 
 - URLs and DOM (`src/lib.rs`): `apex-origin`, `trailing-slash-hrefs`, `assets-dir`, `robots-txt`, `unreferenced-files`, `head-metas`, `scoped-styles`, `single-initial-script`, `image-formats`, `self-hosted-fonts`, `immutable-assets`, `class-highlighting`, `og-image`, `reading-time`, `collection-order`, `not-found-canonical`, `dead-links`.
-- Pixels (`browser/pixels.ts`): the 0.25 threshold inside raster images, `about-image-bytes` and `hero-images`.
+- Pixels (`browser/pixels.ts`): the 0.25 threshold inside raster images, `about-image-bytes` and `hero-images`; `collection-order`, which sorts the tags index's rows on both sides.
 - Behaviour (`browser/feel.ts`): `route-announcer`, `panel-scroll`, `single-initial-script`, and `router-events` for the probe's event names.
 
 The other exceptions get their rules with the port that makes the difference (#75, #76).

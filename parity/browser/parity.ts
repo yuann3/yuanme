@@ -1,7 +1,7 @@
 // The parity test's pixel and behaviour checks (#23), the half that needs a
 // browser. `cargo run -p parity` runs the URL and DOM half.
 //
-//   node parity.ts check BASELINE SITE [--engines chromium,firefox,webkit] [--out DIR]
+//   node parity.ts check BASELINE SITE [--engines chromium,firefox,webkit] [--only pixels|feel] [--out DIR]
 //   node parity.ts self-test BASELINE [--out DIR]
 //
 // BASELINE is an unpacked Parity baseline (../fetch.sh): its site/ and the
@@ -19,13 +19,17 @@ const ENGINES = { chromium, firefox, webkit };
 
 const { positionals, values } = parseArgs({
 	allowPositionals: true,
-	options: { engines: { type: 'string', default: 'chromium' }, out: { type: 'string', default: 'parity-out' } },
+	options: { engines: { type: 'string', default: 'chromium' }, only: { type: 'string' }, out: { type: 'string', default: 'parity-out' } },
 });
 const [command, baselineDir, siteDir] = positionals;
 checkRules([...PIXEL_RULES, ...FEEL_RULES]);
 const remote = join(baselineDir ?? '', 'remote');
 if (!baselineDir || !existsSync(join(baselineDir, 'site')) || !existsSync(join(remote, 'index.json'))) {
-	console.error('usage: node parity.ts check BASELINE SITE [--engines …] [--out DIR] | self-test BASELINE');
+	console.error('usage: node parity.ts check BASELINE SITE [--engines …] [--only pixels|feel] [--out DIR] | self-test BASELINE');
+	process.exit(2);
+}
+if (values.only !== undefined && values.only !== 'pixels' && values.only !== 'feel') {
+	console.error(`--only takes pixels or feel, not ${values.only}`);
 	process.exit(2);
 }
 
@@ -73,6 +77,8 @@ const SEEDS: Seed[] = [
 	{ name: 'markup rewritten to the same DOM', only: 'pixels', pages: ['/'], caught: false, edits: [['replace', 'index.html', '<head>', '<head>\n  <!-- rewritten -->\n  '], ['replace', 'index.html', 'class="nav-link" data-nav-link', 'data-nav-link="" class="nav-link"']] },
 	// The same change as the Film's, inside the photos: within the photo threshold.
 	{ name: 'About photos re-encoded (about-image-bytes)', only: 'pixels', pages: ['/about/'], caught: false, edits: [['append', CSS, '[data-pile] img{filter:brightness(1.2)}']] },
+	// Two of the tags index's rows swapped: the Engine's order, not Astro's.
+	{ name: 'tags in another order (collection-order)', only: 'pixels', pages: ['/tags/'], caught: false, edits: [['replace', 'tags/index.html', '>#life<', '>#swap<'], ['replace', 'tags/index.html', '>#c<', '>#life<'], ['replace', 'tags/index.html', '>#swap<', '>#c<']] },
 	{ name: 'PhotoPile broken', only: 'feel', caught: true, edits: [['replace', '_astro/PhotoPile.astro_astro_type_script_index_0_lang.Cmp7FTzI.js', 'dataset.init', 'dataset.unused']] },
 	{ name: 'no Router: full page loads', only: 'feel', caught: true, edits: [['replace', '*', '<script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.C8icoCZT.js"></script>', '']] },
 ];
@@ -111,9 +117,9 @@ for (const engine of engines) {
 	if (command === 'check' && siteDir) {
 		const candidate = await serve(siteDir);
 		const paths = pages(join(baselineDir, 'site')).filter((p) => existsSync(join(siteDir, p.endsWith('/') ? p + 'index.html' : p)));
-		const failures = await check(browser, engine, side, candidate, paths);
+		const failures = await check(browser, engine, side, candidate, paths, values.only as 'pixels' | 'feel' | undefined);
 		failures.forEach((f) => console.log(f));
-		console.log(`pixels and behaviour, ${engine}: ${failures.length} differences from the Parity baseline`);
+		console.log(`${values.only ?? 'pixels and behaviour'}, ${engine}: ${failures.length} differences from the Parity baseline`);
 		ok &&= failures.length === 0;
 		await candidate.close();
 	} else if (command === 'self-test') {

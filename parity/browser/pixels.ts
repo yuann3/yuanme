@@ -22,7 +22,9 @@ export const THRESHOLD = 0.1;
 export const PHOTO_THRESHOLD = 0.25;
 /** A screenshot fails if more than 0.05 % of its pixels differ. */
 export const MAX_RATIO = 0.0005;
-export const RULES = ['about-image-bytes', 'hero-images'];
+export const RULES = ['about-image-bytes', 'hero-images', 'collection-order'];
+/** Pages whose lists the Engine orders by its Collection rules (`collection-order`): both sides sort their items by text before the screenshots. */
+const REORDERED = ['/tags/'];
 /** A long post's panel is about 20 screens; this bounds a runaway one. */
 const MAX_FRAMES = 60;
 
@@ -78,6 +80,14 @@ async function shoot(ctx: BrowserContext, origin: string, path: string): Promise
 	const page = await ctx.newPage();
 	await page.goto(origin + path, { waitUntil: 'load' });
 	await settle(page);
+	if (REORDERED.includes(path)) {
+		await page.evaluate(() => {
+			for (const ul of document.querySelectorAll('[data-panel-content] ul')) {
+				ul.append(...[...ul.children].sort((a, b) => (a.textContent ?? '').localeCompare(b.textContent ?? '')));
+			}
+		});
+		await settle(page);
+	}
 	const frames = await page.evaluate((max) => {
 		const p = document.querySelector('[data-panel-content]');
 		return p && p.clientHeight ? Math.min(max, Math.ceil(p.scrollHeight / p.clientHeight)) : 1;
