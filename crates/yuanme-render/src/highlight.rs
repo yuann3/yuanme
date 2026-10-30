@@ -9,6 +9,7 @@ use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
 
 use ferriki::{FontStyle, Highlighter, StandardAssetCatalogs, TokenizeOptions};
+use memchr::memmem;
 use yuanme_content::document::{Document, Kind, NodeId};
 
 use crate::html::text;
@@ -307,22 +308,25 @@ fn hex(b: u8) -> Option<i32> {
 pub fn classes(page: &str) -> Option<BTreeSet<&str>> {
     // How html::body opens a highlighted block, after any attributes.
     let open = format!(" class=\"{PRE_CLASS}\" tabindex=\"0\" data-language=");
+    let (open, close, span) = (
+        memmem::Finder::new(&open),
+        memmem::Finder::new("</pre>"),
+        memmem::Finder::new("<span class=\""),
+    );
     let mut found = None;
     let mut rest = page;
-    while let Some(at) = rest.find(&open) {
+    while let Some(at) = open.find(rest.as_bytes()) {
         let classes = found.get_or_insert_with(BTreeSet::new);
         rest = &rest[at..];
-        let end = rest.find("</pre>").unwrap_or(rest.len());
-        for span in rest[..end].split("<span class=\"").skip(1) {
-            if let Some(class) = span.split('"').next()
-                && look(class).is_some()
-            {
-                classes.insert(class);
-            }
+        let end = close.find(rest.as_bytes()).unwrap_or(rest.len());
+        let code = &rest[..end];
+        for at in span.find_iter(code.as_bytes()) {
+            classes.extend(code[at + 13..].split('"').next());
         }
         rest = &rest[end..];
     }
-    found
+    // Checked once each, as a Page has thousands of spans and a few classes.
+    found.map(|classes| classes.into_iter().filter(|c| look(c).is_some()).collect())
 }
 
 /// The stylesheet for `classes`: the light theme, then the dark one when

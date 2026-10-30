@@ -1005,6 +1005,7 @@ dependencies = [
  "ferriki-textmate",
  "ferroni",
  "jiff",
+ "memchr",
  "minijinja",
  "rayon",
  "serde_json",

@@ -5971,6 +5971,7 @@ dependencies = [
  "insta",
  "jiff",
  "jsonschema",
+ "memchr",
  "minijinja",
  "rayon",
  "serde_json",
