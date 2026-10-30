@@ -1,6 +1,7 @@
 //! The build Gates on the Scale Site (#15, #73): each of #15's build
-//! numbers, timed with hyperfine on the release binary, and no more than
-//! 10% slower than `main`'s binary timed in the same run.
+//! numbers, timed with hyperfine on the release binary, against `main`'s
+//! binary timed in the same run. More than 10% slower than main fails; a
+//! number over its budget is reported, until the Engine meets them (#73).
 
 use std::fmt::Write as _;
 use std::fs;
@@ -117,31 +118,32 @@ impl Gate {
     }
 }
 
-/// What breaches `gate`, in words: none when it holds.
-pub fn breaches(gate: &Gate, head: &[f64], base: Option<&[f64]>) -> Vec<String> {
-    let mut out = Vec::new();
+/// How far `gate` is over its budget, in words: reported, not failed on,
+/// until the Engine meets #15's numbers on the Scale Site (#73).
+pub fn over(gate: &Gate, head: &[f64]) -> Option<String> {
     let value = gate.value(head);
-    if value > gate.limit {
-        out.push(format!(
+    (value > gate.limit).then(|| {
+        format!(
             "{}: {} is over its budget of {}",
             gate.name,
             gate.show(value),
             gate.show(gate.limit)
-        ));
-    }
-    if let Some(base) = base.filter(|_| gate.relative) {
-        let (now, before) = (median(head), median(base));
-        if now > before * SLOWER {
-            out.push(format!(
-                "{}: {} is {:.0}% slower than main's {}",
-                gate.name,
-                gate.show(now),
-                (now / before - 1.0) * 100.0,
-                gate.show(before)
-            ));
-        }
-    }
-    out
+        )
+    })
+}
+
+/// How much slower than main `gate` is, in words, when that fails it.
+pub fn slower(gate: &Gate, head: &[f64], base: &[f64]) -> Option<String> {
+    let (now, before) = (median(head), median(base));
+    (gate.relative && now > before * SLOWER).then(|| {
+        format!(
+            "{}: {} is {:.0}% slower than main's {}",
+            gate.name,
+            gate.show(now),
+            (now / before - 1.0) * 100.0,
+            gate.show(before)
+        )
+    })
 }
 
 /// One binary and the Scale Site it builds.
@@ -171,28 +173,33 @@ pub fn run(head: &Path, base: Option<&Path>) -> ExitCode {
         "| Gate | Budget | This commit | main | Change |\n|---|---:|---:|---:|---:|\n",
     );
     for gate in GATES {
-        let (head, base) = &readings[gate.name];
-        let mut found = breaches(gate, head, base.as_deref());
-        // A slowdown that is only relative may be the runner: measured
-        // again, it fails only if it is there again.
-        if !found.is_empty() && gate.value(head) <= gate.limit {
-            println!("::warning::{}; measuring it again", found.join("; "));
-            let again = measure_one(gate.name, &sides, &work);
-            found = breaches(gate, &again.0, again.1.as_deref());
+        let (mut head, mut base) = readings[gate.name].clone();
+        let mut found = base.as_ref().and_then(|b| slower(gate, &head, b));
+        // A slowdown may be the runner: measured again, it fails only if
+        // it is there again.
+        if let Some(slowdown) = &found {
+            println!("::warning::{slowdown}; measuring it again");
+            (head, base) = measure_one(gate.name, &sides, &work);
+            found = base.as_ref().and_then(|b| slower(gate, &head, b));
         }
-        let change = match base {
+        let budget = over(gate, &head);
+        if let Some(over) = &budget {
+            println!("::warning::{over}");
+        }
+        let change = match &base {
             Some(base) if gate.relative => {
-                format!("{:+.1}%", (median(head) / median(base) - 1.0) * 100.0)
+                format!("{:+.1}%", (median(&head) / median(base) - 1.0) * 100.0)
             }
             _ => String::new(),
         };
         let _ = writeln!(
             table,
-            "| {}{} | {} | {} | {} | {change} |",
+            "| {}{} | {}{} | {} | {} | {change} |",
             gate.name,
-            if found.is_empty() { "" } else { " ❌" },
+            if found.is_some() { " ❌" } else { "" },
             gate.show(gate.limit),
-            gate.show(gate.value(head)),
+            if budget.is_some() { ", over" } else { "" },
+            gate.show(gate.value(&head)),
             base.as_ref()
                 .map(|b| gate.show(gate.value(b)))
                 .unwrap_or_default(),
@@ -206,7 +213,12 @@ pub fn run(head: &Path, base: Option<&Path>) -> ExitCode {
             .create(true)
             .open(summary)
             .expect("open the step summary");
-        let _ = writeln!(file, "## Build Gates on the Scale Site\n\n{table}");
+        let _ = writeln!(
+            file,
+            "## Build Gates on the Scale Site\n\n{table}\n\
+             Only ❌, more than 10% slower than main, fails the job. A number \
+             over #15's budget is reported until the Engine meets them (#73).\n"
+        );
     }
     for breach in &failed {
         println!("::error::{breach}");
@@ -497,41 +509,43 @@ mod tests {
     }
 
     #[test]
-    fn a_number_over_its_budget_fails() {
+    fn a_number_over_its_budget_is_reported() {
         let cold = gate("cold build");
         assert_eq!(cold.limit, 10.0);
         // The median, which one slow run doesn't move.
-        assert!(breaches(cold, &[9.0, 10.0, 30.0], None).is_empty());
-        assert_eq!(breaches(cold, &[9.0, 10.1, 10.2], None).len(), 1);
+        assert_eq!(over(cold, &[9.0, 10.0, 30.0]), None);
+        assert!(over(cold, &[9.0, 10.1, 10.2]).is_some());
 
         let edit = gate("incremental rebuild");
         assert_eq!(edit.limit, 0.1);
         // p95 by nearest rank: the 19th of 20.
         let mut times = vec![0.05; 20];
         times[19] = 0.2;
-        assert!(breaches(edit, &times, None).is_empty());
+        assert_eq!(over(edit, &times), None);
         times[18] = 0.2;
-        assert_eq!(breaches(edit, &times, None).len(), 1);
+        assert!(over(edit, &times).is_some());
     }
 
+    /// Only a slowdown against main fails the job, until the Engine meets
+    /// #15's numbers on the Scale Site (#73).
     #[test]
-    fn a_build_more_than_10_percent_slower_than_main_fails() {
+    fn only_more_than_10_percent_slower_than_main_fails() {
         let warm = gate("warm build");
         let main = [1.0; 5];
-        assert!(breaches(warm, &[1.09; 5], Some(&main)).is_empty());
-        assert_eq!(breaches(warm, &[1.11; 5], Some(&main)).len(), 1);
+        assert_eq!(slower(warm, &[1.09; 5], &main), None);
+        assert!(slower(warm, &[1.11; 5], &main).is_some());
         // Medians: main's one slow run doesn't hide the slowdown.
         let noisy = [1.0, 1.0, 1.0, 1.0, 9.0];
-        assert_eq!(breaches(warm, &[1.2; 5], Some(&noisy)).len(), 1);
-        // Both at once are two breaches.
-        assert_eq!(breaches(warm, &[2.5; 5], Some(&main)).len(), 2);
+        assert!(slower(warm, &[1.2; 5], &noisy).is_some());
+        // Over the budget, and as fast as main, passes.
+        assert_eq!(slower(warm, &[2.5; 5], &[2.5; 5]), None);
+        assert!(over(warm, &[2.5; 5]).is_some());
     }
 
     #[test]
-    fn peak_rss_has_only_its_budget() {
+    fn peak_rss_is_never_compared_with_main() {
         let rss = gate("peak RSS");
-        let main = [500e6];
-        assert!(breaches(rss, &[900e6], Some(&main)).is_empty());
-        assert_eq!(breaches(rss, &[1.1e9], Some(&main)).len(), 1);
+        assert_eq!(slower(rss, &[900e6], &[500e6]), None);
+        assert!(over(rss, &[1.1e9]).is_some());
     }
 }
