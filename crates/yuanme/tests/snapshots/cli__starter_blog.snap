@@ -1,0 +1,730 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: site
+---
+{"body":133,"css":1334,"estimated":["body","html","css"],"fonts":0,"html":505,"js":0,"math_font":0,"requests":2,"url":"/about/"}
+{"body":954,"css":2339,"estimated":["body","html","css","js","math_font"],"fonts":0,"html":738,"js":577,"math_font":9268,"requests":6,"url":"/blog/hello/"}
+{"body":889,"css":2339,"estimated":["body","html","css","js","math_font"],"fonts":0,"html":758,"js":577,"math_font":9268,"requests":6,"url":"/blog/hello-org/"}
+{"body":231,"css":1334,"estimated":["body","html","css"],"fonts":0,"html":571,"js":0,"math_font":0,"requests":2,"url":"/projects/example/"}
+{"body":null,"css":1334,"estimated":["html","css"],"fonts":0,"html":637,"js":0,"math_font":0,"requests":2,"url":"/blog/"}
+{"body":null,"css":1334,"estimated":["html","css"],"fonts":0,"html":548,"js":0,"math_font":0,"requests":2,"url":"/projects/"}
+{"body":null,"css":1334,"estimated":["html","css"],"fonts":0,"html":532,"js":0,"math_font":0,"requests":2,"url":"/tags/"}
+{"body":null,"css":1334,"estimated":["html","css"],"fonts":0,"html":663,"js":0,"math_font":0,"requests":2,"url":"/tags/meta/"}
+{"body":null,"css":1334,"estimated":["html","css"],"fonts":0,"html":625,"js":0,"math_font":0,"requests":2,"url":"/tags/org/"}
+{"body":null,"css":1334,"estimated":["html","css"],"fonts":0,"html":657,"js":0,"math_font":0,"requests":2,"url":"/"}
+{"body":null,"css":1334,"estimated":["html","css"],"fonts":0,"html":516,"js":0,"math_font":0,"requests":2,"url":"/404.html"}
+=== 404.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not found | My Site</title>
+<meta name="description" content="Notes on programming and mathematics."><meta name="robots" content="noindex">
+<meta property="og:title" content="Not found">
+<meta property="og:description" content="Notes on programming and mathematics."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<h1>Not found</h1>
+<p>Nothing is here. <a href="/">Go to the home Page</a>, or read <a href="/blog/">the Blog</a>.</p>
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== _headers
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+=== about/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About | My Site</title>
+<meta name="description" content="Notes on programming and mathematics."><link rel="canonical" href="https://example.com/about/">
+<meta property="og:url" content="https://example.com/about/">
+<meta property="og:title" content="About">
+<meta property="og:description" content="Notes on programming and mathematics."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/">Tags</a></li>
+      <li><a href="/about/" aria-current="page">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<article>
+  <h1>About</h1>
+  <div class="prose">
+<p>Say who you are and what you write about here. This Page is <code>content/pages/about.md</code>, an Entry of the built-in <code>pages</code> Collection, so it is served at <code>/about/</code>.</p>
+  </div>
+</article>
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== assets/code-0e053d800cc54de4.css
+.y-code{background-color:#eff1f5;color:#4c4f69}.y-code .be{color:#179299}.y-code .cb11{color:#1e66f5;font-style:italic;font-weight:normal;text-decoration:none}.y-code .id{color:#7c7f93}.y-code .ji{color:#8839ef}.y-code .ok{color:#e64553}.y-code .qq{color:#fe640b}
+@media (prefers-color-scheme:dark){.y-code{background-color:#1e1e2e;color:#cdd6f4}.y-code .be{color:#94e2d5}.y-code .cb11{color:#89b4fa;font-style:italic;font-weight:normal;text-decoration:none}.y-code .id{color:#9399b2}.y-code .ji{color:#cba6f7}.y-code .ok{color:#eba0ac}.y-code .qq{color:#fab387}}
+=== assets/math-b17af60401e71a00.css
+@font-face{font-family:"yuanme NCM Math";src:url("/assets/math-b5f65b7659f4e4a6.woff2") format("woff2");font-display:block}math{font-family:"yuanme NCM Math",math}mtext span.math-core-sans-serif-font{font-family:sans-serif}
+/* Style for unknown command; feel free to customize it */
+
+merror.math-core-unknown-cmd {
+    border: unset; /* `merror` default is `1px solid red` */
+    background-color: unset; /* `merror` default is `lightYellow` */
+    color: #c00; /* `merror` default is `unset` */
+}
+
+/* Styles for all browsers */
+
+mtd {
+    /* This is the default padding for mtd elements as defined in the MathML Core specification. */
+    padding: 0.5ex 0.4em;
+}
+
+mtr > mtd:first-child {
+    padding-left: 0;
+}
+
+mtr > mtd:last-child {
+    padding-right: 0;
+}
+
+/* Styles for Chromium only */
+@supports (not (-webkit-backdrop-filter: blur(1px))) and
+    (not (-moz-appearance: none)) {
+    menclose {
+        position: relative;
+        padding: 0.5ex 0;
+    }
+    menclose[notation~="box" i] {
+        border: 0.04em solid;
+        padding: 0.3rem;
+    }
+    menclose[notation~="actuarial" i] {
+        padding: 0.03889rem 0.03889rem 0 0.03889rem;
+        border-width: 0.08em 0.08em 0em 0em;
+        border-style: solid;
+        margin-right: 0.03889rem;
+    }
+    menclose[notation~="phasorangle" i] {
+        border-bottom: 0.067em solid;
+        padding: 0.2em 0.2em 0.1em 0.6em;
+    }
+    mrow.menclose-phasorangle {
+        display: inline-block;
+        position: absolute;
+        left: 0.5px;
+        bottom: -0.04em;
+        height: 100%;
+        aspect-ratio: 0.5;
+        background-color: currentcolor;
+        clip-path: polygon(
+            0.05em 100%,
+            0 calc(100% - 0.05em),
+            calc(100% - 0.05em) 0,
+            100% 0.05em
+        );
+    }
+    mrow.menclose-updiagonalstrike,
+    mrow.menclose-downdiagonalstrike {
+        display: inline-block;
+        position: absolute;
+        left: 0.5px;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background-color: currentcolor;
+    }
+    mrow.menclose-updiagonalstrike {
+        clip-path: polygon(
+            0.05em 100%,
+            0 calc(100% - 0.05em),
+            calc(100% - 0.05em) 0,
+            100% 0.05em
+        );
+    }
+    mrow.menclose-downdiagonalstrike {
+        clip-path: polygon(
+            0em 0.05em,
+            0.05em 0em,
+            100% calc(100% - 0.05em),
+            calc(100% - 0.05em) 100%
+        );
+    }
+}
+
+/* Styles for Chromium and Safari */
+@supports (not (-moz-appearance: none)) {
+    mover[accent="true" i] > mo:nth-child(2) {
+        margin-bottom: 0.15ex;
+    }
+}
+=== assets/math-b5f65b7659f4e4a6.woff2
+[9264 bytes]
+=== assets/page-2e54daf653a7da55.js
+var e=Object.defineProperty,t=(t,n)=>{let r={};for(var i in t)e(r,i,{get:t[i],enumerable:!0});return n||e(r,Symbol.toStringTag,{value:`Module`}),r};const n=new Map,r=new WeakMap;let i,a=[];const o=(e,t)=>n.set(e,t);function s(){i=new AbortController;let e=new URL(location.href);for(let t of document.scripts)for(let o of n.get(t.src)||[])if(o.mount){r.has(o)||r.set(o,{});try{a.push(o.mount({url:e,signal:i.signal,data:r.get(o)}))}catch(e){reportError(e)}}}var c=t({mount:()=>l});function l(e){let t=document.querySelector(`[data-code-copy]`);if(!t)return;let n=t.dataset.codeCopy??`Copy`,r=t.dataset.copied??`Copied`;for(let i of document.querySelectorAll(`pre.y-code`)){let a=document.createElement(`div`);a.className=`code-block`,i.replaceWith(a);let o=document.createElement(`button`);o.type=`button`,o.className=`code-copy`,o.textContent=n,a.append(i,o);let s;o.addEventListener(`click`,async()=>{await navigator.clipboard.writeText(i.querySelector(`code`)?.textContent??``),o.textContent=r,t.textContent=r,clearTimeout(s),s=setTimeout(()=>{o.textContent=n,t.textContent=``},2e3)},{signal:e.signal})}}o(import.meta.url,[c]),s();
+=== assets/pipeline-d8c4d8647a890fe3.svg
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160" font-family="system-ui, sans-serif" font-size="18" text-anchor="middle">
+  <style>
+    rect { fill: #eef2f8; stroke: #1a5fb4; stroke-width: 2; }
+    text { fill: #1d1d1f; }
+    path { stroke: #1a5fb4; stroke-width: 2; fill: none; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #1e2633; stroke: #8ab4ff; }
+      text { fill: #e8e8ea; }
+      path { stroke: #8ab4ff; }
+    }
+  </style>
+  <rect x="10" y="50" width="160" height="60" rx="8"/>
+  <text x="90" y="86">Markdown, Org</text>
+  <rect x="240" y="50" width="160" height="60" rx="8"/>
+  <text x="320" y="86">yuanme</text>
+  <rect x="470" y="50" width="160" height="60" rx="8"/>
+  <text x="550" y="86">Site</text>
+  <path d="M170 80h62m-8-6 8 6-8 6M400 80h62m-8-6 8 6-8 6"/>
+</svg>
+=== assets/site-33f1394a0d3d10b9.css
+:root{--lightningcss-light:initial;--lightningcss-dark: ;color-scheme:light dark;--bg:#fdfdfc;--fg:#1d1d1f;--muted:#5c5c66;--accent:#1a5fb4;--rule:#dcdce2;--surface:#f2f2f5;--font-text:system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;--font-code:ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;--measure:40rem;--space:1rem;--radius:6px}@media (prefers-color-scheme:dark){:root{--lightningcss-light: ;--lightningcss-dark:initial;--bg:#161618;--fg:#e8e8ea;--muted:#a6a6b0;--accent:#8ab4ff;--rule:#34343b;--surface:#222227}}*,:before,:after{box-sizing:border-box}body{max-width:calc(var(--measure) + 2 * var(--space));padding:0 var(--space);background:var(--bg);color:var(--fg);font-family:var(--font-text);-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;margin:0 auto;line-height:1.6}a{color:var(--accent);text-underline-offset:.15em}:focus-visible{outline:2px solid var(--accent);outline-offset:2px}h1,h2,h3{text-wrap:balance;line-height:1.25}h1{margin:2rem 0 .5rem;font-size:2rem}code,pre{font-family:var(--font-code);font-size:.9em}img,svg,picture{max-width:100%;height:auto}.skip-link{left:var(--space);background:var(--bg);border-radius:var(--radius);padding:.5rem 1rem;position:absolute;top:-3rem}.skip-link:focus{top:var(--space)}.visually-hidden{clip-path:inset(50%);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.site-header{justify-content:space-between;align-items:baseline;gap:.5rem var(--space);padding:var(--space) 0;border-bottom:1px solid var(--rule);flex-wrap:wrap;display:flex}.site-title{color:var(--fg);font-weight:600;text-decoration:none}.site-header ul{gap:0 var(--space);flex-wrap:wrap;margin:0;padding:0;list-style:none;display:flex}.site-header nav a{color:var(--muted);text-decoration:none}.site-header nav a:hover,.site-header nav a[aria-current]{color:var(--fg);text-decoration:underline}.site-footer{padding:var(--space) 0 2rem;border-top:1px solid var(--rule);color:var(--muted);margin-top:3rem;font-size:.9rem}.lede,.meta{color:var(--muted)}.meta{margin:0;font-size:.9rem}.rows{margin:0;padding:0;list-style:none}.rows>li{border-bottom:1px solid var(--rule);padding:.75rem 0}.rows p{color:var(--muted);margin:.25rem 0 0}.post-row time{color:var(--muted);font-size:.9rem;display:block}.tag-list{flex-wrap:wrap;gap:.5rem;margin:.75rem 0 0;padding:0;font-size:.9rem;list-style:none;display:flex}.tag-list a:before{content:"#"}.pagination{justify-content:space-between;gap:var(--space);margin-top:var(--space);display:flex}.entry-header{margin-bottom:1.5rem}.prose :where(p,ul,ol,blockquote,pre,table){margin:0 0 1rem}.prose blockquote{padding-left:var(--space);border-left:3px solid var(--rule);color:var(--muted);margin-left:0}.prose table{border-collapse:collapse;display:block;overflow-x:auto}.prose :where(th,td){border-bottom:1px solid var(--rule);padding:.25rem .75rem}.prose :not(pre)>code{background:var(--surface);border-radius:4px;padding:.1em .3em}pre.y-code{background-color:var(--bg);border:1px solid var(--rule);padding:var(--space);border-radius:var(--radius);line-height:1.5;overflow-x:auto}.code-block{position:relative}.code-copy{border:1px solid var(--rule);background:var(--bg);color:var(--fg);font:inherit;cursor:pointer;border-radius:4px;padding:.125rem .5rem;font-size:.8rem;position:absolute;top:.5rem;right:.5rem}math[display=block]{padding:.25rem 0;overflow-x:auto}.theorem,.proof{margin:0 0 1rem}.theorem{padding-left:var(--space);border-left:3px solid var(--accent)}.theorem p:last-child,.proof p:last-child{margin-bottom:0}.theorem[data-kind=definition],.theorem[data-kind=example],.theorem[data-kind=remark],.theorem[data-kind=note]{border-left-color:var(--rule)}.theorem-name,.proof-head{font-weight:600}.theorem-title{font-weight:400}.proof-head{font-style:italic}.qed{float:right}@media (prefers-reduced-motion:reduce){::view-transition-group(*){animation:none}::view-transition-old(*){animation:none}::view-transition-new(*){animation:none}}
+=== blog/hello-org/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello from Org | My Site</title>
+<meta name="description" content="The same ideas as the first Post, written in Org."><link rel="canonical" href="https://example.com/blog/hello-org/">
+<meta property="og:url" content="https://example.com/blog/hello-org/">
+<meta property="og:title" content="Hello from Org">
+<meta property="og:description" content="The same ideas as the first Post, written in Org."><meta property="og:type" content="article">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style><script type="module" src="/assets/page-2e54daf653a7da55.js"></script>
+<link rel="stylesheet" href="/assets/code-0e053d800cc54de4.css"><link rel="stylesheet" href="/assets/math-b17af60401e71a00.css"></head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/" aria-current="true">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<article>
+  <header class="entry-header">
+    <h1>Hello from Org</h1>
+    <p class="meta"><time datetime="2026-01-02">2 January 2026</time> · 1 min read</p>
+    <ul class="tag-list" aria-label="Tags">
+  <li><a href="/tags/meta/" rel="tag">meta</a></li>
+  <li><a href="/tags/org/" rel="tag">org</a></li>
+</ul>
+
+  </header>
+  <div class="prose">
+<p>This Post is Org. Its math, Theorem blocks and code are the ones the first Post has, in Org’s own syntax.</p>
+<h2 id="an-equation">An equation</h2>
+<p>The sum of the first <math><mi>n</mi></math> odd numbers is a square:</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><mn>2</mn><mi>k</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo><mo>=</mo><msup><mi>n</mi><mn>2</mn></msup></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="eq:odd"><mtext>(1)</mtext></mtd></mtr></mtable></math>
+<h2 id="a-theorem">A theorem</h2>
+<div class="theorem" data-kind="theorem" id="thm:gauss">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 1</span> <span class="theorem-title">(Gauss)</span>.</span> For every <math><mi>n</mi><mo>≥</mo><mn>1</mn></math>, <math><munderover><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>k</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><mn>2</mn></mfrac></math>, and so <a href="#eq:odd">(1)</a> holds.</p>
+</div>
+<div class="proof">
+<p><span class="proof-head">Proof.</span> Each <math><mi>k</mi></math> pairs with <math><mi>n</mi><mo>+</mo><mn>1</mn><mo>−</mo><mi>k</mi></math>, and the <math><mi>n</mi></math> pairs, which count the sum twice, each add up to <math><mi>n</mi><mo>+</mo><mn>1</mn></math>. Then the odd numbers sum to <math><mn>2</mn><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mfrac><mrow><mi>n</mi><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><mn>2</mn></mfrac><mo>−</mo><mi>n</mi><mo>=</mo><msup><mi>n</mi><mn>2</mn></msup></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
+</div>
+<p>A link with no description to a Label shows its number: <a href="#thm:gauss">Theorem 1</a>.</p>
+<h2 id="some-code">Some code</h2>
+<pre class="y-code" tabindex="0" data-language="rust"><code><span class="ji">fn </span><span class="cb11">odd_sum</span><span class="id">(</span><span class="ok">n</span><span class="be">: </span><span class="ji">u64</span><span class="id">) </span><span class="be">-> </span><span class="ji">u64 </span><span class="id">{</span>
+    <span class="id">(</span><span class="qq">1</span><span class="be">..=</span>n<span class="id">)</span><span class="be">.</span><span class="cb11">map</span><span class="id">(</span><span class="be">|</span>k<span class="be">| </span><span class="qq">2 </span><span class="be">* </span>k <span class="be">- </span><span class="qq">1</span><span class="id">)</span><span class="be">.</span><span class="cb11">sum</span><span class="id">()</span>
+<span class="id">}</span></code></pre>
+  </div>
+</article>
+<p class="visually-hidden" role="status" data-code-copy="Copy" data-copied="Copied"></p>
+
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== blog/hello/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello | My Site</title>
+<meta name="description" content="A first Post, with an equation, a theorem and some code."><link rel="canonical" href="https://example.com/blog/hello/">
+<meta property="og:url" content="https://example.com/blog/hello/">
+<meta property="og:title" content="Hello">
+<meta property="og:description" content="A first Post, with an equation, a theorem and some code."><meta property="og:type" content="article">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style><script type="module" src="/assets/page-2e54daf653a7da55.js"></script>
+<link rel="stylesheet" href="/assets/code-0e053d800cc54de4.css"><link rel="stylesheet" href="/assets/math-b17af60401e71a00.css"></head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/" aria-current="true">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<article>
+  <header class="entry-header">
+    <h1>Hello</h1>
+    <p class="meta"><time datetime="2026-01-01">1 January 2026</time> · 1 min read</p>
+    <ul class="tag-list" aria-label="Tags">
+  <li><a href="/tags/meta/" rel="tag">meta</a></li>
+</ul>
+
+  </header>
+  <div class="prose">
+<p>This Post is Markdown. Its math is LaTeX, which becomes MathML when the Site is built, so no script draws it.</p>
+<h2 id="an-equation">An equation</h2>
+<p>The sum of the first <math><mi>n</mi></math> odd numbers is a square:</p>
+<math display="block"><mtable displaystyle="true" scriptlevel="0" style="width: 100%"><mtr><mtd style="width: 50%"></mtd><mtd><munderover><mo lspace="0" rspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo stretchy="false">(</mo><mn>2</mn><mi>k</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo><mo>=</mo><msup><mi>n</mi><mn>2</mn></msup></mtd><mtd style="width: 50%;text-align: right;justify-items: end;" id="eq:odd"><mtext>(1)</mtext></mtd></mtr></mtable></math>
+<h2 id="a-theorem">A theorem</h2>
+<div class="theorem" data-kind="theorem" id="thm:gauss">
+<p><span class="theorem-head"><span class="theorem-name">Theorem 1</span> <span class="theorem-title">(Gauss)</span>.</span> For every <math><mi>n</mi><mo>≥</mo><mn>1</mn></math>, <math><munderover><mo lspace="0">∑</mo><mrow><mi>k</mi><mo lspace="0" rspace="0">=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>k</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><mn>2</mn></mfrac></math>, and so <a href="#eq:odd">(1)</a> holds.</p>
+</div>
+<div class="proof">
+<p><span class="proof-head">Proof.</span> Each <math><mi>k</mi></math> pairs with <math><mi>n</mi><mo>+</mo><mn>1</mn><mo>−</mo><mi>k</mi></math>, and the <math><mi>n</mi></math> pairs, which count the sum twice, each add up to <math><mi>n</mi><mo>+</mo><mn>1</mn></math>. Then the odd numbers sum to <math><mn>2</mn><mo lspace="0.2222em" rspace="0.2222em">⋅</mo><mfrac><mrow><mi>n</mi><mo stretchy="false">(</mo><mi>n</mi><mo lspace="0" rspace="0">+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><mn>2</mn></mfrac><mo>−</mo><mi>n</mi><mo>=</mo><msup><mi>n</mi><mn>2</mn></msup></math>. <span class="qed" role="img" aria-label="End of proof">∎</span></p>
+</div>
+<p>A link with no text to a Label shows its number, as <a href="#eq:odd">(1)</a> and <a href="#thm:gauss">Theorem 1</a> do here. In Org, <code>\eqref</code> in prose does the same.</p>
+<h2 id="some-code">Some code</h2>
+<pre class="y-code" tabindex="0" data-language="rust"><code><span class="ji">fn </span><span class="cb11">odd_sum</span><span class="id">(</span><span class="ok">n</span><span class="be">: </span><span class="ji">u64</span><span class="id">) </span><span class="be">-> </span><span class="ji">u64 </span><span class="id">{</span>
+    <span class="id">(</span><span class="qq">1</span><span class="be">..=</span>n<span class="id">)</span><span class="be">.</span><span class="cb11">map</span><span class="id">(</span><span class="be">|</span>k<span class="be">| </span><span class="qq">2 </span><span class="be">* </span>k <span class="be">- </span><span class="qq">1</span><span class="id">)</span><span class="be">.</span><span class="cb11">sum</span><span class="id">()</span>
+<span class="id">}</span></code></pre>
+<p><code>hello-org.org</code> says the same in Org.</p>
+  </div>
+</article>
+<p class="visually-hidden" role="status" data-code-copy="Copy" data-copied="Copied"></p>
+
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== blog/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blog | My Site</title>
+<meta name="description" content="Notes on programming and mathematics."><link rel="canonical" href="https://example.com/blog/">
+<meta property="og:url" content="https://example.com/blog/">
+<meta property="og:title" content="Blog">
+<meta property="og:description" content="Notes on programming and mathematics."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/" aria-current="page">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<h1>Blog</h1>
+<ul class="rows">
+  <li class="post-row">
+  <a href="/blog/hello-org/">Hello from Org</a>
+  <time datetime="2026-01-02">2 January 2026</time>
+  <p>The same ideas as the first Post, written in Org.</p>
+</li>
+
+  <li class="post-row">
+  <a href="/blog/hello/">Hello</a>
+  <time datetime="2026-01-01">1 January 2026</time>
+  <p>A first Post, with an equation, a theorem and some code.</p>
+</li>
+
+</ul>
+
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== favicon.svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1a5fb4"/><path d="M9 9l7 8 7-8M16 17v7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+=== index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Site</title>
+<meta name="description" content="Notes on programming and mathematics."><link rel="canonical" href="https://example.com/">
+<meta property="og:url" content="https://example.com/">
+<meta property="og:title" content="My Site">
+<meta property="og:description" content="Notes on programming and mathematics."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<h1>My Site</h1>
+<p class="lede">Notes on programming and mathematics.</p><h2>Recent Posts</h2>
+<ul class="rows">
+  <li class="post-row">
+  <a href="/blog/hello-org/">Hello from Org</a>
+  <time datetime="2026-01-02">2 January 2026</time>
+  <p>The same ideas as the first Post, written in Org.</p>
+</li>
+
+  <li class="post-row">
+  <a href="/blog/hello/">Hello</a>
+  <time datetime="2026-01-01">1 January 2026</time>
+  <p>A first Post, with an equation, a theorem and some code.</p>
+</li>
+
+</ul>
+<p><a href="/blog/">Every Post</a> · <a href="/rss.xml">RSS</a></p>
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== projects/example/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Example project | My Site</title>
+<meta name="description" content="A project in a folder of its own, with an image beside it."><link rel="canonical" href="https://example.com/projects/example/">
+<meta property="og:url" content="https://example.com/projects/example/">
+<meta property="og:title" content="Example project">
+<meta property="og:description" content="A project in a folder of its own, with an image beside it."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/projects/" aria-current="true">Projects</a></li>
+      <li><a href="/tags/">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<article>
+  <header class="entry-header">
+    <h1>Example project</h1>
+    <p class="meta">A project in a folder of its own, with an image beside it. · <a href="https://github.com/example/example">Source</a></p>
+  </header>
+  <div class="prose">
+<p>A project whose text is <code>index.md</code> in its own folder, so its images sit beside it.</p>
+<p><img src="/assets/pipeline-d8c4d8647a890fe3.svg" width="640" height="160" alt="Three boxes in a row, joined by arrows: Markdown and Org, the Engine, and the Site" loading="eager" decoding="async"></p>
+<p>Replace this with what you made, why, and what you learned.</p>
+  </div>
+</article>
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== projects/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projects | My Site</title>
+<meta name="description" content="Notes on programming and mathematics."><link rel="canonical" href="https://example.com/projects/">
+<meta property="og:url" content="https://example.com/projects/">
+<meta property="og:title" content="Projects">
+<meta property="og:description" content="Notes on programming and mathematics."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/projects/" aria-current="page">Projects</a></li>
+      <li><a href="/tags/">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<h1>Projects</h1>
+<ul class="rows">
+  <li>
+    <a href="/projects/example/">Example project</a>
+    <p>A project in a folder of its own, with an image beside it.</p>
+  </li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== rss.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>My Site</title>
+<link>https://example.com/</link>
+<description>Notes on programming and mathematics.</description>
+<language>en</language>
+<item>
+<title>Hello from Org</title>
+<link>https://example.com/blog/hello-org/</link>
+<guid isPermaLink="true">https://example.com/blog/hello-org/</guid>
+<description>The same ideas as the first Post, written in Org.</description>
+<pubDate>Fri, 02 Jan 2026 00:00:00 GMT</pubDate>
+</item>
+<item>
+<title>Hello</title>
+<link>https://example.com/blog/hello/</link>
+<guid isPermaLink="true">https://example.com/blog/hello/</guid>
+<description>A first Post, with an equation, a theorem and some code.</description>
+<pubDate>Thu, 01 Jan 2026 00:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>
+=== sitemap-0.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://example.com/</loc></url>
+<url><loc>https://example.com/about/</loc></url>
+<url><loc>https://example.com/blog/</loc></url>
+<url><loc>https://example.com/blog/hello-org/</loc></url>
+<url><loc>https://example.com/blog/hello/</loc></url>
+<url><loc>https://example.com/projects/</loc></url>
+<url><loc>https://example.com/projects/example/</loc></url>
+<url><loc>https://example.com/tags/</loc></url>
+<url><loc>https://example.com/tags/meta/</loc></url>
+<url><loc>https://example.com/tags/org/</loc></url>
+</urlset>
+=== sitemap-index.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemap><loc>https://example.com/sitemap-0.xml</loc></sitemap>
+</sitemapindex>
+=== tags/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tags | My Site</title>
+<meta name="description" content="Notes on programming and mathematics."><link rel="canonical" href="https://example.com/tags/">
+<meta property="og:url" content="https://example.com/tags/">
+<meta property="og:title" content="Tags">
+<meta property="og:description" content="Notes on programming and mathematics."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/" aria-current="page">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<h1>Tags</h1>
+<ul class="rows">
+  <li><a href="/tags/meta/">meta</a> <span class="meta">2 Posts</span></li>
+  <li><a href="/tags/org/">org</a> <span class="meta">1 Post</span></li>
+</ul>
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== tags/meta/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tagged meta | My Site</title>
+<meta name="description" content="Notes on programming and mathematics."><link rel="canonical" href="https://example.com/tags/meta/">
+<meta property="og:url" content="https://example.com/tags/meta/">
+<meta property="og:title" content="Tagged meta">
+<meta property="og:description" content="Notes on programming and mathematics."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/" aria-current="true">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<h1>Tagged “meta”</h1>
+<ul class="rows">
+  <li class="post-row">
+  <a href="/blog/hello-org/">Hello from Org</a>
+  <time datetime="2026-01-02">2 January 2026</time>
+  <p>The same ideas as the first Post, written in Org.</p>
+</li>
+
+  <li class="post-row">
+  <a href="/blog/hello/">Hello</a>
+  <time datetime="2026-01-01">1 January 2026</time>
+  <p>A first Post, with an equation, a theorem and some code.</p>
+</li>
+
+</ul>
+
+<p><a href="/tags/">Every tag</a></p>
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>
+=== tags/org/index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tagged org | My Site</title>
+<meta name="description" content="Notes on programming and mathematics."><link rel="canonical" href="https://example.com/tags/org/">
+<meta property="og:url" content="https://example.com/tags/org/">
+<meta property="og:title" content="Tagged org">
+<meta property="og:description" content="Notes on programming and mathematics."><meta property="og:type" content="website">
+<meta property="og:site_name" content="My Site"><link rel="alternate" type="application/rss+xml" title="My Site" href="/rss.xml">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site-33f1394a0d3d10b9.css"><style>@view-transition{navigation:auto}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="site-title" href="/">My Site</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/projects/">Projects</a></li>
+      <li><a href="/tags/" aria-current="true">Tags</a></li>
+      <li><a href="/about/">About</a></li>
+    </ul>
+  </nav>
+</header>
+<main id="main">
+<h1>Tagged “org”</h1>
+<ul class="rows">
+  <li class="post-row">
+  <a href="/blog/hello-org/">Hello from Org</a>
+  <time datetime="2026-01-02">2 January 2026</time>
+  <p>The same ideas as the first Post, written in Org.</p>
+</li>
+
+</ul>
+
+<p><a href="/tags/">Every tag</a></p>
+</main>
+<footer class="site-footer">
+  <p>&copy; Your Name. <a href="/rss.xml">RSS</a></p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,58 @@
+---
+source: crates/yuanme/tests/cli.rs
+expression: site
+---
+{"body":null,"css":155,"estimated":["html","css"],"fonts":0,"html":171,"js":0,"math_font":0,"requests":2,"url":"/"}
+{"body":null,"css":155,"estimated":["html","css"],"fonts":0,"html":177,"js":0,"math_font":0,"requests":2,"url":"/404.html"}
+=== 404.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not found</title>
+<link rel="stylesheet" href="/assets/site-19c4fbc99f23e98d.css">
+</head>
+<body>
+<main>
+<h1>Not found</h1>
+<p>Nothing is here. <a href="/">Go to the home Page</a>.</p>
+</main>
+</body>
+</html>
+=== _headers
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+=== assets/site-19c4fbc99f23e98d.css
+:root{--lightningcss-light:initial;--lightningcss-dark: ;color-scheme:light dark;font-family:system-ui,sans-serif;line-height:1.5}@media (prefers-color-scheme:dark){:root{--lightningcss-light: ;--lightningcss-dark:initial}}body{color:canvastext;background:canvas;max-width:40rem;margin:0 auto;padding:2rem 1rem}
+=== index.html
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Site</title>
+<link rel="stylesheet" href="/assets/site-19c4fbc99f23e98d.css">
+</head>
+<body>
+<main>
+<h1>My Site</h1>
+<p>Change this Page in <code>templates/home.html</code>.</p>
+</main>
+</body>
+</html>
+=== sitemap-0.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://example.com/</loc></url>
+</urlset>
+=== sitemap-index.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<sitemap><loc>https://example.com/sitemap-0.xml</loc></sitemap>
+</sitemapindex>

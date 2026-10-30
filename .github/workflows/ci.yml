@@ -207,6 +207,34 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: node client.ts --yuanme ../../../../target/release/yuanme
 
+  # The Starters (#36): each, made with `yuanme init`, builds with no
+  # Diagnostic under --strict-budgets and matches its snapshot, and has no
+  # axe-core violation on any Page in light or dark. The blog checks its
+  # types, which downloads tsc, so its snapshot test is ignored in the test
+  # job. The release checks their LCP and CLS (release-smoke.yml).
+  starters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: cargo-nextest@0.9.148
+      - run: sudo apt-get install -y nasm
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: crates/yuanme/tests/starters/package-lock.json
+      - run: cargo nextest run --locked -p yuanme --run-ignored only -E 'test(=starters_build_clean_under_strict_budgets)'
+      - run: cargo build --locked -p yuanme
+      - working-directory: crates/yuanme/tests/starters
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          node starters.ts --yuanme ../../../../target/debug/yuanme
+
   # The Org parser's guarantees (#15): no input panics or fails except by
   # running out of fuel or nesting too deep, and none parses slower than
   # 1 ms/KB + 1 ms, scaled to the runner's speed. libFuzzer's

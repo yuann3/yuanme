@@ -555,9 +555,10 @@ fn docs_prints_pages_by_code() {
     );
 }
 
-/// Every file under `dir` but `.yuanme/`'s, with its text, and the Engine's
-/// version written as `[version]`, its release as `[release]` and the
-/// `yuanme = "X.Y"` it makes as `[X.Y]`, so a release changes no snapshot.
+/// Every file under `dir` but `.yuanme/`'s, with its text, or for one that
+/// isn't text its size, and the Engine's version written as `[version]`,
+/// its release as `[release]` and the `yuanme = "X.Y"` it makes as
+/// `[X.Y]`, so a release changes no snapshot.
 fn texts(dir: &Path) -> std::collections::BTreeMap<String, String> {
     let version = yuanme(dir, &["--version"]).stdout;
     let version = version.trim().strip_prefix("yuanme ").unwrap().to_string();
@@ -567,7 +568,10 @@ fn texts(dir: &Path) -> std::collections::BTreeMap<String, String> {
         .into_iter()
         .filter(|path| !path.starts_with(".yuanme/"))
         .map(|path| {
-            let text = fs::read_to_string(dir.join(&path)).unwrap();
+            let text = match String::from_utf8(fs::read(dir.join(&path)).unwrap()) {
+                Ok(text) => text,
+                Err(e) => format!("[{} bytes]\n", e.as_bytes().len()),
+            };
             let text = text
                 .replace(&version, "[version]")
                 .replace(&release, "[release]")
@@ -658,7 +662,8 @@ fn init_creates_a_site_that_checks_clean() {
 }
 
 /// `blog` is the default Starter (#36). Offline, with no `tsc`, it checks
-/// clean but for its types.
+/// clean but for its types; `starters_build_clean_under_strict_budgets`
+/// checks those.
 #[test]
 fn init_makes_a_blog_by_default() {
     let dir = tempfile::tempdir().unwrap();
@@ -679,6 +684,31 @@ fn init_makes_a_blog_by_default() {
     let out = yuanme_with(root, &["check", "--json"], &[("YUANME_TSC_BIN", &missing)]);
     let found: Vec<String> = codes(&out.stdout).into_iter().map(|(c, _)| c).collect();
     assert_eq!(found, ["asset/tool-unavailable"], "{}", out.stdout);
+}
+
+/// Each Starter is #15's Gates (#36): built with `--strict-budgets`, it
+/// reports no Diagnostic, and the Site it builds, with each Page's
+/// numbers against the Budgets, is its snapshot. `blog` checks its types,
+/// which downloads `tsc`, so CI's starters job runs this.
+#[test]
+#[ignore = "downloads tsc"]
+fn starters_build_clean_under_strict_budgets() {
+    for starter in ["blog", "minimal"] {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        assert_eq!(json(root, &["init", "--starter", starter]).0, 0);
+        let (code, events) = json(root, &["build", "--strict-budgets"]);
+        assert_eq!((code, events.len()), (0, 2), "{starter}: {}", show(&events));
+        let report: Value =
+            serde_json::from_str(&fs::read_to_string(root.join(".yuanme/report.json")).unwrap())
+                .unwrap();
+        let mut site = String::new();
+        for page in report["budgets"]["pages"].as_array().unwrap() {
+            site.push_str(&format!("{page}\n"));
+        }
+        site.push_str(&show_files(&texts(&root.join("dist"))));
+        insta::assert_snapshot!(format!("starter_{starter}"), site);
+    }
 }
 
 #[test]
