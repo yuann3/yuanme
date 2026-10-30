@@ -235,6 +235,20 @@ pub enum Adapter {
 }
 
 impl Adapter {
+    pub const ALL: [Adapter; 6] = [
+        Adapter::Cloudflare,
+        Adapter::Netlify,
+        Adapter::Vercel,
+        Adapter::GithubPages,
+        Adapter::CloudflarePages,
+        Adapter::Static,
+    ];
+
+    /// The adapter `[host] adapter` names.
+    pub fn named(name: &str) -> Option<Adapter> {
+        Adapter::ALL.into_iter().find(|a| a.name() == name)
+    }
+
     /// As `[host] adapter` names it.
     pub fn name(self) -> &'static str {
         match self {
@@ -833,14 +847,9 @@ fn host(host: Option<&Table<'_>>, checker: &mut Checker) -> Host {
             redirects: Vec::new(),
         };
     };
-    let adapter = match string(host, "adapter").as_deref() {
-        None | Some("cloudflare") => Adapter::Cloudflare,
-        Some("netlify") => Adapter::Netlify,
-        Some("vercel") => Adapter::Vercel,
-        Some("github-pages") => Adapter::GithubPages,
-        Some("cloudflare-pages") => Adapter::CloudflarePages,
-        Some("static") => Adapter::Static,
-        Some(_) => unreachable!("checked as a choice"),
+    let adapter = match string(host, "adapter") {
+        None => Adapter::Cloudflare,
+        Some(name) => Adapter::named(&name).expect("checked as a choice"),
     };
     let precompress = boolean(host, "precompress");
     if precompress && adapter != Adapter::Static {
