@@ -129,8 +129,10 @@ fn untimed() -> TokenizeOptions {
 
 thread_local! {
     // ferriki's Highlighter is !Send, so each rayon thread keeps its own
-    // (ADR 0014).
-    static HIGHLIGHTER: RefCell<Highlighter> = RefCell::new(highlighter());
+    // (ADR 0014), for the grammar it last highlighted. One that kept every
+    // grammar it compiled held about 250 MB a thread on a cold build of the
+    // Scale Site (#92), so callers highlight blocks by grammar.
+    static HIGHLIGHTER: RefCell<Option<(String, Highlighter)>> = const { RefCell::new(None) };
 }
 
 fn highlighter() -> Highlighter {
@@ -164,7 +166,13 @@ pub fn block(grammar: Option<&str>, source: &str) -> String {
         None => lines(source)
             .map(|line| vec![(plain, line.to_string())])
             .collect(),
-        Some(grammar) => HIGHLIGHTER.with_borrow_mut(|h| {
+        Some(grammar) => HIGHLIGHTER.with_borrow_mut(|slot| {
+            if slot.as_ref().is_none_or(|(g, _)| g != grammar) {
+                // Dropped first, so a thread never holds two.
+                *slot = None;
+                *slot = Some((grammar.to_string(), highlighter()));
+            }
+            let (_, h) = slot.as_mut().expect("set above");
             let result = h
                 .highlight_with_themes_and_options(
                     source,

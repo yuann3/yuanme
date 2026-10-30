@@ -3,6 +3,8 @@
 //! rendered and coloured through the stylesheet, must give each character
 //! the colours and font style Shiki's tokens give it (tests/shiki/).
 
+use std::alloc::{GlobalAlloc, Layout, System};
+use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
@@ -15,6 +17,41 @@ use yuanme_diag::Files;
 use yuanme_render::highlight;
 
 const CORPUS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../corpus");
+
+thread_local! {
+    /// Bytes allocated on this thread less those freed on it.
+    static HELD: Cell<isize> = const { Cell::new(0) };
+}
+
+/// Counts what each thread holds, for the highlighter's memory.
+struct Counting;
+
+fn count(bytes: usize, sign: isize) {
+    // Not while a thread's locals are torn down.
+    let _ = HELD.try_with(|h| h.set(h.get() + sign * bytes as isize));
+}
+
+// SAFETY: every call is passed on to the system allocator as it is.
+unsafe impl GlobalAlloc for Counting {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        count(layout.size(), 1);
+        unsafe { System.alloc(layout) }
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        count(layout.size(), -1);
+        unsafe { System.dealloc(ptr, layout) }
+    }
+
+    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, size: usize) -> *mut u8 {
+        count(layout.size(), -1);
+        count(size, 1);
+        unsafe { System.realloc(ptr, layout, size) }
+    }
+}
+
+#[global_allocator]
+static COUNTING: Counting = Counting;
 
 fn files(dir: &Path) -> Vec<PathBuf> {
     let mut out = Vec::new();
@@ -271,6 +308,31 @@ fn compare(
         }
     }
     (None, checked)
+}
+
+/// A thread's highlighter keeps what it compiled for only the grammar it
+/// last used. Kept for every grammar, it was about 250 MB a thread on a
+/// cold build of the Scale Site, and over 200 MB here (#92).
+#[test]
+fn a_thread_holds_one_grammar_at_a_time() {
+    let mut first: BTreeMap<&str, String> = BTreeMap::new();
+    for (grammar, text) in blocks() {
+        first.entry(grammar).or_insert(text);
+    }
+    assert!(first.len() > 10, "only {} grammars", first.len());
+    let before = HELD.get();
+    // Twice, since a grammar loaded after another was compiled clears it.
+    for _ in 0..2 {
+        for (grammar, text) in &first {
+            highlight::block(Some(grammar), text);
+        }
+    }
+    let held = (HELD.get() - before) as f64 / 1e6;
+    assert!(
+        held < 50.0,
+        "{held:.0} MB held after {} grammars",
+        first.len()
+    );
 }
 
 /// #16's order: a Shiki name or alias, then Org's names for its modes,
