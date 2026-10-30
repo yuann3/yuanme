@@ -291,9 +291,7 @@ fn measure_one(name: &str, sides: &[Side], work: &Path) -> (Vec<f64>, Option<Vec
         "incremental rebuild" => sides.iter().map(edits).collect(),
         _ => {
             let (runs, warmup, args) = match name {
-                // The warmup encodes again any image `yuanme check` aged
-                // out of the cache, since check reads none.
-                "cold build" => (5, 1, "build -q"),
+                "cold build" => (5, 0, "build -q"),
                 "warm build" => (10, 1, "build -q"),
                 "check" => (10, 1, "check -q"),
                 "dev cold start" => (10, 1, ""),
