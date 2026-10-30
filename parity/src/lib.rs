@@ -20,7 +20,7 @@ use url::Url;
 /// rule normalizes both sides alike, so it lets a difference through and
 /// never requires one: the baseline compared with itself passes under all
 /// of them.
-const RULES: [&str; 12] = [
+const RULES: [&str; 17] = [
     "apex-origin",
     "trailing-slash-hrefs",
     "assets-dir",
@@ -32,8 +32,25 @@ const RULES: [&str; 12] = [
     "image-formats",
     "self-hosted-fonts",
     "immutable-assets",
+    "og-image",
+    "reading-time",
+    "collection-order",
+    "not-found-canonical",
+    "dead-links",
     "class-highlighting",
 ];
+
+/// Links the port points somewhere real, by the Page they are on: (page,
+/// href as written, what it became), under `dead-links`.
+const RETARGETED: [(&str, &str, &str); 1] = [(
+    "/projects/hrust/index.html",
+    "LICENSE",
+    "https://github.com/yuann3/http-rust/blob/master/LICENSE",
+)];
+
+/// The Pages whose lists the Engine orders by its Collection rules, under
+/// `collection-order`: their `<ul>`s are compared as sets of items.
+const REORDERED: [&str; 1] = ["/tags/index.html"];
 
 /// The Reference site's origin. URLs on it are internal.
 const ORIGIN: &str = "https://eyuan.me";
@@ -82,6 +99,7 @@ static CSS_URL: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"url\(\s*(?:"([^"]*)"|'([^']*)'|([^'")\s]+))\s*\)"#).unwrap());
 /// The Engine's image names keep the width: `park-480`, from `park.jpg`.
 static WIDTH: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(.+)-[0-9]+$").unwrap());
+static MINUTES: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[0-9]+ min read$").unwrap());
 
 #[derive(Debug, PartialEq)]
 pub enum Difference {
@@ -390,7 +408,7 @@ impl Side {
 
     /// `raw`, read on the Page or stylesheet at `base`, if it is internal.
     fn reference(&self, raw: &str, base: &str) -> Option<Ref> {
-        let raw = raw.trim();
+        let raw = self.retarget(raw.trim(), base);
         if raw.is_empty() || raw.starts_with('#') {
             return None;
         }
@@ -425,6 +443,20 @@ impl Side {
         })
     }
 
+    /// `raw`, or where the port points it instead (`dead-links`).
+    fn retarget<'a>(&self, raw: &'a str, page: &str) -> &'a str {
+        match RETARGETED
+            .iter()
+            .find(|(p, from, _)| *p == page && *from == raw)
+        {
+            Some(&(_, _, to)) => {
+                self.tolerate("dead-links", raw);
+                to
+            }
+            None => raw,
+        }
+    }
+
     fn add_ref(&mut self, raw: &str, base: &str) {
         if let Some(r) = self.reference(raw, base) {
             self.refs.push(r);
@@ -450,7 +482,7 @@ impl Side {
         match self.reference(raw, base) {
             Some(r) if r.absolute => format!("{ORIGIN}{}", r.target),
             Some(r) => r.target,
-            None => raw.to_string(),
+            None => self.retarget(raw.trim(), base).to_string(),
         }
     }
 
@@ -474,6 +506,10 @@ impl Side {
                 .map(|a| a.value.to_string())
                 .unwrap_or_default()
         };
+        if let Some(id) = left_out(&tag, &attr, page) {
+            self.tolerate(id, &format!("{page}: {tag}"));
+            return;
+        }
         let mut line = tag.clone();
         let mut list: Vec<(String, String)> = Vec::new();
         for a in attrs.borrow().iter() {
@@ -510,6 +546,12 @@ impl Side {
                 }
                 "content" if tag == "meta" && value.starts_with("http") => {
                     value = self.url_value(&value, page);
+                }
+                "content"
+                    if attr("property") == "twitter:card" && value == "summary_large_image" =>
+                {
+                    self.tolerate("og-image", &value);
+                    value = "summary".into();
                 }
                 "class" => {
                     let mut tokens: Vec<&str> = value.split_whitespace().collect();
@@ -598,6 +640,25 @@ impl Side {
                     })
                     .collect();
                 let last = kept.len().saturating_sub(1);
+                // A list whose order is the Engine's (`collection-order`):
+                // its items, rendered, as a sorted list.
+                if tag == "ul" && REORDERED.contains(&page) {
+                    let mut items: Vec<String> = kept
+                        .iter()
+                        .map(|child| {
+                            let mut one = String::new();
+                            self.render(child, page, depth + 1, &mut one);
+                            one
+                        })
+                        .collect();
+                    let first = items.clone();
+                    items.sort();
+                    if items != first {
+                        self.tolerate("collection-order", page);
+                    }
+                    out.extend(items);
+                    return;
+                }
                 for (i, child) in kept.iter().enumerate() {
                     let NodeData::Text { contents } = &child.data else {
                         self.render(child, page, depth + 1, out);
@@ -616,6 +677,10 @@ impl Side {
                     }
                     if i == last {
                         t = t.trim_end().to_string();
+                    }
+                    if MINUTES.is_match(&t) {
+                        self.tolerate("reading-time", &t);
+                        t = "N min read".into();
                     }
                     indent(out, depth + 1, &json(&t));
                 }
@@ -639,6 +704,25 @@ fn sheet_bundle(href: &str, text: &str) -> Option<&'static str> {
         Some("scoped-styles")
     } else {
         None
+    }
+}
+
+/// The Parity exception under which an element is left out of the DOM
+/// comparison whole, links and all: the head metas and links the port drops
+/// or adds.
+fn left_out(tag: &str, attr: &dyn Fn(&str) -> String, page: &str) -> Option<&'static str> {
+    let property = attr("property");
+    match tag {
+        "meta" if matches!(property.as_str(), "og:image" | "twitter:image") => Some("og-image"),
+        "link" if attr("rel") == "alternate" && attr("type") == "application/rss+xml" => {
+            Some("head-metas")
+        }
+        // A 404 Page has no URL of its own to name.
+        "link" if page == "/404.html" && attr("rel") == "canonical" => Some("not-found-canonical"),
+        "meta" if page == "/404.html" && matches!(property.as_str(), "og:url" | "twitter:url") => {
+            Some("not-found-canonical")
+        }
+        _ => None,
     }
 }
 

@@ -34,7 +34,7 @@ node parity/browser/parity.ts check target/baseline target/site --engines chromi
 
 Each rule that lets a difference through names its exception id, and a rule whose id is missing from `docs/parity-exceptions.md` fails the test before it compares anything. A rule normalizes both sides alike, so it never requires a difference and the baseline compared with itself still passes. The rules so far:
 
-- URLs and DOM (`src/lib.rs`): `apex-origin`, `trailing-slash-hrefs`, `assets-dir`, `robots-txt`, `unreferenced-files`, `head-metas`, `scoped-styles`, `single-initial-script`, `image-formats`, `self-hosted-fonts`, `immutable-assets`, `class-highlighting`.
+- URLs and DOM (`src/lib.rs`): `apex-origin`, `trailing-slash-hrefs`, `assets-dir`, `robots-txt`, `unreferenced-files`, `head-metas`, `scoped-styles`, `single-initial-script`, `image-formats`, `self-hosted-fonts`, `immutable-assets`, `class-highlighting`, `og-image`, `reading-time`, `collection-order`, `not-found-canonical`, `dead-links`.
 - Pixels (`browser/pixels.ts`): the 0.25 threshold inside raster images, `about-image-bytes` and `hero-images`.
 - Behaviour (`browser/feel.ts`): `route-announcer`, `panel-scroll`, `single-initial-script`, and `router-events` for the probe's event names.
 

@@ -344,3 +344,91 @@ fn the_engines_assets_stand_in_for_astros() {
         assert_eq!(dom_pages(&run(&baseline, &changed)), ["/index.html"], "{changed}");
     }
 }
+
+#[test]
+fn the_ports_markup_and_content_differences_name_their_exception() {
+    let tags = |items: &str| {
+        format!(
+            "=== tags/index.html\n{}",
+            page("", &format!("<ul>{items}</ul>"))
+        )
+    };
+    let (life, c) = (
+        r#"<li><a href="/tags/life/">#life</a></li>"#,
+        r#"<li><a href="/tags/c/">#c</a></li>"#,
+    );
+    let pages =
+        "=== tags/life/index.html\n<!DOCTYPE html>\n=== tags/c/index.html\n<!DOCTYPE html>\n";
+    let baseline = format!(
+        "=== index.html\n{}=== 404.html\n{}=== projects/hrust/index.html\n{}{}{pages}",
+        page(
+            r#"<meta property="og:image" content="https://www.eyuan.me/blog-placeholder-1.jpg"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:image" content="https://www.eyuan.me/blog-placeholder-1.jpg">"#,
+            "<p><span>8 min read</span></p>",
+        ),
+        page(
+            r#"<link rel="canonical" href="https://www.eyuan.me/404/"><meta property="og:url" content="https://www.eyuan.me/404"><meta property="twitter:url" content="https://www.eyuan.me/404">"#,
+            "",
+        ),
+        page("", r#"<a href="LICENSE">LICENSE</a>"#),
+        tags(&format!("{life}{c}")),
+    );
+    let candidate = format!(
+        "=== index.html\n{}=== 404.html\n{}=== projects/hrust/index.html\n{}{}{pages}",
+        page(
+            r#"<meta property="twitter:card" content="summary"><link rel="alternate" type="application/rss+xml" title="Eyuan" href="/rss.xml">"#,
+            "<p><span>9 min read</span></p>",
+        ),
+        page("", ""),
+        page(
+            "",
+            r#"<a href="https://github.com/yuann3/http-rust/blob/master/LICENSE">LICENSE</a>"#,
+        ),
+        tags(&format!("{c}{life}")),
+    );
+    let report = run(&baseline, &candidate);
+    assert_eq!(report.differences, []);
+    for id in [
+        "og-image",
+        "head-metas",
+        "reading-time",
+        "not-found-canonical",
+        "dead-links",
+        "collection-order",
+    ] {
+        assert!(
+            report.tolerated.contains_key(id),
+            "{id}: {:?}",
+            report.tolerated
+        );
+    }
+
+    for changed in [
+        // Only the reading time's number, only the tags index's order, and
+        // only the 404 Page's own URL.
+        candidate.replace("9 min read", "9 min to read"),
+        candidate.replace(&tags(&format!("{c}{life}")), &tags(c)),
+        candidate.replace(
+            "<title>T</title><meta property=\"twitter:card\"",
+            "<title>T</title><link rel=\"canonical\" href=\"https://eyuan.me/\"><meta property=\"twitter:card\"",
+        ),
+        candidate.replace("http-rust/blob/master/LICENSE", "http-rust"),
+    ] {
+        assert_ne!(changed, candidate);
+        assert!(!run(&baseline, &changed).differences.is_empty(), "{changed}");
+    }
+    let reordered = baseline.replace(
+        "=== index.html\n",
+        &format!(
+            "=== blog/index.html\n{}=== index.html\n",
+            page("", &format!("<ul>{life}{c}</ul>"))
+        ),
+    );
+    let swapped = candidate.replace(
+        "=== index.html\n",
+        &format!(
+            "=== blog/index.html\n{}=== index.html\n",
+            page("", &format!("<ul>{c}{life}</ul>"))
+        ),
+    );
+    assert_eq!(dom_pages(&run(&reordered, &swapped)), ["/blog/index.html"]);
+}

@@ -46,6 +46,7 @@ Escaping style, kept comments, attribute order and whitespace all decode to the 
 | `trailing-slash-hrefs` | Some nav and project links have no trailing slash and cost a 301 | Every internal href is `/x/` | #10 |
 | `apex-origin` | `https://www.eyuan.me` in canonical, sitemap and RSS | `https://eyuan.me` | #10 |
 | `immutable-assets` | `max-age=14400` from Cloudflare's default | `/assets/` gets `public, max-age=31536000, immutable` through the host adapter, in the `_headers` file it writes | #10 |
+| `not-found-canonical` | The 404 Page's canonical link, `og:url` and `twitter:url` are `https://www.eyuan.me/404/`, itself a 404 | The 404 Page names no URL of its own | [#75](https://github.com/yuann3/yuanme/issues/75) |
 | `robots-txt` | No `robots.txt` | `robots.txt` with the sitemap URL | #23 |
 | `unreferenced-files` | Atkinson fonts, full-size About AVIF/WebP and the copied originals are published | Not published. `ica.pdf` is kept | #23 |
 | `llms-txt` | "Archive by year" label over a flat list | An ordinary Route Template with the same content and a correct label | #23 |
@@ -60,6 +61,7 @@ No tag URL changes: the Slugs of `C`, `Programming`, `Life` and `Draft` equal to
 | `collection-order` | First-seen order, `/tags` ties as `life, draft, c, programming` | Collection `sort` rules; ties by Slug: `c, draft, life, programming` | #18, [#19](https://github.com/yuann3/yuanme/issues/19) |
 | `rss` | Includes Drafts and hidden Posts, unsorted | Published, listed Entries, newest first | #19, #23 |
 | `rss-guid` | `<guid isPermaLink="true">https://www.eyuan.me/blog/<slug>/</guid>` | `<guid isPermaLink="false">` with the same `www` string, while `<link>` uses the apex origin. Feed readers then don't show every Post again after `apex-origin`. The Reference site's feed Template overrides the built-in one to do this | [#39](https://github.com/yuann3/yuanme/issues/39) |
+| `dead-links` | The HRust write-up's `[LICENSE](LICENSE)` is a relative link to nothing, a 404 on the live site | It links to the repository's LICENSE on GitHub. The Engine fails a link that leads nowhere (`link/unresolved`) | [#75](https://github.com/yuann3/yuanme/issues/75) |
 | `heading-ids` | Duplicate headings record `ruskey-` but emit `ruskey` | github-slugger numbering (`ruskey`, `ruskey-1`) | [#2](https://github.com/yuann3/yuanme/issues/2), #23 |
 | `reading-time` | Counts glued blocks: 8 and 2 min | Every visible word at 200 wpm, rounded up, at least 1: 9 and 2 min | #23 |
 | `class-highlighting` | Shiki inline-style dual-theme spans in `<pre class="astro-code …" style=…>`, a `<span class="line">` per line | `<pre class="y-code" tabindex="0" data-language>` with one class per (light, dark, font style) from ferriki, with Shiki 3.19's grammars and themes pinned. Text in the theme's own colours, blank runs and line breaks have no span. The Engine links its `code.css` at the end of the head of each Page with code. A pin bump that changes colours is accepted through the pixel diff and noted here | [#5](https://github.com/yuann3/yuanme/issues/5), #23, [#27](https://github.com/yuann3/yuanme/issues/27), [#53](https://github.com/yuann3/yuanme/issues/53) |
