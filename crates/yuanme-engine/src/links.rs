@@ -76,12 +76,15 @@ pub(crate) fn links(
                 continue;
             };
             let raw = &text[link.at.clone()];
-            let (span, found) = span(raw, used, entries.get(output.as_str()), templates, sources);
+            // Searching the Templates and the Entry for each link costs
+            // more than the rest of the pass, so only a Diagnostic does.
+            let place = || span(raw, used, entries.get(output.as_str()), templates, sources);
             let fixed = |to: &str| {
                 let prefix = if absolute { origin } else { "" };
                 format!("{prefix}{to}{}", suffix(url))
             };
             let redirected = |to: String| {
+                let (span, found) = place();
                 let fix = fixed(&to);
                 let d = Diagnostic::warning(
                     &codes::LINK_REDIRECTED,
@@ -102,7 +105,7 @@ pub(crate) fn links(
             if link.loaded
                 && let Some(h) = heavy.get(&path[1..])
             {
-                let d = images::unoptimized(url, h, span.clone());
+                let d = images::unoptimized(url, h, place().0);
                 push(d.note(format!("in the Page written to `{output}`")));
             }
             let d = match verdict(&path, files, images, config) {
@@ -113,7 +116,7 @@ pub(crate) fn links(
                     let d = Diagnostic::warning(
                         &codes::LINK_BROKEN,
                         format!("`{url}` is no file of the Site"),
-                        span.clone(),
+                        place().0,
                     );
                     match config::similar(&path, urls.iter().map(String::as_str)) {
                         Some(near) => d.help(format!("did you mean `{}`?", fixed(near))),
