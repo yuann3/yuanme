@@ -193,22 +193,25 @@ pub(crate) fn assets(
     // same Sidecar scripts share one.
     let router = config.router == RouterMode::Swap;
     let mut page_scripts: Vec<Vec<String>> = Vec::new();
+    // By Template, since every Page renders a few of the same ones.
+    let mut sidecar_scripts: BTreeMap<&str, Vec<String>> = BTreeMap::new();
     let page_script: Vec<Option<usize>> = pages
         .iter()
         .zip(&scans)
         .map(|(page, scan)| {
             scan.as_ref()?.stylesheet_at?;
-            let sidecars: Vec<String> = page
-                .templates
-                .iter()
-                .flat_map(|t| {
+            let mut sidecars = Vec::new();
+            for t in &page.templates {
+                let found = sidecar_scripts.entry(t).or_insert_with(|| {
                     let stem = t.rsplit_once('.').map_or(&**t, |(s, _)| s);
                     scripts::EXTENSIONS
                         .iter()
-                        .map(move |e| format!("templates/{stem}{e}"))
-                })
-                .filter(|path| inputs.files.contains_key(path))
-                .collect();
+                        .map(|e| format!("templates/{stem}{e}"))
+                        .filter(|path| inputs.files.contains_key(path))
+                        .collect()
+                });
+                sidecars.extend(found.iter().cloned());
+            }
             if sidecars.is_empty() && !router {
                 return None;
             }
@@ -409,7 +412,7 @@ pub(crate) fn assets(
     let page_chunk = |i: usize| scripts.entries[script_entries.len() + i];
 
     let pages = pages
-        .into_iter()
+        .into_par_iter()
         .zip(scans)
         .zip(edits)
         .zip(page_script)
