@@ -1,0 +1,6 @@
+# The Reference site's port (#39): the commit of eyuan.me's `branch` that
+# the parity test builds with yuanme and checks against the Parity baseline
+# (parity/baseline.lock). Bump `rev` with each change to the port.
+repository = "yuann3/eyuan.me"
+branch = "yuanme"
+rev = "25198616b271cd21a2eddf9af7f60b6d772295dc"

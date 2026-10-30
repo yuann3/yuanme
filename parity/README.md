@@ -28,7 +28,7 @@ node parity/browser/parity.ts check target/baseline target/site --engines chromi
 
 `build` runs `yuanme build --json --out DIR` and reads its `build-finished` event; the build report is in the project's `.yuanme/report.json`. Failing screenshots are written to `--out` as the baseline's, the candidate's and a diff. `--only pixels` or `--only feel` runs one of the two browser checks.
 
-`self-test BASELINE`, in both tools, compares the baseline with itself (two renders, in the browser) and then seeds changes into a copy: those it must catch, and those that decode to the same DOM or that an exception covers, which it must let through. CI runs it (`.github/workflows/parity.yml`): Chromium on every push, all three engines when called with `engines`.
+`self-test BASELINE`, in both tools, compares the baseline with itself (two renders, in the browser) and then seeds changes into a copy: those it must catch, and those that decode to the same DOM or that an exception covers, which it must let through. CI runs it (`.github/workflows/parity.yml`): Chromium on every push, all three engines when called with `engines`. It then builds the eyuan.me commit that `reference-site.lock` pins and runs `check` and the browser's `check --only pixels` on it.
 
 ## Tolerating a difference
 
