@@ -104,7 +104,9 @@ fn subset(cache: &mut Cache, chars: &BTreeSet<char>) -> Arc<[u8]> {
 
 /// Whether an HTML Page has a `<math>` element.
 fn has_math(page: &[u8]) -> bool {
-    page.windows(6).any(|w| {
-        w[..5].eq_ignore_ascii_case(b"<math") && matches!(w[5], b'>' | b' ' | b'\n' | b'\t')
+    memchr::memchr_iter(b'<', page).any(|at| {
+        page.get(at + 1..at + 6).is_some_and(|tag| {
+            tag[..4].eq_ignore_ascii_case(b"math") && matches!(tag[4], b'>' | b' ' | b'\n' | b'\t')
+        })
     })
 }

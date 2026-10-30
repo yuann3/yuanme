@@ -60,13 +60,10 @@ pub(crate) fn link(pages: Vec<(String, Vec<u8>)>, assets: Vec<Asset>) -> BTreeMa
 fn substitute(bytes: &[u8], urls: &[String]) -> Vec<u8> {
     let mut out = Vec::with_capacity(bytes.len());
     let mut rest = bytes;
-    while let Some(start) = rest.iter().position(|&b| b == 0) {
+    while let Some(start) = memchr::memchr(0, rest) {
         out.extend_from_slice(&rest[..start]);
         let after = &rest[start + 1..];
-        let end = after
-            .iter()
-            .position(|&b| b == 0)
-            .expect("a placeholder is closed");
+        let end = memchr::memchr(0, after).expect("a placeholder is closed");
         let id: usize = std::str::from_utf8(&after[..end])
             .ok()
             .and_then(|p| p.strip_prefix("asset:"))
