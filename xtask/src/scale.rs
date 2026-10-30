@@ -125,6 +125,11 @@ pub fn generate(out: &Path) -> io::Result<()> {
     let mut config = fs::read_to_string(out.join("yuanme.toml"))?;
     config.push_str("\n[routes.home]\npath = \"/\"\ntemplate = \"about.html\"\n");
     config.push_str("\n[feeds.rss]\ncollections = [\"posts\"]\npath = \"/rss.xml\"\n");
+    // The Reference site's outputs, PhotoPile's (#15's spike): #15's 75 ms
+    // per output was measured on them, not on the default widths.
+    config.push_str(
+        "\n[images]\nwidths = [160, 240, 320, 480, 640]\nformats = [\"avif\", \"webp\"]\n",
+    );
     fs::write(out.join("yuanme.toml"), config)?;
     fs::write(out.join("data/photos.yaml"), "[]\n")?;
     let lrle = fs::read_to_string(out.join("content/projects/lrle.md"))?;
