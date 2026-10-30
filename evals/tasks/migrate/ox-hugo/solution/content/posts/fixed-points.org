@@ -1,0 +1,19 @@
+#+TITLE: Fixed points
+#+DATE: 2023-06-12
+#+DESCRIPTION: Iterating a contraction until it stops moving.
+#+FILETAGS: :math:
+
+A fixed point of \(f\) is an \(x\) with \(f(x) = x\). For a contraction
+on a complete metric space there is exactly one, and iterating \(f\) from
+anywhere converges to it:
+
+\begin{equation}
+x_{n+1} = f(x_n) \to x^\ast \label{eq:iterate}
+\end{equation}
+
+#+begin_src python
+def fixed_point(f, x, tol=1e-12):
+    while abs(f(x) - x) > tol:
+        x = f(x)
+    return x
+#+end_src

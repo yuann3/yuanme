@@ -1,0 +1,42 @@
+#+hugo_base_dir: ../hugo-site
+#+hugo_section: posts
+#+author: Robin
+
+* Posts
+** DONE Hello, Hugo                                                   :meta:
+:PROPERTIES:
+:EXPORT_FILE_NAME: hello-hugo
+:EXPORT_DATE: 2023-04-01
+:END:
+
+My first Post, written in Org and exported to Hugo with ox-hugo. Every
+Post is a subtree of this one file.
+
+** DONE Fixed points                                                  :math:
+:PROPERTIES:
+:EXPORT_FILE_NAME: fixed-points
+:EXPORT_DATE: 2023-06-12
+:EXPORT_DESCRIPTION: Iterating a contraction until it stops moving.
+:END:
+
+A fixed point of \(f\) is an \(x\) with \(f(x) = x\). For a contraction
+on a complete metric space there is exactly one, and iterating \(f\) from
+anywhere converges to it:
+
+\begin{equation}
+x_{n+1} = f(x_n) \to x^\ast \label{eq:iterate}
+\end{equation}
+
+#+begin_src python
+def fixed_point(f, x, tol=1e-12):
+    while abs(f(x) - x) > tol:
+        x = f(x)
+    return x
+#+end_src
+
+** TODO Notes on monads
+:PROPERTIES:
+:EXPORT_FILE_NAME: monads
+:END:
+
+Not ready yet.

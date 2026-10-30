@@ -1,0 +1,7 @@
+#+TITLE: Hello, Hugo
+#+DATE: 2023-04-01
+#+DESCRIPTION: My first Post.
+#+FILETAGS: :meta:
+
+My first Post, written in Org and exported to Hugo with ox-hugo. Every
+Post is a subtree of this one file.

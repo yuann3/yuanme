@@ -1,0 +1,6 @@
+#+TITLE: Notes on monads
+#+DATE: 2026-10-30
+#+DESCRIPTION: Not ready yet.
+#+DRAFT: true
+
+Not ready yet.
