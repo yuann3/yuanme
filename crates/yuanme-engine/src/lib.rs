@@ -476,6 +476,10 @@ fn resolve(
     }
     let is_file = |p: &str| inputs.files.contains_key(p);
     let is_dir = |d: &str| inputs.is_dir(d);
+    let entries = entries
+        .into_iter()
+        .map(|(c, file)| site::read(config, &c, file, sources, &is_file))
+        .collect();
     let project = Project {
         files: sources,
         entries,
@@ -483,7 +487,7 @@ fn resolve(
         is_file: &is_file,
         is_dir: &is_dir,
     };
-    site::resolve(config, &project, drafts)
+    site::resolve(config, project, drafts)
 }
 
 /// A Static file and a Route that would write the same output path (#18).

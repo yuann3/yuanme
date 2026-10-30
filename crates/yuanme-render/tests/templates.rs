@@ -147,9 +147,13 @@ fn resolve(written: &[(String, String)]) -> Resolved {
         .collect();
     let is_file = |p: &str| paths.contains(&p);
     let is_dir = |d: &str| paths.iter().any(|p| p.starts_with(&format!("{d}/")));
+    let entries = entries
+        .into_iter()
+        .map(|(c, file)| site::read(&config, &c, file, &files, &is_file))
+        .collect();
     let (site, diagnostics) = site::resolve(
         &config,
-        &Project {
+        Project {
             files: &files,
             entries,
             data,

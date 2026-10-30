@@ -60,6 +60,10 @@ fn resolve(fixture: &str, drafts: bool) -> (Files, Option<Site>, Vec<Diagnostic>
             .any(|(p, _)| p.starts_with(d) && p[d.len()..].starts_with('/'))
     };
     let (site, diagnostics) = {
+        let entries = entries
+            .into_iter()
+            .map(|(c, file)| site::read(&config, &c, file, &files, &is_file))
+            .collect();
         let project = Project {
             files: &files,
             entries,
@@ -67,7 +71,7 @@ fn resolve(fixture: &str, drafts: bool) -> (Files, Option<Site>, Vec<Diagnostic>
             is_file: &is_file,
             is_dir: &is_dir,
         };
-        site::resolve(&config, &project, drafts)
+        site::resolve(&config, project, drafts)
     };
     (files, site, diagnostics)
 }

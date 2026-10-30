@@ -79,8 +79,8 @@ pub enum RouteKind {
 /// What the build reads, besides Site config.
 pub struct Project<'a> {
     pub files: &'a Files,
-    /// Content files, by Collection.
-    pub entries: Vec<(String, FileId)>,
+    /// Every content file, as [`read`] reads it.
+    pub entries: Vec<(Option<Entry>, Vec<Diagnostic>)>,
     pub data: Vec<FileId>,
     pub is_file: &'a dyn Fn(&str) -> bool,
     pub is_dir: &'a dyn Fn(&str) -> bool,
@@ -149,11 +149,76 @@ pub fn sources<'p>(
     (entries, data)
 }
 
+/// Reads the content file `file`, of `collection`, into an Entry: `None`
+/// if it has an error. It reads nothing but the file, its path, Site config
+/// and what `is_file` answers, so a cache of Entries keys them by those
+/// (ADR 0011).
+pub fn read(
+    config: &Config,
+    collection: &str,
+    file: FileId,
+    files: &Files,
+    is_file: &dyn Fn(&str) -> bool,
+) -> (Option<Entry>, Vec<Diagnostic>) {
+    let path = files.path(file);
+    let text = files.text(file);
+    let builtin = pages();
+    let c = config.collections.get(collection).unwrap_or(&builtin);
+    let timezone = TimeZone::get(&config.site.timezone).expect("config checked the zone");
+    let taxonomies: Vec<(&str, &Taxonomy)> = config
+        .taxonomies
+        .iter()
+        .filter(|(_, t)| t.collections.iter().any(|n| n == collection))
+        .map(|(n, t)| (n.as_str(), t))
+        .collect();
+    let dir = path.rsplit_once('/').map_or("", |(d, _)| d);
+    let mut found = Vec::new();
+    // Each file is its own boundary, so a crash in a parser fails that
+    // file and the rest are still checked (#15).
+    let read = yuanme_diag::catch_panic(files, file, || {
+        let mut cx = Cx {
+            file,
+            diagnostics: &mut found,
+            timezone: &timezone,
+            dir,
+            is_file,
+        };
+        if path.ends_with(".org") {
+            let read = org::read(text, file, &config.math);
+            cx.diagnostics.extend(read.diagnostics);
+            // A file that didn't parse has no keywords to check.
+            read.document.as_ref()?;
+            let head = org::head(
+                &read.keywords,
+                read.preamble,
+                text.len(),
+                c,
+                &taxonomies,
+                &mut cx,
+            );
+            // A body or keyword with an error fails the Entry, once its
+            // fields are checked too.
+            let document = read.document.filter(|_| !has_errors(cx.diagnostics));
+            return entry::read((collection, c), &taxonomies, head, document, path, &mut cx);
+        }
+        let head = entry::front_matter(text, &mut cx)?;
+        let document = markdown::parse(text, head.body.clone(), &config.math, &mut cx);
+        entry::read((collection, c), &taxonomies, head, document, path, &mut cx)
+    });
+    match read {
+        Ok(entry) => (entry, found),
+        Err(crash) => {
+            found.push(crash);
+            (None, found)
+        }
+    }
+}
+
 /// Resolves the Site. It returns `None` if anything has an error; every
 /// error is reported, not only the first.
 pub fn resolve(
     config: &Config,
-    project: &Project<'_>,
+    mut project: Project<'_>,
     drafts: bool,
 ) -> (Option<Site>, Vec<Diagnostic>) {
     let mut diagnostics = Vec::new();
@@ -187,59 +252,13 @@ pub fn resolve(
     // Every check reports its own errors, so the Diagnostics alone say
     // whether anything failed.
     let mut entries = Vec::new();
-    for (collection, file) in &project.entries {
-        let path = project.files.path(*file);
-        let text = project.files.text(*file);
-        let c = &collections[collection];
-        let taxonomies: Vec<(&str, &Taxonomy)> = config
-            .taxonomies
-            .iter()
-            .filter(|(_, t)| t.collections.contains(collection))
-            .map(|(n, t)| (n.as_str(), t))
-            .collect();
-        let dir = path.rsplit_once('/').map_or("", |(d, _)| d);
-        let mut found = Vec::new();
-        // Each file is its own boundary, so a crash in a parser fails that
-        // file and the rest are still checked (#15).
-        let read = yuanme_diag::catch_panic(project.files, *file, || {
-            let mut cx = Cx {
-                file: *file,
-                diagnostics: &mut found,
-                timezone: &timezone,
-                dir,
-                is_file: project.is_file,
-            };
-            if path.ends_with(".org") {
-                let read = org::read(text, *file, &config.math);
-                cx.diagnostics.extend(read.diagnostics);
-                // A file that didn't parse has no keywords to check.
-                read.document.as_ref()?;
-                let head = org::head(
-                    &read.keywords,
-                    read.preamble,
-                    text.len(),
-                    c,
-                    &taxonomies,
-                    &mut cx,
-                );
-                // A body or keyword with an error fails the Entry, once its
-                // fields are checked too.
-                let document = read.document.filter(|_| !has_errors(cx.diagnostics));
-                return entry::read((collection, c), &taxonomies, head, document, path, &mut cx);
-            }
-            let head = entry::front_matter(text, &mut cx)?;
-            let document = markdown::parse(text, head.body.clone(), &config.math, &mut cx);
-            entry::read((collection, c), &taxonomies, head, document, path, &mut cx)
-        });
+    for (entry, mut found) in std::mem::take(&mut project.entries) {
         diagnostics.append(&mut found);
-        match read {
-            Ok(entry) => entries.extend(entry),
-            Err(crash) => diagnostics.push(crash),
-        }
+        entries.extend(entry);
     }
 
     duplicate_slugs(&entries, &mut diagnostics);
-    let data = data::read(config, project, &timezone, &mut diagnostics);
+    let data = data::read(config, &project, &timezone, &mut diagnostics);
 
     if has_errors(&diagnostics) {
         return (None, sorted(diagnostics));
