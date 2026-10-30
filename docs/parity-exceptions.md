@@ -24,6 +24,7 @@ Both sides are parsed with html5ever, then:
 - **Attributes and `class` tokens** are sorted. `="true"` and a bare boolean attribute are equal.
 - **Asset URLs:** a hashed URL is replaced by the source file it was built from.
 - **The head** is compared as the ordered list of stylesheets, plus the unordered set of everything else, keyed by tag, `name`/`property`/`rel` and value.
+- **Bundles:** in the head, a run of hashed stylesheets or Astro's scoped `<style>` blocks compares as one item (`scoped-styles`), and the Engine's `code.css` is tallied under `class-highlighting`. Module scripts, `modulepreload`s, font preloads, Google Fonts links and WebP `<source>`s are left out once their links are read; the files they load are still compared as output paths, under `single-initial-script`, `self-hosted-fonts` and `image-formats`.
 - **Highlighted code:** `<pre>` blocks are compared by text only. Their look is covered by the pixel diff (`class-highlighting`).
 
 Escaping style, kept comments, attribute order and whitespace all decode to the same DOM, so they need no exception.
@@ -41,10 +42,10 @@ Escaping style, kept comments, attribute order and whitespace all decode to the 
 
 | Id | Astro | yuanme | Decided in |
 |---|---|---|---|
-| `assets-dir` | Hashed files under `/_astro/` | Under `/assets/`, named by blake3 content hash | [#10](https://github.com/yuann3/yuanme/issues/10) |
+| `assets-dir` | Hashed files under `/_astro/` | Under `/assets/`, named by blake3 content hash. An image's name keeps its width: `park-480-<hash>.jpg` | [#10](https://github.com/yuann3/yuanme/issues/10) |
 | `trailing-slash-hrefs` | Some nav and project links have no trailing slash and cost a 301 | Every internal href is `/x/` | #10 |
 | `apex-origin` | `https://www.eyuan.me` in canonical, sitemap and RSS | `https://eyuan.me` | #10 |
-| `immutable-assets` | `max-age=14400` from Cloudflare's default | `/assets/` gets `public, max-age=31536000, immutable` through the host adapter | #10 |
+| `immutable-assets` | `max-age=14400` from Cloudflare's default | `/assets/` gets `public, max-age=31536000, immutable` through the host adapter, in the `_headers` file it writes | #10 |
 | `robots-txt` | No `robots.txt` | `robots.txt` with the sitemap URL | #23 |
 | `unreferenced-files` | Atkinson fonts, full-size About AVIF/WebP and the copied originals are published | Not published. `ica.pdf` is kept | #23 |
 | `llms-txt` | "Archive by year" label over a flat list | An ordinary Route Template with the same content and a correct label | #23 |
@@ -70,7 +71,7 @@ No tag URL changes: the Slugs of `C`, `Programming`, `Life` and `Draft` equal to
 | `scoped-styles` | Per-Page scoped `<style>` blocks, `/about/`-only CSS, CSS for Components that render nothing | One Site-wide Sidecar stylesheet with `data-y-*` scoping | ADR 0006, [#20](https://github.com/yuann3/yuanme/issues/20) |
 | `tailwind-v4` | Tailwind 3.4.19 with duplicated preflight | Tailwind v4 through the Managed tool, one copy of preflight. Any pixel difference from v4's preflight is fixed in the port, not excepted | #23 |
 | `css-targets` | `100vh` fallbacks before `dvh`/`svh`, `::-moz-selection` | Dropped by the default targets (Chrome 111, Firefox 128, Safari 16.4) | #20, #23 |
-| `self-hosted-fonts` | Google Fonts hotlink with preconnects; Instrument Serif loaded unused | Self-hosted woff2: Geist 400/500/600, Geist Mono 400/500, IBM Plex Mono 400/500, `font-display: swap`, Geist 400 and 500 preloaded | #23 |
+| `self-hosted-fonts` | Google Fonts hotlink with preconnects; Instrument Serif and IBM Plex Mono 400 loaded unused | Self-hosted woff2 of the subsets the Pages use: Geist 400/500/600 from one variable file, Geist Mono 400/500 (latin and symbols), IBM Plex Mono 500 (latin). `font-display: swap`; the Geist file is preloaded | #23, [#75](https://github.com/yuann3/yuanme/issues/75) |
 | `head-metas` | `generator` = `Astro v5.16.5`, `astro-view-transitions-*` metas | `generator` = `yuanme <version>`; no router metas; `<link rel="alternate">` for RSS | #23 |
 | `og-image` | `og:image` and `twitter:image` point at missing files | Omitted until a Page has a real image; `twitter:card` is `summary` | #23 |
 | `empty-idle-main` | The idle `<main>` holds two spaces, so `:empty` never matches | It is empty, so `.panel-content:empty` hides it as written | #23 |

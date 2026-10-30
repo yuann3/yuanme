@@ -23,8 +23,7 @@ enum Edit {
 }
 
 const ALT: &str = "Two hornbills perched on a street lamp against a pale sky.";
-const SHEETS: &str = "<link rel=\"stylesheet\" href=\"/_astro/about.DhiEpsgV.css\">\n<link rel=\"stylesheet\" href=\"/_astro/_slug_.ynAfo1z9.css\">";
-const SWAPPED: &str = "<link rel=\"stylesheet\" href=\"/_astro/_slug_.ynAfo1z9.css\">\n<link rel=\"stylesheet\" href=\"/_astro/about.DhiEpsgV.css\">";
+const SHEETS: &str = "<link rel=\"stylesheet\" href=\"/_astro/about.DhiEpsgV.css\">";
 
 fn dom(differences: &[Difference], on: &str) -> bool {
     matches!(differences, [Difference::Dom { page, .. }] if page == on)
@@ -83,7 +82,16 @@ pub const SEEDS: &[Seed] = &[
     },
     Seed {
         name: "stylesheets reordered",
-        edits: &[Edit::Replace("about/index.html", SHEETS, SWAPPED)],
+        // The Film's fallback moved after the bundles, which compare as one
+        // run (`scoped-styles`).
+        edits: &[
+            Edit::Replace("about/index.html", SHEETS, ""),
+            Edit::Replace(
+                "about/index.html",
+                "<style>",
+                "<link rel=\"stylesheet\" href=\"/_astro/about.DhiEpsgV.css\"><style>",
+            ),
+        ],
         expect: |d| dom(d, "/about/index.html"),
     },
     Seed {

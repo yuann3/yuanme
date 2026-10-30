@@ -289,3 +289,58 @@ fn a_url_inside_a_data_url_is_not_a_link() {
         []
     );
 }
+
+/// The Reference site's port (#75): what the Engine writes in place of
+/// Astro's bundles, images and fonts.
+#[test]
+fn the_engines_assets_stand_in_for_astros() {
+    let baseline = format!(
+        "=== index.html\n{}=== _astro/about.DhiEpsgV.css\na{{}}\n=== _astro/Shell.astro_astro_type_script_index_0_lang.C3Ek_E9W.js\nx\n=== _astro/park.ChlaUixY_1DHuWQ.jpg\nj\n=== _astro/park.ChlaUixY_Z1CycSd.webp\nw\n",
+        page(
+            r#"<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Geist&display=swap" rel="stylesheet"><style>.row[data-astro-cid-jqm7f7gd]{color:red}</style><link rel="stylesheet" href="/_astro/about.DhiEpsgV.css"><script type="module" src="/_astro/Shell.astro_astro_type_script_index_0_lang.C3Ek_E9W.js"></script>"#,
+            r#"<picture><source srcset="/_astro/park.ChlaUixY_Z1CycSd.webp 480w" type="image/webp"><img src="/_astro/park.ChlaUixY_1DHuWQ.jpg" srcset="/_astro/park.ChlaUixY_1DHuWQ.jpg 480w"></picture><script type="module">document.body.dataset.copy = ''</script>"#,
+        )
+    );
+    let candidate = format!(
+        "=== index.html\n{}=== _headers\n/assets/*\n=== assets/global-0123456789abcdef.css\na{{}}\n=== assets/sidecars-0123456789abcdef.css\nb{{}}\n=== assets/page-0123456789abcdef.js\nx\n=== assets/park-480-0123456789abcdef.jpg\nj\n=== assets/geist-latin-0123456789abcdef.woff2\nf\n",
+        page(
+            r#"<link rel="preload" as="font" type="font/woff2" href="/assets/geist-latin-0123456789abcdef.woff2" crossorigin><link rel="stylesheet" href="/assets/global-0123456789abcdef.css"><link rel="stylesheet" href="/assets/sidecars-0123456789abcdef.css"><script type="module" src="/assets/page-0123456789abcdef.js"></script>"#,
+            r#"<picture><img src="/assets/park-480-0123456789abcdef.jpg" srcset="/assets/park-480-0123456789abcdef.jpg 480w"></picture>"#,
+        )
+    );
+    let report = run(&baseline, &candidate);
+    assert_eq!(report.differences, []);
+    for id in [
+        "assets-dir",
+        "scoped-styles",
+        "single-initial-script",
+        "image-formats",
+        "self-hosted-fonts",
+        "immutable-assets",
+    ] {
+        assert!(
+            report.tolerated.contains_key(id),
+            "{id}: {:?}",
+            report.tolerated
+        );
+    }
+
+    // A width is kept apart from the name it ends: a photo isn't its 480w copy's
+    // neighbour of another width, and park-2 is not park.
+    let other = candidate.replace("park-480-", "park-2-480-");
+    assert_eq!(
+        run(&baseline, &other).differences[..2],
+        [
+            Difference::Missing("asset:park.jpg".into()),
+            Difference::Added("asset:park-2.jpg".into()),
+        ]
+    );
+    // An image, a classic script and an unhashed stylesheet still count.
+    for changed in [
+        candidate.replace("<picture>", "<picture><source srcset=\"/assets/park-480-0123456789abcdef.jpg\" type=\"image/avif\">"),
+        candidate.replace("</picture>", "</picture><script>boot()</script>"),
+        candidate.replace("<link rel=\"preload\"", "<link rel=\"stylesheet\" href=\"https://example.com/x.css\"><link rel=\"preload\""),
+    ] {
+        assert_eq!(dom_pages(&run(&baseline, &changed)), ["/index.html"], "{changed}");
+    }
+}

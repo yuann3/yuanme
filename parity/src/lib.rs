@@ -20,13 +20,19 @@ use url::Url;
 /// rule normalizes both sides alike, so it lets a difference through and
 /// never requires one: the baseline compared with itself passes under all
 /// of them.
-const RULES: [&str; 6] = [
+const RULES: [&str; 12] = [
     "apex-origin",
     "trailing-slash-hrefs",
     "assets-dir",
     "robots-txt",
     "unreferenced-files",
     "head-metas",
+    "scoped-styles",
+    "single-initial-script",
+    "image-formats",
+    "self-hosted-fonts",
+    "immutable-assets",
+    "class-highlighting",
 ];
 
 /// The Reference site's origin. URLs on it are internal.
@@ -74,6 +80,8 @@ static YUANME_ASSET: LazyLock<Regex> =
 /// inside a `data:` URL isn't taken for a link.
 static CSS_URL: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"url\(\s*(?:"([^"]*)"|'([^']*)'|([^'")\s]+))\s*\)"#).unwrap());
+/// The Engine's image names keep the width: `park-480`, from `park.jpg`.
+static WIDTH: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(.+)-[0-9]+$").unwrap());
 
 #[derive(Debug, PartialEq)]
 pub enum Difference {
@@ -171,7 +179,9 @@ pub fn compare(
         let unreferenced = !path.ends_with(".html")
             && path != "/ica.pdf"
             && files.iter().all(|f| !b.referenced().contains(f));
-        if unreferenced {
+        if let Some(id) = bundled(path) {
+            b.tolerate(id, path);
+        } else if unreferenced {
             b.tolerate("unreferenced-files", path);
         } else {
             differences.push(Difference::Missing(path.clone()));
@@ -180,6 +190,10 @@ pub fn compare(
     for path in cp.keys().filter(|p| !bp.contains_key(*p)) {
         if path == "/robots.txt" {
             c.tolerate("robots-txt", path);
+        } else if path == "/_headers" {
+            c.tolerate("immutable-assets", path);
+        } else if let Some(id) = bundled(path) {
+            c.tolerate(id, path);
         } else {
             differences.push(Difference::Added(path.clone()));
         }
@@ -188,10 +202,16 @@ pub fn compare(
     // Link targets, and whether each leads somewhere.
     let (br, cr) = (b.targets(), c.targets());
     for t in br.keys().filter(|t| !cr.contains_key(*t)) {
-        differences.push(Difference::MissingRef(t.clone()));
+        match bundled(t) {
+            Some(id) => b.tolerate(id, t),
+            None => differences.push(Difference::MissingRef(t.clone())),
+        }
     }
     for t in cr.keys().filter(|t| !br.contains_key(*t)) {
-        differences.push(Difference::AddedRef(t.clone()));
+        match bundled(t) {
+            Some(id) => c.tolerate(id, t),
+            None => differences.push(Difference::AddedRef(t.clone())),
+        }
     }
     for (t, resolves) in &br {
         if *resolves && cr.get(t) == Some(&false) {
@@ -220,6 +240,21 @@ pub fn compare(
         differences,
         tolerated,
     })
+}
+
+/// The Parity exception under which a hashed file of one side needn't have
+/// a counterpart of the same name on the other: the Engine bundles CSS and
+/// JS its own way, writes no WebP, and self-hosts the fonts.
+fn bundled(path: &str) -> Option<&'static str> {
+    let name = path.strip_prefix("asset:")?;
+    let ext = name.rsplit_once('.')?.1;
+    match ext {
+        "css" => Some("scoped-styles"),
+        "js" => Some("single-initial-script"),
+        "webp" => Some("image-formats"),
+        "woff2" => Some("self-hosted-fonts"),
+        _ => None,
+    }
 }
 
 /// A unified diff, cut short: the first lines show what changed.
@@ -345,7 +380,12 @@ impl Side {
         }
         let m = YUANME_ASSET.captures(path)?;
         self.tolerate("assets-dir", path);
-        Some(format!("asset:{}.{}", &m[1], &m[2]))
+        let ext = &m[2];
+        let image = matches!(ext, "jpg" | "jpeg" | "png" | "webp" | "avif" | "gif");
+        match WIDTH.captures(&m[1]) {
+            Some(w) if image => Some(format!("asset:{}.{ext}", &w[1])),
+            _ => Some(format!("asset:{}.{ext}", &m[1])),
+        }
     }
 
     /// `raw`, read on the Page or stylesheet at `base`, if it is internal.
@@ -426,6 +466,14 @@ impl Side {
             lines(out, depth + 1, &text(node));
             return;
         }
+        let attr = |n: &str| {
+            attrs
+                .borrow()
+                .iter()
+                .find(|a| &*a.name.local == n)
+                .map(|a| a.value.to_string())
+                .unwrap_or_default()
+        };
         let mut line = tag.clone();
         let mut list: Vec<(String, String)> = Vec::new();
         for a in attrs.borrow().iter() {
@@ -476,6 +524,12 @@ impl Side {
         for (name, value) in list {
             line = format!("{line} {name}={}", json(&value));
         }
+        // Left out after its links are read: the file it loads is still
+        // compared as an output path, under the same exception.
+        if let Some(id) = bundled_element(&tag, &attr) {
+            self.tolerate(id, &line);
+            return;
+        }
         indent(out, depth, &line);
 
         let children = node.children.borrow();
@@ -496,6 +550,9 @@ impl Side {
                     };
                     let mut one = String::new();
                     self.render(child, page, depth + 2, &mut one);
+                    if one.is_empty() {
+                        continue;
+                    }
                     let local = &*name.local;
                     let meta_name = attr("name").unwrap_or_default();
                     if local == "meta"
@@ -503,6 +560,16 @@ impl Side {
                             || meta_name.starts_with("astro-view-transitions-"))
                     {
                         self.tolerate("head-metas", one.trim());
+                    } else if let Some(id) = (local == "style" || local == "link")
+                        .then(|| sheet_bundle(&attr("href").unwrap_or_default(), &text(child)))
+                        .flatten()
+                    {
+                        // The Engine bundles stylesheets its own way
+                        // (`scoped-styles`), so a run of bundles is one.
+                        self.tolerate(id, one.trim());
+                        if !sheets.ends_with(BUNDLES) {
+                            indent(&mut sheets, depth + 2, BUNDLES.trim_end());
+                        }
                     } else if local == "style"
                         || (local == "link"
                             && attr("rel")
@@ -554,6 +621,44 @@ impl Side {
                 }
             }
         }
+    }
+}
+
+/// What a run of stylesheet bundles in the head compares as.
+const BUNDLES: &str = "the Site's stylesheet bundles\n";
+
+/// The Parity exception under which a stylesheet in the head is one of the
+/// Site's bundles: a hashed file, or Astro's scoped styles inlined.
+fn sheet_bundle(href: &str, text: &str) -> Option<&'static str> {
+    if href.starts_with("/assets/code-") {
+        Some("class-highlighting")
+    } else if ASTRO_ASSET.is_match(href)
+        || YUANME_ASSET.is_match(href)
+        || text.contains("[data-astro-cid-")
+    {
+        Some("scoped-styles")
+    } else {
+        None
+    }
+}
+
+/// The Parity exception under which an element that loads a Script, a font
+/// or a WebP is left out of the DOM comparison,
+/// once its links are read: the files are compared as output paths, and
+/// what they do by the pixel and behaviour checks.
+fn bundled_element(tag: &str, attr: &dyn Fn(&str) -> String) -> Option<&'static str> {
+    let rel = attr("rel");
+    let href = attr("href");
+    let font_origin = href.starts_with("https://fonts.googleapis.com")
+        || href.starts_with("https://fonts.gstatic.com");
+    match tag {
+        "script" if attr("type") == "module" => Some("single-initial-script"),
+        "link" if rel == "modulepreload" => Some("single-initial-script"),
+        "link" if font_origin || (rel == "preload" && attr("as") == "font") => {
+            Some("self-hosted-fonts")
+        }
+        "source" if attr("type") == "image/webp" => Some("image-formats"),
+        _ => None,
     }
 }
 
