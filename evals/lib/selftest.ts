@@ -86,7 +86,9 @@ async function grade(c: Case): Promise<string | undefined> {
 	const passed = await promisify(execFile)(process.execPath, [vitest, 'run', 'EVAL.ts'], { cwd: dir, env, maxBuffer: 64 << 20 }).then(
 		() => true,
 		(e: { stdout: string; stderr: string }) => {
-			output.set(c, `${e.stdout}\n${e.stderr}`);
+			// Without colour codes, which vitest writes whenever CI is set,
+			// so the lines below can be read from their start.
+			output.set(c, `${e.stdout}\n${e.stderr}`.replace(/\x1b\[[0-9;]*m/g, ''));
 			return false;
 		},
 	);
