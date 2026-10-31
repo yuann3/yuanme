@@ -63,6 +63,36 @@ These need the owner's accounts, once.
    gh secret set CLOUDFLARE_ACCOUNT_ID --repo yuann3/yuanme --body 337851642f9a39a7999e95ed7f339693
    ```
    The site is at <https://yuanme-docs.yuann3.workers.dev> until it has a domain. To give it one, set `[site] url` in `site/yuanme.toml`, and add the domain to `site/wrangler.jsonc` as `"routes": [{ "pattern": "docs.example.com", "custom_domain": true }]`, which also needs *Zone · Workers Routes · Edit* on its zone.
+6. **The Agent eval's API keys** (#22, #77). `evals.yml` runs the tier-1 matrix after every release is published, and when dispatched. An experiment whose key isn't set is skipped with a warning, so with none set it calls no model. Each key should belong to a project with a spending limit:
+   ```sh
+   gh secret set ANTHROPIC_API_KEY --repo yuann3/yuanme   # Claude Code: claude-fable-5-1 and claude-sonnet-5-5
+   gh secret set OPENAI_API_KEY --repo yuann3/yuanme      # Codex: gpt-6-astra
+   gh secret set GEMINI_API_KEY --repo yuann3/yuanme      # Gemini CLI: gemini-4-argon
+   ```
+
+## The Agent eval
+
+`evals/lib/experiment.ts` names the tier-1 models and pins each agent CLI; `evals/lib/run.ts` runs them in Docker. A run's summary is `evals/results/VERSION/EXPERIMENT.json`, in the `eval-EXPERIMENT` artifact with the raw transcripts, kept 90 days; commit the summaries under `evals/results/`. The job summary lists each experiment's pass rate and its create group.
+
+What it costs, at the prices of 2026-10-30, assuming a run reads about 1.5M tokens, 90% of them from cache, and writes 20k, which could be off by half or double:
+
+| Model | One run | A full release matrix: 288 runs |
+|---|---:|---:|
+| `claude-fable-5-1` | ~$3.60 | ~$1,040 |
+| `claude-sonnet-5-5` | ~$0.70 | ~$205 |
+| `gpt-6-astra` | ~$3.85 | ~$1,110 |
+| `gemini-4-argon` | ~$0.65, ~$1.30 from 1 December | ~$185, ~$365 from 1 December |
+| **All four** | ~$8.80 | **~$2,540**, ~$2,720 from 1 December |
+
+A full matrix is 32 tasks × 3 runs × 3 treatments per model, 1,152 runs in all, in 12 jobs of up to 6 hours. With `claude-opus-5-5` and `gpt-6.1-sol` in place of the two most expensive models it is about $980.
+
+#77's bar, the create group passing at least 11 of its 12 runs on every tier-1 model in the default treatment, costs about $110 to check:
+
+```sh
+gh workflow run evals.yml -f filter=create/ -f treatments=default
+```
+
+Check what a run would do, calling no model, with `node lib/run.ts --yuanme YUANME --dry` in `evals/`.
 
 ## Each release
 

@@ -44,10 +44,15 @@ export function build(): Build {
 		.map((line) => JSON.parse(line));
 	built = { code: run.status ?? -1, diagnostics: events.filter((e) => e.type === 'diagnostic'), out };
 	// summarize.ts reads this line from the test output: which codes the
-	// final build still reports, for the fix rate per code.
-	console.log(
-		`YUANME_EVAL_FINAL ${JSON.stringify({ code: built.code, codes: built.diagnostics.map((d) => d.code) })}`,
-	);
+	// final build still reports, for the fix rate per code, and the largest
+	// number of each Site budget on any Page.
+	const report = existsSync('.yuanme/report.json') ? JSON.parse(readFileSync('.yuanme/report.json', 'utf8')) : {};
+	const budgets: Record<string, number> = {};
+	for (const p of report.budgets?.pages ?? []) {
+		for (const name of ['html', 'css', 'js', 'fonts', 'math_font', 'requests']) budgets[name] = Math.max(budgets[name] ?? 0, p[name]);
+	}
+	const codes = built.diagnostics.map((d) => d.code);
+	console.log(`YUANME_EVAL_FINAL ${JSON.stringify({ code: built.code, codes, budgets })}`);
 	return built;
 }
 

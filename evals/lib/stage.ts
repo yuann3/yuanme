@@ -1,7 +1,7 @@
-// Writes the project `@vercel/agent-eval` runs: each Eval task as a
-// fixture, made by the yuanme under test, and a stub for each experiment.
+// Writes each Eval task as a `@vercel/agent-eval` fixture, made by the
+// yuanme under test.
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { build } from 'esbuild';
 import { start, TASKS, tasks } from './project.ts';
@@ -41,14 +41,8 @@ export async function fixture(task: string, dir: string, env: NodeJS.ProcessEnv)
 	writeFileSync(join(dir, 'EVAL.ts'), await bundle(task));
 }
 
-export async function stage(yuanme: string, out: string) {
+/** Writes a fixture into `out` for each task that `filter` starts. */
+export async function stage(yuanme: string, out: string, filter: string) {
 	const env = withYuanme(yuanme);
-	for (const task of tasks()) await fixture(task, join(out, 'evals', task), env);
-	// agent-eval finds the fixtures beside the experiments' folder.
-	const experiments = join(import.meta.dirname, '../experiments');
-	rmSync(join(out, 'experiments'), { recursive: true, force: true });
-	mkdirSync(join(out, 'experiments'));
-	for (const file of readdirSync(experiments)) {
-		writeFileSync(join(out, 'experiments', file), `export { default } from ${JSON.stringify(join(experiments, file))};\n`);
-	}
+	for (const task of tasks().filter((t) => t.startsWith(filter))) await fixture(task, join(out, task), env);
 }

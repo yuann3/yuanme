@@ -32,6 +32,10 @@ github-build-setup = "../build-setup.yml"
 # plan-jobs: when one of those fails, dist skips the builds, and a skipped
 # build lets `host` make the release.
 global-artifacts-jobs = ["./ci", "./release-smoke", "./release-sign"]
+# The Agent eval's tier-1 matrix (#22), on the published release's binary.
+# It takes hours and paid API keys, and nothing gates on its pass rates
+# yet, so it runs after the release rather than before.
+post-announce-jobs = ["./evals"]
 github-custom-job-permissions = { "release-crates" = { contents = "read" }, "docs" = { contents = "read" } }
 # GitHub attaches the source to every release already.
 source-tarball = false

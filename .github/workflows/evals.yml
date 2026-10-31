@@ -1,0 +1,152 @@
+# The Agent eval's tier-1 matrix (#22, #77): each tier-1 agent CLI and
+# model, in each treatment, on every Eval task, 3 runs each, in Docker.
+# Each run is a paid model API session, so it runs only after a release is
+# published (dist-workspace.toml's post-announce-jobs), and when the owner
+# dispatches it. An experiment whose API key isn't set is skipped with a
+# warning; docs/releasing.md lists the keys and what a run costs.
+#
+#   gh workflow run evals.yml -f filter=create/ -f treatments=default
+name: Agent eval
+
+on:
+  workflow_call:
+    inputs:
+      plan:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: Run the Eval tasks whose name starts with this, such as create/
+        default: ''
+        type: string
+      treatments:
+        description: Treatments, separated by spaces
+        default: default bare no-skills
+        type: string
+      runs:
+        description: Runs per task
+        default: '3'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  experiments:
+    runs-on: ubuntu-24.04
+    outputs:
+      list: ${{ steps.list.outputs.list }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: evals/package-lock.json
+      - working-directory: evals
+        run: npm ci --no-audit --no-fund
+      # The experiments whose key is set, as a matrix.
+      - id: list
+        working-directory: evals
+        env:
+          TREATMENTS: ${{ inputs.treatments || 'default bare no-skills' }}
+          HAS_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+          HAS_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY != '' }}
+          HAS_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY != '' }}
+        run: |
+          node --input-type=module -e '
+            import { appendFileSync } from "node:fs";
+            import { EXPERIMENTS } from "./lib/experiment.ts";
+            const treatments = process.env.TREATMENTS.split(/\s+/).filter(Boolean);
+            const list = [];
+            for (const e of EXPERIMENTS.filter((e) => treatments.includes(e.treatment))) {
+              if (process.env[`HAS_${e.key}`] === "true") list.push(e.name);
+              else console.log(`::warning::${e.key} is not set, so ${e.name} is skipped`);
+            }
+            if (list.length === 0) console.log("::warning::no tier-1 API key is set, so the Agent eval ran no model");
+            console.log(list.join("\n"));
+            appendFileSync(process.env.GITHUB_OUTPUT, `list=${JSON.stringify(list)}\n`);
+          '
+
+  run:
+    needs: experiments
+    if: needs.experiments.outputs.list != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        experiment: ${{ fromJson(needs.experiments.outputs.list) }}
+    # 32 tasks, 2 at a time, at up to 15 minutes a run.
+    timeout-minutes: 360
+    # Node 24's Debian, which the sandboxes run, has glibc 2.36, so a
+    # yuanme built here runs in them.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - if: inputs.plan
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: artifacts-build-local-x86_64-unknown-linux-musl
+          path: artifacts
+      - if: inputs.plan
+        run: |
+          mkdir -p target/release
+          tar -xf artifacts/yuanme-x86_64-unknown-linux-musl.tar.xz -C target/release --strip-components 1
+      - if: ${{ !inputs.plan }}
+        run: rustup toolchain install
+      - if: ${{ !inputs.plan }}
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - if: ${{ !inputs.plan }}
+        run: sudo apt-get install -y nasm && cargo build --release --locked -p yuanme
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: evals/package-lock.json
+      - working-directory: evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EVAL_FILTER: ${{ inputs.filter }}
+          EVAL_RUNS: ${{ inputs.runs || '3' }}
+          EXPERIMENT: ${{ matrix.experiment }}
+        run: |
+          npm ci --no-audit --no-fund
+          node lib/run.ts --yuanme ../target/release/yuanme --experiment "$EXPERIMENT"
+      # The summary, to commit under evals/results/, and the transcripts,
+      # which are too large for the repository.
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: eval-${{ matrix.experiment }}
+          path: |
+            evals/results
+            /tmp/yuanme-evals-*/results
+          retention-days: 90
+          if-no-files-found: ignore
+
+  # Each experiment's pass rate, by group, and the Done-when of #77: the
+  # create group passes at least 11 of 12 runs on every tier-1 model in
+  # the default treatment.
+  report:
+    needs: run
+    if: always() && needs.run.result != 'skipped'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: eval-*
+          path: eval
+      - run: |
+          {
+            echo "| Experiment | Passed | create |"
+            echo "|---|---:|---:|"
+            for f in $(find eval -path '*/evals/results/*.json' | sort); do
+              jq -r '"| `\(.experiment)` | \(.passed)/\(.runs) | \(if .groups.create then "\(.groups.create.passed)/\(.groups.create.runs)" else "" end) |"' "$f"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

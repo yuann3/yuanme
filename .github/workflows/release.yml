@@ -443,3 +443,12 @@ jobs:
         with:
           persist-credentials: false
           submodules: recursive
+
+  custom-evals:
+    needs:
+      - plan
+      - announce
+    uses: ./.github/workflows/evals.yml
+    with:
+      plan: ${{ needs.plan.outputs.val }}
+    secrets: inherit
