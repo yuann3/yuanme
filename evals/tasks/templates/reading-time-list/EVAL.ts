@@ -9,7 +9,7 @@ const minutes = (url: string) => Number(/(\d+)\s*min/.exec(text(main(page(url)))
 const row = (a: HTMLElement) => {
 	let el: HTMLElement | null = a;
 	while (el && !['LI', 'ARTICLE', 'TR'].includes(el.tagName)) el = el.parentNode;
-	return el ?? a.parentNode;
+	return el ?? a;
 };
 
 test('each Post in the blog list shows its reading time', () => {
