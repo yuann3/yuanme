@@ -31,10 +31,10 @@ Escaping style, kept comments, attribute order and whitespace all decode to the 
 
 ### Pixels
 - **Matrix:** every Page × widths 390, 900 and 1280 px (the ≤ 767, 768–1099 and ≥ 1100 bands, at heights 844, 1024 and 800) × light and dark. Each is the full page, plus one screenshot per screen of the panel, which scrolls inside the window.
-- **Engines:** Chromium on every PR; Firefox and WebKit at releases. Both sides run in the same pinned Playwright browser.
+- **Engines:** the Reference site's port in Chromium, Firefox and WebKit on every push; the harness's self-test in Chromium, and in all three at releases. Both sides run in the same pinned Playwright browser.
 - **Motion:** screenshots are taken with `prefers-reduced-motion: reduce`, once `document.getAnimations()` has settled. With that setting the Film doesn't start, so its deterministic fallback CSS is what's compared. The Film itself is covered by the behaviour checks.
 - **Text antialiasing:** Chromium runs with `--disable-lcd-text`, so text is antialiased in grayscale on every OS. On Linux, Chromium otherwise picks LCD antialiasing for text with an opaque background of its own, such as Shiki's dark-theme token spans ([#75](https://github.com/yuann3/yuanme/issues/75)).
-- **Fonts:** the harness serves the baseline's Google Fonts requests from the baseline's snapshot of them, and the Reference site self-hosts those same woff2 files.
+- **Fonts:** the harness serves the baseline's Google Fonts requests from the baseline's snapshot of them, and the Reference site self-hosts those same woff2 files, cut down to the characters it sets with nothing else in them changed, so its text renders the same.
 - **Threshold:** pixelmatch 8 with a per-pixel threshold of 0.1, an OKLab distance. A screenshot fails if more than 0.05 % of its pixels differ. Re-encoded photos use a per-pixel threshold of 0.25: the four About photos (`about-image-bytes`) and the hero images (`hero-images`).
 
 ## Exceptions
@@ -74,7 +74,7 @@ No tag URL changes: the Slugs of `C`, `Programming`, `Life` and `Draft` equal to
 | `scoped-styles` | Per-Page scoped `<style>` blocks, `/about/`-only CSS, CSS for Components that render nothing | One Site-wide Sidecar stylesheet with `data-y-*` scoping | ADR 0006, [#20](https://github.com/yuann3/yuanme/issues/20) |
 | `tailwind-v4` | Tailwind 3.4.19 with duplicated preflight | Tailwind v4 through the Managed tool, one copy of preflight. Any pixel difference from v4's preflight is fixed in the port, not excepted | #23 |
 | `css-targets` | `100vh` fallbacks before `dvh`/`svh`, `::-moz-selection` | Dropped by the default targets (Chrome 111, Firefox 128, Safari 16.4) | #20, #23 |
-| `self-hosted-fonts` | Google Fonts hotlink with preconnects; Instrument Serif and IBM Plex Mono 400 loaded unused | Self-hosted woff2 of the subsets the Pages use: Geist 400/500/600 from one variable file, Geist Mono 400/500 (latin and symbols), IBM Plex Mono 500 (latin). `font-display: swap`; the Geist file is preloaded | #23, [#75](https://github.com/yuann3/yuanme/issues/75) |
+| `self-hosted-fonts` | Google Fonts hotlink with preconnects; Instrument Serif and IBM Plex Mono 400 loaded unused | Self-hosted woff2 of the subsets the Pages use: Geist 400/500/600 from one variable file, Geist Mono 400/500 (latin and symbols), IBM Plex Mono 500 (latin). The latin files keep only the characters the Site sets, which brings the fonts to 58 kB under the 64 kB Budget. `font-display: swap`; the Geist file is preloaded | #23, [#75](https://github.com/yuann3/yuanme/issues/75), [#76](https://github.com/yuann3/yuanme/issues/76) |
 | `head-metas` | `generator` = `Astro v5.16.5`, `astro-view-transitions-*` metas | `generator` = `yuanme <version>`; no router metas; `<link rel="alternate">` for RSS | #23 |
 | `og-image` | `og:image` and `twitter:image` point at missing files | Omitted until a Page has a real image; `twitter:card` is `summary` | #23 |
 | `empty-idle-main` | The idle `<main>` holds two spaces, so `:empty` never matches | It is empty, so `.panel-content:empty` hides it as written | #23 |

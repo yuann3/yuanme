@@ -9,6 +9,8 @@ Checks a Site against the Parity baseline, under the rules and Parity exceptions
 | Pixels | `browser/pixels.ts` | Every Page × 390, 900, 1280 px × light, dark, with reduced motion; the full page and each screen of the panel |
 | Behaviour | `browser/feel.ts` | The prototype's `feel.ts` checks (#26), compared side by side |
 
+`browser/lab.ts SITE` is not a parity check: it runs the Reference site's lab Gates (#15), mobile and desktop LCP, CLS and TBT on `/`, a Post and `/about/`. CI runs it with the build Gates, `cargo xtask gates YUANME --reference SITE`.
+
 ## The baseline
 
 `baseline.lock` pins the release `parity-baseline-<rev>`: a `.tar.zst` holding Astro's `dist/` as `site/`, `remote/` with everything its Pages load from other origins (the Google Fonts stylesheets and font files, and the images Project pages embed from GitHub), and `BASELINE.json`. The harness answers every other origin from `remote/` and refuses anything else, so no check reaches the network.
@@ -28,14 +30,14 @@ node parity/browser/parity.ts check target/baseline target/site --engines chromi
 
 `build` runs `yuanme build --json --out DIR` and reads its `build-finished` event; the build report is in the project's `.yuanme/report.json`. Failing screenshots are written to `--out` as the baseline's, the candidate's and a diff. `--only pixels` or `--only feel` runs one of the two browser checks.
 
-`self-test BASELINE`, in both tools, compares the baseline with itself (two renders, in the browser) and then seeds changes into a copy: those it must catch, and those that decode to the same DOM or that an exception covers, which it must let through. CI runs it (`.github/workflows/parity.yml`): Chromium on every push, all three engines when called with `engines`. It then builds the eyuan.me commit that `reference-site.lock` pins and runs `check` and the browser's `check --only pixels` on it.
+`self-test BASELINE`, in both tools, compares the baseline with itself (two renders, in the browser) and then seeds changes into a copy: those it must catch, and those that decode to the same DOM or that an exception covers, which it must let through. CI runs it (`.github/workflows/parity.yml`): Chromium on every push, all three engines when called with `engines`. On every push CI also builds the eyuan.me commit that `reference-site.lock` pins and runs `check`, and the browser's `check` in Chromium, Firefox and WebKit, one job each, on it; and the Reference site's Gates: `yuanme build --strict-budgets`, the build Gates and `lab.ts`.
 
 ## Tolerating a difference
 
 Each rule that lets a difference through names its exception id, and a rule whose id is missing from `docs/parity-exceptions.md` fails the test before it compares anything. A rule normalizes both sides alike, so it never requires a difference and the baseline compared with itself still passes. The rules so far:
 
-- URLs and DOM (`src/lib.rs`): `apex-origin`, `trailing-slash-hrefs`, `assets-dir`, `robots-txt`, `unreferenced-files`, `head-metas`, `scoped-styles`, `single-initial-script`, `image-formats`, `self-hosted-fonts`, `immutable-assets`, `class-highlighting`, `og-image`, `reading-time`, `collection-order`, `not-found-canonical`, `dead-links`.
+- URLs and DOM (`src/lib.rs`): `apex-origin`, `trailing-slash-hrefs`, `assets-dir`, `robots-txt`, `unreferenced-files`, `head-metas`, `scoped-styles`, `single-initial-script`, `image-formats`, `self-hosted-fonts`, `immutable-assets`, `class-highlighting`, `og-image`, `reading-time`, `collection-order`, `not-found-canonical`, `dead-links`, `hero-images`, and `rss-guid`, under which each feed's guids are compared by their text.
 - Pixels (`browser/pixels.ts`): the 0.25 threshold inside raster images, `about-image-bytes` and `hero-images`; `collection-order`, which sorts the tags index's rows on both sides.
-- Behaviour (`browser/feel.ts`): `route-announcer`, `panel-scroll`, `single-initial-script`, and `router-events` for the probe's event names.
+- Behaviour (`browser/feel.ts`): `route-announcer`, `panel-scroll`, `single-initial-script`, `router-events` for the probe's event names, and `trailing-slash-hrefs` for the nav's `aria-current` after a swap.
 
-The other exceptions get their rules with the port that makes the difference (#75, #76).
+The other exceptions need no rule: their differences don't reach what the checks compare, or the port matches Astro.

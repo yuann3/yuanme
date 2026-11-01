@@ -1,7 +1,9 @@
 # The parity test (#23, #74) against the Parity baseline that
 # parity/baseline.lock pins: URL equality and the normalized DOM, then
-# pixels and behaviour. Chromium on every push and pull request; a release
-# calls this workflow with all three engines.
+# pixels and behaviour. The harness tests itself in Chromium on every push
+# and pull request, and in all three engines when a release calls this
+# workflow with them. The Reference site's port, which reference-site.lock
+# pins, is checked in all three engines every time, and its Gates run.
 name: Parity
 
 on:
@@ -31,7 +33,7 @@ env:
   RUSTFLAGS: -D warnings
 
 jobs:
-  parity:
+  self-test:
     runs-on: ubuntu-latest
     env:
       ENGINES: ${{ inputs.engines || 'chromium' }}
@@ -75,9 +77,38 @@ jobs:
         name: Pixels and behaviour
         working-directory: parity/browser
         run: node parity.ts self-test "$RUNNER_TEMP/baseline" --engines "$ENGINES" --out "$RUNNER_TEMP/parity-out"
-      # The port that reference-site.lock pins, built with this yuanme and
-      # checked against the baseline (#75). Behaviour waits for the Router
-      # (#76), so the browser check is pixels only.
+      # Each failing screenshot, the baseline's and the diff.
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: parity-self-test-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/parity-out
+          if-no-files-found: ignore
+
+  # The port that reference-site.lock pins, built with this yuanme and
+  # checked against the baseline (#75, #76), one engine per job.
+  port:
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, firefox, webkit]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: baseline
+        run: |
+          status=0
+          parity/fetch.sh "$RUNNER_TEMP/baseline" || status=$?
+          if [ "$status" = 3 ]; then
+            echo "::warning::The Parity baseline release isn't published yet, so the parity test didn't run (#74)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          elif [ "$status" = 0 ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            exit "$status"
+          fi
       - if: steps.baseline.outputs.ready == 'true'
         id: reference
         run: |
@@ -92,22 +123,75 @@ jobs:
           path: .worktrees/reference-site
           persist-credentials: false
       - if: steps.baseline.outputs.ready == 'true'
+        run: rustup toolchain install
+      - if: steps.baseline.outputs.ready == 'true'
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - if: steps.baseline.outputs.ready == 'true'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: parity/browser/package-lock.json
+      - if: steps.baseline.outputs.ready == 'true'
         name: Build the Reference site
         run: |
           sudo apt-get install -y nasm
           cargo build --locked -p yuanme
           cargo run --locked -p parity -- build .worktrees/reference-site "$RUNNER_TEMP/site" --yuanme target/debug/yuanme
-      - if: steps.baseline.outputs.ready == 'true'
+      - if: steps.baseline.outputs.ready == 'true' && matrix.engine == 'chromium'
         name: The port's URLs and normalized DOM
         run: cargo run --locked -p parity -- check "$RUNNER_TEMP/baseline" "$RUNNER_TEMP/site"
       - if: steps.baseline.outputs.ready == 'true'
-        name: The port's pixels
+        name: The port's pixels and behaviour
         working-directory: parity/browser
-        run: node parity.ts check "$RUNNER_TEMP/baseline" "$RUNNER_TEMP/site" --engines "$ENGINES" --only pixels --out "$RUNNER_TEMP/parity-out"
-      # Each failing screenshot, the baseline's and the diff.
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps ${{ matrix.engine }}
+          node parity.ts check "$RUNNER_TEMP/baseline" "$RUNNER_TEMP/site" --engines ${{ matrix.engine }} --out "$RUNNER_TEMP/parity-out"
       - if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: parity-${{ github.run_attempt }}
+          name: parity-port-${{ matrix.engine }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/parity-out
           if-no-files-found: ignore
+
+  # The Reference site's Gates (#15, #39): its static Budgets, built with
+  # --strict-budgets; its build numbers, timed as the Scale Site's are
+  # (#73); and its lab numbers on `/`, a Post and `/about/`.
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: reference
+        run: |
+          field() { sed -n "s/^$1 = \"\(.*\)\"$/\1/p" reference-site.lock; }
+          echo "repository=$(field repository)" >> "$GITHUB_OUTPUT"
+          echo "rev=$(field rev)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ steps.reference.outputs.repository }}
+          ref: ${{ steps.reference.outputs.rev }}
+          path: .worktrees/reference-site
+          persist-credentials: false
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: hyperfine@1.20.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: parity/browser/package-lock.json
+      - run: sudo apt-get install -y nasm
+      - run: cargo build --release --locked -p yuanme
+      - name: Static Budgets
+        run: target/release/yuanme -C .worktrees/reference-site build --strict-budgets -q
+      - name: Build Gates
+        run: cargo xtask gates target/release/yuanme --reference .worktrees/reference-site
+      - name: Lab Gates
+        working-directory: parity/browser
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          node lab.ts ../../.worktrees/reference-site/dist
