@@ -209,6 +209,9 @@ pub fn render(
             Err(d) => diagnostics.push(d),
         }
     }
+    // Freeing every Entry's values took 4 ms of a prose edit's rebuild in
+    // `yuanme dev`, which nothing waits for.
+    rayon::spawn(move || drop(context));
     if diagnostics.failed() {
         return (Vec::new(), diagnostics.0);
     }
