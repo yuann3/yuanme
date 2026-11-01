@@ -71,6 +71,20 @@ pub fn refresh(
             *inputs = load(root, skip)?;
             return Ok(true);
         }
+        // A file the build reads, still a file under the same name, with
+        // no ignore file changed: walking its folder, a stat of each file
+        // in it, would find only what reading it again finds. The name is
+        // compared as the disk spells it, since a case-insensitive disk
+        // opens `a.md` after a rename to `A.md`.
+        let full = root.join(path);
+        if let Some(was) = inputs.get(path).map(|i| i.hash)
+            && full.is_file()
+            && fs::canonicalize(&full).is_ok_and(|c| c == full)
+        {
+            add(inputs, root, vec![path.clone()])?;
+            changed |= inputs.get(path).map(|i| i.hash) != Some(was);
+            continue;
+        }
         // The nearest folder the walk took that is still there, and its
         // child on the way to `path`: a file or folder that is new, gone or
         // changed. Below a folder the walk skipped, such as `.git` or

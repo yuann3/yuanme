@@ -194,6 +194,19 @@ fn every_edit_serves_what_a_clean_build_makes() {
     settle(&mut session, &batches);
     assert_served_is_clean(&session, root, "a save by rename");
 
+    // A rename of only its case, which a case-insensitive disk still opens
+    // under the old name.
+    fs::rename(&pew, root.join("content/projects/pew.md")).unwrap();
+    let updates = settle(&mut session, &batches);
+    assert!(
+        updates
+            .iter()
+            .flatten()
+            .all(|u| matches!(u, Update::Built(_))),
+        "a rename of only its case failed the build"
+    );
+    assert_served_is_clean(&session, root, "a rename of only its case");
+
     // A Layout, a Sidecar and a Data file.
     let edit = |path: &str, from: &str, to: &str| {
         let path = root.join(path);
