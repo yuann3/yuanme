@@ -1,0 +1,106 @@
+# yuann3/setup-yuanme (#37): installs an exact yuanme release on any of
+# the six runners its archives are for, once `gh attestation verify` has
+# checked the archive came from yuann3/yuanme's workflows. The binary is
+# cached per version and runner, and only once it is checked.
+name: Set up yuanme
+description: Install an exact yuanme release, checked against its GitHub attestation and cached per version.
+branding:
+  icon: download
+  color: blue
+
+inputs:
+  version:
+    description: The yuanme release, exactly, such as 0.2.0.
+    required: true
+  token:
+    description: The token `gh attestation verify` reads the attestation with.
+    default: ${{ github.token }}
+  release-url:
+    description: Where each release's archives are, as `<release-url>/vX.Y.Z/<archive>`. The action's own test points it at a release it fakes.
+    default: https://github.com/yuann3/yuanme/releases/download
+
+outputs:
+  path:
+    description: The folder holding the yuanme binary, which is on PATH.
+    value: ${{ steps.target.outputs.dir }}
+  cache-hit:
+    description: Whether the binary came from the cache, with nothing downloaded.
+    value: ${{ steps.restore.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - id: target
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::error::setup-yuanme's version is an exact release, X.Y.Z, such as 0.2.0, not '$VERSION'"
+          exit 1
+        fi
+        case "$RUNNER_OS-$RUNNER_ARCH" in
+          Linux-X64) target=x86_64-unknown-linux-musl archive=tar.xz ;;
+          Linux-ARM64) target=aarch64-unknown-linux-musl archive=tar.xz ;;
+          macOS-X64) target=x86_64-apple-darwin archive=tar.xz ;;
+          macOS-ARM64) target=aarch64-apple-darwin archive=tar.xz ;;
+          Windows-X64) target=x86_64-pc-windows-msvc archive=zip ;;
+          Windows-ARM64) target=aarch64-pc-windows-msvc archive=zip ;;
+          *) echo "::error::yuanme has no release for $RUNNER_OS on $RUNNER_ARCH"; exit 1 ;;
+        esac
+        dir="$RUNNER_TOOL_CACHE/yuanme/$VERSION/$target"
+        if [ "$RUNNER_OS" = Windows ]; then dir=$(cygpath -w "$dir"); fi
+        {
+          echo "target=$target"
+          echo "archive=yuanme-$target.$archive"
+          echo "dir=$dir"
+        } >> "$GITHUB_OUTPUT"
+
+    - id: restore
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.target.outputs.dir }}
+        key: setup-yuanme-${{ inputs.version }}-${{ steps.target.outputs.target }}
+
+    - if: steps.restore.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        URL: ${{ inputs.release-url }}/v${{ inputs.version }}/${{ steps.target.outputs.archive }}
+        ARCHIVE: ${{ steps.target.outputs.archive }}
+        DIR: ${{ steps.target.outputs.dir }}
+      run: |
+        download="$RUNNER_TEMP/setup-yuanme"
+        rm -rf "$download" "$DIR"
+        mkdir -p "$download"
+        curl --fail --location --silent --show-error --retry 3 --output "$download/$ARCHIVE" "$URL"
+        gh attestation verify "$download/$ARCHIVE" --repo yuann3/yuanme
+        mkdir -p "$DIR"
+        # dist's tarballs hold one folder; its zips hold the files.
+        case $ARCHIVE in
+          *.zip) unzip -q "$download/$ARCHIVE" -d "$DIR" ;;
+          *) tar -xJf "$download/$ARCHIVE" -C "$DIR" --strip-components 1 ;;
+        esac
+        rm -rf "$download"
+
+    # A release reports its version alone, so this also catches an archive
+    # of another version.
+    - shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        DIR: ${{ steps.target.outputs.dir }}
+      run: |
+        exe="$DIR/yuanme"
+        if [ "$RUNNER_OS" = Windows ]; then exe="$exe.exe"; fi
+        reported=$("$exe" --version)
+        if [ "$reported" != "yuanme $VERSION" ]; then
+          echo "::error::$exe reports '$reported', not 'yuanme $VERSION'"
+          exit 1
+        fi
+        echo "$DIR" >> "$GITHUB_PATH"
+
+    - if: steps.restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.target.outputs.dir }}
+        key: setup-yuanme-${{ inputs.version }}-${{ steps.target.outputs.target }}

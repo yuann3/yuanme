@@ -70,6 +70,25 @@ These need the owner's accounts, once.
    gh secret set GEMINI_API_KEY --repo yuann3/yuanme      # Gemini CLI: gemini-4-argon
    ```
 
+## setup-yuanme
+
+The `yuann3/setup-yuanme` action (#37, #79) installs an exact release in a GitHub Actions job, checked with `gh attestation verify --repo yuann3/yuanme` and cached per version. Its source is `actions/setup-yuanme/`, and `.github/workflows/setup-yuanme.yml` tests it on all six runners whenever it changes. The test fakes a release and attests it from this repository, which is the only place an attestation can come from that `--repo yuann3/yuanme` accepts, so the source stays here. Deploy workflows pin actions by commit SHA, so the action is published to a repository of its own:
+
+```sh
+gh repo create yuann3/setup-yuanme --public --description "Install an exact yuanme release in GitHub Actions"
+git subtree split --prefix actions/setup-yuanme -b setup-yuanme
+git push git@github.com:yuann3/setup-yuanme.git setup-yuanme:main
+git push git@github.com:yuann3/setup-yuanme.git setup-yuanme:refs/tags/v1.0.0
+```
+
+Publish each later change the same way, once `setup-yuanme.yml` has passed on it, with a new tag. Then pin the new commit in `crates/yuanme/src/init/deploy/build.yml`, where `init`'s deploy workflows install yuanme:
+
+```yaml
+      - uses: yuann3/setup-yuanme@<commit SHA> # v1.0.0
+        with:
+          version: ${{ env.YUANME_VERSION }}
+```
+
 ## The Agent eval
 
 `evals/lib/experiment.ts` names the tier-1 models and pins each agent CLI; `evals/lib/run.ts` runs them in Docker. A run's summary is `evals/results/VERSION/EXPERIMENT.json`, in the `eval-EXPERIMENT` artifact with the raw transcripts, kept 90 days; commit the summaries under `evals/results/`. The job summary lists each experiment's pass rate and its create group.
