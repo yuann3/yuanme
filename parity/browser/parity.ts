@@ -77,6 +77,9 @@ const SEEDS: Seed[] = [
 	{ name: 'markup rewritten to the same DOM', only: 'pixels', pages: ['/'], caught: false, edits: [['replace', 'index.html', '<head>', '<head>\n  <!-- rewritten -->\n  '], ['replace', 'index.html', 'class="nav-link" data-nav-link', 'data-nav-link="" class="nav-link"']] },
 	// The same change as the Film's, inside the photos: within the photo threshold.
 	{ name: 'About photos re-encoded (about-image-bytes)', only: 'pixels', pages: ['/about/'], caught: false, edits: [['append', CSS, '[data-pile] img{filter:brightness(1.2)}']] },
+	// Ylib.png is drawn at a seventh of its width: only its box is compared.
+	{ name: 'a shrunk hero image redrawn (hero-images)', only: 'pixels', pages: ['/projects/ylib/'], caught: false, edits: [['replace', 'projects/ylib/index.html', '<img src="/Ylib.png"', '<img style="filter:invert(1)" src="/Ylib.png"']] },
+	{ name: 'a photo inverted', only: 'pixels', pages: ['/about/'], caught: true, edits: [['append', CSS, '[data-pile] img{filter:invert(1)}']] },
 	// Two of the tags index's rows swapped: the Engine's order, not Astro's.
 	{ name: 'tags in another order (collection-order)', only: 'pixels', pages: ['/tags/'], caught: false, edits: [['replace', 'tags/index.html', '>#life<', '>#swap<'], ['replace', 'tags/index.html', '>#c<', '>#life<'], ['replace', 'tags/index.html', '>#swap<', '>#c<']] },
 	{ name: 'PhotoPile broken', only: 'feel', caught: true, edits: [['replace', '_astro/PhotoPile.astro_astro_type_script_index_0_lang.Cmp7FTzI.js', 'dataset.init', 'dataset.unused']] },

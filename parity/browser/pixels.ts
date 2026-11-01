@@ -22,13 +22,20 @@ export const THRESHOLD = 0.1;
 export const PHOTO_THRESHOLD = 0.25;
 /** A screenshot fails if more than 0.05 % of its pixels differ. */
 export const MAX_RATIO = 0.0005;
+/**
+ * An image drawn at under a quarter of its width is compared by its box
+ * alone (`hero-images`): WebKit on Linux shrinks Astro's full-size
+ * `Ylib.png` and `rustc.PNG` without smoothing, so its aliasing can't match
+ * the Engine's copy made near the width it's shown at.
+ */
+export const SHRUNK = 4;
 export const RULES = ['about-image-bytes', 'hero-images', 'collection-order'];
 /** Pages whose lists the Engine orders by its Collection rules (`collection-order`): both sides sort their items by text before the screenshots. */
 const REORDERED = ['/tags/'];
 /** A long post's panel is about 20 screens; this bounds a runaway one. */
 const MAX_FRAMES = 60;
 
-type Rect = { x: number; y: number; w: number; h: number };
+type Rect = { x: number; y: number; w: number; h: number; shrunk: boolean };
 type Shot = { png: PNG; photos: Rect[] };
 export type Side = { server: Server; remote: string; cache?: Map<string, Shot[]> };
 export type Failure = { page: string; viewport: string; reason: string };
@@ -53,11 +60,12 @@ async function settle(page: Page) {
  * so they keep the strict threshold.
  */
 function photos(page: Page): Promise<Rect[]> {
-	return page.evaluate(() => {
+	return page.evaluate((shrink) => {
 		const out = [];
 		for (const img of document.images) {
 			if (!img.currentSrc || /\.svg(\?|#|$)/i.test(img.currentSrc) || img.currentSrc.startsWith('data:image/svg')) continue;
 			let { left, top, right, bottom } = img.getBoundingClientRect();
+			const shrunk = img.naturalWidth > shrink * (right - left) * devicePixelRatio;
 			for (let el = img.parentElement; el; el = el.parentElement) {
 				if (getComputedStyle(el).overflow === 'visible') continue;
 				const c = el.getBoundingClientRect();
@@ -66,10 +74,10 @@ function photos(page: Page): Promise<Rect[]> {
 				right = Math.min(right, c.right);
 				bottom = Math.min(bottom, c.bottom);
 			}
-			if (right > left && bottom > top) out.push({ x: left + scrollX, y: top + scrollY, w: right - left, h: bottom - top });
+			if (right > left && bottom > top) out.push({ x: left + scrollX, y: top + scrollY, w: right - left, h: bottom - top, shrunk });
 		}
 		return out;
-	});
+	}, SHRUNK);
 }
 
 /**
@@ -108,19 +116,22 @@ async function shoot(ctx: BrowserContext, origin: string, path: string): Promise
 	return shots;
 }
 
-/** Differing pixels: the strict threshold outside photos, the photo threshold inside them. */
+/**
+ * Differing pixels: the strict threshold outside photos, the photo
+ * threshold inside them, and none inside a shrunk one.
+ */
 function differing(a: Shot, b: Shot, diff: PNG): number {
 	const { width, height } = a.png;
-	const photo = new Uint8Array(width * height);
-	for (const r of [...a.photos, ...b.photos]) {
+	// 0 outside photos, 1 in a photo, 2 in a shrunk one, whichever side it's shrunk on.
+	const kind = new Uint8Array(width * height);
+	for (const r of [...a.photos, ...b.photos].sort((r, s) => +r.shrunk - +s.shrunk)) {
 		for (let y = Math.max(0, Math.floor(r.y)); y < Math.min(height, Math.ceil(r.y + r.h)); y++) {
-			photo.fill(1, y * width + Math.max(0, Math.floor(r.x)), y * width + Math.min(width, Math.ceil(r.x + r.w)));
+			kind.fill(r.shrunk ? 2 : 1, y * width + Math.max(0, Math.floor(r.x)), y * width + Math.min(width, Math.ceil(r.x + r.w)));
 		}
 	}
-	const rest = photo.map((p) => 1 - p);
 	return (
-		pixelmatch(a.png.data, b.png.data, diff.data, width, height, { threshold: THRESHOLD, ignoreMask: photo }) +
-		pixelmatch(a.png.data, b.png.data, null, width, height, { threshold: PHOTO_THRESHOLD, ignoreMask: rest })
+		pixelmatch(a.png.data, b.png.data, diff.data, width, height, { threshold: THRESHOLD, ignoreMask: kind.map((k) => +(k !== 0)) }) +
+		pixelmatch(a.png.data, b.png.data, null, width, height, { threshold: PHOTO_THRESHOLD, ignoreMask: kind.map((k) => +(k !== 1)) })
 	);
 }
 

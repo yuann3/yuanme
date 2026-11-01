@@ -35,7 +35,7 @@ Escaping style, kept comments, attribute order and whitespace all decode to the 
 - **Motion:** screenshots are taken with `prefers-reduced-motion: reduce`, once `document.getAnimations()` has settled. With that setting the Film doesn't start, so its deterministic fallback CSS is what's compared. The Film itself is covered by the behaviour checks.
 - **Text antialiasing:** Chromium runs with `--disable-lcd-text`, so text is antialiased in grayscale on every OS. On Linux, Chromium otherwise picks LCD antialiasing for text with an opaque background of its own, such as Shiki's dark-theme token spans ([#75](https://github.com/yuann3/yuanme/issues/75)).
 - **Fonts:** the harness serves the baseline's Google Fonts requests from the baseline's snapshot of them, and the Reference site self-hosts those same woff2 files, cut down to the characters it sets with nothing else in them changed, so its text renders the same.
-- **Threshold:** pixelmatch 8 with a per-pixel threshold of 0.1, an OKLab distance. A screenshot fails if more than 0.05 % of its pixels differ. Re-encoded photos use a per-pixel threshold of 0.25: the four About photos (`about-image-bytes`) and the hero images (`hero-images`).
+- **Threshold:** pixelmatch 8 with a per-pixel threshold of 0.1, an OKLab distance. A screenshot fails if more than 0.05 % of its pixels differ. Re-encoded photos use a per-pixel threshold of 0.25: the four About photos (`about-image-bytes`) and the hero images (`hero-images`). An image the baseline draws at under a quarter of its width, `Ylib.png` and `rustc.PNG`, is compared by its box alone (`hero-images`): WebKit on Linux shrinks it without smoothing, and that aliasing can't match a copy made near the width it's shown at.
 
 ## Exceptions
 
@@ -81,7 +81,7 @@ No tag URL changes: the Slugs of `C`, `Programming`, `Life` and `Draft` equal to
 | `about-img-src` | `<img src>` is a full-size re-encoded JPEG | The largest srcset JPEG | #23 |
 | `about-image-bytes` | sharp's encodes | The Engine's encoders. Near-identical pixels, compared at the looser threshold | [#8](https://github.com/yuann3/yuanme/issues/8), #23 |
 | `image-formats` | About photos have AVIF and WebP `<source>`s | One AVIF `<source>` plus the JPEG `<img srcset>`. WebP is not generated, because every target browser decodes AVIF | [#28](https://github.com/yuann3/yuanme/issues/28) |
-| `hero-images` | Post and project hero images (`rustc.PNG` 1.6 MB, `plane.png`, `Ylib.png`) are plain `<img>` from `public/` | Processed by `image()`: AVIF and JPEG srcsets, `width`/`height`, `fetchpriority="high"`, and a preload. Compared at the looser per-pixel threshold | #28 |
+| `hero-images` | Post and project hero images (`rustc.PNG` 1.6 MB, `plane.png`, `Ylib.png`) are plain `<img>` from `public/` | Processed by `image()`: AVIF and JPEG srcsets, `width`/`height`, `fetchpriority="high"`, and a preload. Compared at the looser per-pixel threshold, or by their box where Astro shrinks the full-size file to under a quarter | #28 |
 
 ### Client runtime
 

@@ -37,7 +37,7 @@ node parity/browser/parity.ts check target/baseline target/site --engines chromi
 Each rule that lets a difference through names its exception id, and a rule whose id is missing from `docs/parity-exceptions.md` fails the test before it compares anything. A rule normalizes both sides alike, so it never requires a difference and the baseline compared with itself still passes. The rules so far:
 
 - URLs and DOM (`src/lib.rs`): `apex-origin`, `trailing-slash-hrefs`, `assets-dir`, `robots-txt`, `unreferenced-files`, `head-metas`, `scoped-styles`, `single-initial-script`, `image-formats`, `self-hosted-fonts`, `immutable-assets`, `class-highlighting`, `og-image`, `reading-time`, `collection-order`, `not-found-canonical`, `dead-links`, `hero-images`, and `rss-guid`, under which each feed's guids are compared by their text.
-- Pixels (`browser/pixels.ts`): the 0.25 threshold inside raster images, `about-image-bytes` and `hero-images`; `collection-order`, which sorts the tags index's rows on both sides.
+- Pixels (`browser/pixels.ts`): the 0.25 threshold inside raster images, `about-image-bytes` and `hero-images`, which also compares an image drawn at under a quarter of its width by its box alone; `collection-order`, which sorts the tags index's rows on both sides.
 - Behaviour (`browser/feel.ts`): `route-announcer`, `panel-scroll`, `single-initial-script`, `router-events` for the probe's event names, and `trailing-slash-hrefs` for the nav's `aria-current` after a swap.
 
 The other exceptions need no rule: their differences don't reach what the checks compare, or the port matches Astro.
