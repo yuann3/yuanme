@@ -3,4 +3,4 @@
 # (parity/baseline.lock). Bump `rev` with each change to the port.
 repository = "yuann3/eyuan.me"
 branch = "yuanme"
-rev = "4c7fd849883601c175ed5ea13e5e75e9a2ebd7ad"
+rev = "77b326d661f18bdad4bf4d0b5ed2572b1b901364"
