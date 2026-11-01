@@ -367,6 +367,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         &heavy,
         &templates,
         &sources,
+        inputs,
+        cache,
     );
     diagnostics.extend(more);
     let more = images::in_css(inputs, &files, &heavy, &mut sources, &fallback);

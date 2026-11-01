@@ -789,25 +789,38 @@ fn a_page_is_processed_again_when_anything_it_reads_changes() {
     let config = [
         CONFIG,
         b"\n[collections.posts]\nroute = \"/blog/{slug}/\"\n".as_slice(),
-    ];
-    inputs.insert("yuanme.toml", config.concat());
+    ]
+    .concat();
+    inputs.insert("yuanme.toml", config.clone());
     let page = "<html><head></head><body>{{ entry.content }}</body></html>";
     inputs.insert("templates/posts/entry.html", page.as_bytes());
-    inputs.insert("content/posts/a.md", b"---\ntitle: A\n---\nA.\n".as_slice());
+    let a = "---\ntitle: A\n---\nSee [B](/blog/b/) and [C](https://other.com/c/).\n";
+    inputs.insert("content/posts/a.md", a.as_bytes());
+    let b = b"---\ntitle: B\n---\nB.\n".as_slice();
+    inputs.insert("content/posts/b.md", b);
     inputs.insert("styles/a.css", b"p { color: red }".as_slice());
     let mut cache = Cache::memory("v");
-    let mut files = |inputs: &Inputs, what: &str| {
-        let hashes = |build: Build| -> BTreeMap<String, blake3::Hash> {
+    // The files and the Diagnostics, which must be a fresh build's.
+    let mut output = |inputs: &Inputs, what: &str| {
+        let seen = |build: Build| {
             assert!(!build.failed(), "{what}: {:#?}", build.diagnostics);
-            build.files.into_iter().map(|(p, o)| (p, o.hash)).collect()
+            let rendered: Vec<String> = build
+                .diagnostics
+                .iter()
+                .map(|d| d.render_short(&build.sources))
+                .collect();
+            let files: BTreeMap<String, blake3::Hash> =
+                build.files.into_iter().map(|(p, o)| (p, o.hash)).collect();
+            (files, rendered)
         };
-        let cached = hashes(build(inputs, &mut cache, Mode::Dev));
-        let fresh = hashes(build(inputs, &mut Cache::memory("v"), Mode::Dev));
-        assert!(fresh.contains_key("blog/a/index.html"), "{what}");
+        let cached = seen(build(inputs, &mut cache, Mode::Dev));
+        let fresh = seen(build(inputs, &mut Cache::memory("v"), Mode::Dev));
+        assert!(fresh.0.contains_key("blog/a/index.html"), "{what}");
         assert_eq!(cached, fresh, "after {what}");
+        cached.1
     };
-    files(&inputs, "the first build");
-    files(&inputs, "no change");
+    assert_eq!(output(&inputs, "the first build"), [] as [String; 0]);
+    assert_eq!(output(&inputs, "no change"), [] as [String; 0]);
 
     // A stylesheet its Template now links, which only a new scan finds.
     let linked = page.replace(
@@ -815,5 +828,16 @@ fn a_page_is_processed_again_when_anything_it_reads_changes() {
         "<head><link rel=\"stylesheet\" href=\"/styles/a.css\">",
     );
     inputs.insert("templates/posts/entry.html", linked.as_bytes());
-    files(&inputs, "a new stylesheet link");
+    output(&inputs, "a new stylesheet link");
+    // The Page a link goes to, which is gone.
+    inputs.remove("content/posts/b.md");
+    assert_eq!(output(&inputs, "a removed Page").len(), 1);
+    inputs.insert("content/posts/b.md", b);
+    assert_eq!(output(&inputs, "the Page back").len(), 0);
+    // The Site's origin, on which a link that went elsewhere is broken.
+    let moved = String::from_utf8(config)
+        .unwrap()
+        .replace("example.com", "other.com");
+    inputs.insert("yuanme.toml", moved.as_bytes());
+    assert_eq!(output(&inputs, "a new origin").len(), 1);
 }

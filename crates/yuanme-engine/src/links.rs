@@ -14,7 +14,7 @@ use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 use crate::assets::{has_scheme, normalize, percent_decode, suffix};
 use crate::image::{Settings, Variant};
 use crate::images::{self, Heavy};
-use crate::{Body, Output};
+use crate::{Body, Cache, Inputs, Output};
 
 /// What a link on the Site's origin finds.
 enum Verdict {
@@ -27,7 +27,9 @@ enum Verdict {
 /// The links of each HTML Page in `pages`, by output path with the
 /// Templates it rendered, and the `to` of each redirect, against `files`
 /// and the image variants a build that encodes none leaves out of them;
-/// and each Page that loads a raster of `heavy`.
+/// and each Page that loads a raster of `heavy`. A Page with nothing to
+/// report is remembered in `cache`, by everything its check read, and not
+/// checked again until some of it changes.
 #[expect(
     clippy::too_many_arguments,
     reason = "each is one output of the build, which a struct would only rename"
@@ -41,7 +43,26 @@ pub(crate) fn links(
     heavy: &BTreeMap<String, Heavy>,
     templates: &BTreeMap<String, FileId>,
     sources: &Files,
+    inputs: &Inputs,
+    cache: &mut Cache,
 ) -> Vec<Diagnostic> {
+    // What a check that finds nothing reads besides its Page: Site config,
+    // for the origin and the redirects, and the paths a link can find.
+    // `heavy` is only its paths, since a Page that loads one is reported.
+    let mut site_key = cache.key("links");
+    site_key.update(inputs.files["yuanme.toml"].hash.as_bytes());
+    for path in files.keys().chain(images.keys()).chain(heavy.keys()) {
+        site_key.update(&(path.len() as u64).to_le_bytes());
+        site_key.update(path.as_bytes());
+        site_key.update(&[0xff]);
+    }
+    let page_key = |output: &str, hash: &blake3::Hash| {
+        let mut key = site_key.clone();
+        key.update(output.as_bytes());
+        key.update(hash.as_bytes());
+        key.finalize()
+    };
+    let clean = std::mem::take(&mut cache.clean);
     let origin = config.site.url.trim_end_matches('/');
     let entries: BTreeMap<&str, FileId> = site
         .routes
@@ -62,19 +83,24 @@ pub(crate) fn links(
 
     // Each Page on a thread of its own, since this pass reads every byte
     // of the Site's HTML on every build.
-    let found: Vec<Vec<Diagnostic>> = pages
+    // With the key of each Page that found nothing.
+    let found: Vec<(Option<blake3::Hash>, Vec<Diagnostic>)> = pages
         .par_iter()
         .map(|(output, used)| {
             let mut found = Vec::new();
             let Some(Output {
                 body: Body::Bytes(bytes),
-                ..
+                hash,
             }) = files.get(output)
             else {
-                return found;
+                return (None, found);
             };
+            let key = page_key(output, hash);
+            if clean.get(output) == Some(&key) {
+                return (Some(key), found);
+            }
             let Ok(text) = std::str::from_utf8(bytes) else {
-                return found;
+                return (None, found);
             };
             let base = url_of(output);
             for link in html::urls(text) {
@@ -133,11 +159,16 @@ pub(crate) fn links(
                 };
                 found.push(d.note(format!("in the Page written to `{output}`")));
             }
-            found
+            (found.is_empty().then_some(key), found)
         })
         .collect();
-    for d in found.into_iter().flatten() {
-        push(d);
+    for (output, (clean, found)) in pages.keys().zip(found) {
+        if let Some(key) = clean {
+            cache.clean.insert(output.clone(), key);
+        }
+        for d in found {
+            push(d);
+        }
     }
 
     for r in &config.host.redirects {

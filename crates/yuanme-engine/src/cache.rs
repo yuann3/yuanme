@@ -41,6 +41,9 @@ pub struct Cache {
     /// The last dev build's scan of each HTML Page, by its output path,
     /// with the text it scanned.
     pub(crate) scans: HashMap<String, (String, Arc<yuanme_assets::html::Scan>)>,
+    /// The last build's HTML Pages whose links were all fine, by output
+    /// path, with the key of everything their check read.
+    pub(crate) clean: HashMap<String, blake3::Hash>,
 }
 
 #[derive(Default)]
@@ -70,6 +73,7 @@ impl Cache {
             entries: HashMap::new(),
             bodies: HashMap::new(),
             scans: HashMap::new(),
+            clean: HashMap::new(),
         }
     }
 
