@@ -6,6 +6,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
+use rayon::prelude::*;
+
 use yuanme_content::config::{self, Config};
 use yuanme_content::document::{Document, Kind, NodeId};
 use yuanme_content::entry::SourceFormat;
@@ -225,16 +227,32 @@ impl Images {
     /// are lazy.
     pub fn bodies(&self, site: &Site) -> (Vec<Pictures>, Vec<Diagnostic>) {
         let mut diagnostics = Vec::new();
+        // Each Document's images and captions, walked on threads of their
+        // own; the images are resolved in order, since the first Entry to
+        // name one is where an error encoding it points.
+        let walked: Vec<(Vec<NodeId>, BTreeMap<NodeId, String>)> = site
+            .entries
+            .par_iter()
+            .map(|e| {
+                let doc = &e.document;
+                let images = doc
+                    .descendants(Document::ROOT)
+                    .into_iter()
+                    .filter(|&id| matches!(doc.node(id).kind, Kind::Image { .. }))
+                    .collect();
+                (images, captions(doc))
+            })
+            .collect();
         let pictures = site
             .entries
             .iter()
-            .map(|e| {
+            .zip(walked)
+            .map(|(e, (images, captions))| {
                 let doc = &e.document;
                 let dir = e.path.rsplit_once('/').map_or("", |(d, _)| d);
-                let captions = captions(doc);
                 let mut pictures = Pictures::new();
                 let mut first = true;
-                for id in doc.descendants(Document::ROOT) {
+                for id in images {
                     let node = doc.node(id);
                     let Kind::Image { url, title } = &node.kind else {
                         continue;

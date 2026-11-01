@@ -34,39 +34,45 @@ pub(crate) fn code(
     sources: &Files,
     cache: &mut Cache,
 ) -> (Vec<Code>, Vec<Diagnostic>) {
-    let mut diagnostics = Vec::new();
-    let mut blocks: Vec<Vec<Block>> = Vec::new();
-    for entry in &site.entries {
-        let doc = &entry.document;
-        let mut found = Vec::new();
-        for id in doc.descendants(Document::ROOT) {
-            let Kind::CodeBlock { lang, text } = &doc.node(id).kind else {
-                continue;
-            };
-            let grammar = match lang.as_deref().map(|l| (l, highlight::language(l))) {
-                None | Some((_, Some(Language::Plain))) => None,
-                Some((_, Some(Language::Grammar(g)))) => Some(g),
-                Some((lang, None)) => {
-                    let span = doc.node(id).span.clone();
-                    diagnostics.push(unknown(sources, entry.file, span, lang));
-                    None
-                }
-            };
-            let mut key = cache.key(KIND);
-            let name = grammar.unwrap_or_default();
-            key.update(&(name.len() as u64).to_le_bytes());
-            key.update(name.as_bytes());
-            key.update(text.as_bytes());
-            let key = key.finalize();
-            found.push(Block {
-                id,
-                grammar,
-                text,
-                key,
-            });
-        }
-        blocks.push(found);
-    }
+    // Every Document is walked on every build, so on threads of their own.
+    let walked: Vec<(Vec<Block>, Vec<Diagnostic>)> = site
+        .entries
+        .par_iter()
+        .map(|entry| {
+            let doc = &entry.document;
+            let mut found = Vec::new();
+            let mut diagnostics = Vec::new();
+            for id in doc.descendants(Document::ROOT) {
+                let Kind::CodeBlock { lang, text } = &doc.node(id).kind else {
+                    continue;
+                };
+                let grammar = match lang.as_deref().map(|l| (l, highlight::language(l))) {
+                    None | Some((_, Some(Language::Plain))) => None,
+                    Some((_, Some(Language::Grammar(g)))) => Some(g),
+                    Some((lang, None)) => {
+                        let span = doc.node(id).span.clone();
+                        diagnostics.push(unknown(sources, entry.file, span, lang));
+                        None
+                    }
+                };
+                let mut key = cache.key(KIND);
+                let name = grammar.unwrap_or_default();
+                key.update(&(name.len() as u64).to_le_bytes());
+                key.update(name.as_bytes());
+                key.update(text.as_bytes());
+                let key = key.finalize();
+                found.push(Block {
+                    id,
+                    grammar,
+                    text,
+                    key,
+                });
+            }
+            (found, diagnostics)
+        })
+        .collect();
+    let (blocks, diagnostics): (Vec<Vec<Block>>, Vec<Vec<Diagnostic>>) = walked.into_iter().unzip();
+    let diagnostics = diagnostics.into_iter().flatten().collect();
 
     let mut missing: Vec<&Block> = blocks
         .iter()
@@ -85,8 +91,9 @@ pub(crate) fn code(
         cache.insert(KIND, key, html.into_bytes());
     }
 
+    let cache = &*cache;
     let code = blocks
-        .iter()
+        .par_iter()
         .map(|found| {
             found
                 .iter()
