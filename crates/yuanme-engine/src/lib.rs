@@ -275,6 +275,9 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let (pictures, more) = images.bodies(&site);
     diagnostics.extend(more);
     let bodies = bodies::bodies(&site, &code, pictures, cache, mode == Mode::Dev);
+    // An Entry's Page's first-flight HTML leaves its body out (#15).
+    let measuring = config.budgets.is_some() && mode.encodes();
+    let measured = measuring.then(|| bodies.clone());
     let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
     let scoped = templates
         .keys()
@@ -321,11 +324,6 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         .iter()
         .filter(|p| p.output.ends_with(".html"))
         .map(|p| (p.output.clone(), p.templates.clone()))
-        .collect();
-    let mut pages = pages;
-    let bodies: BTreeMap<String, String> = pages
-        .iter_mut()
-        .filter_map(|p| Some((p.output.clone(), p.body.take()?)))
         .collect();
     let stage = assets::assets(
         inputs,
@@ -374,11 +372,11 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     diagnostics.extend(more);
     let more = images::in_css(inputs, &files, &heavy, &mut sources, &fallback);
     diagnostics.extend(more);
-    let budgets = match &config.budgets {
-        Some(budgets) if mode.encodes() => {
+    let budgets = match (&config.budgets, &measured) {
+        (Some(budgets), Some(bodies)) => {
             let math_font = math_font.as_deref();
             let (measured, more) =
-                budgets::measure(&config, budgets, &site, &files, &bodies, math_font, cache);
+                budgets::measure(&config, budgets, &site, &files, bodies, math_font, cache);
             diagnostics.extend(more);
             measured
         }

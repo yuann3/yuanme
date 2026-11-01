@@ -380,7 +380,6 @@ fn the_reference_templates_from_the_spike_render() {
             output: p.output.clone(),
             text: p.text.clone(),
             templates: Vec::new(),
-            body: None,
         }
     })
     .collect();

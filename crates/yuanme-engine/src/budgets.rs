@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use rayon::prelude::*;
 use yuanme_assets::html::{self, Kind};
 use yuanme_content::config::{self, Budget, Budgets, Config};
-use yuanme_content::site::Site;
+use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Diagnostic, Span, codes};
 
 use crate::links::internal;
@@ -38,14 +38,14 @@ struct Plan<'a> {
     requests: BTreeSet<String>,
 }
 
-/// `bodies` is each Entry's Page's body, by output path; `math_font` the
+/// `bodies` is each Entry's body, in the order of `site.entries`; `math_font` the
 /// math font's path, if a Page shows math.
 pub(crate) fn measure(
     config: &Config,
     budgets: &Budgets,
     site: &Site,
     files: &BTreeMap<String, Output>,
-    bodies: &BTreeMap<String, String>,
+    bodies: &[String],
     math_font: Option<&str>,
     cache: &mut Cache,
 ) -> (Vec<Measured>, Vec<Diagnostic>) {
@@ -56,7 +56,10 @@ pub(crate) fn measure(
         .filter(|r| r.output.ends_with(".html"))
         .filter_map(|r| {
             let text = text(files.get(&r.output)?)?;
-            let body = bodies.get(&r.output).map(String::as_str);
+            let body = match r.kind {
+                RouteKind::Entry(i) => Some(bodies[i].as_str()),
+                _ => None,
+            };
             Some(plan(
                 &r.url, &r.output, text, body, files, math_font, origin,
             ))
