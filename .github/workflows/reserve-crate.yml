@@ -1,0 +1,31 @@
+# One-off: publishes the 0.0.0 placeholder that reserves the crate name
+# (docs/releasing.md, step 1) with the CARGO_REGISTRY_TOKEN secret. Removed
+# once it has run.
+name: Reserve the crate name
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish yuanme 0.0.0
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/yuanme/src" && cd "$RUNNER_TEMP/yuanme"
+          cat > Cargo.toml <<'EOF'
+          [package]
+          name = "yuanme"
+          version = "0.0.0"
+          edition = "2024"
+          description = "A static site generator for Markdown, Org and math. A placeholder until the first release."
+          license = "MIT OR Apache-2.0"
+          repository = "https://github.com/yuann3/yuanme"
+          EOF
+          echo 'fn main() {}' > src/main.rs
+          cargo --version
+          cargo publish --allow-dirty
