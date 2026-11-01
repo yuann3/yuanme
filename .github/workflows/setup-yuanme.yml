@@ -1,0 +1,146 @@
+# The setup-yuanme action (actions/setup-yuanme, #79) on each of the six
+# runners, against a release faked here: an archive laid out as dist lays
+# it out, holding a stub that reports the release's version. This workflow
+# attests the archive as the release does, so `gh attestation verify
+# --repo yuann3/yuanme` passes for it as for a real one, and must refuse
+# the same archive changed afterwards. Attesting needs permissions CI
+# doesn't grant, and leaves an attestation per runner, so this runs only
+# when the action changes.
+name: setup-yuanme
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - actions/setup-yuanme/**
+      - .github/workflows/setup-yuanme.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # New in each run, so its first install can't come from the cache.
+  VERSION: 0.${{ github.run_number }}.${{ github.run_attempt }}
+  # The same archive, changed after it was attested.
+  TAMPERED: 1.${{ github.run_number }}.${{ github.run_attempt }}
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: x86_64-unknown-linux-musl, runner: ubuntu-24.04, archive: tar.xz }
+          - { target: aarch64-unknown-linux-musl, runner: ubuntu-24.04-arm, archive: tar.xz }
+          - { target: x86_64-apple-darwin, runner: macos-15-intel, archive: tar.xz }
+          - { target: aarch64-apple-darwin, runner: macos-15, archive: tar.xz }
+          - { target: x86_64-pc-windows-msvc, runner: windows-2022, archive: zip }
+          - { target: aarch64-pc-windows-msvc, runner: windows-11-arm, archive: zip }
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    defaults:
+      run:
+        shell: bash
+    env:
+      ARCHIVE: yuanme-${{ matrix.target }}.${{ matrix.archive }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Stage the archive's files
+        run: |
+          STAGE="$RUNNER_TEMP/stage/yuanme-${{ matrix.target }}"
+          echo "STAGE=$STAGE" >> "$GITHUB_ENV"
+          mkdir -p "$STAGE" "fake-release/v$VERSION" "fake-release/v$TAMPERED"
+          cp README.md LICENSE-MIT LICENSE-APACHE "$STAGE/"
+          echo 'Independent JPEG Group' > "$STAGE/THIRD_PARTY_NOTICES.md"
+          if [ "$RUNNER_OS" = Windows ]; then
+            echo "RELEASE_URL=file:///$(cygpath -m "$PWD")/fake-release" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_URL=file://$PWD/fake-release" >> "$GITHUB_ENV"
+          fi
+      - name: Fake the release (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          printf '#!/bin/sh\necho "yuanme %s"\n' "$VERSION" > "$STAGE/yuanme"
+          chmod +x "$STAGE/yuanme"
+          tar -cJf "fake-release/v$VERSION/$ARCHIVE" -C "$(dirname "$STAGE")" "yuanme-${{ matrix.target }}"
+      # Windows PowerShell's Add-Type can still write a console program.
+      - name: Fake the release (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $source = "public static class Stub { public static void Main() { System.Console.WriteLine(""yuanme $env:VERSION""); } }"
+          Add-Type -TypeDefinition $source -OutputType ConsoleApplication -OutputAssembly "$env:STAGE\yuanme.exe"
+          Compress-Archive -Path "$env:STAGE\*" -DestinationPath "fake-release\v$env:VERSION\$env:ARCHIVE"
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: fake-release/v${{ env.VERSION }}/${{ env.ARCHIVE }}
+      - name: Tamper with a copy
+        run: |
+          cp "fake-release/v$VERSION/$ARCHIVE" "fake-release/v$TAMPERED/$ARCHIVE"
+          printf x >> "fake-release/v$TAMPERED/$ARCHIVE"
+
+      - id: setup
+        uses: ./actions/setup-yuanme
+        with:
+          version: ${{ env.VERSION }}
+          release-url: ${{ env.RELEASE_URL }}
+      - name: Installed
+        env:
+          CACHE_HIT: ${{ steps.setup.outputs.cache-hit }}
+          DIR: ${{ steps.setup.outputs.path }}
+        run: |
+          test "$CACHE_HIT" != true
+          test "$(yuanme --version)" = "yuanme $VERSION"
+          ls "$DIR"
+          test -f "$DIR/README.md"
+
+      - id: tampered
+        continue-on-error: true
+        uses: ./actions/setup-yuanme
+        with:
+          version: ${{ env.TAMPERED }}
+          release-url: ${{ env.RELEASE_URL }}
+      - id: inexact
+        continue-on-error: true
+        uses: ./actions/setup-yuanme
+        with:
+          version: "0.2"
+          release-url: ${{ env.RELEASE_URL }}
+      - name: Refused
+        env:
+          TAMPERED_OUTCOME: ${{ steps.tampered.outcome }}
+          INEXACT_OUTCOME: ${{ steps.inexact.outcome }}
+        run: |
+          test "$TAMPERED_OUTCOME" = failure
+          test "$INEXACT_OUTCOME" = failure
+          # It downloaded the tampered archive, so what refused it was the
+          # attestation, and it unpacked nothing.
+          cmp "$RUNNER_TEMP/setup-yuanme/$ARCHIVE" "fake-release/v$TAMPERED/$ARCHIVE"
+          test ! -e "$RUNNER_TOOL_CACHE/yuanme/$TAMPERED"
+          test "$(yuanme --version)" = "yuanme $VERSION"
+
+  # The install job's Linux x86_64 binary, from the cache: a release URL
+  # that serves nothing would fail any download.
+  cached:
+    needs: install
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: setup
+        uses: ./actions/setup-yuanme
+        with:
+          version: ${{ env.VERSION }}
+          release-url: file:///nowhere
+      - env:
+          CACHE_HIT: ${{ steps.setup.outputs.cache-hit }}
+        run: |
+          test "$CACHE_HIT" = true
+          test "$(yuanme --version)" = "yuanme $VERSION"
