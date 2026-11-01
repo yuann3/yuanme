@@ -2,6 +2,7 @@
 // does, answering every other origin from the Parity baseline's remote/
 // snapshot, and the Parity exception ids.
 import { createServer } from 'node:http';
+import { gzipSync } from 'node:zlib';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, join, relative, sep } from 'node:path';
 import type { AddressInfo } from 'node:net';
@@ -46,8 +47,13 @@ const TYPES: Record<string, string> = {
 
 export type Server = { origin: string; close: () => Promise<void> };
 
-/** Serves a Site as Netlify served the baseline: `/x` redirects to `/x/`, and a missing file gets 404.html with a 404. */
-export async function serve(root: string): Promise<Server> {
+/**
+ * Serves a Site as Netlify served the baseline: `/x` redirects to `/x/`, and
+ * a missing file gets 404.html with a 404. With `host`, as a static host
+ * serves it, which the lab Gates time: text gzipped, and `/assets/` cached
+ * as immutable, as the Site's `_headers` says.
+ */
+export async function serve(root: string, { host = false } = {}): Promise<Server> {
 	const server = createServer((req, res) => {
 		const url = new URL(req.url ?? '/', 'http://localhost');
 		const path = decodeURIComponent(url.pathname);
@@ -62,8 +68,18 @@ export async function serve(root: string): Promise<Server> {
 			file = join(root, '404.html');
 			status = 404;
 		}
-		res.writeHead(status, { 'content-type': TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream', 'cache-control': 'no-store' });
-		res.end(readFileSync(file));
+		const type = TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream';
+		if (!host) {
+			res.writeHead(status, { 'content-type': type, 'cache-control': 'no-store' });
+			return void res.end(readFileSync(file));
+		}
+		const text = /^(text|application\/(json|xml))|svg/.test(type) && /gzip/.test(String(req.headers['accept-encoding']));
+		res.writeHead(status, {
+			'content-type': type,
+			'cache-control': path.startsWith('/assets/') ? 'public, max-age=31536000, immutable' : 'public, max-age=0, must-revalidate',
+			...(text ? { 'content-encoding': 'gzip' } : {}),
+		});
+		res.end(text ? gzipSync(readFileSync(file)) : readFileSync(file));
 	});
 	await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
 	const { port } = server.address() as AddressInfo;
