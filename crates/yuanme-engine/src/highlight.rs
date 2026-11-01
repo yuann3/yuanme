@@ -3,6 +3,7 @@
 
 use std::collections::BTreeSet;
 use std::ops::Range;
+use std::sync::Arc;
 
 use rayon::prelude::*;
 use yuanme_content::config;
@@ -12,6 +13,7 @@ use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 use yuanme_render::highlight::{self, Code, Language};
 
 use crate::Cache;
+use crate::assets::Seen;
 use crate::link::Asset;
 
 const KIND: &str = "highlight";
@@ -135,29 +137,23 @@ fn unknown(sources: &Files, file: FileId, block: Range<usize>, lang: &str) -> Di
 /// with a `<link>` to it at the end of the head of each HTML Page that
 /// shows code, as math's stylesheet goes only to Pages with math (#17).
 /// It comes after the assets stage's stylesheets, as a Sidecar's does.
-pub(crate) fn stylesheet(pages: &mut [(String, Vec<u8>)], assets: &mut Vec<Asset>) {
-    // Every Page is read on every build, so on threads of their own.
-    let used: Vec<Option<BTreeSet<&str>>> = pages
-        .par_iter()
-        .map(|(path, bytes)| {
-            if !path.ends_with(".html") {
-                return None;
-            }
-            highlight::classes(std::str::from_utf8(bytes).expect("a Page is UTF-8"))
-        })
-        .collect();
+pub(crate) fn stylesheet(
+    pages: &mut [(String, Vec<u8>)],
+    seen: &[Option<Arc<Seen>>],
+    assets: &mut Vec<Asset>,
+) {
     let mut classes = BTreeSet::new();
     let mut showing = Vec::new();
-    for (i, used) in used.into_iter().enumerate() {
-        if let Some(used) = used {
-            classes.extend(used.into_iter().map(str::to_string));
+    for (i, seen) in seen.iter().enumerate() {
+        if let Some(used) = seen.as_ref().and_then(|s| s.code.as_ref()) {
+            classes.extend(used.iter().map(String::as_str));
             showing.push(i);
         }
     }
     if showing.is_empty() {
         return;
     }
-    let css = highlight::css(classes.iter().map(String::as_str));
+    let css = highlight::css(classes);
     let tag = format!(
         "<link rel=\"stylesheet\" href=\"\0asset:{}\0\">",
         assets.len()

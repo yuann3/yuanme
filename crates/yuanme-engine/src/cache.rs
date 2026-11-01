@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use crate::assets::tailwind::Watching;
+use crate::assets::{self, tailwind::Watching};
 use crate::{Body, bodies, entries};
 
 /// Entries no build has read for this many successful builds are deleted.
@@ -38,9 +38,9 @@ pub struct Cache {
     pub(crate) entries: HashMap<blake3::Hash, entries::Read>,
     /// The last build's Entries' bodies as HTML, by the Entry's path.
     pub(crate) bodies: HashMap<String, bodies::Rendered>,
-    /// The last dev build's scan of each HTML Page, by its output path,
-    /// with the text it scanned.
-    pub(crate) scans: HashMap<String, (String, Arc<yuanme_assets::html::Scan>)>,
+    /// What the last dev build saw of each HTML Page, by its output path,
+    /// with the text it was seen in.
+    pub(crate) seen: HashMap<String, (String, Arc<assets::Seen>)>,
     /// The last build's HTML Pages whose links were all fine, by output
     /// path, with the key of everything their check read.
     pub(crate) clean: HashMap<String, blake3::Hash>,
@@ -72,7 +72,7 @@ impl Cache {
             tailwind: BTreeMap::new(),
             entries: HashMap::new(),
             bodies: HashMap::new(),
-            scans: HashMap::new(),
+            seen: HashMap::new(),
             clean: HashMap::new(),
         }
     }

@@ -32,6 +32,8 @@ const SIDECARS_ENTRY: &str = "\0sidecars.css";
 pub(crate) struct Stage {
     /// Each Page's bytes, with placeholders for the assets it names.
     pub pages: Vec<(String, Vec<u8>)>,
+    /// What each HTML Page shows, in the order of `pages`.
+    pub seen: Vec<Option<Arc<Seen>>>,
     pub assets: Vec<Asset>,
     /// What went into each Script bundle.
     pub scripts: Vec<Bundle>,
@@ -44,10 +46,36 @@ impl Stage {
     fn failed(diagnostics: Diagnostics) -> Stage {
         Stage {
             pages: Vec::new(),
+            seen: Vec::new(),
             assets: Vec::new(),
             scripts: Vec::new(),
             client: None,
             diagnostics: diagnostics.0,
+        }
+    }
+}
+
+/// What later passes ask of a Page's text: what it names, its highlighted
+/// code's classes, and whether it has math. It reads nothing but the text,
+/// so `yuanme dev` keeps it with the text for its next build.
+pub(crate) struct Seen {
+    pub scan: html::Scan,
+    pub code: Option<BTreeSet<String>>,
+    pub math: bool,
+}
+
+impl Seen {
+    fn of(text: &str) -> Seen {
+        let code = yuanme_render::highlight::classes(text);
+        let mut scan = html::scan(text);
+        // Only Tailwind's tokens read them, as a set; a Page of
+        // highlighted code holds thousands of the same few.
+        scan.classes.sort_unstable();
+        scan.classes.dedup();
+        Seen {
+            scan,
+            code: code.map(|c| c.into_iter().map(str::to_string).collect()),
+            math: crate::math::has_math(text.as_bytes()),
         }
     }
 }
@@ -104,18 +132,17 @@ pub(crate) fn assets(
         }
     }
 
-    // What each Page names. A scan reads nothing but the Page's text, so
-    // `yuanme dev` keeps each with the text for its next build.
-    let kept = std::mem::take(&mut cache.scans);
-    let scans: Vec<Option<Arc<html::Scan>>> = pages
+    // What each Page names.
+    let kept = std::mem::take(&mut cache.seen);
+    let scans: Vec<Option<Arc<Seen>>> = pages
         .par_iter()
         .map(|p| {
             if !p.output.ends_with(".html") {
                 return None;
             }
             Some(match kept.get(&p.output) {
-                Some((text, scan)) if *text == p.text => scan.clone(),
-                _ => Arc::new(html::scan(&p.text)),
+                Some((text, seen)) if *text == p.text => seen.clone(),
+                _ => Arc::new(Seen::of(&p.text)),
             })
         })
         .collect();
@@ -126,7 +153,9 @@ pub(crate) fn assets(
     // Per Page: (where, what goes there, keeping the URL's `?` and `#`).
     let mut edits: Vec<Vec<(Range<usize>, Use)>> = vec![Vec::new(); pages.len()];
     for (i, (page, scan)) in pages.iter().zip(&scans).enumerate() {
-        let Some(scan) = scan else { continue };
+        let Some(Seen { scan, .. }) = scan.as_deref() else {
+            continue;
+        };
         let base = format!("/{}", page.output);
         for r in &scan.references {
             let at_template = || reference_span(page, &page.text[r.at.clone()], templates, sources);
@@ -210,7 +239,7 @@ pub(crate) fn assets(
         .iter()
         .zip(&scans)
         .map(|(page, scan)| {
-            scan.as_ref()?.stylesheet_at?;
+            scan.as_ref()?.scan.stylesheet_at?;
             let mut sidecars = Vec::new();
             for t in &page.templates {
                 let found = sidecar_scripts.entry(t).or_insert_with(|| {
@@ -261,7 +290,7 @@ pub(crate) fn assets(
         .cloned()
         .collect();
     if let (Some(scripts), false) = (&scripts, tailwind.is_empty()) {
-        let classes = scans.iter().flatten().flat_map(|s| &s.classes);
+        let classes = scans.iter().flatten().flat_map(|s| &s.scan.classes);
         let mut strings = Vec::new();
         for asset in &scripts.assets {
             if let Asset::Copy {
@@ -422,7 +451,7 @@ pub(crate) fn assets(
     });
     let page_chunk = |i: usize| scripts.entries[script_entries.len() + i];
 
-    let (pages, kept): (Vec<(String, Vec<u8>)>, Vec<_>) = pages
+    let (pages, seen): (Vec<(String, Vec<u8>)>, Vec<_>) = pages
         .into_par_iter()
         .zip(scans)
         .zip(edits)
@@ -468,21 +497,26 @@ pub(crate) fn assets(
                     (at, with)
                 })
                 .collect();
-            let at = scan.as_ref().and_then(|s| s.stylesheet_at);
+            let at = scan.as_ref().and_then(|s| s.scan.stylesheet_at);
             if let (false, Some(at)) = (tags.is_empty(), at) {
                 edits.push((at..at, tags));
                 edits.sort_by_key(|(at, _)| at.start);
             }
             let bytes = splice(&page.text, &edits);
-            let kept = scan.filter(|_| dev).map(|scan| (page.text, scan));
-            ((page.output, bytes), kept)
+            ((page.output, bytes), scan.map(|scan| (page.text, scan)))
         })
         .unzip();
-    for ((output, _), kept) in pages.iter().zip(kept) {
-        if let Some(kept) = kept {
-            cache.scans.insert(output.clone(), kept);
-        }
-    }
+    let seen = pages
+        .iter()
+        .zip(seen)
+        .map(|((output, _), seen)| {
+            let (text, seen) = seen?;
+            if dev {
+                cache.seen.insert(output.clone(), (text, seen.clone()));
+            }
+            Some(seen)
+        })
+        .collect();
     let client = dev.then(|| {
         let chunk = *scripts
             .entries
@@ -492,6 +526,7 @@ pub(crate) fn assets(
     });
     Stage {
         pages,
+        seen,
         assets,
         client,
         scripts: scripts.report,

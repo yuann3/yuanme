@@ -3,11 +3,10 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
-use rayon::prelude::*;
-
 use yuanme_assets::font::{self, NCM_MATH};
 use yuanme_content::site::Site;
 
+use crate::assets::Seen;
 use crate::link::{Asset, hashed_path};
 use crate::{Body, Cache, Mode};
 
@@ -34,12 +33,11 @@ pub(crate) fn stylesheet(
     mode: Mode,
     cache: &mut Cache,
     pages: &mut [(String, Vec<u8>)],
+    seen: &[Option<Arc<Seen>>],
     assets: &mut Vec<Asset>,
 ) -> Option<String> {
-    // Every Page is read on every build, so on threads of their own.
     let showing: Vec<usize> = (0..pages.len())
-        .into_par_iter()
-        .filter(|&i| pages[i].0.ends_with(".html") && has_math(&pages[i].1))
+        .filter(|&i| seen[i].as_ref().is_some_and(|s| s.math))
         .collect();
     if showing.is_empty() {
         return None;
@@ -103,7 +101,7 @@ fn subset(cache: &mut Cache, chars: &BTreeSet<char>) -> Arc<[u8]> {
 }
 
 /// Whether an HTML Page has a `<math>` element.
-fn has_math(page: &[u8]) -> bool {
+pub(crate) fn has_math(page: &[u8]) -> bool {
     memchr::memchr_iter(b'<', page).any(|at| {
         page.get(at + 1..at + 6).is_some_and(|tag| {
             tag[..4].eq_ignore_ascii_case(b"math") && matches!(tag[4], b'>' | b' ' | b'\n' | b'\t')

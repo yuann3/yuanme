@@ -345,8 +345,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         return failed(diagnostics, sources, Some(config), Some(site));
     }
     let (mut pages, mut assets) = (stage.pages, stage.assets);
-    highlight::stylesheet(&mut pages, &mut assets);
-    let math_font = math::stylesheet(&site, mode, cache, &mut pages, &mut assets);
+    highlight::stylesheet(&mut pages, &stage.seen, &mut assets);
+    let math_font = math::stylesheet(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
     let mut files = link(pages, assets);
     files.extend(statics);
     files.extend(images::copies(inputs, &used));
