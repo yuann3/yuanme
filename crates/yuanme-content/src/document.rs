@@ -37,6 +37,9 @@ pub struct Document {
     /// a build walks only the Documents it read.
     #[serde(skip)]
     headings: OnceLock<Vec<Heading>>,
+    /// [`Document::all`], kept as `headings` is.
+    #[serde(skip)]
+    all: OnceLock<Vec<NodeId>>,
 }
 
 // By hand, to leave out what is only worked out from the rest.
@@ -258,6 +261,7 @@ impl Document {
             nodes: vec![root],
             names: Names::default(),
             headings: OnceLock::new(),
+            all: OnceLock::new(),
         }
     }
 
@@ -302,6 +306,13 @@ impl Document {
             stack.extend(self.node(id).children.iter().rev());
         }
         out
+    }
+
+    /// Every node of a built Document, the root first, in document order:
+    /// what `descendants(ROOT)` makes, made once. Each build walks every
+    /// Document a few times.
+    pub fn all(&self) -> &[NodeId] {
+        self.all.get_or_init(|| self.descendants(Self::ROOT))
     }
 
     /// The text under `id`: text, code, math and footnote numbers, with no

@@ -10,7 +10,7 @@ use rayon::prelude::*;
 use yuanme_diag::{Diagnostic, FileId, Files, Level, Span, codes};
 
 use crate::config::{Collection, Config, SortKey, Taxonomy};
-use crate::document::{Document, Kind, Link, Links};
+use crate::document::{Kind, Link, Links};
 use crate::entry::{self, Entry, SourceFormat};
 use crate::fields::{Cx, Value, compare};
 use crate::slug;
@@ -677,7 +677,7 @@ fn links(
             let doc = &e.document;
             let org = e.format == SourceFormat::Org;
             let mut out = Links::new();
-            for id in doc.descendants(Document::ROOT) {
+            for &id in doc.all() {
                 let node = doc.node(id);
                 let Kind::Link { url, .. } = &node.kind else { continue };
                 let span = Span { file: e.file, range: node.span.clone() };

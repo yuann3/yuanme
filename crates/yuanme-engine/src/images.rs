@@ -236,8 +236,9 @@ impl Images {
             .map(|e| {
                 let doc = &e.document;
                 let images = doc
-                    .descendants(Document::ROOT)
-                    .into_iter()
+                    .all()
+                    .iter()
+                    .copied()
                     .filter(|&id| matches!(doc.node(id).kind, Kind::Image { .. }))
                     .collect();
                 (images, captions(doc))
@@ -377,7 +378,7 @@ fn local(url: &str, dir: &str) -> Option<String> {
 /// The text of the caption of each image in a figure, by the image.
 fn captions(doc: &Document) -> BTreeMap<NodeId, String> {
     let mut out = BTreeMap::new();
-    for id in doc.descendants(Document::ROOT) {
+    for &id in doc.all() {
         if doc.node(id).kind != Kind::Figure {
             continue;
         }

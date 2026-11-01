@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use rayon::prelude::*;
 use yuanme_content::config;
-use yuanme_content::document::{Document, Kind, NodeId};
+use yuanme_content::document::{Kind, NodeId};
 use yuanme_content::site::Site;
 use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 use yuanme_render::highlight::{self, Code, Language};
@@ -42,7 +42,7 @@ pub(crate) fn code(
             let doc = &entry.document;
             let mut found = Vec::new();
             let mut diagnostics = Vec::new();
-            for id in doc.descendants(Document::ROOT) {
+            for &id in doc.all() {
                 let Kind::CodeBlock { lang, text } = &doc.node(id).kind else {
                     continue;
                 };
