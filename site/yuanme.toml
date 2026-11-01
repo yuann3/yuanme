@@ -4,9 +4,8 @@
 # pages in content/ are written by `cargo xtask docs`; don't edit them.
 
 [site]
-# The docs site's one address. Until the owner picks a domain, it is the
-# Worker's workers.dev address (wrangler.jsonc names the Worker).
-url = "https://yuanme-docs.yuann3.workers.dev"
+# The docs site's one address. wrangler.jsonc routes it to the Worker.
+url = "https://docs.eyuan.me"
 title = "yuanme"
 description = "A static site generator for programmers' and mathematicians' sites, in Markdown and Org, built to be driven by coding agents."
 language = "en"

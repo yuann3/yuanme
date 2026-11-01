@@ -57,12 +57,12 @@ These need the owner's accounts, once.
    git add crates/yuanme/src/minisign.pub
    ```
    Keep a copy of the secret key offline. A key made with `-W` has no password; then leave `MINISIGN_PASSWORD` unset.
-5. **The docs site's Cloudflare secrets** (#72). `docs.yml` deploys the Worker `yuanme-docs` on every push to `main` and every release, and only warns until both are set. The token needs *Account · Workers Scripts · Edit* and *Account · Account Settings · Read* on the account alone, or the *Edit Cloudflare Workers* template limited to it:
+5. **The docs site's Cloudflare secrets** (#72). `docs.yml` deploys the Worker `yuanme-docs` to <https://docs.eyuan.me> on every push to `main` and every release, and only warns until both are set. The token needs *Account · Workers Scripts · Edit* and *Account · Account Settings · Read* on the account alone, and *Zone · Workers Routes · Edit* on the `eyuan.me` zone for the custom domain:
    ```sh
    gh secret set CLOUDFLARE_API_TOKEN --repo yuann3/yuanme
    gh secret set CLOUDFLARE_ACCOUNT_ID --repo yuann3/yuanme --body 337851642f9a39a7999e95ed7f339693
    ```
-   The site is at <https://yuanme-docs.yuann3.workers.dev> until it has a domain. To give it one, set `[site] url` in `site/yuanme.toml`, and add the domain to `site/wrangler.jsonc` as `"routes": [{ "pattern": "docs.example.com", "custom_domain": true }]`, which also needs *Zone · Workers Routes · Edit* on its zone.
+   The domain is set in two places: `[site] url` in `site/yuanme.toml` and the `custom_domain` route in `site/wrangler.jsonc`.
 6. **The Agent eval's API keys** (#22, #77). `evals.yml` runs the tier-1 matrix after every release is published, and when dispatched. An experiment whose key isn't set is skipped with a warning, so with none set it calls no model. Each key should belong to a project with a spending limit:
    ```sh
    gh secret set ANTHROPIC_API_KEY --repo yuann3/yuanme   # Claude Code: claude-fable-5-1 and claude-sonnet-5-5
