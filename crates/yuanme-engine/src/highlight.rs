@@ -169,12 +169,16 @@ pub(crate) fn stylesheet(
         name: "code.css".into(),
         bytes: css.into_bytes(),
     });
-    for i in showing {
-        let bytes = &mut pages[i].1;
+    // Each moves the rest of its Page, so on threads of their own.
+    let showing = pages
+        .par_iter_mut()
+        .zip(seen)
+        .filter(|(_, s)| s.as_ref().is_some_and(|s| s.code.is_some()));
+    showing.for_each(|((_, bytes), _)| {
         let at = bytes
             .windows(7)
             .position(|w| w.eq_ignore_ascii_case(b"</head>"))
             .unwrap_or(0);
         bytes.splice(at..at, tag.bytes());
-    }
+    });
 }

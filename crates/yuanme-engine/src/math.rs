@@ -3,6 +3,7 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
+use rayon::prelude::*;
 use yuanme_assets::font::{self, NCM_MATH};
 use yuanme_content::site::Site;
 
@@ -72,14 +73,18 @@ pub(crate) fn stylesheet(
         name: "math.css".into(),
         bytes: css.into_bytes(),
     });
-    for i in showing {
-        let bytes = &mut pages[i].1;
+    // Each moves the rest of its Page, so on threads of their own.
+    let showing = pages
+        .par_iter_mut()
+        .zip(seen)
+        .filter(|(_, s)| s.as_ref().is_some_and(|s| s.math));
+    showing.for_each(|((_, bytes), _)| {
         let at = bytes
             .windows(7)
             .position(|w| w.eq_ignore_ascii_case(b"</head>"))
             .unwrap_or(0);
         bytes.splice(at..at, tag.bytes());
-    }
+    });
     Some(path)
 }
 
