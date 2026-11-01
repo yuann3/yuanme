@@ -137,6 +137,8 @@ fn link_names_assets_by_the_hash_of_their_final_bytes() {
                 bytes: b"@font-face{src:url(\0asset:0\0)}".to_vec(),
             },
         ],
+        &mut Cache::memory("v"),
+        false,
     );
 
     let page = format!("<link href=\"{css_url}\"><p>{font_url}");
@@ -829,6 +831,10 @@ fn a_page_is_processed_again_when_anything_it_reads_changes() {
     );
     inputs.insert("templates/posts/entry.html", linked.as_bytes());
     output(&inputs, "a new stylesheet link");
+    // The stylesheet, whose new name the Page links to, though the Page
+    // is the same until the link pass.
+    inputs.insert("styles/a.css", b"p { color: blue }".as_slice());
+    output(&inputs, "an edited stylesheet");
     // The Page a link goes to, which is gone.
     inputs.remove("content/posts/b.md");
     assert_eq!(output(&inputs, "a removed Page").len(), 1);

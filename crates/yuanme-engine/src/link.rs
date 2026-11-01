@@ -1,11 +1,11 @@
 //! The link pass: a Page or asset names another asset through a placeholder
 //! until that asset's bytes, and so its hashed name, are final (#24).
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use rayon::prelude::*;
 
-use crate::{Body, Output};
+use crate::{Body, Cache, Output};
 
 /// A file the Engine processed, such as a CSS bundle, which is named by the
 /// hash of its bytes under `/assets/`.
@@ -27,8 +27,15 @@ pub(crate) enum Asset {
 /// `assets[N]` goes; NUL can't come from an Author, since HTML and CSS
 /// parsers replace it.
 /// An asset may refer only to assets before it, as a stylesheet refers to
-/// its fonts, because its own name depends on theirs.
-pub(crate) fn link(pages: Vec<(String, Vec<u8>)>, assets: Vec<Asset>) -> BTreeMap<String, Output> {
+/// its fonts, because its own name depends on theirs. With `keep`, each
+/// Page is kept in `cache` for the next build, which links again only a
+/// Page whose bytes or assets' URLs changed.
+pub(crate) fn link(
+    pages: Vec<(String, Vec<u8>)>,
+    assets: Vec<Asset>,
+    cache: &mut Cache,
+    keep: bool,
+) -> BTreeMap<String, Output> {
     let mut urls = Vec::with_capacity(assets.len());
     let mut files = BTreeMap::new();
     for asset in assets {
@@ -44,17 +51,43 @@ pub(crate) fn link(pages: Vec<(String, Vec<u8>)>, assets: Vec<Asset>) -> BTreeMa
         urls.push(format!("/{path}"));
         files.insert(path, Output { body, hash });
     }
+    let kept = std::mem::take(&mut cache.linked);
+    let same = kept.urls == urls;
     let pages: Vec<_> = pages
         .into_par_iter()
-        .map(|(path, bytes)| {
-            let bytes = substitute(&bytes, &urls);
-            let hash = blake3::hash(&bytes);
-            let body = Body::Bytes(bytes.into());
-            (path, Output { body, hash })
+        .map(|(path, before)| {
+            let output = match kept.pages.get(&path) {
+                Some((was, output)) if same && *was == before => output.clone(),
+                _ => {
+                    let bytes = substitute(&before, &urls);
+                    let hash = blake3::hash(&bytes);
+                    let body = Body::Bytes(bytes.into());
+                    Output { body, hash }
+                }
+            };
+            (path, before, output)
         })
         .collect();
-    files.extend(pages);
+    drop(kept);
+    for (path, before, output) in pages {
+        if keep {
+            let page = (before, output.clone());
+            cache.linked.pages.insert(path.clone(), page);
+        }
+        files.insert(path, output);
+    }
+    if keep {
+        cache.linked.urls = urls;
+    }
     files
+}
+
+/// The last dev build's Pages, by path, each as it was before and after
+/// the link pass, and the assets' URLs they were linked with.
+#[derive(Default)]
+pub(crate) struct Linked {
+    urls: Vec<String>,
+    pages: HashMap<String, (Vec<u8>, Output)>,
 }
 
 fn substitute(bytes: &[u8], urls: &[String]) -> Vec<u8> {

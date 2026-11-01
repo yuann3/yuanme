@@ -215,6 +215,7 @@ pub struct Bundle {
     pub modules: Vec<(String, usize)>,
 }
 
+#[derive(Clone)]
 pub struct Output {
     pub body: Body,
     /// Changes whenever the bytes do, so the writer can skip unchanged files.
@@ -347,7 +348,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let (mut pages, mut assets) = (stage.pages, stage.assets);
     highlight::stylesheet(&mut pages, &stage.seen, &mut assets);
     let math_font = math::stylesheet(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
-    let mut files = link(pages, assets);
+    let mut files = link(pages, assets, cache, mode == Mode::Dev);
     files.extend(statics);
     files.extend(images::copies(inputs, &used));
     let fallback = Span {
