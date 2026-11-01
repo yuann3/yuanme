@@ -157,6 +157,10 @@ jobs:
           git worktree add .worktrees/main "$MAIN"
           (cd .worktrees/main && cargo build --release --locked -p yuanme --target-dir ../../target)
           cp target/release/yuanme target/yuanme-main
+          # Cargo tells a changed file by its time, and this checkout's
+          # files are older than main's build in the same target folder,
+          # so it would take main's crates for this commit's.
+          git ls-files -z | xargs -0 touch
       - run: cargo build --release --locked -p yuanme
       - run: cargo xtask gates target/release/yuanme $(test -x target/yuanme-main && echo --main target/yuanme-main)
 
