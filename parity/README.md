@@ -11,7 +11,7 @@ Checks a Site against the Parity baseline, under the rules and Parity exceptions
 
 `browser/lab.ts SITE` is not a parity check: it runs the Reference site's lab Gates (#15), mobile and desktop LCP, CLS and TBT on `/`, a Post and `/about/`. CI runs it with the build Gates, `cargo xtask gates YUANME --reference SITE`.
 
-`switch-check.sh BASELINE ORIGIN [WWW]` isn't one either: it is the cutover's HTTP check of the deployed Reference site (#39, #80). Every Page of the baseline and URL of ORIGIN's sitemap is a 200, the feed keeps the baseline's guids, and the cache headers, the 404, `robots.txt` and `llms.txt` are what the cloudflare Host adapter and the port serve, with nothing the zone injects. With WWW, that origin must 301 to ORIGIN.
+`switch-check.sh BASELINE ORIGIN [WWW]` isn't one either: it is the cutover's HTTP check of the deployed Reference site (#39, [`docs/cutover.md`](../docs/cutover.md)). Every Page of the baseline and URL of ORIGIN's sitemap is a 200, the feed keeps the baseline's guids, and the cache headers, the 404, `robots.txt` and `llms.txt` are what the cloudflare Host adapter and the port serve, with nothing the zone injects. With WWW, that origin must 301 to ORIGIN.
 
 ## The baseline
 
