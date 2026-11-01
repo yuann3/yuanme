@@ -5,7 +5,8 @@
 # --repo yuann3/yuanme` passes for it as for a real one, and must refuse
 # the same archive changed afterwards. Attesting needs permissions CI
 # doesn't grant, and leaves an attestation per runner, so this runs only
-# when the action changes.
+# when the action changes. Dispatched with `-f release=X.Y.Z`, it also
+# installs that published release.
 name: setup-yuanme
 
 on:
@@ -15,6 +16,10 @@ on:
       - actions/setup-yuanme/**
       - .github/workflows/setup-yuanme.yml
   workflow_dispatch:
+    inputs:
+      release:
+        description: A published release, such as 0.1.0, to install too, as attested by the release workflow.
+        required: false
 
 permissions:
   contents: read
@@ -144,3 +149,23 @@ jobs:
         run: |
           test "$CACHE_HIT" = true
           test "$(yuanme --version)" = "yuanme $VERSION"
+
+  # A real release's archive, attested by dist in release.yml, from GitHub.
+  release:
+    if: inputs.release != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-15, windows-2022, windows-11-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./actions/setup-yuanme
+        with:
+          version: ${{ inputs.release }}
+      - shell: bash
+        env:
+          RELEASE: ${{ inputs.release }}
+        run: test "$(yuanme --version)" = "yuanme $RELEASE"
