@@ -74,6 +74,7 @@ Every Page sees these:
 - `collections`: each Collection's listed Entries in its sort order, such as `collections.posts`. The built-in `pages` Collection, from `content/pages/`, is there too.
 - `taxonomies`: each Taxonomy as `name`, `url` (its index) and `terms`.
 - `page`: `url`, `canonical` (the full URL, from `site.url`) and `kind`, which is `entry`, `list`, `term`, `index`, `template` or `feed`.
+- `yuanme`: `version`, the version of yuanme that built the Site, as in `<meta name="generator" content="yuanme {{ yuanme.version }}">`.
 
 Each kind of Route adds its own:
 

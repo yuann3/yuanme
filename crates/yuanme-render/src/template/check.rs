@@ -28,7 +28,14 @@ use super::filters::{known_format, unknown_format};
 use crate::image::Images;
 
 /// What every Page sees, and so what a Component may read besides its props.
-const GLOBALS: [&str; 5] = ["site", "data", "collections", "taxonomies", "page"];
+const GLOBALS: [&str; 6] = [
+    "site",
+    "data",
+    "collections",
+    "taxonomies",
+    "page",
+    "yuanme",
+];
 
 /// For "did you mean": minijinja can't list its filters and tests, so these
 /// are only suggestions. Whether a name exists is asked of the Environment.
@@ -424,6 +431,7 @@ impl Schema {
             ("collections", collections_ty),
             ("taxonomies", taxonomies_ty),
             ("page", page),
+            ("yuanme", obj("yuanme", [("version", Ty::Str, false)])),
         ];
         Schema {
             entries,

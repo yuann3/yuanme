@@ -124,6 +124,13 @@ impl Context {
             ("data", Value::from(data)),
             ("collections", Value::from(collections)),
             ("taxonomies", Value::from(taxonomies.clone())),
+            (
+                "yuanme",
+                Value::from(BTreeMap::from([(
+                    "version",
+                    Value::from(env!("CARGO_PKG_VERSION")),
+                )])),
+            ),
         ]);
         Context {
             globals,

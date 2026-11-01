@@ -223,7 +223,7 @@ fn every_page_sees_what_its_context_schema_says() {
         ("llms.txt", ""),
         ("rss.xml", "feed entries"),
     ] {
-        let names = "site data collections taxonomies page ".to_string() + vars;
+        let names = "site data collections taxonomies page yuanme ".to_string() + vars;
         let pairs: Vec<String> = names
             .split_whitespace()
             .map(|n| format!("'{n}': {n}"))
@@ -493,6 +493,8 @@ fn the_engine_filters_and_escaping() {
             "{{ page.url }} {{ page.kind }} {{ page.canonical }}",
             "/ template https://e.com/",
         ),
+        // For `<meta name="generator">`.
+        ("{{ yuanme.version }}", env!("CARGO_PKG_VERSION")),
     ];
     for (source, expected) in cases {
         let files = format!("=== templates/home.html\n{source}");
