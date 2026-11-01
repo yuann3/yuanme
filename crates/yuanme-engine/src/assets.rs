@@ -104,11 +104,22 @@ pub(crate) fn assets(
         }
     }
 
-    // What each Page names.
-    let scans: Vec<Option<html::Scan>> = pages
+    // What each Page names. A scan reads nothing but the Page's text, so
+    // `yuanme dev` keeps each with the text for its next build.
+    let kept = std::mem::take(&mut cache.scans);
+    let scans: Vec<Option<Arc<html::Scan>>> = pages
         .par_iter()
-        .map(|p| p.output.ends_with(".html").then(|| html::scan(&p.text)))
+        .map(|p| {
+            if !p.output.ends_with(".html") {
+                return None;
+            }
+            Some(match kept.get(&p.output) {
+                Some((text, scan)) if *text == p.text => scan.clone(),
+                _ => Arc::new(html::scan(&p.text)),
+            })
+        })
         .collect();
+    drop(kept);
     let mut entries: Vec<String> = Vec::new();
     let mut script_entries: Vec<String> = Vec::new();
     let mut copies: BTreeSet<String> = BTreeSet::new();
@@ -411,7 +422,7 @@ pub(crate) fn assets(
     });
     let page_chunk = |i: usize| scripts.entries[script_entries.len() + i];
 
-    let pages = pages
+    let (pages, kept): (Vec<(String, Vec<u8>)>, Vec<_>) = pages
         .into_par_iter()
         .zip(scans)
         .zip(edits)
@@ -457,13 +468,21 @@ pub(crate) fn assets(
                     (at, with)
                 })
                 .collect();
-            if let (false, Some(at)) = (tags.is_empty(), scan.and_then(|s| s.stylesheet_at)) {
+            let at = scan.as_ref().and_then(|s| s.stylesheet_at);
+            if let (false, Some(at)) = (tags.is_empty(), at) {
                 edits.push((at..at, tags));
                 edits.sort_by_key(|(at, _)| at.start);
             }
-            (page.output, splice(&page.text, &edits))
+            let bytes = splice(&page.text, &edits);
+            let kept = scan.filter(|_| dev).map(|scan| (page.text, scan));
+            ((page.output, bytes), kept)
         })
-        .collect();
+        .unzip();
+    for ((output, _), kept) in pages.iter().zip(kept) {
+        if let Some(kept) = kept {
+            cache.scans.insert(output.clone(), kept);
+        }
+    }
     let client = dev.then(|| {
         let chunk = *scripts
             .entries

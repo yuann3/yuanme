@@ -38,6 +38,9 @@ pub struct Cache {
     pub(crate) entries: HashMap<blake3::Hash, entries::Read>,
     /// The last build's Entries' bodies as HTML, by the Entry's path.
     pub(crate) bodies: HashMap<String, bodies::Rendered>,
+    /// The last dev build's scan of each HTML Page, by its output path,
+    /// with the text it scanned.
+    pub(crate) scans: HashMap<String, (String, Arc<yuanme_assets::html::Scan>)>,
 }
 
 #[derive(Default)]
@@ -66,6 +69,7 @@ impl Cache {
             tailwind: BTreeMap::new(),
             entries: HashMap::new(),
             bodies: HashMap::new(),
+            scans: HashMap::new(),
         }
     }
 

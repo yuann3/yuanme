@@ -779,3 +779,41 @@ fn a_body_is_rendered_again_when_anything_it_reads_changes() {
     );
     changed(&inputs, "a wider image", "width=\"8\"");
 }
+
+/// ADR 0011: what `yuanme dev` keeps of each Page between builds is keyed
+/// by the Page's bytes and what else each pass reads, so a build with it
+/// makes the files a build without it makes.
+#[test]
+fn a_page_is_processed_again_when_anything_it_reads_changes() {
+    let mut inputs = project();
+    let config = [
+        CONFIG,
+        b"\n[collections.posts]\nroute = \"/blog/{slug}/\"\n".as_slice(),
+    ];
+    inputs.insert("yuanme.toml", config.concat());
+    let page = "<html><head></head><body>{{ entry.content }}</body></html>";
+    inputs.insert("templates/posts/entry.html", page.as_bytes());
+    inputs.insert("content/posts/a.md", b"---\ntitle: A\n---\nA.\n".as_slice());
+    inputs.insert("styles/a.css", b"p { color: red }".as_slice());
+    let mut cache = Cache::memory("v");
+    let mut files = |inputs: &Inputs, what: &str| {
+        let hashes = |build: Build| -> BTreeMap<String, blake3::Hash> {
+            assert!(!build.failed(), "{what}: {:#?}", build.diagnostics);
+            build.files.into_iter().map(|(p, o)| (p, o.hash)).collect()
+        };
+        let cached = hashes(build(inputs, &mut cache, Mode::Dev));
+        let fresh = hashes(build(inputs, &mut Cache::memory("v"), Mode::Dev));
+        assert!(fresh.contains_key("blog/a/index.html"), "{what}");
+        assert_eq!(cached, fresh, "after {what}");
+    };
+    files(&inputs, "the first build");
+    files(&inputs, "no change");
+
+    // A stylesheet its Template now links, which only a new scan finds.
+    let linked = page.replace(
+        "<head>",
+        "<head><link rel=\"stylesheet\" href=\"/styles/a.css\">",
+    );
+    inputs.insert("templates/posts/entry.html", linked.as_bytes());
+    files(&inputs, "a new stylesheet link");
+}
