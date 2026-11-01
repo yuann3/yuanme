@@ -31,8 +31,11 @@ fn main() -> ExitCode {
                 [head, flag, base] if flag == "--main" => {
                     gates::run(Path::new(head), Some(Path::new(base)))
                 }
+                [head, flag, site] if flag == "--reference" => {
+                    gates::reference(Path::new(head), Path::new(site))
+                }
                 _ => {
-                    eprintln!("usage: cargo xtask gates YUANME [--main YUANME]");
+                    eprintln!("usage: cargo xtask gates YUANME [--main YUANME | --reference SITE]");
                     ExitCode::FAILURE
                 }
             }
@@ -53,7 +56,7 @@ fn main() -> ExitCode {
         },
         _ => {
             eprintln!(
-                "usage: cargo xtask package-check | vendor-check | docs | notices | scale-site DIR | gates YUANME [--main YUANME] | release-version X.Y.Z"
+                "usage: cargo xtask package-check | vendor-check | docs | notices | scale-site DIR | gates YUANME [--main YUANME | --reference SITE] | release-version X.Y.Z"
             );
             ExitCode::FAILURE
         }

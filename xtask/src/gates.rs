@@ -1,7 +1,9 @@
-//! The build Gates on the Scale Site (#15, #73): each of #15's build
-//! numbers, timed with hyperfine on the release binary, against `main`'s
-//! binary timed in the same run. More than 10% slower than main fails; a
+//! The build Gates (#15, #73): each of #15's build numbers, timed with
+//! hyperfine on the release binary. On the Scale Site, against `main`'s
+//! binary timed in the same run: more than 10% slower than main fails, and a
 //! number over its budget is reported, until the Engine meets them (#73).
+//! On the Reference site, a number over its budget fails (#76), but for
+//! peak RSS, which is reported until the Engine meets it (#96).
 
 use std::fmt::Write as _;
 use std::fs;
@@ -81,6 +83,52 @@ pub const GATES: &[Gate] = &[
     },
 ];
 
+/// #15's numbers for the Reference site, each of them a Gate.
+pub const REFERENCE: &[Gate] = &[
+    Gate {
+        name: "cold build",
+        limit: 2.0,
+        stat: Stat::Median,
+        relative: false,
+    },
+    Gate {
+        name: "image encoding per output",
+        limit: 0.075,
+        stat: Stat::Median,
+        relative: false,
+    },
+    Gate {
+        name: "warm build",
+        limit: 0.5,
+        stat: Stat::Median,
+        relative: false,
+    },
+    Gate {
+        name: "incremental rebuild",
+        limit: 0.05,
+        stat: Stat::P95,
+        relative: false,
+    },
+    Gate {
+        name: "dev cold start",
+        limit: 1.0,
+        stat: Stat::Median,
+        relative: false,
+    },
+    Gate {
+        name: "check",
+        limit: 0.2,
+        stat: Stat::Median,
+        relative: false,
+    },
+    Gate {
+        name: "peak RSS",
+        limit: 512e6,
+        stat: Stat::Max,
+        relative: false,
+    },
+];
+
 const SLOWER: f64 = 1.10;
 
 fn median(xs: &[f64]) -> f64 {
@@ -146,11 +194,14 @@ pub fn slower(gate: &Gate, head: &[f64], base: &[f64]) -> Option<String> {
     })
 }
 
-/// One binary and the Scale Site it builds.
+/// One binary and the Site it builds.
 struct Side {
     name: &'static str,
     bin: PathBuf,
     dir: PathBuf,
+    /// The Post the incremental rebuild edits, and its URL.
+    post: &'static str,
+    url: &'static str,
 }
 
 /// Runs every Gate on `head`, against `base` when there is one, and fails
@@ -164,9 +215,15 @@ pub fn run(head: &Path, base: Option<&Path>) -> ExitCode {
         let _ = fs::remove_dir_all(&dir);
         crate::scale::generate(&dir).expect("write the Scale Site");
         let bin = bin.canonicalize().expect("the yuanme binary");
-        sides.push(Side { name, bin, dir });
+        sides.push(Side {
+            name,
+            bin,
+            dir,
+            post: "content/posts/calculus-0006.md",
+            url: "/blog/calculus-0006/",
+        });
     }
-    let readings = measure(&sides, &work);
+    let readings = measure(&sides, &work, GATES);
 
     let mut failed = Vec::new();
     let mut table = String::from(
@@ -229,10 +286,89 @@ pub fn run(head: &Path, base: Option<&Path>) -> ExitCode {
     }
 }
 
+/// The Reference site's Gates that are reported, not failed on, until the
+/// Engine meets them: encoding images in parallel peaks above 512 MB (#96).
+const REPORTED: [&str; 1] = ["peak RSS"];
+
+/// Runs every Gate on the Reference site at `site`, as `head` builds a
+/// copy of it, and fails if a number is over its budget.
+pub fn reference(head: &Path, site: &Path) -> ExitCode {
+    let work = crate::root().join("target/gates");
+    let dir = work.join("reference");
+    let _ = fs::remove_dir_all(&dir);
+    copy_site(site, &dir).expect("copy the Reference site");
+    let side = Side {
+        name: "reference",
+        bin: head.canonicalize().expect("the yuanme binary"),
+        dir,
+        post: "content/posts/extending_c_stdlib.md",
+        url: "/blog/extending-c-stdlib/",
+    };
+    let readings = measure(std::slice::from_ref(&side), &work, REFERENCE);
+    let mut failed = Vec::new();
+    let mut table = String::from("| Gate | Budget | Reference site |\n|---|---:|---:|\n");
+    for gate in REFERENCE {
+        let head = &readings[gate.name].0;
+        let budget = over(gate, head);
+        let reported = REPORTED.contains(&gate.name);
+        let _ = writeln!(
+            table,
+            "| {}{} | {} | {} |",
+            gate.name,
+            match (&budget, reported) {
+                (None, _) => "",
+                (Some(_), true) => ", over",
+                (Some(_), false) => " ❌",
+            },
+            gate.show(gate.limit),
+            gate.show(gate.value(head)),
+        );
+        match (budget, reported) {
+            (Some(over), true) => println!("::warning::{over} (#96)"),
+            (budget, _) => failed.extend(budget),
+        }
+    }
+    println!("{table}");
+    if let Ok(summary) = std::env::var("GITHUB_STEP_SUMMARY") {
+        let mut file = fs::OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(summary)
+            .expect("open the step summary");
+        let _ = writeln!(file, "## Build Gates on the Reference site\n\n{table}");
+    }
+    for breach in &failed {
+        println!("::error::{breach}");
+    }
+    match failed.is_empty() {
+        true => ExitCode::SUCCESS,
+        false => ExitCode::FAILURE,
+    }
+}
+
+/// The Site's own files: not its Git checkout, its output or its cache,
+/// which the cold build must not find.
+fn copy_site(from: &Path, to: &Path) -> std::io::Result<()> {
+    fs::create_dir_all(to)?;
+    for entry in fs::read_dir(from)? {
+        let path = entry?.path();
+        let name = path.file_name().expect("a directory entry");
+        if [".git", ".yuanme", "dist"].iter().any(|n| name == *n) {
+            continue;
+        }
+        let target = to.join(name);
+        match path.is_dir() {
+            true => copy_site(&path, &target)?,
+            false => fs::copy(&path, &target).map(drop)?,
+        }
+    }
+    Ok(())
+}
+
 /// Each Gate's samples, for this commit and for main.
 type Readings = std::collections::BTreeMap<&'static str, (Vec<f64>, Option<Vec<f64>>)>;
 
-fn measure(sides: &[Side], work: &Path) -> Readings {
+fn measure(sides: &[Side], work: &Path, gates: &[Gate]) -> Readings {
     let mut readings = Readings::new();
     // The first build encodes every image, which the cold builds then find
     // in the cache. Before any other, since peak RSS counts every child.
@@ -259,7 +395,7 @@ fn measure(sides: &[Side], work: &Path) -> Readings {
         (head, all.pop())
     };
     readings.insert("peak RSS", pair(&|s| s.2));
-    for gate in GATES {
+    for gate in gates {
         if !matches!(gate.name, "peak RSS" | "image encoding per output") {
             readings.insert(gate.name, measure_one(gate.name, sides, work));
         }
@@ -368,7 +504,7 @@ fn wait_for_rss(child: Child, side: &Side) -> f64 {
     assert_eq!(waited, pid, "wait for yuanme");
     assert!(
         libc::WIFEXITED(status) && libc::WEXITSTATUS(status) == 0,
-        "{}: the Scale Site doesn't build: {status}",
+        "{}: the Site doesn't build: {status}",
         side.name
     );
     // Linux counts kilobytes, macOS bytes.
@@ -461,8 +597,8 @@ pub fn first_page(bin: &Path, dir: &Path) -> ExitCode {
 /// rebuild, as `build-finished` times it, after the first 10, which warm
 /// what the first build didn't.
 fn edits(side: &Side) -> Vec<f64> {
-    let post = side.dir.join("content/posts/calculus-0006.md");
-    let url = "/blog/calculus-0006/";
+    let post = side.dir.join(side.post);
+    let url = side.url;
     let text = fs::read_to_string(&post).expect("the Post");
     let (mut child, events, _) = dev(&side.bin, &side.dir);
     let mut times = Vec::new();
