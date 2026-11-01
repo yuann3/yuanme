@@ -27,13 +27,17 @@ struct Block<'a> {
     key: blake3::Hash,
 }
 
-/// Each Entry's highlighted code blocks, and a warning for each block in a
-/// language no grammar has, which is written as plain text.
+/// Each of an Entry's code blocks, by the key of its highlighted HTML in
+/// the cache.
+pub(crate) type Blocks = Vec<(NodeId, blake3::Hash)>;
+
+/// Each Entry's code blocks, highlighted into the cache, and a warning for
+/// each block in a language no grammar has, which is written as plain text.
 pub(crate) fn code(
     site: &Site,
     sources: &Files,
     cache: &mut Cache,
-) -> (Vec<Code>, Vec<Diagnostic>) {
+) -> (Vec<Blocks>, Vec<Diagnostic>) {
     // Every Document is walked on every build, so on threads of their own.
     let walked: Vec<(Vec<Block>, Vec<Diagnostic>)> = site
         .entries
@@ -91,21 +95,23 @@ pub(crate) fn code(
         cache.insert(KIND, key, html.into_bytes());
     }
 
-    let cache = &*cache;
-    let code = blocks
-        .par_iter()
-        .map(|found| {
-            found
-                .iter()
-                .map(|b| {
-                    let bytes = cache.get(KIND, &b.key).expect("highlighted above");
-                    let html = String::from_utf8(bytes.to_vec()).expect("cached as UTF-8");
-                    (b.id, html)
-                })
-                .collect()
-        })
+    let blocks = blocks
+        .iter()
+        .map(|found| found.iter().map(|b| (b.id, b.key)).collect())
         .collect();
-    (code, diagnostics)
+    (blocks, diagnostics)
+}
+
+/// An Entry's highlighted code blocks, which [`code`] put in the cache.
+pub(crate) fn of(cache: &Cache, blocks: &Blocks) -> Code {
+    blocks
+        .iter()
+        .map(|(id, key)| {
+            let bytes = cache.get(KIND, key).expect("highlighted by code()");
+            let html = String::from_utf8(bytes.to_vec()).expect("cached as UTF-8");
+            (*id, html)
+        })
+        .collect()
 }
 
 /// The warning for a code block, at `block` in `file`, whose language no

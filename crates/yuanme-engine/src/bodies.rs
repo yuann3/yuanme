@@ -9,10 +9,9 @@ use std::sync::Arc;
 use rayon::prelude::*;
 use yuanme_content::document::{Document, Links};
 use yuanme_content::site::Site;
-use yuanme_render::highlight::Code;
 use yuanme_render::html::{self, Pictures};
 
-use crate::Cache;
+use crate::{Cache, highlight};
 
 /// One body and everything [`html::body`] read to write it, but its code
 /// blocks, which are highlighted from the Document by this Engine.
@@ -32,13 +31,14 @@ pub(crate) struct Rendered {
 /// next build.
 pub(crate) fn bodies(
     site: &Site,
-    code: &[Code],
+    code: &[highlight::Blocks],
     pictures: Vec<Pictures>,
     cache: &mut Cache,
     keep: bool,
 ) -> Vec<String> {
     // Only this build's, so the cache holds as many bodies as the Site has.
     let mut kept = std::mem::take(&mut cache.bodies);
+    let read = &*cache;
     let fresh: Vec<Option<String>> = site
         .entries
         .par_iter()
@@ -51,7 +51,10 @@ pub(crate) fn bodies(
                     && r.links == *links
                     && r.pictures == *pictures
             });
-            (!same).then(|| html::body(&e.document, links, code, pictures))
+            (!same).then(|| {
+                let code = highlight::of(read, code);
+                html::body(&e.document, links, &code, pictures)
+            })
         })
         .collect();
     let mut out = Vec::with_capacity(fresh.len());
