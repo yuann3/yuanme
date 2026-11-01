@@ -473,3 +473,46 @@ fn hero_images_through_image_stand_in_for_the_static_files() {
             .contains(&Difference::Missing("hero:rustc".into()))
     );
 }
+
+#[test]
+fn a_feeds_guids_stay_as_they_were() {
+    let feed = |items: &[(&str, &str)]| {
+        let items: String = items
+            .iter()
+            .map(|(permalink, guid)| {
+                format!(
+                    r#"<item><link>https://eyuan.me/blog/x/</link><guid isPermaLink="{permalink}">{guid}</guid></item>"#
+                )
+            })
+            .collect();
+        format!(
+            "=== rss.xml\n<?xml version=\"1.0\"?><rss version=\"2.0\"><channel>{items}</channel></rss>\n"
+        )
+    };
+    let (a, b) = (
+        "https://www.eyuan.me/blog/a/",
+        "https://www.eyuan.me/blog/b/",
+    );
+    let baseline = feed(&[("true", a), ("true", b)]);
+    // In another order, and no longer permalinks.
+    let report = run(&baseline, &feed(&[("false", b), ("false", a)]));
+    assert_eq!(report.differences, []);
+    assert!(
+        report.tolerated.contains_key("rss-guid"),
+        "{:?}",
+        report.tolerated
+    );
+
+    // On the apex origin, every Post would show up in a reader again.
+    let apex = run(
+        &baseline,
+        &feed(&[("false", "https://eyuan.me/blog/a/"), ("false", b)]),
+    );
+    assert_eq!(
+        apex.differences,
+        [
+            Difference::Guid("https://www.eyuan.me/blog/a/".into()),
+            Difference::NewGuid("https://eyuan.me/blog/a/".into()),
+        ]
+    );
+}

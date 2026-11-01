@@ -20,7 +20,7 @@ use url::Url;
 /// rule normalizes both sides alike, so it lets a difference through and
 /// never requires one: the baseline compared with itself passes under all
 /// of them.
-const RULES: [&str; 18] = [
+const RULES: [&str; 19] = [
     "apex-origin",
     "trailing-slash-hrefs",
     "assets-dir",
@@ -39,6 +39,7 @@ const RULES: [&str; 18] = [
     "dead-links",
     "class-highlighting",
     "hero-images",
+    "rss-guid",
 ];
 
 /// Links the port points somewhere real, by the Page they are on: (page,
@@ -108,6 +109,9 @@ static CSS_URL: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"url\(\s*(?:"([^"]*)"|'([^']*)'|([^'")\s]+))\s*\)"#).unwrap());
 /// The Engine's image names keep the width: `park-480`, from `park.jpg`.
 static WIDTH: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(.+)-[0-9]+$").unwrap());
+/// A feed item's guid, by its text.
+static GUID: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"<guid(?:\s[^>]*)?>([^<]*)</guid>").unwrap());
 static MINUTES: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^[0-9]+ min read$").unwrap());
 
 #[derive(Debug, PartialEq)]
@@ -126,6 +130,10 @@ pub enum Difference {
         page: String,
         diff: String,
     },
+    /// A feed item's guid that only the baseline's feed has: a reader
+    /// would show its item again.
+    Guid(String),
+    NewGuid(String),
 }
 
 impl fmt::Display for Difference {
@@ -147,6 +155,12 @@ impl fmt::Display for Difference {
             }
             Difference::Dom { page, diff } => {
                 write!(f, "{page}: the normalized DOM differs\n{diff}")
+            }
+            Difference::Guid(g) => {
+                write!(f, "the feed guid {g}: in the baseline, not the candidate")
+            }
+            Difference::NewGuid(g) => {
+                write!(f, "the feed guid {g}: in the candidate, not the baseline")
             }
         }
     }
@@ -260,6 +274,14 @@ pub fn compare(
         }
     }
 
+    // Every feed's guids, as written: a feed reader keys its items on them
+    // (`rss-guid`), whatever order they come in (`rss`).
+    for (feed, ours) in &b.guids {
+        let theirs = c.guids.get(feed).cloned().unwrap_or_default();
+        differences.extend(ours.difference(&theirs).cloned().map(Difference::Guid));
+        differences.extend(theirs.difference(ours).cloned().map(Difference::NewGuid));
+    }
+
     let mut tolerated = BTreeMap::new();
     for (id, _) in b.tally.into_inner().into_iter().chain(c.tally.into_inner()) {
         *tolerated.entry(id).or_default() += 1;
@@ -326,6 +348,8 @@ struct Side {
     /// Each Page's normalized DOM.
     pages: BTreeMap<String, String>,
     refs: Vec<Ref>,
+    /// Each feed's guids, by its path.
+    guids: BTreeMap<String, BTreeSet<String>>,
     /// What each rule let through, as (id, `side:what`), so a URL seen on
     /// many Pages counts once.
     tally: RefCell<BTreeSet<(&'static str, String)>>,
@@ -338,6 +362,7 @@ impl Side {
             files: BTreeSet::new(),
             pages: BTreeMap::new(),
             refs: Vec::new(),
+            guids: BTreeMap::new(),
             tally: RefCell::default(),
         };
         let mut sources = Vec::new();
@@ -354,7 +379,7 @@ impl Side {
                     .collect::<Vec<_>>()
                     .join("/")
             );
-            if path.ends_with(".html") || path.ends_with(".css") {
+            if path.ends_with(".html") || path.ends_with(".css") || path.ends_with(".xml") {
                 sources.push((path.clone(), entry.path().to_path_buf()));
             }
             side.files.insert(path);
@@ -364,7 +389,15 @@ impl Side {
         }
         for (path, file) in sources {
             let bytes = fs::read(&file).map_err(|e| format!("{}: {e}", file.display()))?;
-            if path.ends_with(".css") {
+            if path.ends_with(".xml") {
+                let xml = String::from_utf8_lossy(&bytes);
+                if xml.contains("<rss") {
+                    // By text: `isPermaLink` and the order don't matter.
+                    let guids = GUID.captures_iter(&xml).map(|m| m[1].trim().to_string());
+                    side.guids.insert(path.clone(), guids.collect());
+                    side.tolerate("rss-guid", &path);
+                }
+            } else if path.ends_with(".css") {
                 let css = String::from_utf8_lossy(&bytes);
                 for m in CSS_URL.captures_iter(&css) {
                     let url = m.get(1).or(m.get(2)).or(m.get(3)).expect("one matches");
