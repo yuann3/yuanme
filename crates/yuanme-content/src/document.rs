@@ -8,6 +8,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
+use std::sync::OnceLock;
 
 use serde::{Deserialize, Serialize};
 use unicode_normalization::UnicodeNormalization;
@@ -26,10 +27,32 @@ pub struct Link {
     pub text: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Document {
     nodes: Vec<Node>,
     pub(crate) names: Names,
+    /// [`Document::headings`], worked out the first time it is asked for,
+    /// which a built Document's never changing allows. `yuanme dev` keeps
+    /// the Document of each Entry it didn't read again between builds, so
+    /// a build walks only the Documents it read.
+    #[serde(skip)]
+    headings: OnceLock<Vec<Heading>>,
+}
+
+// By hand, to leave out what is only worked out from the rest.
+impl std::fmt::Debug for Document {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Document")
+            .field("nodes", &self.nodes)
+            .field("names", &self.names)
+            .finish()
+    }
+}
+
+impl PartialEq for Document {
+    fn eq(&self, other: &Document) -> bool {
+        self.nodes == other.nodes && self.names == other.names
+    }
 }
 
 /// What a link can name in a Document besides a heading's id (#16),
@@ -234,6 +257,7 @@ impl Document {
         Document {
             nodes: vec![root],
             names: Names::default(),
+            headings: OnceLock::new(),
         }
     }
 
@@ -346,20 +370,22 @@ impl Document {
         out
     }
 
-    pub fn headings(&self) -> Vec<Heading> {
-        self.descendants(Self::ROOT)
-            .into_iter()
-            .filter_map(|id| match &self.node(id).kind {
-                Kind::Heading {
-                    level, id: anchor, ..
-                } => Some(Heading {
-                    level: *level,
-                    id: anchor.clone(),
-                    text: self.text(id),
-                }),
-                _ => None,
-            })
-            .collect()
+    pub fn headings(&self) -> &[Heading] {
+        self.headings.get_or_init(|| {
+            self.descendants(Self::ROOT)
+                .into_iter()
+                .filter_map(|id| match &self.node(id).kind {
+                    Kind::Heading {
+                        level, id: anchor, ..
+                    } => Some(Heading {
+                        level: *level,
+                        id: anchor.clone(),
+                        text: self.text(id),
+                    }),
+                    _ => None,
+                })
+                .collect()
+        })
     }
 }
 

@@ -217,7 +217,7 @@ fn a_generated_heading_id_never_takes_a_label() {
         "## Energy\n\n$$\\begin{equation} E \\label{energy} \\end{equation}$$\n\n## Energy\n",
     );
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
-    let ids: Vec<_> = doc.headings().into_iter().map(|h| h.id).collect();
+    let ids: Vec<_> = doc.headings().iter().map(|h| h.id.clone()).collect();
     assert_eq!(ids, ["energy-1", "energy-2"]);
 }
 

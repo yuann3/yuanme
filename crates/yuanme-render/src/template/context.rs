@@ -272,11 +272,11 @@ fn entry(config: &Config, site: &Site, e: &Entry, url: &str, body: String) -> Va
     let headings: Vec<Value> = e
         .document
         .headings()
-        .into_iter()
+        .iter()
         .map(|h| {
             map([
-                ("id", Value::from(h.id)),
-                ("text", Value::from(h.text)),
+                ("id", Value::from(h.id.as_str())),
+                ("text", Value::from(h.text.as_str())),
                 ("level", Value::from(h.level)),
             ])
         })

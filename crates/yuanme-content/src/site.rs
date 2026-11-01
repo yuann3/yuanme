@@ -625,7 +625,7 @@ fn links(
     let anchors: Vec<Vec<String>> = entries
         .par_iter()
         .map(|e| {
-            let headings = e.document.headings().into_iter().map(|h| h.id);
+            let headings = e.document.headings().iter().map(|h| h.id.clone());
             headings
                 .chain(e.document.names.targets.values().cloned())
                 .collect()
@@ -638,8 +638,8 @@ fn links(
         .map(|e| match e.format {
             SourceFormat::Org => e.document.names.titles.clone(),
             SourceFormat::Markdown => {
-                let headings = e.document.headings().into_iter().rev();
-                headings.map(|h| (squash(&h.text), h.id)).collect()
+                let headings = e.document.headings().iter().rev();
+                headings.map(|h| (squash(&h.text), h.id.clone())).collect()
             }
         })
         .collect();
