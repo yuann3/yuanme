@@ -14,7 +14,7 @@ Steps 3 to 7 of the cutover plan in [#39](https://github.com/yuann3/yuanme/issue
 
 | Check | Result |
 |---|---|
-| Parity in Chromium, Firefox and WebKit | URLs and the normalized DOM: 0 differences. Pixels and behaviour: the Parity workflow's `port` jobs on the pinned commit |
+| Parity in Chromium, Firefox and WebKit | 0 differences from the Parity baseline in URLs, the normalized DOM, and pixels and behaviour in each engine: the Parity workflow on `4358dd4`, with the port at `506a3c9` |
 | Every Reference site Gate, lab mobile LCP ≤ 2.0 s | **Not met as #39 words it.** See below |
 | Firefox click-through | Scripted in Firefox stable 159.0, headed, on the owner's Mac and its GPU (WebGL `Apple M1, or similar`, Firefox's masked name): `/`, the nav, a Project, the Post, Back and Forward, `CLOSE ×`, a 404, and `/`, `/about/` and the Post at 390 px. Every swap kept the Film's canvas, Back and Forward restored the panel's scroll, and there was no console error, failed request or 4xx. The owner's own click-through is still #39's step |
 | The feed | `rss.xml` keeps its URL. Its guids are the production feed's strings, `https://www.eyuan.me/blog/<slug>/`, with `isPermaLink="false"` (`rss-guid`) |
@@ -24,11 +24,12 @@ Steps 3 to 7 of the cutover plan in [#39](https://github.com/yuann3/yuanme/issue
 
 ### The Gates
 
-From the Parity workflow on `2ccec19`, with the port at `77b326d`; the pin's change since touches no output but `_headers`:
+From the same run, and the runs of #76 before it:
 
-- **Lab mobile LCP:** `/` 2056 ms and `/about/` 2072 ms, within #15's 10 % tolerance. The Post, `/blog/extending-c-stdlib/`, 2328 ms (2556 ms on an earlier run), over 2.2 s. `lab.ts` reports it and doesn't fail on it, until #95.
-- **Lab desktop LCP:** 836 to 884 ms against 800 ms, reported (#95).
-- **Peak RSS of a cold build:** 524 to 550 MB on CI against 512 MB, report-only (#96); 866 MB on 16 threads.
+- **Lab mobile LCP:** `/` 2052 ms and `/about/` 2052 ms, within #15's 10 % tolerance. The Post, `/blog/extending-c-stdlib/`, 2324 ms (2328 and 2556 ms in #76), over 2.2 s. `lab.ts` reports it and doesn't fail on it, until #95.
+- **Lab desktop LCP:** `/` 880 ms and `/about/` 844 ms, at most the tolerance; the Post 972 ms, over it (836 to 884 ms in #76). Reported (#95).
+- **Peak RSS of a cold build:** 551 MB on CI against 512 MB (524 to 550 MB in #76), report-only (#96); 866 MB on a 16-thread Mac.
+- **The other build Gates:** cold build 406 ms, image encoding 50.9 ms an output, warm 56 ms, incremental 29 ms, dev cold start 54 ms, check 48 ms, all within.
 - **Render-path requests:** 9 a Page, 10 with `code.css`, against 8: Acknowledged overages in yuanme.toml (#94), so `--strict-budgets` passes.
 
 #39 makes "every Reference site Gate passes, with lab mobile LCP ≤ 2.0 s" a condition of the switch, and names a Post among the Pages. As written, the Post's mobile LCP and desktop LCP (#95) and peak RSS (#96) hold it back. #95 is the shell's first reveal, which is the owner's design call. For that decision, `lab.ts` on one host, the same hour, on the port and on the Parity baseline, which is what `eyuan.me` serves:
