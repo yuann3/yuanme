@@ -66,7 +66,7 @@ fn an_archive_is_unpacked_with_the_files_beside_its_binary() {
         .status()
         .unwrap();
     assert!(status.success());
-    let sha256 = hex(&Hasher::digest(fs::read(&release).unwrap()));
+    let sha256 = sha256(&fs::read(&release).unwrap());
     let cache = dir.path().join("cache");
 
     let tool = Tool {

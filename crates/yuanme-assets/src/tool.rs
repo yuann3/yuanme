@@ -130,7 +130,7 @@ impl Tool {
                 }
             }
         };
-        let have = hex(&Hasher::digest(&bytes));
+        let have = sha256(&bytes);
         if !have.eq_ignore_ascii_case(&want) {
             return Err(Error {
                 message: format!("the download of {url} has SHA-256 {have}, not {want}"),
@@ -178,7 +178,7 @@ pub fn cache_dir() -> Option<PathBuf> {
 }
 
 /// The bytes at `url`, or what went wrong as curl says it.
-fn fetch(url: &str) -> Result<Vec<u8>, String> {
+pub fn fetch(url: &str) -> Result<Vec<u8>, String> {
     let output = Command::new("curl")
         .args(["--fail", "--location", "--silent", "--show-error", url])
         .output();
@@ -194,7 +194,7 @@ fn fetch(url: &str) -> Result<Vec<u8>, String> {
 
 /// The checksum `list` gives `file`. Tailwind's names each file as
 /// `./<file>`.
-fn listed(list: &str, file: &str) -> Option<String> {
+pub fn listed(list: &str, file: &str) -> Option<String> {
     list.lines().find_map(|line| {
         let (hash, name) = line.split_once(char::is_whitespace)?;
         let name = name.trim_start().trim_start_matches('*');
@@ -256,6 +256,10 @@ fn unpack(bytes: &[u8], folder: &str, to: &Path) -> io::Result<()> {
     unpacked
 }
 
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
+/// `bytes`' SHA-256, in hex.
+pub fn sha256(bytes: &[u8]) -> String {
+    Hasher::digest(bytes)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
 }

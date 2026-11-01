@@ -891,6 +891,27 @@ fn exit_codes_and_the_project_folder() {
     assert_eq!(yuanme(root, &["build", "--out", "."]).code, 2);
 }
 
+/// A build with no install receipt, as `cargo install` and Homebrew make,
+/// is told to update the way it was installed, before anything is
+/// downloaded. src/update/tests.rs updates fake releases.
+#[test]
+fn self_update_needs_an_install_the_install_script_made() {
+    let home = tempfile::tempdir().unwrap();
+    let env = [
+        ("HOME", home.path()),
+        ("XDG_CONFIG_HOME", home.path()),
+        ("LOCALAPPDATA", home.path()),
+    ];
+    let out = yuanme_with(home.path(), &["self", "update"], &env);
+    assert_eq!(out.code, 2, "{}", out.stderr);
+    assert!(out.stderr.contains("install script"), "{}", out.stderr);
+    assert!(out.stderr.contains("cargo install"), "{}", out.stderr);
+    assert_eq!(
+        yuanme_with(home.path(), &["self", "update", "0.2"], &env).code,
+        2
+    );
+}
+
 /// `check`, and the commands that build only to read the Site, encode no
 /// image: that is `build`'s work, and the slowest part of it.
 #[test]

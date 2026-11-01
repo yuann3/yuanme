@@ -41,6 +41,17 @@ fn main() {
     };
     println!("cargo::rustc-env=YUANME_ENGINE_VERSION={engine}");
 
+    // `yuanme self update` downloads this target's release archive.
+    let target = std::env::var("TARGET").expect("set by Cargo");
+    println!("cargo::rustc-env=YUANME_TARGET={target}");
+    // The key release-sign.yml signs sha256.txt with, which the owner
+    // commits before the first release; a build from before then can't
+    // update itself. A checkout's change is seen through crates/ below.
+    println!("cargo::rustc-check-cfg=cfg(minisign_key)");
+    if Path::new(&manifest).join("src/minisign.pub").is_file() {
+        println!("cargo::rustc-cfg=minisign_key");
+    }
+
     if ours && let Some(git_dir) = git(&["rev-parse", "--absolute-git-dir"]) {
         // A commit or checkout appends to logs/HEAD; staging rewrites the
         // index; an edit anywhere in the Engine's sources changes crates/.

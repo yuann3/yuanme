@@ -59,6 +59,14 @@ pub enum Event<'a> {
     /// `yuanme dev status`, and `stop` once it has stopped one: the dev
     /// server running for the project, if there is one.
     DevStatus(Option<&'a crate::dev::running::Running>),
+    SelfUpdate {
+        /// The version that ran.
+        current: &'a str,
+        /// The newest release, or the one named.
+        release: String,
+        newer: bool,
+        updated: bool,
+    },
 }
 
 /// What the dev client forwards from a browser's console (#21).
@@ -211,6 +219,18 @@ impl Event<'_> {
                 }
                 json
             }
+            Event::SelfUpdate {
+                current,
+                release,
+                newer,
+                updated,
+            } => json!({
+                "type": "self-update",
+                "current": current,
+                "release": release,
+                "newer": newer,
+                "updated": updated,
+            }),
             Event::BrowserConsole(c) => json!({
                 "type": "browser-console",
                 "level": c.level,
@@ -505,7 +525,30 @@ pub fn schema() -> Value {
         event(
             Some("docs"),
             "A docs page, from `yuanme docs`.",
-            &[("page", string.clone()), ("markdown", string)],
+            &[("page", string.clone()), ("markdown", string.clone())],
+            &[],
+        ),
+        event(
+            Some("self-update"),
+            "What `yuanme self update` did, or with `--check`, found.",
+            &[
+                (
+                    "current",
+                    json!({ "type": "string", "description": "The version that ran." }),
+                ),
+                (
+                    "release",
+                    json!({ "type": "string", "description": "The newest release, or the one the command named." }),
+                ),
+                (
+                    "newer",
+                    json!({ "type": "boolean", "description": "Whether `release` is newer than `current`." }),
+                ),
+                (
+                    "updated",
+                    json!({ "type": "boolean", "description": "Whether yuanme was replaced with `release`. Never with `--check`." }),
+                ),
+            ],
             &[],
         ),
     ];

@@ -9,6 +9,7 @@ mod schemas;
 mod sync;
 #[cfg(test)]
 mod tests;
+mod update;
 mod watch;
 
 use std::fs;
@@ -134,6 +135,24 @@ enum Command {
         /// A topic, such as `templates`, or a code, such as `entry/unknown-key`.
         topic: Option<String>,
     },
+    /// Update yuanme itself.
+    #[command(name = "self", subcommand)]
+    Itself(Itself),
+}
+
+#[derive(Subcommand)]
+enum Itself {
+    /// Replace this yuanme with the newest release, or with VERSION, which
+    /// may be older, once its signature and hash check. Only for an install
+    /// made by the install script.
+    Update {
+        /// An exact release, such as 0.2.0.
+        #[arg(value_parser = update::version)]
+        version: Option<String>,
+        /// Only say whether a newer release is out.
+        #[arg(long, conflicts_with = "version")]
+        check: bool,
+    },
 }
 
 #[derive(Args)]
@@ -200,6 +219,7 @@ enum Which {
     Events,
 }
 
+#[derive(Debug)]
 enum Error {
     BadCommand(String),
     Io(io::Error),
@@ -287,6 +307,9 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     let dir = cli.dir.map_or(cwd.clone(), |d| cwd.join(d));
     match cli.command {
         Command::Docs { topic } => return docs(topic.as_deref().unwrap_or("index"), out),
+        Command::Itself(Itself::Update { version, check }) => {
+            return update::run(version, check, out);
+        }
         Command::Init {
             folder,
             starter,
@@ -371,7 +394,9 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
         } => new(&root, &collection, &title, format, out),
         Command::Routes { drafts } => routes(&root, drafts, out),
         Command::Schema { which } => schema(&root, which, out),
-        Command::Docs { .. } | Command::Init { .. } => unreachable!("answered without a project"),
+        Command::Docs { .. } | Command::Init { .. } | Command::Itself(_) => {
+            unreachable!("answered without a project")
+        }
     }
 }
 

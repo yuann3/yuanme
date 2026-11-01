@@ -30,6 +30,8 @@ yuanme-engine.workspace = true
 yuanme-content.workspace = true
 yuanme-diag.workspace = true
 yuanme-render.workspace = true
+# Its Managed tool downloads, which `yuanme self update` shares.
+yuanme-assets.workspace = true
 blake3 = "1.8.7"
 clap = { version = "4.6.7", features = ["derive"] }
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
@@ -43,6 +45,9 @@ notify = "8.2.0"
 # musl's allocator is slow under rayon's threads, and the Linux release is
 # musl (#37).
 mimalloc = "0.1.52"
+# `yuanme self update` checks a release's sha256.txt against the release
+# key (#37). Attestations would need a Sigstore client.
+minisign-verify = "0.3.0"
 
 [features]
 default = ["asm"]
@@ -55,3 +60,5 @@ tempfile = "3.27.0"
 insta = "1.49.0"
 jsonschema = { version = "0.60.1", default-features = false }
 tungstenite = { version = "0.29.0", default-features = false, features = ["handshake"] }
+# Signs the releases `self update`'s tests make.
+minisign = "0.10.0"

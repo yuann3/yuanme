@@ -67,6 +67,7 @@ Each line is one event with a `type`:
 - `entry-created`: what `yuanme new` wrote.
 - `schema`: what `yuanme schema` prints.
 - `docs`: a page of these docs.
+- `self-update`: what `yuanme self update` did: the `current` version, the `release` it looked at, whether that is `newer`, and whether it `updated`.
 
 `yuanme schema events` prints the JSON Schema of every event. A later release may add fields, but renames and removes none before 2.0.
 
@@ -88,6 +89,14 @@ One dev server runs for a project. While it runs, `.yuanme/dev.json` says where:
 - **`yuanme dev logs`** prints what the server started with `--background` printed, which is in `.yuanme/dev.log`, in the form it was started with. `--follow` goes on printing until it stops.
 - **`yuanme dev stop`** stops it, and returns once it has saved its cache. Stopping when none runs is no error.
 - **`GET /__yuanme/status`** on the server returns its last build: `build-finished`'s fields, and its `diagnostics` as `--json` prints them.
+
+## Updating yuanme
+
+`yuanme self update` replaces the running yuanme with the newest release, if it is newer. `yuanme self update 0.2.0` installs that release, older or newer. `yuanme self update --check` only says whether a newer release is out. They are the only commands besides downloading a Managed tool that use the network, and yuanme never checks for updates by itself.
+
+- **Only an install made by the install script updates itself**, which it knows from the receipt the script wrote, `yuanme/yuanme-receipt.json` in `$XDG_CONFIG_HOME` or `~/.config` (`%LOCALAPPDATA%` on Windows), and from running from the folder the receipt names. Any other install, such as from Homebrew or `cargo install`, exits 2 and is told to update the way it was installed.
+- **A release is checked before it replaces anything.** Its `sha256.txt` must carry a minisign signature from yuanme's release key, which is built into yuanme, with the trusted comment `yuanme vX.Y.Z` of the release asked for, so an older release's can't stand in for it. The archive must have the hash `sha256.txt` lists, and the binary in it must run. Until then the old binary stays where it is; a failed check changes nothing and exits 101.
+- **A deploy workflow keeps its version.** The one `yuanme init --host` wrote installs the release its `YUANME_VERSION` names; change it to build with the release you updated to.
 
 ## Working with an agent
 
@@ -260,3 +269,22 @@ yuanme docs [OPTIONS] [TOPIC]
 ```
 
 - `TOPIC`: A topic, such as `templates`, or a code, such as `entry/unknown-key`.
+
+### `yuanme self`
+
+Update yuanme itself.
+
+```text
+yuanme self [OPTIONS] <COMMAND>
+```
+
+### `yuanme self update`
+
+Replace this yuanme with the newest release, or with VERSION, which may be older, once its signature and hash check. Only for an install made by the install script.
+
+```text
+yuanme self update [OPTIONS] [VERSION]
+```
+
+- `VERSION`: An exact release, such as 0.2.0.
+- `--check`: Only say whether a newer release is out.
