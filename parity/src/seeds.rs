@@ -34,11 +34,12 @@ pub const SEEDS: &[Seed] = &[
     Seed {
         name: "a Page removed",
         edits: &[Edit::Delete("blog/first/index.html")],
-        // With it go the links to it, and the one to its hero image.
+        // With it go the links to it, and the one to its hero image, which
+        // `hero-images` names by its stem.
         expect: |d| {
             d == [
                 Difference::Missing("/blog/first/index.html".into()),
-                Difference::MissingRef("/plane.png".into()),
+                Difference::MissingRef("hero:plane".into()),
                 Difference::Broken("/blog/first/".into()),
             ]
         },
