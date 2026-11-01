@@ -11,8 +11,8 @@ export const TOLERATED: Record<string, string> = {
 	desktopPanelScrollAfterBack: 'panel-scroll',
 	scriptsCount: 'single-initial-script',
 };
-/** probe.js listens for both prefixes' events. */
-export const RULES = [...Object.values(TOLERATED), 'router-events'];
+/** probe.js listens for both prefixes' events, and `state` reads nav links alike. */
+export const RULES = [...Object.values(TOLERATED), 'router-events', 'trailing-slash-hrefs'];
 
 const settle = (page: Page, ms = 1300) => page.waitForTimeout(ms);
 
@@ -23,7 +23,15 @@ const state = (page: Page) =>
 		return {
 			path: location.pathname,
 			title: document.title,
-			current: [...document.querySelectorAll('[data-nav-link]')].map((a) => `${(a as HTMLElement).dataset.section}:${a.getAttribute('aria-current') ?? '-'}`).join(' '),
+			current: [...document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]')]
+				.map((a) => {
+					// `trailing-slash-hrefs`: after a swap, Astro's shell marks its
+					// slashless `/blog` link `true` on `/blog/`, where a full load
+					// of the same Page says `page`.
+					const at = a.getAttribute('aria-current') ?? '-';
+					return `${a.dataset.section}:${at === 'true' && a.pathname.replace(/\/?$/, '/') === location.pathname ? 'page' : at}`;
+				})
+				.join(' '),
 			canvasId: c?.__probeId ?? null,
 			ctxTab: +(sessionStorage.getItem('__ctx') || 0),
 			lost: P.gl.lost + (P.gl.ctx?.isContextLost() ? 1 : 0),
