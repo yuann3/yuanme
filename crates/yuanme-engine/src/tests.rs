@@ -683,3 +683,99 @@ fn an_entry_is_read_again_when_anything_it_read_changes() {
         assert_eq!(build.sources.path(e.file), e.path);
     }
 }
+
+/// Every HTML Page a build makes, by its path, which must not fail.
+fn html(build: &Build) -> BTreeMap<String, String> {
+    assert!(!build.failed(), "{:#?}", build.diagnostics);
+    build
+        .files
+        .iter()
+        .filter(|(p, _)| p.ends_with(".html"))
+        .map(|(p, o)| (p.clone(), text(&o.body).to_string()))
+        .collect()
+}
+
+/// ADR 0011: an Entry's body HTML is a leaf cache, so a build that finds it
+/// makes the Pages a fresh render makes.
+#[test]
+fn a_cached_body_is_the_body_a_fresh_render_makes() {
+    let mut inputs = every_field();
+    inputs.insert(
+        "templates/posts/entry.html",
+        b"<html><head></head><body>{{ entry.content }}</body></html>".as_slice(),
+    );
+    let fresh = html(&build(&inputs, &mut Cache::memory("v"), Mode::Dev));
+    let mut cache = Cache::memory("v");
+    for _ in 0..3 {
+        assert_eq!(html(&build(&inputs, &mut cache, Mode::Dev)), fresh);
+    }
+}
+
+/// ADR 0011: a cached body is keyed by everything its render reads, so a
+/// change to any of it renders the body again.
+#[test]
+fn a_body_is_rendered_again_when_anything_it_reads_changes() {
+    let mut inputs = project();
+    let config = [
+        CONFIG,
+        b"\n[collections.posts]\nroute = \"/blog/{slug}/\"\n\n[math.macros]\nR = '\\mathbb{R}'\n"
+            .as_slice(),
+    ]
+    .concat();
+    inputs.insert("yuanme.toml", config.clone());
+    let a =
+        "---\ntitle: A\n---\nBy [](b.md#thm:b), in [B](b.md), over $\\R$.\n\n![A cat](cat.svg)\n";
+    inputs.insert("content/posts/a.md", a.as_bytes());
+    let b = "---\ntitle: B\n---\n:::theorem{#thm:b}\nx\n:::\n";
+    inputs.insert("content/posts/b.md", b.as_bytes());
+    let cat = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 4 3\"></svg>";
+    inputs.insert("content/posts/cat.svg", cat.as_bytes());
+    inputs.insert(
+        "templates/posts/entry.html",
+        b"<html><head></head><body>{{ entry.content }}</body></html>".as_slice(),
+    );
+    let mut cache = Cache::memory("v");
+    let mut body = |inputs: &Inputs, what: &str| {
+        let cached = html(&build(inputs, &mut cache, Mode::Dev));
+        let fresh = html(&build(inputs, &mut Cache::memory("v"), Mode::Dev));
+        assert_eq!(cached, fresh, "after {what}");
+        cached["blog/a/index.html"].clone()
+    };
+    let mut before = body(&inputs, "the first build");
+    assert_eq!(body(&inputs, "no change"), before);
+    let mut changed = |inputs: &Inputs, what: &str, shows: &str| {
+        let now = body(inputs, what);
+        assert_ne!(now, before, "{what} didn't change the body");
+        assert!(now.contains(shows), "after {what}: {now}");
+        before = now;
+    };
+
+    // The Entry's own text.
+    inputs.insert("content/posts/a.md", a.replace("By", "Then by").as_bytes());
+    changed(&inputs, "an edit", "Then by");
+    // The number of another Entry's Theorem, which the link shows.
+    let b = b.replace(
+        ":::theorem{#thm:b}",
+        ":::theorem\nw\n:::\n\n:::theorem{#thm:b}",
+    );
+    inputs.insert("content/posts/b.md", b.as_bytes());
+    changed(&inputs, "a Theorem before the one it links to", "Theorem 2");
+    // Another Entry's Slug, which its links go to.
+    inputs.insert(
+        "content/posts/b.md",
+        b.replace("title: B", "title: B\nslug: bee").as_bytes(),
+    );
+    changed(&inputs, "a new Slug", "/blog/bee/#thm:b");
+    // A math macro, in Site config.
+    let bold = String::from_utf8(config)
+        .unwrap()
+        .replace("mathbb", "mathbf");
+    inputs.insert("yuanme.toml", bold.as_bytes());
+    changed(&inputs, "a math macro", "<mi>𝐑</mi>");
+    // The image it shows, whose size its markup gives.
+    inputs.insert(
+        "content/posts/cat.svg",
+        cat.replace("4 3", "8 3").as_bytes(),
+    );
+    changed(&inputs, "a wider image", "width=\"8\"");
+}

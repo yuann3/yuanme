@@ -2,6 +2,7 @@
 //! project into every file of the Site, in memory (ADR 0011).
 
 mod assets;
+mod bodies;
 mod budgets;
 mod cache;
 mod entries;
@@ -20,7 +21,6 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use rayon::prelude::*;
 use yuanme_content::config::{self, Budget, Config};
 use yuanme_content::site::{self, Project, RouteKind, Site};
 use yuanme_diag::{Code, Diagnostic, FileId, Files, Level, Span, codes};
@@ -273,16 +273,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let images = Arc::new(images::Images::new(inputs, cache, &config, &templates));
     let (pictures, more) = images.bodies(&site);
     diagnostics.extend(more);
-    let bodies = site
-        .entries
-        .par_iter()
-        .zip(&site.links)
-        .zip(&code)
-        .zip(&pictures)
-        .map(|(((e, links), code), pictures)| {
-            yuanme_render::html::body(&e.document, links, code, pictures)
-        })
-        .collect();
+    let bodies = bodies::bodies(&site, &code, pictures, cache, mode == Mode::Dev);
     let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
     let scoped = templates
         .keys()

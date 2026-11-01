@@ -10,7 +10,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::assets::tailwind::Watching;
-use crate::{Body, entries};
+use crate::{Body, bodies, entries};
 
 /// Entries no build has read for this many successful builds are deleted.
 const KEEP: u64 = 10;
@@ -36,6 +36,8 @@ pub struct Cache {
     /// `entry` pack: `yuanme dev` decoding every Entry on each save would
     /// cost more than parsing the one that changed.
     pub(crate) entries: HashMap<blake3::Hash, entries::Read>,
+    /// The last build's Entries' bodies as HTML, by the Entry's path.
+    pub(crate) bodies: HashMap<String, bodies::Rendered>,
 }
 
 #[derive(Default)]
@@ -63,6 +65,7 @@ impl Cache {
             large: Pack::default(),
             tailwind: BTreeMap::new(),
             entries: HashMap::new(),
+            bodies: HashMap::new(),
         }
     }
 
