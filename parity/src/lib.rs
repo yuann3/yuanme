@@ -20,7 +20,7 @@ use url::Url;
 /// rule normalizes both sides alike, so it lets a difference through and
 /// never requires one: the baseline compared with itself passes under all
 /// of them.
-const RULES: [&str; 17] = [
+const RULES: [&str; 18] = [
     "apex-origin",
     "trailing-slash-hrefs",
     "assets-dir",
@@ -38,6 +38,7 @@ const RULES: [&str; 17] = [
     "not-found-canonical",
     "dead-links",
     "class-highlighting",
+    "hero-images",
 ];
 
 /// Links the port points somewhere real, by the Page they are on: (page,
@@ -47,6 +48,14 @@ const RETARGETED: [(&str, &str, &str); 1] = [(
     "LICENSE",
     "https://github.com/yuann3/http-rust/blob/master/LICENSE",
 )];
+
+/// The Static files the port makes into images with `image()`, by the
+/// name the Engine's files of them keep (`hero-images`).
+const HEROES: [(&str, &str); 3] = [
+    ("/rustc.PNG", "rustc"),
+    ("/plane.png", "plane"),
+    ("/Ylib.png", "Ylib"),
+];
 
 /// The Pages whose lists the Engine orders by its Collection rules, under
 /// `collection-order`: their `<ul>`s are compared as sets of items.
@@ -183,7 +192,8 @@ pub fn compare(
     let paths = |s: &Side| -> BTreeMap<String, Vec<String>> {
         let mut out: BTreeMap<String, Vec<String>> = BTreeMap::new();
         for file in &s.files {
-            out.entry(s.asset(file).unwrap_or_else(|| file.clone()))
+            let key = s.asset(file).unwrap_or_else(|| file.clone());
+            out.entry(s.hero(&key).unwrap_or(key))
                 .or_default()
                 .push(file.clone());
         }
@@ -406,6 +416,21 @@ impl Side {
         }
     }
 
+    /// What a hero image's file, a Static file in the baseline and the
+    /// Engine's resized copies in the candidate, compares as: `hero:` and
+    /// its name.
+    fn hero(&self, key: &str) -> Option<String> {
+        let engine = key
+            .strip_prefix("asset:")
+            .and_then(|k| k.rsplit_once('.'))
+            .map(|(stem, _)| stem);
+        let (_, name) = HEROES
+            .iter()
+            .find(|&&(path, name)| key == path || engine == Some(name))?;
+        self.tolerate("hero-images", key);
+        Some(format!("hero:{name}"))
+    }
+
     /// `raw`, read on the Page or stylesheet at `base`, if it is internal.
     fn reference(&self, raw: &str, base: &str) -> Option<Ref> {
         let raw = self.retarget(raw.trim(), base);
@@ -430,6 +455,7 @@ impl Side {
         }
         let file = self.file(&path);
         let mut target = self.asset(&path).unwrap_or(path);
+        target = self.hero(&target).unwrap_or(target);
         if let Some(q) = url.query() {
             target = format!("{target}?{q}");
         }
@@ -510,6 +536,28 @@ impl Side {
             self.tolerate(id, &format!("{page}: {tag}"));
             return;
         }
+        // A hero image's `<picture>` from `image()` compares as the plain
+        // `<img>` it was, with its alt text and file (`hero-images`).
+        let hero = |s: &Self, img: &Handle| match &img.data {
+            NodeData::Element { name, attrs, .. } if &*name.local == "img" => attrs
+                .borrow()
+                .iter()
+                .find(|a| &*a.name.local == "src")
+                .is_some_and(|a| s.url_value(&a.value, page).starts_with("hero:")),
+            _ => false,
+        };
+        if tag == "picture" && node.children.borrow().iter().any(|c| hero(self, c)) {
+            for child in node.children.borrow().iter() {
+                let mut one = String::new();
+                self.render(child, page, depth, &mut one);
+                if hero(self, child) {
+                    out.push_str(&one);
+                }
+            }
+            self.tolerate("hero-images", page);
+            return;
+        }
+        let hero_img = hero(self, node);
         let mut line = tag.clone();
         let mut list: Vec<(String, String)> = Vec::new();
         for a in attrs.borrow().iter() {
@@ -560,7 +608,9 @@ impl Side {
                 }
                 _ => {}
             }
-            list.push((name, value));
+            if !hero_img || matches!(name.as_str(), "alt" | "src") {
+                list.push((name, value));
+            }
         }
         list.sort();
         for (name, value) in list {
@@ -714,6 +764,7 @@ fn left_out(tag: &str, attr: &dyn Fn(&str) -> String, page: &str) -> Option<&'st
     let property = attr("property");
     match tag {
         "meta" if matches!(property.as_str(), "og:image" | "twitter:image") => Some("og-image"),
+        "link" if attr("rel") == "preload" && attr("as") == "image" => Some("hero-images"),
         "link" if attr("rel") == "alternate" && attr("type") == "application/rss+xml" => {
             Some("head-metas")
         }

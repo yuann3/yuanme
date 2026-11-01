@@ -432,3 +432,44 @@ fn the_ports_markup_and_content_differences_name_their_exception() {
     );
     assert_eq!(dom_pages(&run(&reordered, &swapped)), ["/blog/index.html"]);
 }
+
+#[test]
+fn hero_images_through_image_stand_in_for_the_static_files() {
+    let picture = |alt: &str, name: &str| {
+        format!(
+            r#"<picture><source type="image/avif" srcset="/assets/{name}-480-0123456789abcdef.avif 480w" sizes="100vw"><img src="/assets/{name}-480-0123456789abcdef.jpg" srcset="/assets/{name}-480-0123456789abcdef.jpg 480w" sizes="100vw" width="480" height="320" alt="{alt}" fetchpriority="high" decoding="async"></picture>"#
+        )
+    };
+    let preload = r#"<link rel="preload" as="image" type="image/avif" imagesrcset="/assets/rustc-480-0123456789abcdef.avif 480w" imagesizes="100vw" fetchpriority="high">"#;
+    let baseline = format!(
+        "=== blog/a/index.html\n{}=== rustc.PNG\nx\n",
+        page("", r#"<img src="/rustc.PNG" alt="rustc">"#)
+    );
+    let candidate = |body: &str, name: &str| {
+        format!(
+            "=== blog/a/index.html\n{}=== assets/{name}-480-0123456789abcdef.avif\na\n=== assets/{name}-480-0123456789abcdef.jpg\nj\n",
+            page(preload, body)
+        )
+    };
+    let report = run(&baseline, &candidate(&picture("rustc", "rustc"), "rustc"));
+    assert_eq!(report.differences, []);
+    assert!(
+        report.tolerated.contains_key("hero-images"),
+        "{:?}",
+        report.tolerated
+    );
+
+    // Its alt text, and which image it is, still count.
+    assert_eq!(
+        dom_pages(&run(
+            &baseline,
+            &candidate(&picture("a crab", "rustc"), "rustc")
+        )),
+        ["/blog/a/index.html"]
+    );
+    assert!(
+        run(&baseline, &candidate(&picture("rustc", "park"), "park"))
+            .differences
+            .contains(&Difference::Missing("hero:rustc".into()))
+    );
+}
