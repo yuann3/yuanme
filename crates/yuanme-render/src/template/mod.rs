@@ -56,8 +56,8 @@ pub struct Page {
 /// `templates/` in `files`, by its path there, and `scoped` the ones with
 /// a Sidecar stylesheet, whose tags get their scope attribute (ADR 0006);
 /// `statics` is the URL of every Static file, which `url()` accepts as
-/// well as Routes; `code` is each Entry's highlighted code blocks, and
-/// `pictures` its processed images; `images` makes what `image()` returns.
+/// well as Routes; `bodies` is each Entry's body as HTML, which
+/// [`crate::html::body`] writes; `images` makes what `image()` returns.
 /// Any error fails the whole render, after every Page has been tried.
 #[expect(
     clippy::too_many_arguments,
@@ -70,8 +70,7 @@ pub fn render(
     templates: &BTreeMap<String, FileId>,
     scoped: &BTreeSet<String>,
     statics: &BTreeSet<String>,
-    code: &[crate::highlight::Code],
-    pictures: &[crate::html::Pictures],
+    bodies: Vec<String>,
     images: Arc<dyn Images>,
 ) -> (Vec<Page>, Vec<Diagnostic>) {
     let origin = config.site.url.trim_end_matches('/').to_string();
@@ -172,7 +171,7 @@ pub fn render(
     }
 
     let uses = uses(&sources);
-    let context = Context::new(config, site, code, pictures, &origin);
+    let context = Context::new(config, site, bodies, &origin);
     let threads = rayon::ThreadPoolBuilder::new()
         .stack_size(STACK)
         .build()

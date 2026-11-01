@@ -9,9 +9,9 @@ use std::sync::Arc;
 use yuanme_content::config::{self, Config};
 use yuanme_content::site::{self, Project, Site};
 use yuanme_diag::{Diagnostic, FileId, Files, Level, codes};
-use yuanme_render::highlight;
 use yuanme_render::image::{self, Image, Images, Request};
 use yuanme_render::template::{self, Page, scope};
+use yuanme_render::{highlight, html};
 
 /// Every file under `dir`, by its path from `dir`.
 fn read(dir: &Path) -> Vec<(String, String)> {
@@ -91,8 +91,7 @@ fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
         &project.templates,
         &project.scoped,
         &project.statics,
-        &project.code,
-        &vec![Default::default(); project.site.entries.len()],
+        project.bodies,
         Arc::new(NoImages),
     );
     (project.files, pages, diagnostics)
@@ -106,7 +105,7 @@ struct Resolved {
     /// The Templates with a Sidecar stylesheet.
     scoped: BTreeSet<String>,
     statics: BTreeSet<String>,
-    code: Vec<highlight::Code>,
+    bodies: Vec<String>,
 }
 
 fn resolve(written: &[(String, String)]) -> Resolved {
@@ -163,10 +162,14 @@ fn resolve(written: &[(String, String)]) -> Resolved {
         false,
     );
     let site = site.unwrap_or_else(|| panic!("{diagnostics:#?}"));
-    let code = site
+    let bodies = site
         .entries
         .iter()
-        .map(|e| highlight::document(&e.document))
+        .zip(&site.links)
+        .map(|(e, links)| {
+            let code = highlight::document(&e.document);
+            html::body(&e.document, links, &code, &Default::default())
+        })
         .collect();
     Resolved {
         files,
@@ -175,7 +178,7 @@ fn resolve(written: &[(String, String)]) -> Resolved {
         templates,
         scoped,
         statics,
-        code,
+        bodies,
     }
 }
 
@@ -245,8 +248,7 @@ fn every_page_sees_what_its_context_schema_says() {
         &project.templates,
         &project.scoped,
         &project.statics,
-        &project.code,
-        &vec![Default::default(); project.site.entries.len()],
+        project.bodies,
         Arc::new(NoImages),
     );
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
