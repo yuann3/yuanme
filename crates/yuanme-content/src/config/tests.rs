@@ -399,7 +399,7 @@ requests = 1
     assert!(!budgets.strict && budgets.overages.is_empty());
     assert_eq!(
         Budget::ALL.map(|b| budgets.limit(b)),
-        [14_000, 6_000, 3_000, 30_000, 55_000, 4]
+        [14_000, 6_000, 3_000, 30_000, 55_000, 8]
     );
     let (off, diagnostics) = check(&format!("budgets = false\n{MINIMAL}"));
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");

@@ -50,9 +50,3 @@ mode = "native"
 
 [host]
 adapter = "cloudflare"
-
-# A page with math and code loads 5 files: the Page, styles/site.css, and
-# the stylesheets yuanme adds for code, for math and the math font. Search
-# loads its Script, and Pagefind's, only on /search/.
-[budgets]
-requests = 5

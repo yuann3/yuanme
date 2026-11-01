@@ -278,12 +278,9 @@ list_route = "/blog/"
 
 [router]
 mode = "swap"
-
-[budgets]
-requests = 5
 ```
 
-The Router is a Script and a chunk of its own, so with a stylesheet and a Script of the Site's, each Page makes 5 requests on its render path, one more than the Starters' budget: `yuanme docs budgets` explains it.
+The Router is a Script and a chunk of its own, so with a stylesheet and a Script of the Site's, each Page makes 5 requests on its render path, within the 8 of `yuanme docs budgets`.
 
 With `"swap"`, the Router catches each move to another Page of the Site, fetches the Page, and swaps it into the current document, so what the Site keeps between Pages survives. It:
 

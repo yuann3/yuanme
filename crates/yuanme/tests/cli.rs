@@ -990,7 +990,7 @@ js = 1
     };
     let budgets = &report()["budgets"];
     assert_eq!(budgets["limits"]["js"], 10);
-    assert_eq!(budgets["limits"]["requests"], 4, "the Starters' number");
+    assert_eq!(budgets["limits"]["requests"], 8, "the Starters' number");
     let home = &budgets["pages"][1];
     assert_eq!(home["url"], "/");
     let event = events.iter().find(|e| e["page"] == "/").unwrap();

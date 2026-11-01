@@ -54,8 +54,3 @@ sort = ["modified"]
 [routes.about]
 path = "/about/"
 template = "about.html"
-
-# A Post loads more files than the default budget allows; budgets aren't
-# what this fixture is for.
-[budgets]
-requests = 6

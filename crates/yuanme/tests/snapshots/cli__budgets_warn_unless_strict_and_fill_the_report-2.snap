@@ -3,7 +3,7 @@ source: crates/yuanme/tests/cli.rs
 expression: "md.split_once(\"\\n## Budgets\\n\").unwrap().1"
 ---
 
-Bytes are Brotli at quality 11, but a number with `~` is under half its limit, and estimated at quality 5, which is about 15% more. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 10 B of JS, 30.0 kB of text fonts, 55.0 kB of math font, 4 requests. An Entry's body isn't part of its Page's HTML.
+Bytes are Brotli at quality 11, but a number with `~` is under half its limit, and estimated at quality 5, which is about 15% more. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 10 B of JS, 30.0 kB of text fonts, 55.0 kB of math font, 8 requests. An Entry's body isn't part of its Page's HTML.
 
 | Page | HTML | Body | CSS | JS | Text fonts | Math font | Requests |
 |---|---:|---:|---:|---:|---:|---:|---:|

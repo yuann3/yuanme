@@ -50,12 +50,6 @@ mode = "native"
 [typescript]
 check = true
 
-# A Post with math and code loads 6 files on its render path: the Page,
-# styles/site.css, the copy button's Script, and the stylesheets yuanme adds
-# for code, for math and the math font. Every other Page loads 2 or 3.
-[budgets]
-requests = 6
-
 # The width of the text column, so phones fetch smaller images.
 [images]
 sizes = "(min-width: 44rem) 40rem, 100vw"

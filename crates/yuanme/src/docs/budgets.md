@@ -16,7 +16,7 @@ Bytes are counted as Brotli at quality 11, the smallest a host could send, so a 
 | `js` | 3 kB | Each module Script the Page loads, the chunks they import, which yuanme preloads, classic scripts from the Site's own origin, and inline `<script>`s. A chunk loaded with `import()`, a script from another origin and a data block, such as JSON-LD, don't count. |
 | `fonts` | 30 kB | Each font file the Page's stylesheets name in `url()`, or the Page preloads, but the math font, whether or not the Page's text uses it. |
 | `math_font` | 55 kB | The math font, on a Page that shows math. |
-| `requests` | 4 | The Page itself, and each stylesheet, script, chunk, font and `<link rel="preload">` it loads, from any origin. Preload the image a visitor sees first and it counts too. |
+| `requests` | 8 | The Page itself, and each stylesheet, script, chunk, font and `<link rel="preload">` it loads, from any origin. Preload the image a visitor sees first and it counts too. |
 
 A file counts once per Page, however many times the Page names it. `yuanme check` measures nothing: Budgets need the built Site.
 
@@ -134,7 +134,7 @@ My first Post, with some *emphasis* and a [link](https://commonmark.org).
 
 ## Budgets
 
-Bytes are Brotli at quality 11, but a number with `~` is under half its limit, and estimated at quality 5, which is about 15% more. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 3.0 kB of JS, 30.0 kB of text fonts, 55.0 kB of math font, 4 requests. An Entry's body isn't part of its Page's HTML.
+Bytes are Brotli at quality 11, but a number with `~` is under half its limit, and estimated at quality 5, which is about 15% more. The limits: 14.0 kB of HTML, 6.0 kB of CSS, 3.0 kB of JS, 30.0 kB of text fonts, 55.0 kB of math font, 8 requests. An Entry's body isn't part of its Page's HTML.
 
 | Page | HTML | Body | CSS | JS | Text fonts | Math font | Requests |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -147,7 +147,7 @@ The 6 files are the two Pages, the bundle, the sitemap's two files and the cloud
 ```json
 {
   "budgets": {
-    "limits": { "css": 6000, "fonts": 30000, "html": 14000, "js": 3000, "math_font": 55000, "requests": 4 },
+    "limits": { "css": 6000, "fonts": 30000, "html": 14000, "js": 3000, "math_font": 55000, "requests": 8 },
     "over": [],
     "pages": [
       { "body": 83, "css": 0, "estimated": ["body", "html", "js"], "fonts": 0, "html": 90, "js": 71, "math_font": 0, "requests": 2, "url": "/blog/hello/" },

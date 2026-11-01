@@ -86,7 +86,7 @@ impl Budget {
             Budget::Js => 3_000,
             Budget::Fonts => 30_000,
             Budget::MathFont => 55_000,
-            Budget::Requests => 4,
+            Budget::Requests => 8,
         }
     }
 }
