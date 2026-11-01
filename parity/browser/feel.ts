@@ -189,11 +189,17 @@ export async function feel(browser: Browser, server: Server, remote: string): Pr
 		await ctx.close();
 	});
 
-	// 5. Abort: two clicks 5 ms apart; the feed is a full load.
+	// 5. Abort: two clicks 5 ms apart; the feed is a full load. The first
+	// Page is held back, so it is still loading at the second click
+	// however fast a side's Router or busy the runner.
 	await section('abort', async () => {
 		const { ctx, page, base } = await open();
 		await page.goto(base + '/');
 		await settle(page);
+		await page.route(/\/blog\/?$/, async (route) => {
+			await new Promise((r) => setTimeout(r, 300));
+			await route.fallback().catch(() => {});
+		});
 		await page.evaluate(async () => {
 			(document.querySelector('[data-nav-link][data-section=writing]') as HTMLElement).click();
 			await new Promise((r) => setTimeout(r, 5));
