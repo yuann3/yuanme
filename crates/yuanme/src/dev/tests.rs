@@ -157,7 +157,10 @@ fn every_edit_serves_what_a_clean_build_makes() {
     let text = fs::read_to_string(&post).unwrap();
     write(&post, &format!("{text}\nOne more paragraph.\n"));
     let updates = settle(&mut session, &batches);
-    let Some(Some(Update::Built(urls))) = updates.first() else {
+    // FSEvents can still report the fixture's writes, from before the
+    // watcher started, in a batch that changes nothing and builds nothing.
+    let built: Vec<&Update> = updates.iter().flatten().collect();
+    let [Update::Built(urls)] = built.as_slice() else {
         panic!("a prose edit builds once")
     };
     assert_eq!(urls, &["/blog/extending_c_stdlib/"]);
