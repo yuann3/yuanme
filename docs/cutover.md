@@ -81,7 +81,12 @@ Each step is for the owner. Run the shell steps in a checkout of eyuan.me with w
 
 ### 0. Before anything changes
 
-1. **Export the zone's DNS records:** DNS › Records › Export, and keep the file. The rollback restores the `eyuan.me` record from it. This step can't read them: the wrangler login has `zone:read` only.
+1. **Export the zone's DNS records:** DNS › Records › Export, and keep the file. The rollback restores the `eyuan.me` record from it. This step can't read them: the wrangler login has `zone:read` only. The owner's export, on 2026-11-06, before the switch; these are the rollback records:
+
+   | Name | Type | Content | Proxy | TTL |
+   |---|---|---|---|---|
+   | `eyuan.me` | CNAME | `apex-loadbalancer.netlify.com` | Proxied | Auto |
+   | `www` | CNAME | `apex-loadbalancer.netlify.com` | Proxied | Auto |
 2. **Secrets.** In Cloudflare, create a token for eyuan.me alone, not a copy of yuanme's: *Account › Workers Scripts › Edit* and *Account › Account Settings › Read*, on this account only. It needs no zone permission while the Custom Domain is kept out of `wrangler.jsonc`, as below. Then:
    ```sh
    gh secret set CLOUDFLARE_API_TOKEN -R yuann3/eyuan.me
@@ -105,7 +110,16 @@ None of these breaks the Netlify origin, so they can go first, one at a time:
 | HSTS | SSL/TLS › Edge Certificates › HSTS | **Owner's call.** To keep today's header: on, max-age 12 months, no `includeSubDomains`, no preload, No-Sniff off. It then covers `docs.eyuan.me` too | Off. Browsers keep what they saw for its max-age |
 | `www` | Rules › Redirect Rules | A rule: hostname equals `www.eyuan.me`, dynamic redirect to `concat("https://eyuan.me", http.request.uri.path)`, 301, query string kept. The `www` record stays proxied, so the rule answers before Netlify would | Delete the rule: Netlify redirects `www` again |
 
-Check after each: `parity/switch-check.sh target/baseline https://eyuan.me https://www.eyuan.me` keeps passing its `www` lines, and the injected-scripts line passes once obfuscation is off.
+Check after each: `parity/switch-check.sh target/baseline https://eyuan.me https://www.eyuan.me` keeps passing its `www` lines, and the injected-scripts line passes once obfuscation is off. A `www` 301 that carries `x-nf-request-id` and the body `Redirecting to …` is Netlify's, not the rule's: the rule answers at Cloudflare before the request reaches Netlify.
+
+Checked on 2026-11-06 from 04:37 to 04:42 UTC, after the owner set step 1 in the dashboard:
+
+- **Browser Cache TTL: in effect.** `robots.txt` and `/_astro/` now pass Netlify's `max-age=0` through, where the zone sent `max-age=14400` on 2026-11-01.
+- **`www` Redirect Rule: not in effect.** `https://www.eyuan.me/<random path>/` is a 301 from Netlify, with `x-nf-request-id` and Netlify's body, five minutes running.
+- **Email obfuscation: still on.** Uncached `/about/` still loads `email-decode.min.js` and has two `/cdn-cgi/l/email-protection` links.
+- **HSTS:** can't be told apart while Netlify sends the same header; `switch-check.sh` reports it after the switch.
+
+So steps 2 to 4 wait for the owner.
 
 ### 2. Merge, which deploys to `workers.dev` only
 
@@ -157,7 +171,7 @@ Netlify stays deployable for 30 days: its site, its secrets, the `eyuan.me` doma
    npx wrangler@4.156.0 versions deploy a9bee5ba-019f-4feb-9684-1a86b4d24e56@100% -y
    ```
    It is the Parity baseline, the same Pages as Netlify's, with Workers' default headers. Back: `npx wrangler versions deploy <the yuanme version>@100% -y`.
-2. **Back to Netlify, #39's rollback:** remove the Custom Domain (the `eyuan-me` Worker › Domains & Routes › `eyuan.me` › Remove), which deletes its record, and at once recreate the `eyuan.me` record from the export, proxied. Between the two, `eyuan.me` has no record. Then turn back the zone settings that need it. If `main` deployed since, `gh workflow run deploy.yml -R yuann3/eyuan.me --ref astro-final` puts Astro back on Netlify.
+2. **Back to Netlify, #39's rollback:** remove the Custom Domain (the `eyuan-me` Worker › Domains & Routes › `eyuan.me` › Remove), which deletes its record, and at once recreate the `eyuan.me` record from the export: CNAME to `apex-loadbalancer.netlify.com`, proxied, TTL Auto. Between the two, `eyuan.me` has no record. Then turn back the zone settings that need it. If `main` deployed since, `gh workflow run deploy.yml -R yuann3/eyuan.me --ref astro-final` puts Astro back on Netlify.
 
 ## After the switch
 
