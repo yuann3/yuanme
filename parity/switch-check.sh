@@ -66,5 +66,13 @@ echo "info  Strict-Transport-Security: $(header "$origin/" strict-transport-secu
 if [ -n "$www" ]; then
   check "www's status" "$(status "$www/blog/first/?from=www")" 301
   check "www's Location" "$(header "$www/blog/first/?from=www" location)" "$origin/blog/first/?from=www"
+  # The zone's Always Use HTTPS: a Workers Custom Domain serves http as
+  # it is otherwise. Netlify upgraded it before the switch.
+  for host in "$origin" "$www"; do
+    check "http on ${host#https://}" "$(status "http://${host#https://}/about/") $(header "http://${host#https://}/about/" location)" "301 $host/about/"
+  done
+  # The zone's HSTS, as Netlify sent it before the switch (#80).
+  check "HSTS on the apex" "$(header "$origin/" strict-transport-security)" "max-age=31536000"
+  check "HSTS on www" "$(header "$www/blog/first/" strict-transport-security)" "max-age=31536000"
 fi
 exit "$failed"

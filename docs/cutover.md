@@ -109,6 +109,7 @@ None of these breaks the Netlify origin, so they can go first, one at a time:
 | Web Analytics | Analytics › Web Analytics | No automatic beacon for `eyuan.me`. None is injected today | — |
 | HSTS | SSL/TLS › Edge Certificates › HSTS | **Owner's call.** To keep today's header: on, max-age 12 months, no `includeSubDomains`, no preload, No-Sniff off. It then covers `docs.eyuan.me` too | Off. Browsers keep what they saw for its max-age |
 | `www` | Rules › Redirect Rules | A rule: hostname equals `www.eyuan.me`, dynamic redirect to `concat("https://eyuan.me", http.request.uri.path)`, 301, query string kept. The `www` record stays proxied, so the rule answers before Netlify would | Delete the rule: Netlify redirects `www` again |
+| Always Use HTTPS | SSL/TLS › Edge Certificates | On | Off: Netlify upgrades `http://` again while it serves |
 
 Check after each: `parity/switch-check.sh target/baseline https://eyuan.me https://www.eyuan.me` keeps passing its `www` lines, and the injected-scripts line passes once obfuscation is off. A `www` 301 that carries `x-nf-request-id` and the body `Redirecting to …` is Netlify's, not the rule's: the rule answers at Cloudflare before the request reaches Netlify.
 
@@ -119,7 +120,12 @@ Checked on 2026-11-06 from 04:37 to 04:42 UTC, after the owner set step 1 in the
 - **Email obfuscation: still on.** Uncached `/about/` still loads `email-decode.min.js` and has two `/cdn-cgi/l/email-protection` links.
 - **HSTS:** can't be told apart while Netlify sends the same header; `switch-check.sh` reports it after the switch.
 
-So steps 2 to 4 wait for the owner.
+Checked again on 2026-11-09 at 14:53 and 14:55 UTC, after the owner fixed the rest:
+
+- **`www` Redirect Rule: in effect.** It is a wildcard Single Redirect, `https://www.eyuan.me/*` to `https://eyuan.me/${1}`, 301, query string kept. `https://www.eyuan.me/zz-<random>/?x=1` is a 301 to `https://eyuan.me/zz-<random>/?x=1` from Cloudflare, with no `x-nf-request-id`.
+- **Email obfuscation: off.** Uncached `/about/` has no `email-decode.min.js` and no `/cdn-cgi/l/email-protection` link.
+- **Always Use HTTPS: on.** It wasn't in the plan, and was off: Netlify upgraded `http://` itself, and a Workers Custom Domain would have served plain `http://` on the apex. Now `http://eyuan.me/about/` and `http://www.eyuan.me/blog/` are 301s to `https://` from Cloudflare, with no `x-nf-request-id`. `switch-check.sh` checks it when given `WWW`.
+- **HSTS: not in effect.** No response Cloudflare makes itself sends `Strict-Transport-Security`: not the `www` rule's 301, and not `docs.eyuan.me`, a Workers Custom Domain on the same zone, on a cached 200 or an uncached 404. Only Netlify's responses do. That is how to check it before the switch: `curl -sI https://docs.eyuan.me/` shows `strict-transport-security: max-age=31536000` once the zone sends it. The owner saved it, and at 15:17 UTC `docs.eyuan.me` and the `www` rule's 301 both sent `strict-transport-security: max-age=31536000`. `switch-check.sh` checks it on the apex and `www` when given `WWW`.
 
 ### 2. Merge, which deploys to `workers.dev` only
 
@@ -137,21 +143,17 @@ parity/switch-check.sh target/baseline https://eyuan-me.yuann3.workers.dev
 
 This runs #39's steps 3 and 2 in that order, so the Worker's deployed version is checked before `eyuan.me` points at it. Undo: `git revert -m 1 <merge>` and push, which brings back the Netlify workflow and deploys Astro to Netlify again.
 
+Done on 2026-11-09. The merge, `8889762`, was pushed to eyuan.me's `main` at 14:54 UTC; it brings in `main`'s `CONTEXT.md` and changes no output. Its Deploy run didn't start: GitHub Actions is locked for a billing issue on the owner's account, for eyuan.me and yuanme alike, since 2026-11-06. So `main` was built here with yuanme `2ccec19` (`yuanme build --clean --strict-budgets`: 30 Pages, 0 warnings) and deployed with `npx wrangler@4.156.0 deploy`, no domain, at 14:56 UTC: version `12eb7f50-8ade-4860-a49c-77ad8fef9e05`. On it, `switch-check.sh` against workers.dev passed every check, and the parity test on its `dist/` found 0 differences: in URLs and the normalized DOM, and in pixels and behaviour in Chromium 156, Firefox 157 and WebKit 27.2, run here in Playwright 1.64.1's Linux container from 14:57 to 15:09 UTC in place of CI's. Until billing is fixed, a push to `main` deploys nothing, and Netlify keeps serving its last Astro deploy.
+
 ### 3. Attach `eyuan.me`: the switch
 
 The Custom Domain is attached by hand and kept out of `wrangler.jsonc` for the 30 days: wrangler only touches Custom Domains that its config lists, so CI deploys keep it, and a rollback can't be undone by the next push.
 
 **Dashboard:** Workers & Pages › `eyuan-me` › Settings › Domains & Routes › Add › Custom domain › `eyuan.me`. Cloudflare's docs say a Custom Domain can't be made on a hostname with a CNAME record, and their way is to delete the record first: that leaves `eyuan.me` without a record for the seconds in between.
 
-**Or wrangler, which needs no gap:** wrangler 4.156.0 asks the API for the Custom Domain's changeset, lists the conflicting record, and on a terminal asks "Update them to point to this script instead?"; yes replaces it in one step (`override_existing_dns_record`). Outside a terminal, as in CI, it replaces the record without asking. From the merged `main`:
+**Not wrangler.** `npx wrangler@4.156.0 deploy --domain eyuan.me` was tried on 2026-11-09 at 15:18:55 UTC, from `main`'s build, and the API refused it, although wrangler sends `override_existing_dns_record` outside a terminal: `Hostname 'eyuan.me' already has externally managed DNS records (A, CNAME, etc). Delete them first or try a different hostname. [code: 100117]`. Nothing that `eyuan.me` serves changed: the Worker has no Custom Domain, and the apex is still Netlify's. One side effect: given `--domain`, wrangler turns the Worker's `workers.dev` route off unless `wrangler.jsonc` sets `workers_dev`, and keeps that change when the domain fails. `workers.dev` answered 404 from 15:19 until `wrangler deploy` with no domain put it back at 15:19:56 (version `0c0be9be-2abb-41e1-99f8-2e082b22dc66`); a few edge-cached 404s cleared within a minute, and `switch-check.sh` passed on it again at 15:21.
 
-```sh
-npx wrangler@4.156.0 deploy --domain eyuan.me
-```
-
-It deploys the local `dist/`, so build it first with the yuanme CI used: `cargo install --locked --git https://github.com/yuann3/yuanme --rev 2ccec19 yuanme`, then `yuanme build`.
-
-Neither path was tried here: trying it needs a DNS change. To rehearse, the owner can make a proxied `rehearsal.eyuan.me` CNAME to `eyuan.netlify.app` and run the same command with `--domain rehearsal.eyuan.me`, then remove both.
+So the Custom Domain needs the apex CNAME deleted first, with `eyuan.me` unanswered for the seconds in between, as in the dashboard path above. Or, without a DNS change, a Workers Route `eyuan.me/*` to `eyuan-me` on the proxied CNAME sends every apex request to the Worker before Netlify, and deleting the route undoes it at once. That isn't #39's Custom Domain, so it is the owner's call.
 
 ### 4. Right after
 
@@ -171,7 +173,7 @@ Netlify stays deployable for 30 days: its site, its secrets, the `eyuan.me` doma
    npx wrangler@4.156.0 versions deploy a9bee5ba-019f-4feb-9684-1a86b4d24e56@100% -y
    ```
    It is the Parity baseline, the same Pages as Netlify's, with Workers' default headers. Back: `npx wrangler versions deploy <the yuanme version>@100% -y`.
-2. **Back to Netlify, #39's rollback:** remove the Custom Domain (the `eyuan-me` Worker › Domains & Routes › `eyuan.me` › Remove), which deletes its record, and at once recreate the `eyuan.me` record from the export: CNAME to `apex-loadbalancer.netlify.com`, proxied, TTL Auto. Between the two, `eyuan.me` has no record. Then turn back the zone settings that need it. If `main` deployed since, `gh workflow run deploy.yml -R yuann3/eyuan.me --ref astro-final` puts Astro back on Netlify.
+2. **Back to Netlify, #39's rollback:** remove the Custom Domain (the `eyuan-me` Worker › Domains & Routes › `eyuan.me` › Remove), which deletes its record, and at once recreate the `eyuan.me` record from the export: CNAME to `apex-loadbalancer.netlify.com`, proxied, TTL Auto. Between the two, `eyuan.me` has no record. Then turn back the zone settings that need it. This needs no GitHub Actions: nothing deploys to Netlify any more, so it keeps serving its last Astro deploy, and restoring the CNAME to `apex-loadbalancer.netlify.com` is enough. `www`'s record still points at Netlify, so `www` needs nothing. Only if that deploy is gone does `gh workflow run deploy.yml -R yuann3/eyuan.me --ref astro-final` put Astro back on Netlify, which needs Actions.
 
 ## After the switch
 
