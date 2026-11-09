@@ -171,7 +171,7 @@ curl -sI https://eyuan.me/ | grep -iE 'x-nf-request-id|strict-transport'
 
 `switch-check.sh` covers `/`, the Post, `/about/` and every other Page, `/rss.xml`, a 404, the `www` redirect, `Cache-Control` on Pages and `/assets/`, `alt-svc: h3`, http to https and HSTS on both hosts. `curl` should print no `x-nf-request-id`, Netlify's.
 
-At 15:38 UTC, `switch-check.sh target/baseline https://eyuan.me https://www.eyuan.me` passed all 20 checks, and `/`, `/about/`, the Post, `/rss.xml`, a 404 and `/llms.txt` carried no `x-nf-request-id`. Then one lab check on `eyuan.me` itself, such as PageSpeed Insights on the Post, and resubmit `https://eyuan.me/sitemap-index.xml` in Search Console (#39 §7, day 0).
+At 15:38 UTC, `switch-check.sh target/baseline https://eyuan.me https://www.eyuan.me` passed all 19 checks, and again at 18:09 UTC, and `/`, `/about/`, the Post, `/rss.xml`, a 404 and `/llms.txt` carried no `x-nf-request-id`. Then one lab check on `eyuan.me` itself, such as PageSpeed Insights on the Post, and resubmit `https://eyuan.me/sitemap-index.xml` in Search Console (#39 §7, day 0).
 
 ## Rollback
 
