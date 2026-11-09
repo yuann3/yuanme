@@ -1,14 +1,15 @@
 # Cutting eyuan.me over to yuanme
 
-Steps 3 to 7 of the cutover plan in [#39](https://github.com/yuann3/yuanme/issues/39), carried out in [#80](https://github.com/yuann3/yuanme/issues/80). Everything up to the switch is done; each step that changes what `eyuan.me` or `www.eyuan.me` serves waits for the owner and is written below as commands, with how to undo it. State as of 2026-11-01.
+Steps 3 to 7 of the cutover plan in [#39](https://github.com/yuann3/yuanme/issues/39), carried out in [#80](https://github.com/yuann3/yuanme/issues/80). The switch was made on 2026-11-09 at 15:28 UTC: `eyuan.me` is served by yuanme from Cloudflare Workers. Each step is written below as the owner approved it, with what happened and how to undo it. Day 28's field metrics and day 30's move to a Custom Domain are [#98](https://github.com/yuann3/yuanme/issues/98).
 
 ## Where things are
 
-- **Production:** `eyuan.me` is Astro on Netlify (`eyuan.netlify.app`), behind proxied records in the Cloudflare zone `eyuan.me`. eyuan.me's `main` is `1fcd0c5`; its `deploy.yml` deploys to Netlify.
-- **The preview:** the Worker `eyuan-me` on account `337851642f9a39a7999e95ed7f339693`, at <https://eyuan-me.yuann3.workers.dev>. Its deployed version is the `yuanme` branch at `506a3c9`, built by yuanme at `2ccec19`. It has no route or Custom Domain.
+- **Production:** `eyuan.me` is the Worker `eyuan-me` on account `337851642f9a39a7999e95ed7f339693`, by the Workers Route `eyuan.me/*` (id `a058e0eb39be4c9f9eaedcb0196fc72e`) on the zone's proxied apex CNAME, which still names Netlify. Its deployed version is eyuan.me's `main` at `e703db1`, built by yuanme at `2ccec19`. `www.eyuan.me` is a 301 to the apex from the zone's Redirect Rule.
+- **The preview:** the same Worker at <https://eyuan-me.yuann3.workers.dev>; `wrangler.jsonc` sets `"workers_dev": true`.
 - **The Astro build on Workers:** version `a9bee5ba-019f-4feb-9684-1a86b4d24e56` of the same Worker is the Parity baseline's `site/`, uploaded for the TTFB comparison. It is also the fastest rollback below.
-- **Deploys:** the `yuanme` branch's [`deploy.yml`](https://github.com/yuann3/eyuan.me/blob/yuanme/.github/workflows/deploy.yml) builds yuanme from the commit in `YUANME_REV`, cached per commit, and builds the Site. A push to `main` runs `wrangler deploy`. A push to any other branch, or a pull request, runs `wrangler versions upload --preview-alias <branch or pr-N>`, which leaves the deployed version alone; `yuanme` previews at <https://yuanme-eyuan-me.yuann3.workers.dev>, which sends `X-Robots-Tag: noindex`. So nothing reaches the deployed version until the owner merges into `main`, and nothing reaches `eyuan.me` until the Custom Domain is attached.
-- **Secrets:** eyuan.me has only `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID`, so the workflow builds and deploys nothing yet. It needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+- **Netlify:** the site `eyuan.netlify.app` still serves its last Astro deploy and gets no new ones. It stays for the 30 days' rollback.
+- **Deploys:** `main`'s [`deploy.yml`](https://github.com/yuann3/eyuan.me/blob/main/.github/workflows/deploy.yml) builds yuanme from the commit in `YUANME_REV`, cached per commit, and builds the Site. A push to `main` runs `wrangler deploy`; any other push, or a pull request, runs `wrangler versions upload --preview-alias <branch or pr-N>`, at `https://<alias>-eyuan-me.yuann3.workers.dev` with `X-Robots-Tag: noindex`. The deploy leaves the route alone, since `wrangler.jsonc` doesn't list it, and keeps `workers.dev`. GitHub Actions is locked for a billing issue on the owner's account since 2026-11-06, so until that is fixed nothing deploys from CI: deploy by hand with `yuanme build` and `npx wrangler@4.156.0 deploy`.
+- **Secrets:** eyuan.me has `CLOUDFLARE_API_TOKEN`, its own, and `CLOUDFLARE_ACCOUNT_ID`, as well as the old `NETLIFY_*`.
 
 ## Readiness (#39 §4)
 
@@ -77,7 +78,7 @@ HSTS doesn't come from the zone today: `docs.eyuan.me`, a Workers Custom Domain 
 
 ## The switch
 
-Each step is for the owner. Run the shell steps in a checkout of eyuan.me with wrangler logged in to the account, and `switch-check.sh` from yuanme with the baseline in `target/baseline` (`parity/fetch.sh target/baseline`).
+Each step needs the owner's approval. Run the shell steps in a checkout of eyuan.me with wrangler logged in to the account, and `switch-check.sh` from yuanme with the baseline in `target/baseline` (`parity/fetch.sh target/baseline`).
 
 ### 0. Before anything changes
 
@@ -145,15 +146,21 @@ This runs #39's steps 3 and 2 in that order, so the Worker's deployed version is
 
 Done on 2026-11-09. The merge, `8889762`, was pushed to eyuan.me's `main` at 14:54 UTC; it brings in `main`'s `CONTEXT.md` and changes no output. Its Deploy run didn't start: GitHub Actions is locked for a billing issue on the owner's account, for eyuan.me and yuanme alike, since 2026-11-06. So `main` was built here with yuanme `2ccec19` (`yuanme build --clean --strict-budgets`: 30 Pages, 0 warnings) and deployed with `npx wrangler@4.156.0 deploy`, no domain, at 14:56 UTC: version `12eb7f50-8ade-4860-a49c-77ad8fef9e05`. On it, `switch-check.sh` against workers.dev passed every check, and the parity test on its `dist/` found 0 differences: in URLs and the normalized DOM, and in pixels and behaviour in Chromium 156, Firefox 157 and WebKit 27.2, run here in Playwright 1.64.1's Linux container from 14:57 to 15:09 UTC in place of CI's. Until billing is fixed, a push to `main` deploys nothing, and Netlify keeps serving its last Astro deploy.
 
-### 3. Attach `eyuan.me`: the switch
+### 3. Send `eyuan.me` to the Worker: the switch
 
-The Custom Domain is attached by hand and kept out of `wrangler.jsonc` for the 30 days: wrangler only touches Custom Domains that its config lists, so CI deploys keep it, and a rollback can't be undone by the next push.
+#39 attaches `eyuan.me` as a Custom Domain. That was refused, so for the 30 days a Workers Route does it instead, and the Custom Domain waits for day 30.
 
-**Dashboard:** Workers & Pages › `eyuan-me` › Settings › Domains & Routes › Add › Custom domain › `eyuan.me`. Cloudflare's docs say a Custom Domain can't be made on a hostname with a CNAME record, and their way is to delete the record first: that leaves `eyuan.me` without a record for the seconds in between.
+**The Custom Domain, refused.** `npx wrangler@4.156.0 deploy --domain eyuan.me` was tried on 2026-11-09 at 15:18:55 UTC, from `main`'s build, and the API refused it, although wrangler sends `override_existing_dns_record` outside a terminal: `Hostname 'eyuan.me' already has externally managed DNS records (A, CNAME, etc). Delete them first or try a different hostname. [code: 100117]`. Nothing that `eyuan.me` serves changed. One side effect: given `--domain`, wrangler turns the Worker's `workers.dev` route off unless `wrangler.jsonc` sets `workers_dev`, and keeps that change when the domain fails. `workers.dev` answered 404 from 15:19 until `wrangler deploy` with no domain put it back at 15:19:56 (version `0c0be9be-2abb-41e1-99f8-2e082b22dc66`); a few edge-cached 404s cleared within a minute, and `switch-check.sh` passed on it again at 15:21. A Custom Domain needs the apex CNAME deleted first, with `eyuan.me` unanswered for the seconds in between, and an undo that recreates it the same way.
 
-**Not wrangler.** `npx wrangler@4.156.0 deploy --domain eyuan.me` was tried on 2026-11-09 at 15:18:55 UTC, from `main`'s build, and the API refused it, although wrangler sends `override_existing_dns_record` outside a terminal: `Hostname 'eyuan.me' already has externally managed DNS records (A, CNAME, etc). Delete them first or try a different hostname. [code: 100117]`. Nothing that `eyuan.me` serves changed: the Worker has no Custom Domain, and the apex is still Netlify's. One side effect: given `--domain`, wrangler turns the Worker's `workers.dev` route off unless `wrangler.jsonc` sets `workers_dev`, and keeps that change when the domain fails. `workers.dev` answered 404 from 15:19 until `wrangler deploy` with no domain put it back at 15:19:56 (version `0c0be9be-2abb-41e1-99f8-2e082b22dc66`); a few edge-cached 404s cleared within a minute, and `switch-check.sh` passed on it again at 15:21.
+**The route, the owner's choice.** A Workers Route on the proxied CNAME sends every apex request to the Worker before it reaches Netlify, with no DNS change, and deleting it undoes it at once. Added through the API with wrangler's login, which has *Workers Routes: Edit*, at 15:28:00 UTC, after HSTS was checked on `docs.eyuan.me` and `a9bee5ba` on the Worker:
 
-So the Custom Domain needs the apex CNAME deleted first, with `eyuan.me` unanswered for the seconds in between, as in the dashboard path above. Or, without a DNS change, a Workers Route `eyuan.me/*` to `eyuan-me` on the proxied CNAME sends every apex request to the Worker before Netlify, and deleting the route undoes it at once. That isn't #39's Custom Domain, so it is the owner's call.
+```sh
+curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  https://api.cloudflare.com/client/v4/zones/b704f11be800cc7d6f5aa6f97f6d6ab5/workers/routes \
+  --data '{"pattern":"eyuan.me/*","script":"eyuan-me"}'
+```
+
+It answered in seconds: a request at 15:28:09 had the Worker's headers and Netlify's body, and from 15:28:19 every request was the Worker's. No `www` route: the Redirect Rule answers `www` first. The route isn't in `wrangler.jsonc`, since a deploy would then need a zone permission the deploy token doesn't have; a deploy leaves routes it doesn't list alone. `"workers_dev": true` in `wrangler.jsonc` (`e703db1`) keeps the preview up. A `wrangler deploy` from that tree at 15:43, as CI would run it, left the route and `workers.dev` in place: version `c9dabf17-c872-4f43-b840-9a7c155200d6`.
 
 ### 4. Right after
 
@@ -162,7 +169,9 @@ parity/switch-check.sh target/baseline https://eyuan.me https://www.eyuan.me
 curl -sI https://eyuan.me/ | grep -iE 'x-nf-request-id|strict-transport'
 ```
 
-`switch-check.sh` covers `/`, the Post, `/about/` and every other Page, `/rss.xml`, a 404, the `www` redirect, `Cache-Control` on Pages and `/assets/`, and `alt-svc: h3`. `curl` should print no `x-nf-request-id`, Netlify's, and shows the HSTS decision. Then one lab check on `eyuan.me` itself, such as PageSpeed Insights on the Post, and resubmit `https://eyuan.me/sitemap-index.xml` in Search Console (#39 §7, day 0).
+`switch-check.sh` covers `/`, the Post, `/about/` and every other Page, `/rss.xml`, a 404, the `www` redirect, `Cache-Control` on Pages and `/assets/`, `alt-svc: h3`, http to https and HSTS on both hosts. `curl` should print no `x-nf-request-id`, Netlify's.
+
+At 15:38 UTC, `switch-check.sh target/baseline https://eyuan.me https://www.eyuan.me` passed all 20 checks, and `/`, `/about/`, the Post, `/rss.xml`, a 404 and `/llms.txt` carried no `x-nf-request-id`. Then one lab check on `eyuan.me` itself, such as PageSpeed Insights on the Post, and resubmit `https://eyuan.me/sitemap-index.xml` in Search Console (#39 §7, day 0).
 
 ## Rollback
 
@@ -173,11 +182,19 @@ Netlify stays deployable for 30 days: its site, its secrets, the `eyuan.me` doma
    npx wrangler@4.156.0 versions deploy a9bee5ba-019f-4feb-9684-1a86b4d24e56@100% -y
    ```
    It is the Parity baseline, the same Pages as Netlify's, with Workers' default headers. Back: `npx wrangler versions deploy <the yuanme version>@100% -y`.
-2. **Back to Netlify, #39's rollback:** remove the Custom Domain (the `eyuan-me` Worker › Domains & Routes › `eyuan.me` › Remove), which deletes its record, and at once recreate the `eyuan.me` record from the export: CNAME to `apex-loadbalancer.netlify.com`, proxied, TTL Auto. Between the two, `eyuan.me` has no record. Then turn back the zone settings that need it. This needs no GitHub Actions: nothing deploys to Netlify any more, so it keeps serving its last Astro deploy, and restoring the CNAME to `apex-loadbalancer.netlify.com` is enough. `www`'s record still points at Netlify, so `www` needs nothing. Only if that deploy is gone does `gh workflow run deploy.yml -R yuann3/eyuan.me --ref astro-final` put Astro back on Netlify, which needs Actions.
+2. **Back to Netlify:** delete the route, and Netlify answers `eyuan.me` again within seconds, by the CNAME that never changed:
+   ```sh
+   curl -X DELETE -H "Authorization: Bearer $TOKEN" \
+     https://api.cloudflare.com/client/v4/zones/b704f11be800cc7d6f5aa6f97f6d6ab5/workers/routes/a058e0eb39be4c9f9eaedcb0196fc72e
+   ```
+   Or the `eyuan-me` Worker › Settings › Domains & Routes › the route › Delete. This needs no GitHub Actions and no DNS change: Netlify keeps serving its last Astro deploy. The zone settings can stay; Netlify sent the same HSTS and upgraded `http://` itself. Only if that deploy is gone does `gh workflow run deploy.yml -R yuann3/eyuan.me --ref astro-final` put Astro back on Netlify, which needs Actions.
+
+After day 30, with a Custom Domain, the way back is to remove it and recreate the apex record from the export: CNAME to `apex-loadbalancer.netlify.com`, proxied, TTL Auto. `eyuan.me` has no record between the two.
 
 ## After the switch
 
 - **Day 28:** read CrUX's field LCP, CLS and INP for `eyuan.me`, with the back/forward CLS kept in #23, and post them on the map.
-- **Day 30:** delete the Netlify site and its secrets, archive the Astro deploy workflow, and move the Custom Domain into `wrangler.jsonc` (`"routes": [{ "pattern": "eyuan.me", "custom_domain": true }]`, as `site/wrangler.jsonc` has `docs.eyuan.me`); the token then needs *Zone › Workers Routes › Edit* on `eyuan.me`. Each needs the owner.
-- **`workers.dev`:** it serves the same Pages with no `noindex`. `"workers_dev": false` with `"preview_urls": true` in `wrangler.jsonc` turns it off and keeps the previews.
+- **Day 30, 2026-12-09:** delete the Netlify site and its `NETLIFY_*` secrets, and archive the Astro deploy workflow. Then move to the Custom Domain, which the apex CNAME blocks: delete the CNAME, add the Custom Domain `eyuan.me` to `eyuan-me` at once, and delete the route. To keep it, list it in `wrangler.jsonc` (`"routes": [{ "pattern": "eyuan.me", "custom_domain": true }]`, as `site/wrangler.jsonc` has `docs.eyuan.me`) with `"workers_dev": true` kept, and give the deploy token *Zone › Workers Routes › Edit* on `eyuan.me`. Then run `switch-check.sh` again. Each needs the owner.
+- **`workers.dev`:** it serves the same Pages with no `noindex`. `"workers_dev": false` with `"preview_urls": true` in `wrangler.jsonc` turns it off and keeps the previews, once nothing needs the preview.
+- **GitHub Actions:** the owner's billing lock stops eyuan.me's deploys and yuanme's CI alike. Once it is lifted, re-run yuanme's CI and Parity on `main`.
 - **The guide:** the "Migrate from Astro" guide for the docs site (#38), from the port's notes.
