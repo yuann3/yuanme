@@ -87,10 +87,10 @@ pub(super) fn check(
         .collect();
     let is_filter = env
         .compile_expression("n is filter")
-        .expect("a valid expression");
+        .expect("`n is filter` is fixed, valid Jinja");
     let is_test = env
         .compile_expression("n is test")
-        .expect("a valid expression");
+        .expect("`n is test` is fixed, valid Jinja");
     let known = |test: bool, name: &str| {
         let e = if test { &is_test } else { &is_filter };
         e.eval(context! { n => name }).is_ok_and(|v| v.is_true())
@@ -201,7 +201,10 @@ struct Checker<'a> {
 
 impl<'a> Checker<'a> {
     fn file(&self) -> FileId {
-        self.templates[*self.stack.last().expect("inside a Template")]
+        self.templates[*self
+            .stack
+            .last()
+            .expect("each pass pushes the Template it reads before reading it")]
     }
 
     fn source(&self) -> &'a str {
@@ -277,7 +280,7 @@ impl<'a> Checker<'a> {
             .retain(|p| p != name && !p.starts_with(&format!("{name}.")));
         self.scopes
             .last_mut()
-            .expect("a scope")
+            .expect("`reset` starts every walk with the globals' scope")
             .insert(name.to_string(), b);
     }
 

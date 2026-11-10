@@ -165,12 +165,12 @@ fn highlighter() -> Highlighter {
         THEMES_MANIFEST,
         assets(THEMES),
     )
-    .expect("the embedded catalogs decode");
+    .expect("build.rs wrote the catalogs with the ferriki-asset-gen pinned to ferriki's version");
     Highlighter::builder()
         .with_assets(catalogs)
         .load_themes([LIGHT.id, DARK.id])
         .build()
-        .expect("the embedded themes load")
+        .expect("LIGHT and DARK are themes build.rs embedded")
 }
 
 /// The lines of `source` in `grammar`, or as plain text, as HTML. Text in
@@ -192,7 +192,7 @@ pub fn block(grammar: Option<&str>, source: &str) -> String {
                     &[("light", LIGHT.id), ("dark", DARK.id)],
                     &untimed(),
                 )
-                .expect("an embedded grammar highlights any text");
+                .expect("callers pass a grammar from the embedded catalog, and LIGHT and DARK are loaded");
             result
                 .tokens
                 .into_iter()
@@ -262,7 +262,7 @@ fn fg(theme: &Theme) -> usize {
     theme
         .palette
         .binary_search(&theme.foreground)
-        .expect("the foreground is in the palette")
+        .expect("build.rs adds each theme's foreground to its palette")
 }
 
 /// Letters for each theme's colour, then, if either has a font style, a
@@ -287,7 +287,7 @@ fn letters(mut i: usize, n: usize) -> String {
         *slot = b'a' + (i % 26) as u8;
         i /= 26;
     }
-    String::from_utf8(out).expect("ASCII")
+    String::from_utf8(out).expect("only ASCII letters are written")
 }
 
 /// [`class`] read back, if it is one.

@@ -105,7 +105,7 @@ impl<'a> Checker<'a> {
         let template = self
             .asts
             .get_key_value(g.template.as_str())
-            .expect("checked above")
+            .expect("`check` groups only Templates that parsed")
             .0;
         self.walk(template, None);
         if self.chain_broken {

@@ -36,7 +36,7 @@ pub fn attribute(name: &str) -> String {
     }
     let mut out = String::from("data-y-");
     for _ in 0..6 {
-        out.push(char::from_digit((hash % 36) as u32, 36).expect("below 36"));
+        out.push(char::from_digit((hash % 36) as u32, 36).expect("`hash % 36` is a base-36 digit"));
         hash /= 36;
     }
     out

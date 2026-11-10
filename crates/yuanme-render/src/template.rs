@@ -95,7 +95,7 @@ pub fn render(
             .trim_blocks(true)
             .lstrip_blocks(true)
             .build()
-            .expect("the default delimiters"),
+            .expect("the default delimiters, trimmed, are a valid syntax"),
     );
     env.set_auto_escape_callback(|name| match name.rsplit_once('.').map(|(_, ext)| ext) {
         Some("html" | "xml") => AutoEscape::Html,
@@ -172,13 +172,15 @@ pub fn render(
     let threads = rayon::ThreadPoolBuilder::new()
         .stack_size(STACK)
         .build()
-        .expect("render threads start");
+        .expect("only spawning a thread fails, and a render can't go on without its threads");
     let rendered: Vec<Result<Page, Diagnostic>> = threads.install(|| {
         site.routes
             .par_iter()
             .zip(&chosen)
             .map(|(route, (name, at))| {
-                let template = env.get_template(name).expect("added above");
+                let template = env
+                    .get_template(name)
+                    .expect("each chosen Template was added, or a Diagnostic returned above");
                 match template.render_captured(context.page(route)) {
                     Ok(captured) => {
                         let preloads = captured

@@ -189,7 +189,7 @@ impl<'a> Checker<'a> {
             let ty = match sigs.map(|m| m.get(v.id)) {
                 Some(Some(sig)) => Ty::Macro(sig.clone()),
                 Some(None) => {
-                    let file = file.expect("its macros were found");
+                    let file = file.expect("`sigs` is found only through `file`");
                     let at = range(name);
                     let d = self.error(
                         &codes::TEMPLATE_UNKNOWN_FILTER,
@@ -209,7 +209,10 @@ impl<'a> Checker<'a> {
     }
 
     fn define_macro(&mut self, m: &'a Spanned<ast::Macro<'a>>) {
-        let file = *self.stack.last().expect("inside a Template");
+        let file = *self
+            .stack
+            .last()
+            .expect("each pass pushes the Template it reads before reading it");
         let sig = self.macros.get(file).and_then(|s| s.get(m.name)).cloned();
         match sig {
             Some(sig) => {
