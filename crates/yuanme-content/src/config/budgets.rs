@@ -96,7 +96,7 @@ pub struct Overage {
     pub at: Range<usize>,
 }
 
-pub(super) fn budgets(budgets: Option<&Table<'_>>, checker: &mut Checker) -> Budgets {
+pub(super) fn read(budgets: Option<&Table<'_>>, checker: &mut Checker) -> Budgets {
     let limits = Budget::ALL
         .into_iter()
         .map(|b| {

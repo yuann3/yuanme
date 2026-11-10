@@ -16,27 +16,21 @@ mod site;
 #[cfg(test)]
 mod tests;
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use toml::Spanned;
 use toml::de::{DeTable, DeValue};
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
 
-use budgets::budgets;
 pub use budgets::{Budget, Budgets, Overage};
-use build::DEFAULT_TARGETS;
 pub use build::{Agents, Build, RouterMode, Tailwind, TypeScript};
 pub use check::similar;
-use check::{Checker, parse_browser_version, parse_version};
+use check::{Checker, parse_version};
 pub use collections::{Collection, SortKey, Taxonomy};
-use collections::{collection, collection_name, taxonomy};
 pub use data::DataSchema;
-use fields::field;
 pub use fields::{Field, FieldType};
-use host::host;
 pub use host::{Adapter, HeaderRule, Host, Redirect};
 pub use images::Images;
-use images::images;
 pub use math::{Math, TheoremKind};
 pub use routes::{Feed, TemplateRoute};
 #[cfg(test)]
@@ -157,216 +151,47 @@ type Table<'i> = DeTable<'i>;
 type Value<'i> = Spanned<DeValue<'i>>;
 
 /// The second pass: the shape is known, so this reads values and checks
-/// what they refer to.
+/// what they refer to. Each section reads its own table.
 fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
-    let site = table(root, "site").expect("required");
-    let collections = entries(table(root, "collections"));
-    let taxonomies = entries(table(root, "taxonomies"));
-
-    let mut names: BTreeSet<&str> = collections
-        .iter()
-        .map(|(name, _)| name.get_ref().as_ref())
-        .collect();
-    names.insert("pages");
-
-    let collections: BTreeMap<String, Collection> = collections
-        .iter()
-        .map(|(key, c)| {
-            let name: &str = key.get_ref().as_ref();
-            // Each Taxonomy over this Collection adds a field of its name.
-            let taxonomy_fields: Vec<&str> = taxonomies
-                .iter()
-                .filter(|(_, t)| {
-                    items(&as_table(t)["collections"])
-                        .iter()
-                        .any(|c| c.get_ref().as_str() == Some(name))
-                })
-                .map(|(t, _)| t.get_ref().as_ref())
-                .collect();
-            (
-                name.to_string(),
-                collection(key, as_table(c), &taxonomy_fields, checker),
-            )
-        })
-        .collect();
-    let taxonomies = taxonomies
-        .iter()
-        .map(|(name, t)| {
-            (
-                name.get_ref().to_string(),
-                taxonomy(name, as_table(t), &names, &collections, checker),
-            )
-        })
-        .collect();
-    let routes = entries(table(root, "routes"))
-        .iter()
-        .map(|(name, r)| {
-            let r = as_table(r);
-            let route = TemplateRoute {
-                path: string(r, "path").expect("required"),
-                template: string(r, "template").expect("required"),
-                template_at: r["template"].span(),
-            };
-            (name.get_ref().to_string(), route)
-        })
-        .collect();
-    let feeds = entries(table(root, "feeds"))
-        .iter()
-        .map(|(name, f)| {
-            let f = as_table(f);
-            for c in items(&f["collections"]) {
-                collection_name(c, &names, checker);
-            }
-            let feed = Feed {
-                collections: strings(&f["collections"]),
-                path: string(f, "path").expect("required"),
-                template: string(f, "template").unwrap_or_else(|| "rss.xml".into()),
-                template_at: f.get("template").map_or(name.span(), |t| t.span()),
-            };
-            (name.get_ref().to_string(), feed)
-        })
-        .collect();
-    let data = entries(table(root, "data"))
-        .iter()
-        .map(|(name, spec)| {
-            let kind = field(as_table(spec), false, checker).kind;
-            (
-                name.get_ref().to_string(),
-                DataSchema {
-                    kind,
-                    at: name.span(),
-                },
-            )
-        })
-        .collect();
-    let math = table(root, "math");
-    let macros: Vec<(String, String)> = entries(math.and_then(|m| table(m, "macros")))
-        .iter()
-        .map(|(name, value)| {
-            let definition = value.get_ref().as_str().expect("checked as a string");
-            (name.get_ref().to_string(), definition.to_string())
-        })
-        .collect();
-    if let Err((i, message)) = crate::math::converter(&macros) {
-        let (name, value) = entries(math.and_then(|m| table(m, "macros")))[i];
-        let message = format!("the macro `\\{}` can't be read: {message}", name.get_ref());
-        checker.invalid(message, value.span());
-    }
-    let mut theorems = Math::default().theorems;
-    for (name, t) in entries(math.and_then(|m| table(m, "theorems"))) {
-        let t = as_table(t);
-        let name: &str = name.get_ref().as_ref();
-        let default = theorems.remove(name).unwrap_or_else(|| {
-            let mut chars = name.chars();
-            let label = chars
-                .next()
-                .map_or_else(String::new, |c| c.to_uppercase().chain(chars).collect());
-            TheoremKind {
-                label,
-                counter: Some("theorem".into()),
-            }
-        });
-        let counter = match t.get("counter").map(|c| c.get_ref()) {
-            Some(DeValue::String(c)) => Some(c.to_string()),
-            Some(_) => None,
-            None => default.counter,
-        };
-        let kind = TheoremKind {
-            label: string(t, "label").unwrap_or(default.label),
-            counter,
-        };
-        theorems.insert(name.to_string(), kind);
-    }
-    if let Some(tz) = site.get("timezone") {
-        let name = tz.get_ref().as_str().expect("checked");
-        // The bundled database, so a build never depends on the machine's.
-        if jiff::tz::TimeZone::get(name).is_err() {
-            checker.invalid(
-                format!("`{name}` is not an IANA time zone, such as \"Asia/Singapore\" or \"UTC\""),
-                tz.span(),
-            );
-        }
-    }
-
-    let targets = match table(root, "build").and_then(|b| table(b, "targets")) {
-        Some(targets) => entries(Some(targets))
-            .iter()
-            .map(|(browser, version)| {
-                let version = version.get_ref().as_str().expect("checked");
-                (
-                    browser.get_ref().to_string(),
-                    parse_browser_version(version).expect("checked"),
-                )
-            })
-            .collect(),
-        None => DEFAULT_TARGETS
-            .iter()
-            .map(|(browser, version)| (browser.to_string(), *version))
-            .collect(),
-    };
-
-    let router = match table(root, "router")
-        .and_then(|r| string(r, "mode"))
-        .as_deref()
-    {
-        None | Some("off") => RouterMode::Off,
-        Some("native") => RouterMode::Native,
-        Some("swap") => RouterMode::Swap,
-        Some(_) => unreachable!("checked as a choice"),
-    };
-    let tailwind = Tailwind {
-        version: table(root, "tailwind")
-            .and_then(|t| t.get("version"))
-            .map(|v| (v.get_ref().as_str().expect("checked").to_string(), v.span())),
-    };
-    let typescript = TypeScript {
-        check: table(root, "typescript")
-            .and_then(|t| t.get("check"))
-            .filter(|v| v.get_ref().as_bool() == Some(true))
-            .map(|v| v.span()),
-    };
-
-    let agents = Agents {
-        manage_agents_md: table(root, "agents")
-            .and_then(|t| t.get("manage_agents_md"))
-            .is_none_or(|v| v.get_ref().as_bool() == Some(true)),
-    };
-
-    let host = host(table(root, "host"), checker);
-    let images = images(table(root, "images"), checker);
+    let (collections, taxonomies) = collections::read(
+        table(root, "collections"),
+        table(root, "taxonomies"),
+        checker,
+    );
+    let routes = routes::read(table(root, "routes"));
+    let feeds = routes::feeds(table(root, "feeds"), &collections, checker);
+    let data = data::read(table(root, "data"), checker);
+    let math = math::read(table(root, "math"), checker);
+    let site = site::read(
+        table(root, "site").expect("the first pass requires `[site]`"),
+        checker,
+    );
+    let build = build::read(table(root, "build"));
+    let router = build::router(table(root, "router"));
+    let tailwind = build::tailwind(table(root, "tailwind"));
+    let typescript = build::typescript(table(root, "typescript"));
+    let agents = build::agents(table(root, "agents"));
+    let host = host::read(table(root, "host"), checker);
+    let images = images::read(table(root, "images"), checker);
     let budgets = match root.get("budgets") {
         Some(v) if matches!(v.get_ref(), DeValue::Boolean(false)) => None,
-        v => Some(budgets(v.map(as_table), checker)),
-    };
-
-    let extra = match site.get("extra").map(|e| to_value(e.get_ref())) {
-        Some(toml::Value::Table(extra)) => extra,
-        Some(_) => unreachable!("checked as a table"),
-        None => toml::Table::new(),
+        v => Some(budgets::read(v.map(as_table), checker)),
     };
     Config {
         file: checker.file(),
-        site: Site {
-            url: string(site, "url").expect("required"),
-            title: string(site, "title"),
-            description: string(site, "description"),
-            language: string(site, "language"),
-            author: string(site, "author"),
-            timezone: string(site, "timezone").unwrap_or_else(|| "UTC".into()),
-            extra,
-        },
+        site,
         collections,
         taxonomies,
         data,
         routes,
         feeds,
-        build: Build { targets },
+        build,
         router,
         tailwind,
         typescript,
         agents,
         host,
-        math: Math { macros, theorems },
+        math,
         images,
         budgets,
     }

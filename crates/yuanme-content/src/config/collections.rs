@@ -62,7 +62,55 @@ const DERIVED: &[&str] = &[
     "content",
 ];
 
-pub(super) fn collection(
+/// `[collections]`, then `[taxonomies]`, which name Collections and sort by
+/// their fields.
+pub(super) fn read(
+    collections: Option<&Table<'_>>,
+    taxonomies: Option<&Table<'_>>,
+    checker: &mut Checker,
+) -> (BTreeMap<String, Collection>, BTreeMap<String, Taxonomy>) {
+    let taxonomies = entries(taxonomies);
+    let collections: BTreeMap<String, Collection> = entries(collections)
+        .iter()
+        .map(|(key, c)| {
+            let name: &str = key.get_ref().as_ref();
+            // Each Taxonomy over this Collection adds a field of its name.
+            let taxonomy_fields: Vec<&str> = taxonomies
+                .iter()
+                .filter(|(_, t)| {
+                    items(&as_table(t)["collections"])
+                        .iter()
+                        .any(|c| c.get_ref().as_str() == Some(name))
+                })
+                .map(|(t, _)| t.get_ref().as_ref())
+                .collect();
+            (
+                name.to_string(),
+                collection(key, as_table(c), &taxonomy_fields, checker),
+            )
+        })
+        .collect();
+    let names = names(&collections);
+    let taxonomies = taxonomies
+        .iter()
+        .map(|(name, t)| {
+            (
+                name.get_ref().to_string(),
+                taxonomy(name, as_table(t), &names, &collections, checker),
+            )
+        })
+        .collect();
+    (collections, taxonomies)
+}
+
+/// The Collections a Taxonomy or feed can name: the built-in `pages` too.
+pub(super) fn names(collections: &BTreeMap<String, Collection>) -> BTreeSet<&str> {
+    let mut names: BTreeSet<&str> = collections.keys().map(String::as_str).collect();
+    names.insert("pages");
+    names
+}
+
+fn collection(
     name: &Spanned<std::borrow::Cow<'_, str>>,
     c: &Table<'_>,
     taxonomy_fields: &[&str],
@@ -123,7 +171,7 @@ pub(super) fn collection(
     }
 }
 
-pub(super) fn taxonomy(
+fn taxonomy(
     name: &Spanned<std::borrow::Cow<'_, str>>,
     t: &Table<'_>,
     names: &BTreeSet<&str>,

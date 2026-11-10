@@ -20,7 +20,7 @@ pub struct Images {
     pub allow_unoptimized: Vec<String>,
 }
 
-pub(super) fn images(images: Option<&Table<'_>>, checker: &mut Checker) -> Images {
+pub(super) fn read(images: Option<&Table<'_>>, checker: &mut Checker) -> Images {
     let get = |key: &str| images.and_then(|t| t.get(key));
     let quality = images.and_then(|t| table(t, "quality"));
     let number = |t: Option<&Table<'_>>, key: &str, default: u8| {

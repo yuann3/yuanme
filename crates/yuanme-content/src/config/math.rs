@@ -2,6 +2,11 @@
 
 use std::collections::BTreeMap;
 
+use toml::de::DeValue;
+
+use super::check::Checker;
+use super::{Table, as_table, entries, string, table};
+
 /// `[math]` (#17).
 #[derive(Debug)]
 pub struct Math {
@@ -50,4 +55,45 @@ pub struct TheoremKind {
     /// The counter its blocks are numbered on, which kinds can share; none
     /// for an unnumbered kind.
     pub counter: Option<String>,
+}
+
+pub(super) fn read(math: Option<&Table<'_>>, checker: &mut Checker) -> Math {
+    let macros: Vec<(String, String)> = entries(math.and_then(|m| table(m, "macros")))
+        .iter()
+        .map(|(name, value)| {
+            let definition = value.get_ref().as_str().expect("checked as a string");
+            (name.get_ref().to_string(), definition.to_string())
+        })
+        .collect();
+    if let Err((i, message)) = crate::math::converter(&macros) {
+        let (name, value) = entries(math.and_then(|m| table(m, "macros")))[i];
+        let message = format!("the macro `\\{}` can't be read: {message}", name.get_ref());
+        checker.invalid(message, value.span());
+    }
+    let mut theorems = Math::default().theorems;
+    for (name, t) in entries(math.and_then(|m| table(m, "theorems"))) {
+        let t = as_table(t);
+        let name: &str = name.get_ref().as_ref();
+        let default = theorems.remove(name).unwrap_or_else(|| {
+            let mut chars = name.chars();
+            let label = chars
+                .next()
+                .map_or_else(String::new, |c| c.to_uppercase().chain(chars).collect());
+            TheoremKind {
+                label,
+                counter: Some("theorem".into()),
+            }
+        });
+        let counter = match t.get("counter").map(|c| c.get_ref()) {
+            Some(DeValue::String(c)) => Some(c.to_string()),
+            Some(_) => None,
+            None => default.counter,
+        };
+        let kind = TheoremKind {
+            label: string(t, "label").unwrap_or(default.label),
+            counter,
+        };
+        theorems.insert(name.to_string(), kind);
+    }
+    Math { macros, theorems }
 }

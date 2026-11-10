@@ -89,7 +89,7 @@ pub struct Redirect {
     pub status: u16,
 }
 
-pub(super) fn host(host: Option<&Table<'_>>, checker: &mut Checker) -> Host {
+pub(super) fn read(host: Option<&Table<'_>>, checker: &mut Checker) -> Host {
     let Some(host) = host else {
         return Host {
             adapter: Adapter::Cloudflare,
