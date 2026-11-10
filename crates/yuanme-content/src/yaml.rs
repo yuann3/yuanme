@@ -83,40 +83,80 @@ fn size(node: &Node) -> usize {
 /// Reads one YAML document; a second is an error. `text` starts at byte
 /// `base` of its file, so every span is a span in the file.
 pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
-    // saphyr counts characters, not bytes.
-    let bytes: Vec<usize> = text
-        .char_indices()
-        .map(|(i, _)| i)
-        .chain([text.len()])
-        .map(|i| base + i)
-        .collect();
-    let at = |chars: usize| bytes[chars.min(bytes.len() - 1)];
-    // Each anchored node, with its size.
-    let mut anchors: HashMap<usize, (Node, usize)> = HashMap::new();
-    let mut aliased = 0;
-    // Each open collection: its start, its items, and for a mapping the key
-    // waiting for its value and where each key is.
-    enum Open {
-        Seq(usize, usize, Vec<Node>),
-        Map(
-            usize,
-            usize,
-            Vec<(Key, Node)>,
-            Option<Node>,
-            BTreeMap<String, Range<usize>>,
-        ),
-    }
-    let mut stack: Vec<Open> = Vec::new();
-    let mut root = None;
-    let mut documents = 0;
+    let mut reader = Reader {
+        // saphyr counts characters, not bytes.
+        bytes: text
+            .char_indices()
+            .map(|(i, _)| i)
+            .chain([text.len()])
+            .map(|i| base + i)
+            .collect(),
+        anchors: HashMap::new(),
+        aliased: 0,
+        stack: Vec::new(),
+        root: None,
+        documents: 0,
+    };
     for event in Parser::new_from_str(text) {
         let (event, span) = event.map_err(|e| Error::Syntax {
             message: e.info().to_string(),
-            at: at(e.marker().index()),
+            at: reader.at(e.marker().index()),
         })?;
-        let range = at(span.start.index())..at(span.end.index());
+        let range = reader.at(span.start.index())..reader.at(span.end.index());
         // An anchored node is recorded once it is complete.
-        let (node, anchor) = match event {
+        if let Some((node, anchor)) = reader.event(event, range)? {
+            if anchor > 0 {
+                reader.anchors.insert(anchor, (node.clone(), size(&node)));
+            }
+            reader.add(node)?;
+        }
+    }
+    Ok(reader.root.unwrap_or(Node {
+        value: Yaml::Null,
+        span: base..base,
+    }))
+}
+
+/// One file's events, read into its tree.
+struct Reader {
+    /// Each character's byte in the file, and the end's.
+    bytes: Vec<usize>,
+    /// Each anchored node, with its size.
+    anchors: HashMap<usize, (Node, usize)>,
+    /// How many values aliases have copied.
+    aliased: usize,
+    stack: Vec<Open>,
+    root: Option<Node>,
+    documents: usize,
+}
+
+/// An open collection: its start, its anchor, its items, and for a mapping
+/// the key waiting for its value and where each key is.
+enum Open {
+    Seq(usize, usize, Vec<Node>),
+    Map(
+        usize,
+        usize,
+        Vec<(Key, Node)>,
+        Option<Node>,
+        BTreeMap<String, Range<usize>>,
+    ),
+}
+
+impl Reader {
+    /// The byte in the file of the character at `chars`.
+    fn at(&self, chars: usize) -> usize {
+        self.bytes[chars.min(self.bytes.len() - 1)]
+    }
+
+    /// The node `event` completes, at `range`, with its anchor, or `None`
+    /// for an event that completes none.
+    fn event(
+        &mut self,
+        event: Event<'_>,
+        range: Range<usize>,
+    ) -> Result<Option<(Node, usize)>, Error> {
+        Ok(Some(match event {
             Event::Scalar(value, style, anchor, tag) => {
                 if let Some(tag) = &tag
                     && !(tag.handle == "tag:yaml.org,2002:" && tag.suffix == "str")
@@ -130,44 +170,22 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 };
                 (Node { value, span: range }, anchor)
             }
-            Event::Alias(id) => {
-                let (target, size) = anchors.get(&id).ok_or_else(|| Error::Syntax {
-                    message: "unknown anchor".into(),
-                    at: range.start,
-                })?;
-                aliased += size;
-                if aliased > ALIASED {
-                    return Err(Error::Syntax {
-                        message: format!("its aliases repeat more than {ALIASED} values"),
-                        at: range.start,
-                    });
-                }
-                let node = Node {
-                    value: target.value.clone(),
-                    span: range,
-                };
-                (node, 0)
-            }
+            Event::Alias(id) => (self.alias(id, range)?, 0),
             Event::SequenceStart(_, Some(_)) | Event::MappingStart(_, Some(_)) => {
                 return Err(Error::Tag { at: range });
             }
             Event::SequenceStart(anchor, _) => {
-                stack.push(Open::Seq(range.start, anchor, Vec::new()));
-                continue;
+                self.stack.push(Open::Seq(range.start, anchor, Vec::new()));
+                return Ok(None);
             }
             Event::MappingStart(anchor, _) => {
-                stack.push(Open::Map(
-                    range.start,
-                    anchor,
-                    Vec::new(),
-                    None,
-                    BTreeMap::new(),
-                ));
-                continue;
+                let map = Open::Map(range.start, anchor, Vec::new(), None, BTreeMap::new());
+                self.stack.push(map);
+                return Ok(None);
             }
             Event::SequenceEnd => {
-                let Some(Open::Seq(start, anchor, items)) = stack.pop() else {
-                    unreachable!("balanced")
+                let Some(Open::Seq(start, anchor, items)) = self.stack.pop() else {
+                    unreachable!("saphyr balances a sequence's start and end")
                 };
                 let node = Node {
                     value: Yaml::Seq(items),
@@ -176,8 +194,8 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 (node, anchor)
             }
             Event::MappingEnd => {
-                let Some(Open::Map(start, anchor, entries, ..)) = stack.pop() else {
-                    unreachable!("balanced")
+                let Some(Open::Map(start, anchor, entries, ..)) = self.stack.pop() else {
+                    unreachable!("saphyr balances a mapping's start and end")
                 };
                 let end = entries
                     .last()
@@ -189,22 +207,43 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 (node, anchor)
             }
             Event::DocumentStart(_) => {
-                documents += 1;
-                if documents > 1 {
+                self.documents += 1;
+                if self.documents > 1 {
                     return Err(Error::Syntax {
                         message: "a second document starts here; a file holds one".into(),
                         at: range.start,
                     });
                 }
-                continue;
+                return Ok(None);
             }
-            _ => continue,
-        };
-        if anchor > 0 {
-            anchors.insert(anchor, (node.clone(), size(&node)));
+            _ => return Ok(None),
+        }))
+    }
+
+    /// A copy of the node anchored as `id`, at `range`.
+    fn alias(&mut self, id: usize, range: Range<usize>) -> Result<Node, Error> {
+        let (target, size) = self.anchors.get(&id).ok_or_else(|| Error::Syntax {
+            message: "unknown anchor".into(),
+            at: range.start,
+        })?;
+        self.aliased += size;
+        if self.aliased > ALIASED {
+            return Err(Error::Syntax {
+                message: format!("its aliases repeat more than {ALIASED} values"),
+                at: range.start,
+            });
         }
-        match stack.last_mut() {
-            None => root = Some(node),
+        Ok(Node {
+            value: target.value.clone(),
+            span: range,
+        })
+    }
+
+    /// Puts a complete `node` in the collection it is in: an item, a key,
+    /// or the value of the key before it.
+    fn add(&mut self, node: Node) -> Result<(), Error> {
+        match self.stack.last_mut() {
+            None => self.root = Some(node),
             Some(Open::Seq(_, _, items)) => items.push(node),
             Some(Open::Map(_, _, entries, pending, keys)) => match pending.take() {
                 None => *pending = Some(node),
@@ -230,11 +269,8 @@ pub fn parse(text: &str, base: usize) -> Result<Node, Error> {
                 }
             },
         }
+        Ok(())
     }
-    Ok(root.unwrap_or(Node {
-        value: Yaml::Null,
-        span: base..base,
-    }))
 }
 
 /// The YAML 1.2 core schema for a plain scalar.
