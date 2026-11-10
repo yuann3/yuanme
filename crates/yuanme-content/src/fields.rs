@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use std::ops::Range;
 
 use jiff::Zoned;
-use jiff::civil::{Date, DateTime};
+use jiff::civil::{Date, DateTime, Time};
 use jiff::fmt::temporal::{Pieces, PiecesOffset};
 use jiff::tz::{Offset, TimeZone};
 use serde::{Deserialize, Serialize};
@@ -64,8 +64,8 @@ pub(crate) fn compare(a: &Value, b: &Value) -> Ordering {
         (Date(a), Date(b)) => a.cmp(b),
         (Datetime(a), Datetime(b)) => a.timestamp().cmp(&b.timestamp()),
         // A date sorts as its midnight UTC, as it is written out (#18).
-        (Date(a), Datetime(b)) => midnight(*a).cmp(&b.timestamp()),
-        (Datetime(a), Date(b)) => a.timestamp().cmp(&midnight(*b)),
+        (Date(a), Datetime(b)) => a.to_datetime(Time::midnight()).cmp(&utc(b)),
+        (Datetime(a), Date(b)) => utc(a).cmp(&b.to_datetime(Time::midnight())),
         _ => kind(a).cmp(&kind(b)),
     }
 }
@@ -90,10 +90,11 @@ fn number(v: &Value) -> f64 {
     }
 }
 
-fn midnight(d: Date) -> jiff::Timestamp {
-    d.to_zoned(TimeZone::UTC)
-        .expect("a date is in range")
-        .timestamp()
+/// A datetime's wall time in UTC, which orders as its instant does. A
+/// date compares with it as civil time, never as an instant: jiff's
+/// instants end on 9999-12-30, a day before the dates it reads.
+fn utc(z: &Zoned) -> DateTime {
+    z.with_time_zone(TimeZone::UTC).datetime()
 }
 
 /// What checking a value needs besides the value.

@@ -395,6 +395,59 @@ fn drafts_are_listed_only_when_shown() {
     assert!(site.routes.iter().any(|r| r.url == "/blog/wip/"));
 }
 
+/// A date sorts as its midnight UTC among datetimes, up to the last date
+/// a field reads, whose midnight is past the last instant jiff holds.
+#[test]
+fn dates_and_datetimes_sort_together_up_to_the_last_date() {
+    let fixture = r#"=== yuanme.toml
+[site]
+url = "https://e.com"
+
+[collections.posts]
+route = "/blog/{slug}/"
+
+[collections.posts.fields]
+when = { type = "date" }
+
+[collections.notes]
+route = "/notes/{slug}/"
+
+[collections.notes.fields]
+when = { type = "datetime" }
+
+[taxonomies.tags]
+collections = ["posts", "notes"]
+route = "/tags/{term}/"
+sort = ["-when"]
+=== content/posts/last.md
+---
+title: Last
+when: 9999-12-31
+tags: [t]
+---
+=== content/posts/early.md
+---
+title: Early
+when: 9999-12-30
+tags: [t]
+---
+=== content/notes/between.md
+---
+title: Between
+when: 9999-12-30T21:00:00Z
+tags: [t]
+---
+"#;
+    let (_, site, diagnostics) = resolve(fixture, false);
+    let site = site.unwrap_or_else(|| panic!("{diagnostics:#?}"));
+    let slugs: Vec<&str> = site.taxonomies["tags"][0]
+        .entries
+        .iter()
+        .map(|&i| site.entries[i].slug.as_str())
+        .collect();
+    assert_eq!(slugs, ["last", "between", "early"]);
+}
+
 /// Config for the cases below, which add their own files.
 const BASE: &str = r#"=== yuanme.toml
 [site]
