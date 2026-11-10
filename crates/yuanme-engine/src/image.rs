@@ -12,7 +12,7 @@ use std::fmt;
 use std::sync::Mutex;
 
 use rayon::prelude::*;
-pub use yuanme_assets::{Format, Probe, Settings};
+pub(crate) use yuanme_assets::{Format, Probe, Settings};
 use yuanme_assets::{ImageError, encode_image, probe_image};
 
 use crate::hashing::hashed_path;
@@ -58,7 +58,7 @@ impl std::error::Error for Error {}
 
 /// The size of `source`, a file in `inputs`, as displayed, and whether it
 /// is animated: from the cache, or else from its header.
-pub fn probe(cache: &mut Cache, inputs: &Inputs, source: &str) -> Result<Probe, Error> {
+pub(crate) fn probe(cache: &mut Cache, inputs: &Inputs, source: &str) -> Result<Probe, Error> {
     let mut key = cache.key("image-probe");
     key.update(inputs.files[source].hash.as_bytes());
     let key = key.finalize();
@@ -91,7 +91,7 @@ pub fn probe(cache: &mut Cache, inputs: &Inputs, source: &str) -> Result<Probe, 
 /// The variants of `source` at each of `widths` in each of `formats`,
 /// narrowest first, without encoding any. Nothing is upscaled: a source
 /// narrower than a width gets its own width instead (#28).
-pub fn variants(
+pub(crate) fn variants(
     cache: &Cache,
     inputs: &Inputs,
     source: &str,

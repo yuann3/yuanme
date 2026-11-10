@@ -7,7 +7,7 @@ mod checks;
 mod content;
 mod hashing;
 mod host;
-pub mod image;
+mod image;
 mod inputs;
 #[cfg(test)]
 mod tests;
@@ -17,6 +17,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use yuanme_assets::Settings;
 use yuanme_content::{Budget, Config, RouteKind, Site};
 use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
 use yuanme_render::sidecar;
@@ -28,7 +29,8 @@ use image::resolve::Images;
 pub use assets::typescript::{check_types, write_types};
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
-pub use inputs::{Input, Inputs};
+pub use image::{Error as ImageError, Variant, encode as encode_variants};
+pub use inputs::Inputs;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mode {
@@ -78,7 +80,7 @@ pub struct Build {
     /// directory, with the settings that encode it. A build that encodes
     /// no image has none of them in `files`, and `yuanme dev` encodes one
     /// with [`image::encode`] when a browser asks for it.
-    pub images: BTreeMap<String, (image::Variant, image::Settings)>,
+    pub images: BTreeMap<String, (Variant, Settings)>,
     /// Each HTML Page measured against the Site budgets, in the order of
     /// the Site's Routes: only by a build that encodes images, which is
     /// `yuanme build`'s, and never with `budgets = false` (#15).

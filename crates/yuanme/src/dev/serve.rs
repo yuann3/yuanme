@@ -16,8 +16,9 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use serde_json::{Value, json};
 use tokio::sync::{Notify, broadcast};
+use yuanme_assets::Settings;
 use yuanme_diag::{Diagnostic, Files, Level};
-use yuanme_engine::{Body, Build, Cache, image};
+use yuanme_engine::{Body, Build, Cache, ImageError, Variant, encode_variants};
 
 use super::Snapshot;
 use crate::ENGINE_VERSION;
@@ -303,8 +304,8 @@ fn with_client(mut html: Vec<u8>, src: &str) -> Vec<u8> {
 fn encode(
     cache: &Mutex<Cache>,
     snapshot: &Snapshot,
-    variant: &image::Variant,
-    settings: &image::Settings,
+    variant: &Variant,
+    settings: &Settings,
 ) -> Result<Body, Error> {
     if let Some(body) = cache
         .lock()
@@ -315,7 +316,7 @@ fn encode(
     }
     let mut scratch = Cache::memory(ENGINE_VERSION);
     let variants = std::slice::from_ref(variant);
-    let encoded = image::encode(&mut scratch, &snapshot.inputs, variants, settings);
+    let encoded = encode_variants(&mut scratch, &snapshot.inputs, variants, settings);
     let output = encoded
         .into_iter()
         .next()
@@ -335,7 +336,7 @@ fn encode(
 #[derive(Debug)]
 enum Error {
     /// The source image's path, and why it didn't encode.
-    Encode(String, image::Error),
+    Encode(String, ImageError),
     Cache(io::Error),
 }
 
