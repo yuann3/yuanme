@@ -116,91 +116,12 @@ pub(super) fn read(host: Option<&Table<'_>>, checker: &mut Checker) -> Host {
     let tables = |key: &str| host.get(key).map_or(&[][..], items);
     let headers = tables("headers")
         .iter()
-        .map(|rule| {
-            let rule = as_table(rule);
-            let path = &rule["path"];
-            let path_at = path.span();
-            let path = path.get_ref().as_str().expect("checked").to_string();
-            if let Some(why) = path_problem(&path, true) {
-                checker.invalid(format!("`{path}` {why}"), path_at.clone());
-            }
-            let headers: Vec<(String, String)> = entries(table(rule, "headers"))
-                .iter()
-                .map(|(name, value)| {
-                    let name_text = name.get_ref().to_string();
-                    let value_text = value.get_ref().as_str().expect("checked").to_string();
-                    if name_text.is_empty()
-                        || !name_text.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
-                    {
-                        let message = format!(
-                            "`{name_text}` is not a header name: those are letters, digits and `-`"
-                        );
-                        checker.invalid(message, name.span());
-                    } else if value_text.chars().any(char::is_control) {
-                        let message = format!("the value of `{name_text}` holds a control character, such as a line break");
-                        checker.invalid(message, value.span());
-                    }
-                    (name_text, value_text)
-                })
-                .collect();
-            if headers.is_empty() {
-                checker.invalid(
-                    "a header rule needs at least one header".into(),
-                    rule["headers"].span(),
-                );
-            }
-            HeaderRule {
-                path,
-                path_at,
-                headers,
-            }
-        })
+        .map(|rule| header_rule(as_table(rule), checker))
         .collect();
     let mut redirects: Vec<Redirect> = Vec::new();
     for redirect in tables("redirects") {
-        let redirect = as_table(redirect);
-        let from = string(redirect, "from").expect("required");
-        let from_at = redirect["from"].span();
-        let to = string(redirect, "to").expect("required");
-        let to_at = redirect["to"].span();
-        if let Some(why) = path_problem(&from, false) {
-            checker.invalid(format!("`{from}` {why}"), from_at.clone());
-        } else if redirects.iter().any(|r| r.from == from) {
-            checker.invalid(format!("`{from}` is redirected twice"), from_at.clone());
-        }
-        let absolute = to.starts_with("https://") || to.starts_with("http://");
-        if !absolute && !to.starts_with('/') {
-            let message = format!(
-                "`{to}` must be a URL path from the Site root, such as \"/blog/\", or an absolute URL"
-            );
-            checker.invalid(message, to_at.clone());
-        } else if !absolute && to.contains(|c: char| c.is_whitespace() || ":*".contains(c)) {
-            let message =
-                format!("`{to}` can't hold whitespace, `:` or `*`: hosts read them differently");
-            checker.invalid(message, to_at.clone());
-        } else if to == from {
-            checker.invalid(format!("`{from}` redirects to itself"), to_at.clone());
-        }
-        let status = match redirect.get("status") {
-            None => 308,
-            Some(status) => {
-                let n = int(status);
-                if ![301, 302, 307, 308].contains(&n) {
-                    checker.invalid(
-                        format!("a redirect's status is 301, 302, 307 or 308, not {n}"),
-                        status.span(),
-                    );
-                }
-                n as u16
-            }
-        };
-        redirects.push(Redirect {
-            from,
-            from_at,
-            to,
-            to_at,
-            status,
-        });
+        let redirect = redirect_rule(as_table(redirect), &redirects, checker);
+        redirects.push(redirect);
     }
     Host {
         adapter,
@@ -208,6 +129,96 @@ pub(super) fn read(host: Option<&Table<'_>>, checker: &mut Checker) -> Host {
         precompress,
         headers,
         redirects,
+    }
+}
+
+/// `[[host.headers]]`.
+fn header_rule(rule: &Table<'_>, checker: &mut Checker) -> HeaderRule {
+    let path = &rule["path"];
+    let path_at = path.span();
+    let path = path.get_ref().as_str().expect("checked").to_string();
+    if let Some(why) = path_problem(&path, true) {
+        checker.invalid(format!("`{path}` {why}"), path_at.clone());
+    }
+    let headers: Vec<(String, String)> = entries(table(rule, "headers"))
+        .iter()
+        .map(|(name, value)| {
+            let name_text = name.get_ref().to_string();
+            let value_text = value.get_ref().as_str().expect("checked").to_string();
+            if name_text.is_empty()
+                || !name_text
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+            {
+                let message = format!(
+                    "`{name_text}` is not a header name: those are letters, digits and `-`"
+                );
+                checker.invalid(message, name.span());
+            } else if value_text.chars().any(char::is_control) {
+                let message = format!(
+                    "the value of `{name_text}` holds a control character, such as a line break"
+                );
+                checker.invalid(message, value.span());
+            }
+            (name_text, value_text)
+        })
+        .collect();
+    if headers.is_empty() {
+        checker.invalid(
+            "a header rule needs at least one header".into(),
+            rule["headers"].span(),
+        );
+    }
+    HeaderRule {
+        path,
+        path_at,
+        headers,
+    }
+}
+
+/// `[[host.redirects]]`; `before` are the ones above it.
+fn redirect_rule(redirect: &Table<'_>, before: &[Redirect], checker: &mut Checker) -> Redirect {
+    let from = string(redirect, "from").expect("required");
+    let from_at = redirect["from"].span();
+    let to = string(redirect, "to").expect("required");
+    let to_at = redirect["to"].span();
+    if let Some(why) = path_problem(&from, false) {
+        checker.invalid(format!("`{from}` {why}"), from_at.clone());
+    } else if before.iter().any(|r| r.from == from) {
+        checker.invalid(format!("`{from}` is redirected twice"), from_at.clone());
+    }
+    let absolute = to.starts_with("https://") || to.starts_with("http://");
+    if !absolute && !to.starts_with('/') {
+        let message = format!(
+            "`{to}` must be a URL path from the Site root, such as \"/blog/\", or an absolute URL"
+        );
+        checker.invalid(message, to_at.clone());
+    } else if !absolute && to.contains(|c: char| c.is_whitespace() || ":*".contains(c)) {
+        let message =
+            format!("`{to}` can't hold whitespace, `:` or `*`: hosts read them differently");
+        checker.invalid(message, to_at.clone());
+    } else if to == from {
+        checker.invalid(format!("`{from}` redirects to itself"), to_at.clone());
+    }
+    let status = match redirect.get("status") {
+        None => 308,
+        Some(status) => {
+            let n = int(status);
+            if ![301, 302, 307, 308].contains(&n) {
+                checker.invalid(
+                    format!("a redirect's status is 301, 302, 307 or 308, not {n}"),
+                    status.span(),
+                );
+            }
+            n as u16
+        }
+    };
+    Redirect {
+        from,
+        from_at,
+        to,
+        to_at,
+        status,
     }
 }
 
