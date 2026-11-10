@@ -22,6 +22,7 @@ use yuanme_engine::{Build, Cache, Inputs, Mode};
 
 use watch::Batch;
 
+use crate::cli::{DevArgs, Manage};
 use crate::events::Event;
 use crate::out::{Out, plural};
 use crate::project::load;
@@ -30,19 +31,39 @@ use crate::{ENGINE_VERSION, Error};
 /// The port `yuanme dev` tries first, then the next ones up (#21).
 const PORT: u16 = 4590;
 
-/// `yuanme dev`: builds, serves on 127.0.0.1 and rebuilds on every change
-/// until it is interrupted or stopped, unless a server already runs for
-/// the project. `port` is tried alone when it is given; each build that
-/// succeeds is written to `write`, a path from the project root, too; and
-/// `log` is where `--background` sends what it prints.
-pub fn run(
-    root: &Path,
-    port: Option<u16>,
-    poll: bool,
-    write: Option<&Path>,
-    log: Option<&str>,
-    out: Out,
-) -> Result<u8, Error> {
+/// `yuanme dev`, or with a subcommand, what manages the dev server
+/// running for the project.
+pub(crate) fn run(root: &Path, args: &DevArgs, out: Out) -> Result<u8, Error> {
+    match args.manage {
+        Some(Manage::Status) => running::status(root, out),
+        Some(Manage::Stop) => running::stop(root, out),
+        Some(Manage::Logs { follow }) => running::logs(root, follow),
+        None if args.background => {
+            let mut forwarded = Vec::new();
+            if let Some(port) = args.port {
+                forwarded.extend(["--port".to_string(), port.to_string()]);
+            }
+            if args.poll {
+                forwarded.push("--poll".to_string());
+            }
+            if let Some(dir) = &args.write {
+                let dir = root.join(dir).to_string_lossy().into_owned();
+                forwarded.extend(["--write".to_string(), dir]);
+            }
+            running::background(root, &forwarded, out)
+        }
+        None => start(root, args, out),
+    }
+}
+
+/// Builds, serves on 127.0.0.1 and rebuilds on every change until it is
+/// interrupted or stopped, unless a server already runs for the project.
+/// `--port` is tried alone when it is given; each build that succeeds is
+/// written to `--write`, a path from the project root, too; and `--log`
+/// is where `--background` sends what it prints.
+fn start(root: &Path, args: &DevArgs, out: Out) -> Result<u8, Error> {
+    let (port, poll) = (args.port, args.poll);
+    let (write, log) = (args.write.as_deref(), args.log.as_deref());
     let root = root.canonicalize()?;
     // Without `..`, which `starts_with` takes as a name.
     let write = write.map(|w| {

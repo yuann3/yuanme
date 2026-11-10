@@ -17,7 +17,7 @@ use clap::Parser;
 use yuanme_content::config::{self, Adapter};
 use yuanme_diag::Files;
 
-use cli::{Cli, Color, Command, DevArgs, Itself, Manage, Which};
+use cli::{Cli, Color, Command, DevArgs, Itself, Which};
 use commands::{build, check, docs, init, new, routes, schema, update};
 use out::Out;
 
@@ -126,33 +126,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     match cli.command {
         Command::Build(args) => build::run(&root, args, out),
         Command::Check(args) => check::run(&root, &args, out),
-        Command::Dev(args) => match args.manage {
-            Some(Manage::Status) => dev::running::status(&root, *out),
-            Some(Manage::Stop) => dev::running::stop(&root, *out),
-            Some(Manage::Logs { follow }) => dev::running::logs(&root, follow),
-            None if args.background => {
-                let mut forwarded = Vec::new();
-                if let Some(port) = args.port {
-                    forwarded.extend(["--port".to_string(), port.to_string()]);
-                }
-                if args.poll {
-                    forwarded.push("--poll".to_string());
-                }
-                if let Some(dir) = &args.write {
-                    let dir = root.join(dir).to_string_lossy().into_owned();
-                    forwarded.extend(["--write".to_string(), dir]);
-                }
-                dev::running::background(&root, &forwarded, *out)
-            }
-            None => dev::run(
-                &root,
-                args.port,
-                args.poll,
-                args.write.as_deref(),
-                args.log.as_deref(),
-                *out,
-            ),
-        },
+        Command::Dev(args) => dev::run(&root, &args, *out),
         Command::New {
             collection,
             title,
