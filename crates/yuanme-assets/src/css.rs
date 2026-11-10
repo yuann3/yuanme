@@ -6,6 +6,7 @@ mod scope;
 mod tests;
 
 use std::collections::BTreeMap;
+use std::fmt;
 use std::path::{Path, PathBuf};
 
 use elsa::sync::FrozenMap;
@@ -108,8 +109,7 @@ pub fn bundle<P: Project>(
                 at: None,
             })
         })?;
-        let optimized =
-            tailwind_optimize(&output, entry, targets).map_err(|e| css_error(e, None))?;
+        let optimized = tailwind_optimize(&output, entry, targets)?;
         texts.insert(PathBuf::from(entry), optimized);
     }
     let provider = Provider { project, texts };
@@ -194,26 +194,28 @@ const TAILWIND_FLAGS: ParserFlags =
 /// rules nesting split apart. A third would change the CSS again:
 /// lightningcss adds another `-webkit-text-decoration` to preflight's
 /// `a` rule on each pass.
-fn tailwind_optimize(css: &str, file: &str, targets: Targets) -> Result<String, String> {
+fn tailwind_optimize<E>(css: &str, file: &str, targets: Targets) -> Result<String, Box<Error<E>>> {
+    // At no location: the CLI's output is no file the Author can open.
+    let unplaced = |e: &dyn fmt::Display| css_error(e.to_string(), None);
     let options = ParserOptions {
         filename: file.to_string(),
         error_recovery: true,
         flags: TAILWIND_FLAGS,
         ..ParserOptions::default()
     };
-    let mut sheet = StyleSheet::parse(css, options).map_err(|e| e.to_string())?;
+    let mut sheet = StyleSheet::parse(css, options).map_err(|e| unplaced(&e))?;
     sheet
         .minify(MinifyOptions {
             targets,
             ..MinifyOptions::default()
         })
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| unplaced(&e))?;
     let css = sheet
         .to_css(PrinterOptions {
             targets,
             ..PrinterOptions::default()
         })
-        .map_err(|e| e.to_string())?
+        .map_err(|e| unplaced(&e))?
         .code;
     // lightningcss writes a negated range as `@media not (…)`, which Media
     // Queries Level 3 browsers drop. It prints Tailwind's rewrite back as
@@ -316,20 +318,47 @@ impl Packages {
     /// by its path from the project root. Bun's isolated layout links each
     /// package from `node_modules/.bun`, so a package's files are at their
     /// real paths there.
-    pub fn resolve(&self, specifier: &str, from: &str) -> Result<String, String> {
+    pub fn resolve(&self, specifier: &str, from: &str) -> Result<String, ResolveError> {
         let dir = self.root.join(from);
         let dir = dir.parent().expect("a file is in a folder");
         let resolved = self
             .resolver
             .resolve(dir, specifier)
-            .map_err(|e| e.to_string())?;
+            .map_err(ResolveError::Package)?;
         let relative = resolved
             .path()
             .strip_prefix(&self.root)
-            .map_err(|_| format!("`{specifier}` resolves outside the project"))?;
+            .map_err(|_| ResolveError::Outside(specifier.to_string()))?;
         relative
             .to_str()
             .map(|p| p.replace(std::path::MAIN_SEPARATOR, "/"))
-            .ok_or_else(|| format!("`{specifier}` resolves to a path that is not UTF-8"))
+            .ok_or_else(|| ResolveError::NotUtf8(specifier.to_string()))
     }
 }
+
+/// Why [`Packages::resolve`] found no file of the project.
+#[derive(Debug)]
+pub enum ResolveError {
+    /// No package, or no stylesheet in it, answers the specifier.
+    Package(oxc_resolver::ResolveError),
+    /// The specifier resolves outside the project's folder.
+    Outside(String),
+    /// The specifier resolves to a path that is not UTF-8.
+    NotUtf8(String),
+}
+
+impl fmt::Display for ResolveError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ResolveError::Package(e) => e.fmt(f),
+            ResolveError::Outside(specifier) => {
+                write!(f, "`{specifier}` resolves outside the project")
+            }
+            ResolveError::NotUtf8(specifier) => {
+                write!(f, "`{specifier}` resolves to a path that is not UTF-8")
+            }
+        }
+    }
+}
+
+impl std::error::Error for ResolveError {}
