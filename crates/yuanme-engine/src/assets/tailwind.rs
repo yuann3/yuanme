@@ -148,9 +148,9 @@ pub(super) fn outputs(
                     span,
                 ));
             }
-            Err(TailwindError::Run(message)) => {
+            Err(e) => {
                 let span = at(None, sources, files);
-                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, message, span);
+                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, e.to_string(), span);
                 diagnostics.push(d.help(format!(
                     "set `{}` to a Tailwind CLI that runs here",
                     TAILWIND_ENV
@@ -186,7 +186,10 @@ fn run(binary: &Path, dir: &Path, css: &str, tokens: &str) -> Result<String, Tai
     let file = scratch.join("tokens.txt");
     std::fs::create_dir_all(&scratch)
         .and_then(|()| std::fs::write(&file, tokens))
-        .map_err(|e| TailwindError::Run(format!("can't write {}: {e}", file.display())))?;
+        .map_err(|error| TailwindError::Write {
+            path: file.clone(),
+            error,
+        })?;
     let input = tailwind_input(css, &file)
         .expect("outputs() is given only stylesheets that import Tailwind");
     let result = run_tailwind(binary, dir, &input, &scratch);
@@ -267,8 +270,10 @@ fn watched(
     }
     drop(cache.tailwind.remove(entry));
     let folder = scratch("tailwind-watch");
-    std::fs::create_dir_all(&folder)
-        .map_err(|e| TailwindError::Run(format!("can't create {}: {e}", folder.display())))?;
+    std::fs::create_dir_all(&folder).map_err(|error| TailwindError::CreateDir {
+        path: folder.clone(),
+        error,
+    })?;
     let mut running = Watching {
         watch: Mutex::new(None),
         started,

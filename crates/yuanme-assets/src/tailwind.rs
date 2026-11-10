@@ -7,9 +7,10 @@
 mod tests;
 
 use std::collections::BTreeSet;
+use std::fmt;
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver};
 use std::time::Duration;
 
@@ -308,12 +309,67 @@ pub fn tokens<'a>(texts: impl IntoIterator<Item = &'a str>) -> String {
 
 #[derive(Debug)]
 pub enum Error {
-    /// The binary couldn't be started, or stopped answering.
-    Run(String),
+    /// The binary couldn't be started.
+    Start {
+        binary: PathBuf,
+        error: io::Error,
+    },
+    /// It started, and then couldn't be waited for.
+    Wait {
+        binary: PathBuf,
+        error: io::Error,
+    },
+    /// It wrote CSS that isn't UTF-8.
+    NotUtf8 {
+        binary: PathBuf,
+    },
+    /// Its input couldn't be written to it.
+    Input(io::Error),
+    Read {
+        path: PathBuf,
+        error: io::Error,
+    },
+    Write {
+        path: PathBuf,
+        error: io::Error,
+    },
+    CreateDir {
+        path: PathBuf,
+        error: io::Error,
+    },
+    /// A watching CLI exited.
+    Stopped(ExitStatus),
+    /// A watching CLI built nothing in [`BUILD_TIMEOUT`].
+    Hung,
     /// What Tailwind says is wrong, such as `Cannot apply unknown utility
     /// class `nope``.
     Tailwind(String),
 }
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::Start { binary, error } => {
+                write!(f, "can't run `{}`: {error}", binary.display())
+            }
+            Error::Wait { binary, error } => write!(f, "`{}` failed: {error}", binary.display()),
+            Error::NotUtf8 { binary } => {
+                write!(f, "`{}` wrote CSS that isn't UTF-8", binary.display())
+            }
+            Error::Input(error) => write!(f, "can't write to Tailwind: {error}"),
+            Error::Read { path, error } => write!(f, "can't read {}: {error}", path.display()),
+            Error::Write { path, error } => write!(f, "can't write {}: {error}", path.display()),
+            Error::CreateDir { path, error } => {
+                write!(f, "can't create {}: {error}", path.display())
+            }
+            Error::Stopped(status) => write!(f, "Tailwind stopped: {status}"),
+            Error::Hung => write!(f, "Tailwind built nothing in {} s", BUILD_TIMEOUT.as_secs()),
+            Error::Tailwind(message) => f.write_str(message),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
 
 /// The CLI at `binary`, run from `dir`, with `tmp` as its temporary
 /// folder: Bun, which builds the CLI, writes lightningcss's native module
@@ -342,14 +398,18 @@ pub fn run(binary: &Path, dir: &Path, input: &str, tmp: &Path) -> Result<String,
         .args(["--input", "-", "--silent"])
         .stdout(Stdio::piped())
         .spawn()
-        .map_err(|e| Error::Run(format!("can't run `{}`: {e}", binary.display())))?;
+        .map_err(|error| Error::Start {
+            binary: binary.to_path_buf(),
+            error,
+        })?;
     let mut stdin = child.stdin.take().expect("command() pipes stdin");
     // Written beside the read of its output, so neither pipe fills up.
     let input = input.to_string();
     let writer = std::thread::spawn(move || stdin.write_all(input.as_bytes()));
-    let output = child
-        .wait_with_output()
-        .map_err(|e| Error::Run(format!("`{}` failed: {e}", binary.display())))?;
+    let output = child.wait_with_output().map_err(|error| Error::Wait {
+        binary: binary.to_path_buf(),
+        error,
+    })?;
     // A write cut off because Tailwind exited early fails with its error.
     let _ = writer.join();
     if !output.status.success() {
@@ -357,8 +417,9 @@ pub fn run(binary: &Path, dir: &Path, input: &str, tmp: &Path) -> Result<String,
             &output.stderr,
         ))));
     }
-    String::from_utf8(output.stdout)
-        .map_err(|_| Error::Run(format!("`{}` wrote CSS that isn't UTF-8", binary.display())))
+    String::from_utf8(output.stdout).map_err(|_| Error::NotUtf8 {
+        binary: binary.to_path_buf(),
+    })
 }
 
 /// The message of an error Tailwind printed as
@@ -436,12 +497,15 @@ impl Watch {
             .args(["--watch=always", "--poll=50"])
             .stdout(Stdio::null())
             .spawn()
-            .map_err(|e| Error::Run(format!("can't run `{}`: {e}", binary.display())))?;
+            .map_err(|error| Error::Start {
+                binary: binary.to_path_buf(),
+                error,
+            })?;
         let mut stdin = child.stdin.take().expect("command() pipes stdin");
         let written = stdin.write_all(input.as_bytes());
         // `--watch=always` keeps watching once its input has ended.
         drop(stdin);
-        written.map_err(|e| Error::Run(format!("can't write to Tailwind: {e}")))?;
+        written.map_err(Error::Input)?;
         let stderr = child.stderr.take().expect("command() pipes stderr");
         let (send, builds) = mpsc::channel();
         std::thread::spawn(move || {
@@ -490,16 +554,18 @@ impl Watch {
         match self.builds.recv_timeout(BUILD_TIMEOUT) {
             Ok(None) => self.css(),
             Ok(Some(error)) => Err(Error::Tailwind(error)),
-            Err(_) => Err(Error::Run(match self.child.try_wait() {
-                Ok(Some(status)) => format!("Tailwind stopped: {status}"),
-                _ => format!("Tailwind built nothing in {} s", BUILD_TIMEOUT.as_secs()),
-            })),
+            Err(_) => Err(match self.child.try_wait() {
+                Ok(Some(status)) => Error::Stopped(status),
+                _ => Error::Hung,
+            }),
         }
     }
 
     fn css(&self) -> Result<String, Error> {
-        std::fs::read_to_string(&self.output)
-            .map_err(|e| Error::Run(format!("can't read {}: {e}", self.output.display())))
+        std::fs::read_to_string(&self.output).map_err(|error| Error::Read {
+            path: self.output.clone(),
+            error,
+        })
     }
 }
 
@@ -516,5 +582,8 @@ fn write_atomic(path: &Path, text: &str) -> Result<(), Error> {
     let tmp = path.with_extension("tmp");
     std::fs::write(&tmp, text)
         .and_then(|()| std::fs::rename(&tmp, path))
-        .map_err(|e: io::Error| Error::Run(format!("can't write {}: {e}", path.display())))
+        .map_err(|error| Error::Write {
+            path: path.to_path_buf(),
+            error,
+        })
 }
