@@ -28,7 +28,7 @@ pub use filters::escape;
 use filters::{Coded, Preloads};
 
 /// The built-in feed Template. `templates/rss.xml` replaces it.
-const RSS: (&str, &str) = ("rss.xml", include_str!("rss.xml"));
+const RSS: (&str, &str) = ("rss.xml", include_str!("template/rss.xml"));
 
 /// Each render thread's stack, which is reserved, not used. minijinja fails
 /// a render 500 Templates and macros deep; a debug build needed more than
