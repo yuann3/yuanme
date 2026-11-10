@@ -111,7 +111,7 @@ fn a_download_that_fails_is_tried_from_the_next_url() {
     };
     let error = tool.binary(&dir.path().join("other")).unwrap_err();
     assert!(
-        error.message.contains("/moved") && error.message.contains("/gone"),
+        error.to_string().contains("/moved") && error.to_string().contains("/gone"),
         "{error:?}"
     );
 }
@@ -140,7 +140,7 @@ fn a_download_with_another_checksum_is_refused_and_not_kept() {
     let tool = tool(url(&release), Sha256::Known(HELLO.into()));
     let error = tool.binary(&cache).unwrap_err();
     assert!(
-        error.message.contains(HELLO) && error.message.contains("SHA-256"),
+        error.to_string().contains(HELLO) && error.to_string().contains("SHA-256"),
         "{error:?}"
     );
     let kept: Vec<_> = walk(&cache);
@@ -158,12 +158,12 @@ fn offline_the_error_says_so_and_names_the_override() {
     let error = tool.binary(dir.path()).unwrap_err();
     assert!(
         error
-            .message
+            .to_string()
             .starts_with("can't download Example 1.2.3 from http://127.0.0.1:9/example: "),
         "{error:?}"
     );
     assert!(
-        error.help.contains("YUANME_TEST_TOOL_BIN_NEVER_SET"),
+        error.help().contains("YUANME_TEST_TOOL_BIN_NEVER_SET"),
         "{error:?}"
     );
 }

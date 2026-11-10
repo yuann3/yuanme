@@ -202,7 +202,7 @@ fn binary() -> Result<PathBuf, (String, String)> {
         let message = "there is no folder to keep `tsc` in: `HOME` isn't set".into();
         return Err((message, override_help));
     };
-    tool.binary(&cache).map_err(|e| (e.message, e.help))
+    tool.binary(&cache).map_err(|e| (e.to_string(), e.help()))
 }
 
 /// `e` at the place `tsc` puts it, in a file of the project or of

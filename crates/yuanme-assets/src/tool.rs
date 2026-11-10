@@ -11,6 +11,7 @@
 #[cfg(test)]
 mod tests;
 
+use std::fmt;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -46,11 +47,121 @@ pub enum Sha256 {
     Listed(String),
 }
 
+/// Why there is no binary for a Managed tool. Each says what to do in
+/// [`Error::help`].
 #[derive(Debug)]
-pub struct Error {
-    pub message: String,
-    pub help: String,
+pub enum Error {
+    /// The environment variable names `path`, which is no file.
+    NotAFile {
+        env: &'static str,
+        name: &'static str,
+        path: PathBuf,
+    },
+    /// The checksum file at `url` couldn't be downloaded.
+    Checksums {
+        tool: Named,
+        url: String,
+        error: FetchError,
+    },
+    /// The checksum file at `url` has no line for `asset`.
+    NotListed {
+        tool: Named,
+        url: String,
+        asset: String,
+    },
+    /// Every URL failed, each with its error.
+    Download {
+        tool: Named,
+        failures: Vec<(String, FetchError)>,
+    },
+    /// The download from `url` hashed to `have`.
+    Checksum {
+        url: String,
+        have: String,
+        want: String,
+    },
+    /// The download couldn't be installed at `binary`.
+    Install {
+        tool: Named,
+        binary: PathBuf,
+        error: io::Error,
+    },
 }
+
+/// A tool as its errors name it.
+#[derive(Debug)]
+pub struct Named {
+    pub name: &'static str,
+    pub version: String,
+    pub env: &'static str,
+}
+
+impl Error {
+    /// What the Author can do about it.
+    pub fn help(&self) -> String {
+        let offline = |tool: &Named| {
+            format!(
+                "yuanme downloads {} once per version; connect to the internet, or set `{}` to a local binary",
+                tool.name, tool.env
+            )
+        };
+        match self {
+            Error::NotAFile { env, name, .. } => {
+                format!("point `{env}` at a {name} binary, or unset it")
+            }
+            Error::Checksums { tool, .. } | Error::Download { tool, .. } => offline(tool),
+            Error::NotListed { tool, .. } => {
+                format!("{} {} may not exist for this platform", tool.name, tool.version)
+            }
+            Error::Checksum { .. } => "the file was changed or cut short on the way; build again, and report it if it persists".into(),
+            Error::Install { tool, .. } => format!(
+                "make the folder writable, or set `{}` to a local binary",
+                tool.env
+            ),
+        }
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::NotAFile { env, path, .. } => {
+                write!(f, "`{env}` names `{}`, which is no file", path.display())
+            }
+            Error::Checksums { tool, url, error } => write!(
+                f,
+                "can't download {}'s checksums from {url}: {error}",
+                tool.name
+            ),
+            Error::NotListed { url, asset, .. } => {
+                write!(f, "{url} lists no checksum for `{asset}`")
+            }
+            Error::Download { tool, failures } => {
+                write!(f, "can't download {} {} ", tool.name, tool.version)?;
+                for (i, (url, error)) in failures.iter().enumerate() {
+                    let or = if i > 0 { ", or " } else { "" };
+                    write!(f, "{or}from {url}: {error}")?;
+                }
+                Ok(())
+            }
+            Error::Checksum { url, have, want } => {
+                write!(f, "the download of {url} has SHA-256 {have}, not {want}")
+            }
+            Error::Install {
+                tool,
+                binary,
+                error,
+            } => write!(
+                f,
+                "can't write {} to {}: {error}",
+                tool.name,
+                binary.display()
+            ),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
 
 impl Tool {
     /// The binary to run: the one the environment variable names, or else
@@ -60,16 +171,10 @@ impl Tool {
         if let Some(path) = std::env::var_os(self.env) {
             let path = PathBuf::from(path);
             if !path.is_file() {
-                return Err(Error {
-                    message: format!(
-                        "`{}` names `{}`, which is no file",
-                        self.env,
-                        path.display()
-                    ),
-                    help: format!(
-                        "point `{}` at a {} binary, or unset it",
-                        self.env, self.name
-                    ),
+                return Err(Error::NotAFile {
+                    env: self.env,
+                    name: self.name,
+                    path,
                 });
             }
             return Ok(path);
@@ -79,43 +184,31 @@ impl Tool {
         if binary.is_file() {
             return Ok(binary);
         }
-        let offline = |message: String| Error {
-            message,
-            help: format!(
-                "yuanme downloads {} once per version; connect to the internet, or set `{}` to a local binary",
-                self.name, self.env
-            ),
-        };
         let want = match &self.sha256 {
             Sha256::Known(hex) => hex.clone(),
             Sha256::Listed(url) => {
-                let list = fetch(url).map_err(|e| {
-                    offline(format!(
-                        "can't download {}'s checksums from {url}: {e}",
-                        self.name
-                    ))
+                let list = fetch(url).map_err(|error| Error::Checksums {
+                    tool: self.named(),
+                    url: url.clone(),
+                    error,
                 })?;
                 let list = String::from_utf8_lossy(&list);
                 let first = &self.urls[0];
                 let asset = first.rsplit('/').next().unwrap_or(first);
-                listed(&list, asset).ok_or_else(|| Error {
-                    message: format!("{url} lists no checksum for `{asset}`"),
-                    help: format!(
-                        "{} {} may not exist for this platform",
-                        self.name, self.version
-                    ),
+                listed(&list, asset).ok_or_else(|| Error::NotListed {
+                    tool: self.named(),
+                    url: url.clone(),
+                    asset: asset.to_string(),
                 })?
             }
         };
         let mut failures = Vec::new();
         let (url, bytes) = loop {
             let Some(url) = self.urls.get(failures.len()) else {
-                return Err(offline(format!(
-                    "can't download {} {} {}",
-                    self.name,
-                    self.version,
-                    failures.join(", or ")
-                )));
+                return Err(Error::Download {
+                    tool: self.named(),
+                    failures,
+                });
             };
             match fetch(url) {
                 Ok(bytes) => break (url, bytes),
@@ -126,15 +219,16 @@ impl Tool {
                             self.name, self.version
                         );
                     }
-                    failures.push(format!("from {url}: {e}"));
+                    failures.push((url.clone(), e));
                 }
             }
         };
         let have = sha256(&bytes);
         if !have.eq_ignore_ascii_case(&want) {
-            return Err(Error {
-                message: format!("the download of {url} has SHA-256 {have}, not {want}"),
-                help: "the file was changed or cut short on the way; build again, and report it if it persists".into(),
+            return Err(Error::Checksum {
+                url: url.clone(),
+                have,
+                want,
             });
         }
         let installed = match self.archive {
@@ -148,14 +242,20 @@ impl Tool {
             }),
             None => install(&bytes, &binary),
         };
-        installed.map_err(|e| Error {
-            message: format!("can't write {} to {}: {e}", self.name, binary.display()),
-            help: format!(
-                "make the folder writable, or set `{}` to a local binary",
-                self.env
-            ),
+        installed.map_err(|error| Error::Install {
+            tool: self.named(),
+            binary: binary.clone(),
+            error,
         })?;
         Ok(binary)
+    }
+
+    fn named(&self) -> Named {
+        Named {
+            name: self.name,
+            version: self.version.clone(),
+            env: self.env,
+        }
     }
 }
 
@@ -177,18 +277,41 @@ pub fn cache_dir() -> Option<PathBuf> {
     Some(base?.join("yuanme").join("tools"))
 }
 
-/// The bytes at `url`, or what went wrong as curl says it.
-pub fn fetch(url: &str) -> Result<Vec<u8>, String> {
+/// Why `curl` couldn't download a file.
+#[derive(Debug)]
+pub enum FetchError {
+    NoCurl,
+    Run(io::Error),
+    /// What curl printed.
+    Curl(String),
+}
+
+impl fmt::Display for FetchError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            FetchError::NoCurl => {
+                f.write_str("`curl` isn't installed, and yuanme downloads with it")
+            }
+            FetchError::Run(e) => write!(f, "can't run `curl`: {e}"),
+            FetchError::Curl(said) => f.write_str(said),
+        }
+    }
+}
+
+impl std::error::Error for FetchError {}
+
+/// The bytes at `url`.
+pub fn fetch(url: &str) -> Result<Vec<u8>, FetchError> {
     let output = Command::new("curl")
         .args(["--fail", "--location", "--silent", "--show-error", url])
         .output();
     match output {
         Ok(output) if output.status.success() => Ok(output.stdout),
-        Ok(output) => Err(String::from_utf8_lossy(&output.stderr).trim().to_string()),
-        Err(e) if e.kind() == io::ErrorKind::NotFound => {
-            Err("`curl` isn't installed, and yuanme downloads with it".into())
-        }
-        Err(e) => Err(format!("can't run `curl`: {e}")),
+        Ok(output) => Err(FetchError::Curl(
+            String::from_utf8_lossy(&output.stderr).trim().to_string(),
+        )),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Err(FetchError::NoCurl),
+        Err(e) => Err(FetchError::Run(e)),
     }
 }
 

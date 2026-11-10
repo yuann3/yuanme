@@ -176,7 +176,7 @@ fn binary(version: &str) -> Result<PathBuf, (String, String)> {
         let message = "there is no folder to keep the Tailwind CLI in: `HOME` isn't set".into();
         return Err((message, override_help));
     };
-    tool.binary(&cache).map_err(|e| (e.message, e.help))
+    tool.binary(&cache).map_err(|e| (e.to_string(), e.help()))
 }
 
 /// One run of the CLI, from `dir`, on the stylesheet `css` with the token
