@@ -182,14 +182,13 @@ impl<'s> Lower<'s> {
         markdown::number_footnotes(&mut self.doc);
         markdown::smarten(&mut self.doc, Dashes::Oldschool, &self.verbatim);
         theorem::number(&mut self.doc, &math.theorems);
-        let labels = math::render(
-            &mut self.doc,
-            self.text,
-            self.file,
-            &math.macros,
-            &self.headers,
-            &mut self.diagnostics,
-        );
+        let labels = math::EntryMath {
+            text: self.text,
+            file: self.file,
+            macros: &math.macros,
+            headers: &self.headers,
+        }
+        .render(&mut self.doc, &mut self.diagnostics);
         markdown::heading_ids(&mut self.doc, &labels);
         let anchor = |doc: &Document, id: NodeId| match &doc.node(id).kind {
             Kind::Heading { id, .. } => id.clone(),

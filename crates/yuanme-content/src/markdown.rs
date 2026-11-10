@@ -98,7 +98,13 @@ pub(crate) fn parse(
     smarten(&mut doc, Dashes::Default, &BTreeSet::new());
     theorem::number(&mut doc, &math.theorems);
     let before = cx.diagnostics.len();
-    let labels = math::render(&mut doc, text, cx.file, &math.macros, &[], cx.diagnostics);
+    let labels = math::EntryMath {
+        text,
+        file: cx.file,
+        macros: &math.macros,
+        headers: &[],
+    }
+    .render(&mut doc, cx.diagnostics);
     let ok = ok
         && !cx.diagnostics[before..]
             .iter()

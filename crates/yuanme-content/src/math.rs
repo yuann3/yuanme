@@ -83,119 +83,184 @@ pub(crate) fn environment_help(name: &str) -> String {
     }
 }
 
-/// Converts every Math node of `doc` and fills in its MathML, numbers Org's
-/// `\ref`s, and checks the Entry's Labels. `text` is the Entry's file,
-/// which node spans are in. Returns every Label in the Entry, which a
-/// generated heading id must not take.
-pub(crate) fn render(
-    doc: &mut Document,
-    text: &str,
-    file: FileId,
-    macros: &[(String, String)],
-    headers: &[Header],
-    out: &mut Vec<Diagnostic>,
-) -> BTreeSet<String> {
-    let span = |range: Range<usize>| Span { file, range };
-    let mut nodes: Vec<NodeId> = doc
-        .descendants(Document::ROOT)
-        .into_iter()
-        .filter(|&id| matches!(doc.node(id).kind, Kind::Math { .. } | Kind::Ref { .. }))
-        .collect();
-    // Source order, which is LaTeX's: Markdown keeps footnote definitions
-    // at the end of the tree.
-    nodes.sort_by_key(|&id| doc.node(id).span.start);
-    let maths: Vec<NodeId> = nodes
-        .iter()
-        .copied()
-        .filter(|&id| matches!(doc.node(id).kind, Kind::Math { .. }))
-        .collect();
+/// One Entry's math: the Entry's file, as `text` and `file`, which node
+/// spans are in, the Site's `macros`, and an Org file's `headers`.
+pub(crate) struct EntryMath<'a> {
+    pub(crate) text: &'a str,
+    pub(crate) file: FileId,
+    pub(crate) macros: &'a [(String, String)],
+    pub(crate) headers: &'a [Header],
+}
 
-    // Where each snippet's first byte is in the file, if it is there as
-    // written, and the span to fall back on if not.
-    let mut snippets: Vec<(String, MathDisplay)> = Vec::new();
-    let mut places: Vec<(Option<usize>, Range<usize>)> = Vec::new();
-    for h in headers {
-        snippets.push((h.tex.clone(), MathDisplay::Inline));
-        places.push((h.verbatim.then_some(h.at.start), h.at.clone()));
-    }
-    for &id in &maths {
-        let node = doc.node(id);
-        let Kind::Math { display, tex, .. } = &node.kind else {
-            unreachable!("filtered")
-        };
-        let display = if *display {
-            MathDisplay::Block
-        } else {
-            MathDisplay::Inline
-        };
-        snippets.push((tex.clone(), display));
-        let start = text
-            .get(node.span.clone())
-            .and_then(|s| s.find(tex.as_str()))
-            .map(|i| node.span.start + i);
-        places.push((start, node.span.clone()));
-    }
-    let results = if snippets.is_empty() {
-        Vec::new()
-    } else {
-        let converter = converter(macros).expect("Site config checked its macros");
-        converter.convert_all(&snippets)
-    };
+/// What converting an Entry's math found.
+struct Converted {
+    /// Each `\label`, where it is, and its equation's number, if it has one.
+    equations: Vec<(String, Range<usize>, Option<String>)>,
+    /// Each reference inside math, such as `\eqref`.
+    references: Vec<(String, Range<usize>)>,
+    /// The Labels written in math that didn't convert.
+    unconverted: BTreeSet<String>,
+}
 
-    let at = |i: usize, range: Range<usize>| match &places[i] {
-        (Some(start), _) => start + range.start..start + range.end,
-        (None, whole) => whole.clone(),
-    };
-    let mut equations: Vec<(String, Range<usize>, Option<String>)> = Vec::new();
-    let mut references: Vec<(String, Range<usize>)> = Vec::new();
-    let mut unconverted: BTreeSet<String> = BTreeSet::new();
-    for (i, result) in results.into_iter().enumerate() {
-        let node = i.checked_sub(headers.len()).map(|n| maths[n]);
-        match result {
-            Ok(r) => {
-                for l in r.labels {
-                    equations.push((l.name, at(i, l.span), l.tag));
-                }
-                for e in r.references {
-                    references.push((e.name, at(i, e.span)));
-                }
-                if let Some(id) = node
-                    && let Kind::Math { mathml, .. } = doc.kind_mut(id)
-                {
-                    *mathml = r.mathml;
-                }
+impl EntryMath<'_> {
+    /// Converts every Math node of `doc` and fills in its MathML, numbers
+    /// Org's `\ref`s, and checks the Entry's Labels. Returns every Label in
+    /// the Entry, which a generated heading id must not take.
+    pub(crate) fn render(&self, doc: &mut Document, out: &mut Vec<Diagnostic>) -> BTreeSet<String> {
+        let mut nodes: Vec<NodeId> = doc
+            .descendants(Document::ROOT)
+            .into_iter()
+            .filter(|&id| matches!(doc.node(id).kind, Kind::Math { .. } | Kind::Ref { .. }))
+            .collect();
+        // Source order, which is LaTeX's: Markdown keeps footnote definitions
+        // at the end of the tree.
+        nodes.sort_by_key(|&id| doc.node(id).span.start);
+        let Converted {
+            equations,
+            references,
+            unconverted,
+        } = self.convert(doc, &nodes, out);
+        let names: Vec<(String, Range<usize>)> = equations
+            .iter()
+            .map(|(n, at, _)| (n.clone(), at.clone()))
+            .collect();
+        let labels = label::check(doc, self.text, self.file, &names, out);
+        let mut check = References {
+            math: self,
+            numbers: number(doc, &equations),
+            unconverted: &unconverted,
+            labels: &labels,
+            near: BTreeMap::new(),
+        };
+        for (name, at) in references {
+            check.reference(&name, at, out);
+        }
+        for id in nodes {
+            let node = doc.node(id);
+            let Kind::Ref { label, .. } = &node.kind else {
+                continue;
+            };
+            let at = node.span.clone();
+            let found = check.reference(&label.clone(), at, out);
+            if let (Some(tag), Kind::Ref { number, .. }) = (found, doc.kind_mut(id)) {
+                *number = tag;
             }
-            Err(e) => {
-                let snippet = &snippets[i].0;
-                // Its Labels are unknown, but an `\eqref` to one is not
-                // another mistake to report.
-                unconverted.extend(written_labels(snippet));
-                let mut d = Diagnostic::error(
-                    &codes::MATH_UNSUPPORTED,
-                    message(&e),
-                    span(at(i, e.0.clone())),
-                )
-                .label(e.label());
-                if let Some(help) = help(&e, snippet) {
-                    d = d.help(help);
-                }
-                out.push(d);
-            }
+        }
+        labels
+    }
+
+    fn span(&self, range: Range<usize>) -> Span {
+        Span {
+            file: self.file,
+            range,
         }
     }
 
-    let names: Vec<(String, Range<usize>)> = equations
-        .iter()
-        .map(|(n, at, _)| (n.clone(), at.clone()))
-        .collect();
-    let labels = label::check(doc, text, file, &names, out);
-    // The first equation with a Label is the one it names; a second is
-    // already an error.
+    /// Converts the headers, then each Math node in `nodes`, in one
+    /// `convert_all`, filling in each node's MathML, with an error for each
+    /// snippet that doesn't convert.
+    fn convert(
+        &self,
+        doc: &mut Document,
+        nodes: &[NodeId],
+        out: &mut Vec<Diagnostic>,
+    ) -> Converted {
+        let maths: Vec<NodeId> = nodes
+            .iter()
+            .copied()
+            .filter(|&id| matches!(doc.node(id).kind, Kind::Math { .. }))
+            .collect();
+        // Where each snippet's first byte is in the file, if it is there as
+        // written, and the span to fall back on if not.
+        let mut snippets: Vec<(String, MathDisplay)> = Vec::new();
+        let mut places: Vec<(Option<usize>, Range<usize>)> = Vec::new();
+        for h in self.headers {
+            snippets.push((h.tex.clone(), MathDisplay::Inline));
+            places.push((h.verbatim.then_some(h.at.start), h.at.clone()));
+        }
+        for &id in &maths {
+            let node = doc.node(id);
+            let Kind::Math { display, tex, .. } = &node.kind else {
+                unreachable!("`maths` holds only Math nodes")
+            };
+            let display = if *display {
+                MathDisplay::Block
+            } else {
+                MathDisplay::Inline
+            };
+            snippets.push((tex.clone(), display));
+            let start = self
+                .text
+                .get(node.span.clone())
+                .and_then(|s| s.find(tex.as_str()))
+                .map(|i| node.span.start + i);
+            places.push((start, node.span.clone()));
+        }
+        let results = if snippets.is_empty() {
+            Vec::new()
+        } else {
+            let converter = converter(self.macros).expect("Site config checked its macros");
+            converter.convert_all(&snippets)
+        };
+
+        let at = |i: usize, range: Range<usize>| match &places[i] {
+            (Some(start), _) => start + range.start..start + range.end,
+            (None, whole) => whole.clone(),
+        };
+        let mut converted = Converted {
+            equations: Vec::new(),
+            references: Vec::new(),
+            unconverted: BTreeSet::new(),
+        };
+        for (i, result) in results.into_iter().enumerate() {
+            let node = i.checked_sub(self.headers.len()).map(|n| maths[n]);
+            match result {
+                Ok(r) => {
+                    for l in r.labels {
+                        converted.equations.push((l.name, at(i, l.span), l.tag));
+                    }
+                    for e in r.references {
+                        converted.references.push((e.name, at(i, e.span)));
+                    }
+                    if let Some(id) = node
+                        && let Kind::Math { mathml, .. } = doc.kind_mut(id)
+                    {
+                        *mathml = r.mathml;
+                    }
+                }
+                Err(e) => {
+                    let snippet = &snippets[i].0;
+                    // Its Labels are unknown, but an `\eqref` to one is not
+                    // another mistake to report.
+                    converted.unconverted.extend(written_labels(snippet));
+                    let mut d = Diagnostic::error(
+                        &codes::MATH_UNSUPPORTED,
+                        message(&e),
+                        self.span(at(i, e.0.clone())),
+                    )
+                    .label(e.label());
+                    if let Some(help) = help(&e, snippet) {
+                        d = d.help(help);
+                    }
+                    out.push(d);
+                }
+            }
+        }
+        converted
+    }
+}
+
+/// Each equation Label's number, if it has one. The first equation with a
+/// Label is the one it names; a second is already an error. A numbered
+/// equation's Label becomes an id of `doc`, which links find as they find
+/// a `#+NAME`.
+fn number<'e>(
+    doc: &mut Document,
+    equations: &'e [(String, Range<usize>, Option<String>)],
+) -> BTreeMap<&'e str, Option<&'e str>> {
     let mut numbers: BTreeMap<&str, Option<&str>> = BTreeMap::new();
-    for (name, _, tag) in &equations {
+    for (name, _, tag) in equations {
         numbers.entry(name).or_insert(tag.as_deref());
-        // A numbered equation has its Label as an id, which links find as
-        // they find a `#+NAME`.
         if let Some(tag) = tag {
             doc.names
                 .targets
@@ -207,17 +272,41 @@ pub(crate) fn render(
                 .or_insert_with(|| format!("({tag})"));
         }
     }
-    // Each unknown name is compared with every Label, so only the first
-    // few are, which keeps an Entry's parse linear in its length (#15).
-    let mut near: BTreeMap<String, Option<String>> = BTreeMap::new();
-    let mut check = |name: &str, at: Range<usize>, out: &mut Vec<Diagnostic>| -> Option<String> {
+    numbers
+}
+
+/// Checks each reference to an equation's Label in one Entry.
+struct References<'a> {
+    math: &'a EntryMath<'a>,
+    numbers: BTreeMap<&'a str, Option<&'a str>>,
+    unconverted: &'a BTreeSet<String>,
+    /// Every Label in the Entry.
+    labels: &'a BTreeSet<String>,
+    /// Each unknown name is compared with every Label, so only the first
+    /// few are, which keeps an Entry's parse linear in its length (#15).
+    near: BTreeMap<String, Option<String>>,
+}
+
+impl References<'_> {
+    /// The number of the equation `name` labels, or else an error at `at`,
+    /// unless its Label was in math that didn't convert.
+    fn reference(
+        &mut self,
+        name: &str,
+        at: Range<usize>,
+        out: &mut Vec<Diagnostic>,
+    ) -> Option<String> {
         // The Label itself, so a fix replaces only it.
-        let at = label_at(text, at, name);
+        let at = label_at(self.math.text, at, name);
         let error = |message: String| {
-            Diagnostic::error(&codes::MATH_UNKNOWN_LABEL, message, span(at.clone()))
-                .label("referenced here")
+            Diagnostic::error(
+                &codes::MATH_UNKNOWN_LABEL,
+                message,
+                self.math.span(at.clone()),
+            )
+            .label("referenced here")
         };
-        match numbers.get(name) {
+        match self.numbers.get(name) {
             Some(Some(tag)) => return Some(tag.to_string()),
             Some(None) => {
                 let message = format!("the equation `{name}` labels has no number");
@@ -226,29 +315,18 @@ pub(crate) fn render(
                         .help("`equation`, `align`, `gather` and `multline` number their lines; their starred forms, `$$…$$`, `\\[…\\]` and lines with `\\notag` don't"),
                 );
             }
-            None if unconverted.contains(name) => {}
-            None if labels.contains(name) => {
+            None if self.unconverted.contains(name) => {}
+            None if self.labels.contains(name) => {
                 let message = format!("`{name}` labels something other than an equation");
                 out.push(error(message).help(format!(
                     "link to it instead: a link with no text shows a Theorem block's number, as `[](#{name})` in Markdown and `[[{name}]]` in Org"
                 )));
             }
             None => {
-                let message = format!("no equation in this Entry has the Label `{name}`");
-                let mut d = error(message);
-                let suggestion = if near.len() < 32 || near.contains_key(name) {
-                    near.entry(name.to_string())
-                        .or_insert_with(|| {
-                            let known = numbers.iter().filter(|(_, t)| t.is_some());
-                            similar(name, known.map(|(n, _)| *n)).map(str::to_string)
-                        })
-                        .clone()
-                } else {
-                    None
-                };
-                if let Some(near) = suggestion {
+                let mut d = error(format!("no equation in this Entry has the Label `{name}`"));
+                if let Some(near) = self.near(name) {
                     let edit = Edit {
-                        span: span(at.clone()),
+                        span: self.math.span(at.clone()),
                         replacement: near.to_string(),
                     };
                     d = d.suggest(
@@ -261,22 +339,22 @@ pub(crate) fn render(
             }
         }
         None
-    };
-    for (name, at) in references {
-        check(&name, at, out);
     }
-    for id in nodes {
-        let node = doc.node(id);
-        let Kind::Ref { label, .. } = &node.kind else {
-            continue;
-        };
-        let at = node.span.clone();
-        let found = check(&label.clone(), at, out);
-        if let (Some(tag), Kind::Ref { number, .. }) = (found, doc.kind_mut(id)) {
-            *number = tag;
+
+    /// A numbered Label with a name like `name`, for the first few names.
+    fn near(&mut self, name: &str) -> Option<String> {
+        if self.near.len() >= 32 && !self.near.contains_key(name) {
+            return None;
         }
+        let numbers = &self.numbers;
+        self.near
+            .entry(name.to_string())
+            .or_insert_with(|| {
+                let known = numbers.iter().filter(|(_, t)| t.is_some());
+                similar(name, known.map(|(n, _)| *n)).map(str::to_string)
+            })
+            .clone()
     }
-    labels
 }
 
 /// The Labels `tex` gives with `\label{…}`, read without converting it.
