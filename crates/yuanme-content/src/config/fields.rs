@@ -1,6 +1,7 @@
 //! The fields a Collection or Data file declares, and their types.
 
 use std::collections::BTreeMap;
+use std::fmt;
 use std::ops::Range;
 
 use toml::de::DeValue;
@@ -93,9 +94,9 @@ pub(super) fn field(spec: &Table<'_>, in_table: bool, checker: &mut Checker) -> 
     }
     let default = spec.get("default").filter(|_| in_table);
     if let Some(default) = default
-        && let Err((at, message)) = check_default(&kind, default)
+        && let Err(e) = check_default(&kind, default)
     {
-        checker.invalid(message, at);
+        checker.invalid(e.to_string(), e.at);
     }
     Field {
         optional: boolean(spec, "optional") || default.is_some(),
@@ -105,20 +106,88 @@ pub(super) fn field(spec: &Table<'_>, in_table: bool, checker: &mut Checker) -> 
     }
 }
 
-/// Whether `value` is a valid value of `kind`, or the innermost part that isn't.
-fn check_default(ty: &FieldType, value: &Value<'_>) -> Result<(), (Range<usize>, String)> {
+/// The innermost part of a default that isn't a valid value of its type,
+/// and what is wrong with it.
+#[derive(Debug)]
+struct BadDefault {
+    at: Range<usize>,
+    problem: Problem,
+}
+
+#[derive(Debug)]
+enum Problem {
+    /// Not `expected`; `found` is the TOML type it is.
+    Type {
+        expected: String,
+        found: &'static str,
+    },
+    TooSmall {
+        what: Measured,
+        min: f64,
+    },
+    TooLarge {
+        what: Measured,
+        max: f64,
+    },
+    /// An item of a `unique` list that an earlier one equals.
+    Repeated,
+    UnknownField(String),
+    MissingField(String),
+}
+
+/// What `min` and `max` bound: a string's length, or the number written.
+#[derive(Debug)]
+enum Measured {
+    Length,
+    Number(String),
+}
+
+impl fmt::Display for BadDefault {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let what = |m: &Measured| match m {
+            Measured::Length => "has a length that".to_string(),
+            Measured::Number(n) => format!("`{n}`"),
+        };
+        match &self.problem {
+            Problem::Type { expected, found } => {
+                write!(f, "the default must be {expected}, not {found}")
+            }
+            Problem::TooSmall { what: m, min } => {
+                write!(f, "the default {} is less than `min` ({min})", what(m))
+            }
+            Problem::TooLarge { what: m, max } => {
+                write!(f, "the default {} is more than `max` ({max})", what(m))
+            }
+            Problem::Repeated => f.write_str("the default repeats an item of a `unique` list"),
+            Problem::UnknownField(name) => write!(f, "the object has no field `{name}`"),
+            Problem::MissingField(name) => {
+                write!(f, "the default leaves out the required field `{name}`")
+            }
+        }
+    }
+}
+
+impl std::error::Error for BadDefault {}
+
+/// Whether `value` is a valid value of `kind`.
+fn check_default(ty: &FieldType, value: &Value<'_>) -> Result<(), BadDefault> {
     let at = value.span();
     let v = value.get_ref();
-    let fail = |message: String| Err((at.clone(), message));
-    let not = |expected: &str| {
-        Err((
-            at.clone(),
-            format!("the default must be {expected}, not {}", kind(v)),
-        ))
+    let fail = |problem| {
+        Err(BadDefault {
+            at: at.clone(),
+            problem,
+        })
     };
-    let bounds = |n: f64, min: Option<f64>, max: Option<f64>, what: &str| match (min, max) {
-        (Some(min), _) if n < min => fail(format!("the default {what} is less than `min` ({min})")),
-        (_, Some(max)) if n > max => fail(format!("the default {what} is more than `max` ({max})")),
+    let not = |expected: &str| {
+        fail(Problem::Type {
+            expected: expected.to_string(),
+            found: kind(v),
+        })
+    };
+    let bounds = |n: f64, min: Option<f64>, max: Option<f64>, what: Measured| match (min, max) {
+        (Some(min), _) if n < min => fail(Problem::TooSmall { what, min }),
+        (_, Some(max)) if n > max => fail(Problem::TooLarge { what, max }),
         _ => Ok(()),
     };
     match (ty, v) {
@@ -128,17 +197,17 @@ fn check_default(ty: &FieldType, value: &Value<'_>) -> Result<(), (Range<usize>,
                 n,
                 min.map(|m| m as f64),
                 max.map(|m| m as f64),
-                "has a length that",
+                Measured::Length,
             )
         }
         (FieldType::Int { min, max }, DeValue::Integer(_)) => bounds(
             float(value),
             min.map(|m| m as f64),
             max.map(|m| m as f64),
-            &format!("`{}`", text(value)),
+            Measured::Number(text(value)),
         ),
         (FieldType::Float { min, max }, DeValue::Integer(_) | DeValue::Float(_)) => {
-            bounds(float(value), *min, *max, &format!("`{}`", text(value)))
+            bounds(float(value), *min, *max, Measured::Number(text(value)))
         }
         (FieldType::Bool, DeValue::Boolean(_)) => Ok(()),
         (FieldType::Date, DeValue::Datetime(d)) if d.date.is_some() && d.time.is_none() => Ok(()),
@@ -169,10 +238,10 @@ fn check_default(ty: &FieldType, value: &Value<'_>) -> Result<(), (Range<usize>,
                         .iter()
                         .any(|before| to_value(before.get_ref()) == to_value(item.get_ref()))
                     {
-                        return Err((
-                            item.span(),
-                            "the default repeats an item of a `unique` list".into(),
-                        ));
+                        return Err(BadDefault {
+                            at: item.span(),
+                            problem: Problem::Repeated,
+                        });
                     }
                 }
             }
@@ -183,10 +252,10 @@ fn check_default(ty: &FieldType, value: &Value<'_>) -> Result<(), (Range<usize>,
                 match fields.get(name.get_ref().as_ref()) {
                     Some(field) => check_default(&field.kind, value)?,
                     None => {
-                        return Err((
-                            name.span(),
-                            format!("the object has no field `{}`", name.get_ref()),
-                        ));
+                        return Err(BadDefault {
+                            at: name.span(),
+                            problem: Problem::UnknownField(name.get_ref().to_string()),
+                        });
                     }
                 }
             }
@@ -194,9 +263,7 @@ fn check_default(ty: &FieldType, value: &Value<'_>) -> Result<(), (Range<usize>,
                 .iter()
                 .find(|(name, f)| !f.optional && !table.contains_key(name.as_str()))
             {
-                Some((name, _)) => fail(format!(
-                    "the default leaves out the required field `{name}`"
-                )),
+                Some((name, _)) => fail(Problem::MissingField(name.clone())),
                 None => Ok(()),
             }
         }
