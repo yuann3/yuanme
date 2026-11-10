@@ -1,4 +1,6 @@
 use crate::codes::{self, ALL, AREAS, Code};
+use crate::diagnostic::OverlappingEdits;
+use crate::source::Position;
 use crate::*;
 
 // A code that exists only for these tests, shaped like the #21 example.

@@ -1,7 +1,8 @@
 use annotate_snippets::{AnnotationKind, Group, Level as Lvl, Patch, Renderer, Snippet};
 use serde_json::{Value, json};
 
-use crate::{Applicability, ChildLevel, Diagnostic, Files, Level, Span};
+use crate::diagnostic::ChildLevel;
+use crate::{Applicability, Diagnostic, Files, Level, Span};
 
 impl Level {
     fn as_str(self) -> &'static str {
