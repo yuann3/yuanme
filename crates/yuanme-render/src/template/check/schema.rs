@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use std::rc::Rc;
 
 use serde_json::{Value, json};
-use yuanme_content::config::{Config, Field as Declared, FieldType};
+use yuanme_content::config::{Collection, Config, Field as Declared, FieldType};
 use yuanme_content::fields;
 use yuanme_content::site::{self, RouteKind, Site};
 
@@ -25,60 +25,10 @@ pub(super) struct Schema {
 impl Schema {
     pub(super) fn new(config: &Config, site: &Site) -> Schema {
         let collections = site::collections(config);
-        let mut entries = BTreeMap::new();
-        for (name, c) in &collections {
-            let mut fields: BTreeMap<String, Field> = c
-                .fields
-                .iter()
-                .map(|(k, f)| (k.clone(), declared(&format!("entry<{name}>.{k}"), f)))
-                .collect();
-            let dated = fields.get("date").is_some_and(|f| !f.optional);
-            let heading = obj(
-                "heading",
-                [
-                    ("id", Ty::Str, false),
-                    ("text", Ty::Str, false),
-                    ("level", Ty::Int, false),
-                ],
-            );
-            for (k, ty, optional) in [
-                ("title", Ty::Str, false),
-                ("slug", Ty::Str, false),
-                ("draft", Ty::Bool, false),
-                ("unlisted", Ty::Bool, false),
-                ("date", Ty::Date, !dated),
-                ("updated", Ty::Date, true),
-                ("modified", Ty::Date, !dated),
-                ("url", Ty::Url, false),
-                ("content", Ty::Slot, false),
-                ("headings", Ty::List(Rc::new(heading)), false),
-                ("word_count", Ty::Int, false),
-                ("reading_time", Ty::Int, false),
-            ] {
-                fields.insert(k.into(), Field { ty, optional });
-            }
-            for (t, taxonomy) in &config.taxonomies {
-                if taxonomy.collections.contains(name) {
-                    let field = match taxonomy.single {
-                        true => Field {
-                            ty: Ty::Str,
-                            optional: true,
-                        },
-                        false => Field {
-                            ty: Ty::List(Rc::new(Ty::Str)),
-                            optional: false,
-                        },
-                    };
-                    fields.insert(t.clone(), field);
-                }
-            }
-            let entry = Ty::Obj(Rc::new(Obj {
-                name: format!("entry<{name}>"),
-                fields,
-                open: false,
-            }));
-            entries.insert(name.clone(), entry);
-        }
+        let entries: BTreeMap<String, Ty> = collections
+            .iter()
+            .map(|(name, c)| (name.clone(), entry(config, name, c)))
+            .collect();
         let term = obj(
             "term",
             [
@@ -252,6 +202,61 @@ impl Schema {
             ),
         }
     }
+}
+
+/// The type of an Entry of the Collection `name`: its declared fields,
+/// what the Engine derives, and its Taxonomies' fields.
+fn entry(config: &Config, name: &str, c: &Collection) -> Ty {
+    let mut fields: BTreeMap<String, Field> = c
+        .fields
+        .iter()
+        .map(|(k, f)| (k.clone(), declared(&format!("entry<{name}>.{k}"), f)))
+        .collect();
+    let dated = fields.get("date").is_some_and(|f| !f.optional);
+    let heading = obj(
+        "heading",
+        [
+            ("id", Ty::Str, false),
+            ("text", Ty::Str, false),
+            ("level", Ty::Int, false),
+        ],
+    );
+    for (k, ty, optional) in [
+        ("title", Ty::Str, false),
+        ("slug", Ty::Str, false),
+        ("draft", Ty::Bool, false),
+        ("unlisted", Ty::Bool, false),
+        ("date", Ty::Date, !dated),
+        ("updated", Ty::Date, true),
+        ("modified", Ty::Date, !dated),
+        ("url", Ty::Url, false),
+        ("content", Ty::Slot, false),
+        ("headings", Ty::List(Rc::new(heading)), false),
+        ("word_count", Ty::Int, false),
+        ("reading_time", Ty::Int, false),
+    ] {
+        fields.insert(k.into(), Field { ty, optional });
+    }
+    for (t, taxonomy) in &config.taxonomies {
+        if taxonomy.collections.iter().any(|n| n == name) {
+            let field = match taxonomy.single {
+                true => Field {
+                    ty: Ty::Str,
+                    optional: true,
+                },
+                false => Field {
+                    ty: Ty::List(Rc::new(Ty::Str)),
+                    optional: false,
+                },
+            };
+            fields.insert(t.clone(), field);
+        }
+    }
+    Ty::Obj(Rc::new(Obj {
+        name: format!("entry<{name}>"),
+        fields,
+        open: false,
+    }))
 }
 
 /// The draft 2020-12 JSON Schema of what each kind of Route's Template
