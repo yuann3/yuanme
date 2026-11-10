@@ -26,6 +26,7 @@ use yuanme_render::template::scope;
 
 use checks::{budgets, heavy, links};
 use content::{bodies, highlight};
+use image::resolve::Images;
 
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
@@ -170,9 +171,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     }
     let (code, more) = highlight::code(&site, &sources, cache);
     diagnostics.extend(more);
-    let images = Arc::new(image::resolve::Images::new(
-        inputs, cache, &config, &templates,
-    ));
+    let images = Arc::new(Images::new(inputs, cache, &config, &templates));
     let (pictures, more) = images.bodies(&site);
     diagnostics.extend(more);
     let bodies = bodies::bodies(&site, &code, pictures, cache, mode == Mode::Dev);
@@ -249,15 +248,13 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let math_font = math::stylesheet(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
     let mut files = hashing::link(pages, assets, cache, mode == Mode::Dev);
     files.extend(statics);
-    files.extend(image::resolve::copies(inputs, &used));
+    files.extend(used.copies(inputs));
     let fallback = Span {
         file: config.file,
         range: 0..0,
     };
     if mode.encodes() {
-        diagnostics.extend(image::resolve::encode(
-            inputs, cache, &used, &mut files, &fallback,
-        ));
+        diagnostics.extend(used.encode(inputs, cache, &mut files, &fallback));
     }
     let heavy = heavy::heavy(inputs, &config.images, &files, &used);
     let more = links::links(

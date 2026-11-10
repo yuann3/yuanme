@@ -44,6 +44,68 @@ pub(crate) struct Used {
     pub at: BTreeMap<String, Span>,
 }
 
+impl Used {
+    /// Each image copied with a hash, as the assets stage copies a file.
+    pub(crate) fn copies<'a>(
+        &'a self,
+        inputs: &'a Inputs,
+    ) -> impl Iterator<Item = (String, Output)> + 'a {
+        self.copies.iter().map(|(path, source)| {
+            let input = &inputs.files[source];
+            let body = match &input.bytes {
+                Some(bytes) => Body::Bytes(bytes.clone()),
+                None => Body::Input(source.clone()),
+            };
+            let output = Output {
+                body,
+                hash: input.hash,
+            };
+            (path.clone(), output)
+        })
+    }
+
+    /// Encodes every variant the Pages name into `files`, each source once,
+    /// with an error where a source is first named for each that fails.
+    pub(crate) fn encode(
+        &self,
+        inputs: &Inputs,
+        cache: &mut Cache,
+        files: &mut BTreeMap<String, Output>,
+        fallback: &Span,
+    ) -> Vec<Diagnostic> {
+        // `image()` can set a quality of its own, so not every variant has the
+        // same settings.
+        let mut groups: Vec<(&Settings, Vec<Variant>)> = Vec::new();
+        for (variant, settings) in self.variants.values() {
+            match groups.iter_mut().find(|(s, _)| *s == settings) {
+                Some((_, group)) => group.push(variant.clone()),
+                None => groups.push((settings, vec![variant.clone()])),
+            }
+        }
+        let mut failed = BTreeMap::new();
+        for (settings, variants) in groups {
+            let outputs = image::encode(cache, inputs, &variants, settings);
+            for (variant, output) in variants.into_iter().zip(outputs) {
+                match output {
+                    Ok(output) => {
+                        files.insert(variant.path, output);
+                    }
+                    Err(e) => {
+                        failed.entry(variant.source).or_insert(e);
+                    }
+                }
+            }
+        }
+        failed
+            .into_iter()
+            .map(|(source, e)| {
+                let at = self.at.get(&source).unwrap_or(fallback).clone();
+                Diagnostic::error(&codes::IMAGE_INVALID, format!("`{source}`: {e}"), at)
+            })
+            .collect()
+    }
+}
+
 /// Every image of the project, probed, and what render has used.
 pub(crate) struct Images {
     /// Holds no entries: it names variants with the build's Engine version.
@@ -447,64 +509,4 @@ fn svg_size(bytes: &[u8]) -> Option<(u32, u32)> {
         }
     };
     Some((width.round() as u32, height.round() as u32)).filter(|&(w, h)| w > 0 && h > 0)
-}
-
-/// Each image copied with a hash, as the assets stage copies a file.
-pub(crate) fn copies<'a>(
-    inputs: &'a Inputs,
-    used: &'a Used,
-) -> impl Iterator<Item = (String, Output)> + 'a {
-    used.copies.iter().map(|(path, source)| {
-        let input = &inputs.files[source];
-        let body = match &input.bytes {
-            Some(bytes) => Body::Bytes(bytes.clone()),
-            None => Body::Input(source.clone()),
-        };
-        let output = Output {
-            body,
-            hash: input.hash,
-        };
-        (path.clone(), output)
-    })
-}
-
-/// Encodes every variant the Pages name into `files`, each source once,
-/// with an error where a source is first named for each that fails.
-pub(crate) fn encode(
-    inputs: &Inputs,
-    cache: &mut Cache,
-    used: &Used,
-    files: &mut BTreeMap<String, Output>,
-    fallback: &Span,
-) -> Vec<Diagnostic> {
-    // `image()` can set a quality of its own, so not every variant has the
-    // same settings.
-    let mut groups: Vec<(&Settings, Vec<Variant>)> = Vec::new();
-    for (variant, settings) in used.variants.values() {
-        match groups.iter_mut().find(|(s, _)| *s == settings) {
-            Some((_, group)) => group.push(variant.clone()),
-            None => groups.push((settings, vec![variant.clone()])),
-        }
-    }
-    let mut failed = BTreeMap::new();
-    for (settings, variants) in groups {
-        let outputs = image::encode(cache, inputs, &variants, settings);
-        for (variant, output) in variants.into_iter().zip(outputs) {
-            match output {
-                Ok(output) => {
-                    files.insert(variant.path, output);
-                }
-                Err(e) => {
-                    failed.entry(variant.source).or_insert(e);
-                }
-            }
-        }
-    }
-    failed
-        .into_iter()
-        .map(|(source, e)| {
-            let at = used.at.get(&source).unwrap_or(fallback).clone();
-            Diagnostic::error(&codes::IMAGE_INVALID, format!("`{source}`: {e}"), at)
-        })
-        .collect()
 }
