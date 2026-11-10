@@ -111,7 +111,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     docs::write(&root.join(".yuanme/docs"), ENGINE_VERSION)?;
     // For the Author's editor, whether or not the build checks types.
     yuanme_engine::write_types(&root)?;
-    if let Command::Build { .. } | Command::Check(_) | Command::Dev(DevArgs { manage: None, .. }) =
+    if let Command::Build(_) | Command::Check(_) | Command::Dev(DevArgs { manage: None, .. }) =
         cli.command
     {
         // Only for a project this Engine can build: an older one's files
@@ -124,15 +124,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
         }
     }
     match cli.command {
-        Command::Build {
-            check,
-            strict_budgets,
-            clean,
-            out: out_dir,
-        } => {
-            let out_dir = out_dir.map(|d| root.join(d));
-            build::run(&root, out_dir, clean, &check, strict_budgets, out)
-        }
+        Command::Build(args) => build::run(&root, args, out),
         Command::Check(args) => check::run(&root, &args, out),
         Command::Dev(args) => match args.manage {
             Some(Manage::Status) => dev::running::status(&root, *out),

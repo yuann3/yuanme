@@ -55,20 +55,7 @@ pub(crate) enum Command {
         host: Option<String>,
     },
     /// Build the Site into the output directory.
-    Build {
-        #[command(flatten)]
-        check: CheckArgs,
-        /// Make every warning about a Site budget an error, as `budgets.strict` does.
-        #[arg(long)]
-        strict_budgets: bool,
-        /// Empty the output directory first, files yuanme didn't write included.
-        #[arg(long)]
-        clean: bool,
-        /// The output directory, from the project root. By default `dist`, or
-        /// `.vercel/output` with the vercel adapter.
-        #[arg(long, value_name = "DIR")]
-        out: Option<PathBuf>,
-    },
+    Build(BuildArgs),
     /// Report every Diagnostic `build` would, rendering every Page in memory and writing none.
     Check(CheckArgs),
     /// Serve the Site with its Drafts from memory, and rebuild it on every change.
@@ -117,6 +104,22 @@ pub(crate) enum Itself {
         #[arg(long, conflicts_with = "version")]
         check: bool,
     },
+}
+
+#[derive(Args)]
+pub(crate) struct BuildArgs {
+    #[command(flatten)]
+    pub(crate) check: CheckArgs,
+    /// Make every warning about a Site budget an error, as `budgets.strict` does.
+    #[arg(long)]
+    pub(crate) strict_budgets: bool,
+    /// Empty the output directory first, files yuanme didn't write included.
+    #[arg(long)]
+    pub(crate) clean: bool,
+    /// The output directory, from the project root. By default `dist`, or
+    /// `.vercel/output` with the vercel adapter.
+    #[arg(long, value_name = "DIR")]
+    pub(crate) out: Option<PathBuf>,
 }
 
 #[derive(Args)]

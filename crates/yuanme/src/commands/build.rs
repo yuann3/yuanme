@@ -3,25 +3,25 @@
 
 use std::fs;
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::Instant;
 
 use yuanme_engine::Mode;
 
-use crate::cli::CheckArgs;
+use crate::cli::BuildArgs;
 use crate::events::Event;
 use crate::out::{Out, counts, finish, plural};
 use crate::project::{self, Run, sync, url_of};
 use crate::{Error, report, schemas};
 
-pub(crate) fn run(
-    root: &Path,
-    out_dir: Option<PathBuf>,
-    clean: bool,
-    args: &CheckArgs,
-    strict_budgets: bool,
-    out: &Out,
-) -> Result<u8, Error> {
+pub(crate) fn run(root: &Path, args: BuildArgs, out: &Out) -> Result<u8, Error> {
+    let BuildArgs {
+        check: args,
+        strict_budgets,
+        clean,
+        out: out_dir,
+    } = args;
+    let out_dir = out_dir.map(|d| root.join(d));
     if let Some(dir) = out_dir.as_ref().filter(|d| root.starts_with(d)) {
         return Err(Error::BadCommand(format!(
             "--out {} would hold the project itself",
