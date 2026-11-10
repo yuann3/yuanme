@@ -7,6 +7,12 @@
 //! It reads each Template as the Author wrote it, so its spans need no
 //! map; render errors in a Template that scoped styles rewrite are mapped
 //! back to it (ADR 0006).
+//!
+//! Pass 1, in `signatures`, reads every macro's signature and the props
+//! and vars comments of `headers`. Pass 2 and pass 3, in `walk`, check
+//! each Component's body and then each Route's Template, statement by
+//! statement in `stmt` and expression by expression in `infer`, `filters`
+//! and `calls`, against the `types` of what `schema` says a Page sees.
 
 mod calls;
 mod filters;

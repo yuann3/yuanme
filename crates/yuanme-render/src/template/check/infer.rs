@@ -23,6 +23,8 @@ const GLOBALS: [&str; 6] = [
     "yuanme",
 ];
 
+/// For "did you mean", as `FILTERS` is: minijinja can't list its tests,
+/// so whether one exists is asked of the Environment.
 #[rustfmt::skip]
 const TESTS: &[&str] = &[
     "defined", "undefined", "none", "safe", "escaped", "boolean", "odd", "even", "divisibleby",
