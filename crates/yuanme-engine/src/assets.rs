@@ -21,6 +21,7 @@ use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Level, S
 use yuanme_render::template::{Page, scope};
 
 use crate::hashing::{Asset, placeholder};
+use crate::url::{has_scheme, normalize, percent_decode, suffix};
 use crate::{Body, Bundle, Cache, Inputs};
 
 /// The stylesheet holding every used Template's Sidecar CSS.
@@ -607,11 +608,6 @@ enum Use {
     Url(String),
 }
 
-/// The `?query#fragment` of a URL, kept after its path is replaced.
-pub(crate) fn suffix(url: &str) -> &str {
-    url.find(['?', '#']).map_or("", |i| &url[i..])
-}
-
 fn file_name(path: &str) -> &str {
     path.rsplit('/').next().unwrap_or(path)
 }
@@ -1046,53 +1042,4 @@ fn css_string(s: &str) -> String {
     }
     out.push('"');
     out
-}
-
-pub(crate) fn has_scheme(url: &str) -> bool {
-    let Some(colon) = url.find(':') else {
-        return false;
-    };
-    let scheme = &url[..colon];
-    scheme.starts_with(|c: char| c.is_ascii_alphabetic())
-        && scheme
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || "+-.".contains(c))
-}
-
-/// `/a/./b/../c` → `/a/c`. A `..` above the root stays at the root, as
-/// browsers resolve it.
-pub(crate) fn normalize(path: &str) -> String {
-    let segments: Vec<&str> = path[1..].split('/').collect();
-    let mut out: Vec<&str> = Vec::new();
-    for (i, segment) in segments.iter().enumerate() {
-        let last = i + 1 == segments.len();
-        match *segment {
-            "." => {}
-            ".." => {
-                out.pop();
-            }
-            s => out.push(s),
-        }
-        if last && matches!(*segment, "." | "..") {
-            out.push("");
-        }
-    }
-    format!("/{}", out.join("/"))
-}
-
-pub(crate) fn percent_decode(path: &str) -> Option<String> {
-    let bytes = path.as_bytes();
-    let mut out = Vec::with_capacity(bytes.len());
-    let mut i = 0;
-    while i < bytes.len() {
-        if bytes[i] == b'%' {
-            let hex = path.get(i + 1..i + 3)?;
-            out.push(u8::from_str_radix(hex, 16).ok()?);
-            i += 3;
-        } else {
-            out.push(bytes[i]);
-            i += 1;
-        }
-    }
-    String::from_utf8(out).ok()
 }

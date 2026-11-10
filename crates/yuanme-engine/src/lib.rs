@@ -15,6 +15,7 @@ mod math;
 #[cfg(test)]
 mod tests;
 mod typescript;
+mod url;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;

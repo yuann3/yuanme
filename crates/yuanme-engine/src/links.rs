@@ -11,9 +11,9 @@ use yuanme_content::config::{self, Config};
 use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 
-use crate::assets::{has_scheme, normalize, percent_decode, suffix};
 use crate::image::{Settings, Variant};
 use crate::images::{self, Heavy};
+use crate::url::{internal, normalize, percent_decode, suffix, url_of};
 use crate::{Body, Cache, Inputs, Output};
 
 /// What a link on the Site's origin finds.
@@ -202,48 +202,6 @@ pub(crate) fn links(
     out
 }
 
-/// The path from the root that `url`, written in the Page at `base`, names
-/// on the Site's origin, decoded and without its query and fragment, and
-/// whether `url` was absolute. `None` for another origin, a scheme such as
-/// `mailto:`, or a fragment alone.
-pub(crate) fn internal(url: &str, base: &str, origin: &str) -> Option<(String, bool)> {
-    if url.is_empty() || url.starts_with('#') {
-        return None;
-    }
-    let (written, absolute) = if url.starts_with("//") || has_scheme(url) {
-        let (scheme, rest) = match url.strip_prefix("//") {
-            Some(rest) => (origin.split_once("://")?.0, rest),
-            None => url.split_once("://")?,
-        };
-        if !scheme.eq_ignore_ascii_case("http") && !scheme.eq_ignore_ascii_case("https") {
-            return None;
-        }
-        let end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
-        let (_, site_host) = origin.split_once("://")?;
-        let host = &rest[..end];
-        let same = host.eq_ignore_ascii_case(site_host);
-        // `www.` and the apex are one Site, which the host redirects
-        // between (#10).
-        let www = host.strip_prefix("www.") == Some(site_host)
-            || site_host.strip_prefix("www.") == Some(host);
-        if !same && !www {
-            return None;
-        }
-        let path = match &rest[end..] {
-            p if p.starts_with('/') => p.to_string(),
-            p => format!("/{p}"),
-        };
-        (path, true)
-    } else if url.starts_with('/') {
-        (url.to_string(), false)
-    } else {
-        let dir = &base[..base.rfind('/').expect("from the root") + 1];
-        (format!("{dir}{url}"), false)
-    };
-    let path = &written[..written.len() - suffix(&written).len()];
-    Some((normalize(&percent_decode(path)?), absolute))
-}
-
 /// Whether `url` is on the Site's exact origin, as it must be to resolve:
 /// another scheme, or `www.` against the apex, is a redirect.
 fn on_origin(url: &str, absolute: bool, origin: &str) -> bool {
@@ -302,14 +260,6 @@ fn verdict(
         Verdict::Redirect(format!("{path}/"))
     } else {
         Verdict::Broken
-    }
-}
-
-/// The URL a visitor loads a file at.
-fn url_of(path: &str) -> String {
-    match path.strip_suffix("index.html") {
-        Some(dir) if dir.is_empty() || dir.ends_with('/') => format!("/{dir}"),
-        _ => format!("/{path}"),
     }
 }
 

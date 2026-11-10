@@ -12,6 +12,7 @@ use rayon::prelude::*;
 use yuanme_content::config::{Adapter, Config, HeaderRule, Host};
 use yuanme_diag::{Diagnostic, Span, codes};
 
+use crate::url::url_of;
 use crate::{Body, Build, Cache, Output};
 
 /// For hashed files, whose name changes with their bytes (#15).
@@ -96,14 +97,6 @@ fn header<'a>(
         .filter(|r| matches(r.path, url))
         .find_map(|r| r.headers.iter().find(|h| h.0.eq_ignore_ascii_case(name)))
         .map(|&(_, value, from)| (value, from))
-}
-
-/// The URL a visitor loads a file at.
-fn url_of(path: &str) -> String {
-    match path.strip_suffix("index.html") {
-        Some(dir) if dir.is_empty() || dir.ends_with('/') => format!("/{dir}"),
-        _ => format!("/{path}"),
-    }
 }
 
 /// Checks the model against `files`, the Site's, and unless `render` is

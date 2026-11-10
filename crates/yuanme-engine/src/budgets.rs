@@ -13,7 +13,7 @@ use yuanme_content::config::{self, Budget, Budgets, Config};
 use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Diagnostic, Span, codes};
 
-use crate::links::internal;
+use crate::url::{internal, suffix};
 use crate::{Body, Cache, Measured, Output, host};
 
 const FONTS: &[&str] = &[".woff2", ".woff", ".ttf", ".otf"];
@@ -277,7 +277,7 @@ fn plan<'a>(
         }
     }
     let is_font = |url: &str| {
-        let path = &url[..url.len() - crate::assets::suffix(url).len()];
+        let path = &url[..url.len() - suffix(url).len()];
         FONTS.iter().any(|e| path.ends_with(e))
     };
     for (code, base) in css {

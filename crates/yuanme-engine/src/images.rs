@@ -17,9 +17,9 @@ use yuanme_diag::{Diagnostic, Span, codes};
 use yuanme_render::html::{self, Pictures};
 use yuanme_render::image::{Error, Image, Picture, Request, picture};
 
-use crate::assets::{has_scheme, normalize, percent_decode};
 use crate::hashing::hashed_path;
 use crate::image::{self, Format, Probe, Settings, Variant};
+use crate::url::{has_scheme, normalize, percent_decode};
 use crate::{Body, Cache, Inputs, Output};
 
 /// What the pipeline makes of one image file.
