@@ -198,18 +198,12 @@ pub(crate) fn read(
     cx: &mut Cx<'_>,
 ) -> Option<Entry> {
     let (collection_name, collection) = collection;
-    let Head {
-        fields: given,
-        at: head,
-        ..
-    } = head;
-    let find = |key: &str| {
-        given
-            .iter()
-            .find(|(k, n)| k.name == key && n.value != Yaml::Null)
-            .map(|(_, n)| n)
+    let mut given = Given {
+        fields: &head.fields,
+        at: head.at.clone(),
+        path,
+        ok: true,
     };
-    let mut ok = true;
 
     let taxonomy_names: Vec<&str> = taxonomies.iter().map(|(n, _)| *n).collect();
     let extra: Vec<&str> = BUILT_IN
@@ -220,138 +214,20 @@ pub(crate) fn read(
     // A declared `date` only makes the built-in required.
     let mut schema = collection.fields.clone();
     let date_required = schema.remove("date").is_some();
-    let declared = fields::fields(&schema, &given, &extra, head.clone(), "", cx);
-    ok &= declared.is_some();
+    let declared = fields::fields(&schema, &head.fields, &extra, head.at.clone(), "", cx);
+    given.ok &= declared.is_some();
 
-    let mut built_in = |name: &str, ty: FieldType, required: bool| -> Option<Value> {
-        match find(name) {
-            Some(f) => {
-                let v = fields::value(&ty, f, name, cx);
-                ok &= v.is_some();
-                v
-            }
-            None if required => {
-                let mut d = cx.error(
-                    &codes::ENTRY_MISSING_FIELD,
-                    format!("missing field `{name}`"),
-                    head.clone(),
-                );
-                if name == "title" && head.is_empty() {
-                    let title = path
-                        .rsplit('/')
-                        .next()
-                        .unwrap_or(path)
-                        .split('.')
-                        .next()
-                        .unwrap_or("");
-                    let (insert, what) = if path.ends_with(".org") {
-                        (format!("#+TITLE: {title}\n"), "add a `#+TITLE`")
-                    } else {
-                        (
-                            format!("---\ntitle: {title}\n---\n\n"),
-                            "add front matter with a title",
-                        )
-                    };
-                    let edit = Edit {
-                        span: cx.span(0..0),
-                        replacement: insert,
-                    };
-                    d = d.suggest(what, Applicability::HasPlaceholders, vec![edit]);
-                }
-                cx.push(d);
-                ok = false;
-                None
-            }
-            None => None,
-        }
-    };
-    let string = FieldType::String {
-        min: None,
-        max: None,
-    };
-    let title = built_in("title", string.clone(), true);
-    let date = built_in("date", FieldType::Date, date_required);
-    let updated = built_in("updated", FieldType::Date, false);
-    let draft = built_in("draft", FieldType::Bool, false);
-    let unlisted = built_in("unlisted", FieldType::Bool, false);
-    let slug_field = built_in("slug", string.clone(), false);
-
-    let (slug, slug_at) = match (slug_field, find("slug")) {
-        (Some(Value::String(s)), Some(f)) => {
-            if !slug::is_valid(&s) {
-                let mut d = cx.error(
-                    &codes::ENTRY_INVALID_SLUG,
-                    format!("`{s}` is not a valid Slug"),
-                    f.span.clone(),
-                );
-                let fixed = slug::corrected(&s);
-                if !fixed.is_empty() {
-                    d = cx.fix(d, format!("use `{fixed}`"), f.span.clone(), fixed);
-                }
-                d = d.note("a Slug is lowercase letters, digits, `-` and `_`, in segments separated by `/`");
-                cx.push(d);
-                ok = false;
-            }
-            (s, f.span.clone())
-        }
-        _ => (path_slug(path, &collection.dir), 0..0),
-    };
-
-    let mut terms = BTreeMap::new();
-    for (name, taxonomy) in taxonomies {
-        let Some(f) = find(name) else { continue };
-        let list = FieldType::List {
-            items: Box::new(string.clone()),
-            unique: false,
-        };
-        let got = match (&f.value, taxonomy.single) {
-            (Yaml::Str(_), true) => fields::value(&string, f, name, cx).map(|v| vec![v]),
-            (Yaml::Str(s), false) => {
-                let message = format!("`{name}` must be a list of Terms, not a string");
-                let d = cx.error(&codes::ENTRY_WRONG_TYPE, message, f.span.clone());
-                cx.push(cx.fix(d, "make it a list".into(), f.span.clone(), format!("[{s}]")));
-                None
-            }
-            (_, true) => {
-                let message = format!("`{name}` holds one Term, as a string, not {}", f.kind());
-                cx.push(
-                    cx.error(&codes::ENTRY_WRONG_TYPE, message, f.span.clone())
-                        .note(format!("`[taxonomies.{name}]` has `single = true`")),
-                );
-                None
-            }
-            (_, false) => match fields::value(&list, f, name, cx) {
-                Some(Value::List(items)) => Some(items),
-                _ => None,
-            },
-        };
-        let Some(got) = got else {
-            ok = false;
-            continue;
-        };
-        let spans: Vec<Range<usize>> = match &f.value {
-            Yaml::Seq(items) => items.iter().map(|n| n.span.clone()).collect(),
-            _ => vec![f.span.clone()],
-        };
-        let mut spelled = Vec::new();
-        for (v, at) in got.into_iter().zip(spans) {
-            let Value::String(term) = v else {
-                unreachable!("checked as strings")
-            };
-            if slug::term_slug(&term).is_empty() {
-                let message =
-                    format!("the Term `{term}` has no letters or digits to make a URL from");
-                cx.push(cx.error(&codes::ENTRY_INVALID_VALUE, message, at));
-                ok = false;
-            } else if !spelled.iter().any(|(t, _)| *t == term) {
-                spelled.push((term, at));
-            }
-        }
-        terms.insert(name.to_string(), spelled);
-    }
+    let title = given.built_in("title", STRING, true, cx);
+    let date = given.built_in("date", FieldType::Date, date_required, cx);
+    let updated = given.built_in("updated", FieldType::Date, false, cx);
+    let draft = given.built_in("draft", FieldType::Bool, false, cx);
+    let unlisted = given.built_in("unlisted", FieldType::Bool, false, cx);
+    let slug_field = given.built_in("slug", STRING, false, cx);
+    let (slug, slug_at) = given.slug(slug_field, &collection.dir, cx);
+    let terms = given.terms(taxonomies, cx);
 
     let document = document?;
-    if !ok {
+    if !given.ok {
         return None;
     }
     let date_of = |v: Option<Value>| match v {
@@ -371,18 +247,196 @@ pub(crate) fn read(
         slug,
         title: match title {
             Some(Value::String(t)) => t,
-            _ => unreachable!("required and checked"),
+            _ => unreachable!("`title` is required, and checked as a string"),
         },
         date: date_of(date),
         updated: date_of(updated),
         draft: flag(draft),
         unlisted: flag(unlisted),
-        fields: declared.expect("checked"),
+        fields: declared.expect("`ok` is false when the declared fields failed"),
         terms,
         word_count: document.word_count(),
         document: Arc::new(document),
         slug_at,
     })
+}
+
+/// The type of `title`, `slug` and each Term.
+const STRING: FieldType = FieldType::String {
+    min: None,
+    max: None,
+};
+
+/// The fields an Entry's file gives, checked one at a time. A field that
+/// fails reports why and clears `ok`, and the rest are still checked, so
+/// every mistake in the file is reported at once.
+struct Given<'a> {
+    fields: &'a [(Key, Node)],
+    /// Where the fields are written, for a missing field.
+    at: Range<usize>,
+    path: &'a str,
+    ok: bool,
+}
+
+impl<'a> Given<'a> {
+    /// A field the file gives a value, not null.
+    fn find(&self, key: &str) -> Option<&'a Node> {
+        self.fields
+            .iter()
+            .find(|(k, n)| k.name == key && n.value != Yaml::Null)
+            .map(|(_, n)| n)
+    }
+
+    /// A field every Entry has, as `ty`.
+    fn built_in(
+        &mut self,
+        name: &str,
+        ty: FieldType,
+        required: bool,
+        cx: &mut Cx<'_>,
+    ) -> Option<Value> {
+        match self.find(name) {
+            Some(f) => {
+                let v = fields::value(&ty, f, name, cx);
+                self.ok &= v.is_some();
+                v
+            }
+            None if required => {
+                let d = self.missing(name, cx);
+                cx.push(d);
+                self.ok = false;
+                None
+            }
+            None => None,
+        }
+    }
+
+    /// A required field left out. A file with no fields at all is offered
+    /// a title from its name.
+    fn missing(&self, name: &str, cx: &Cx<'_>) -> Diagnostic {
+        let (head, path) = (&self.at, self.path);
+        let mut d = cx.error(
+            &codes::ENTRY_MISSING_FIELD,
+            format!("missing field `{name}`"),
+            head.clone(),
+        );
+        if name == "title" && head.is_empty() {
+            let title = path
+                .rsplit('/')
+                .next()
+                .unwrap_or(path)
+                .split('.')
+                .next()
+                .unwrap_or("");
+            let (insert, what) = if path.ends_with(".org") {
+                (format!("#+TITLE: {title}\n"), "add a `#+TITLE`")
+            } else {
+                (
+                    format!("---\ntitle: {title}\n---\n\n"),
+                    "add front matter with a title",
+                )
+            };
+            let edit = Edit {
+                span: cx.span(0..0),
+                replacement: insert,
+            };
+            d = d.suggest(what, Applicability::HasPlaceholders, vec![edit]);
+        }
+        d
+    }
+
+    /// The Slug `slug:` gives, `value`, if it does; otherwise the one from
+    /// the file's path in `dir`. And where it is given.
+    fn slug(&mut self, value: Option<Value>, dir: &str, cx: &mut Cx<'_>) -> (String, Range<usize>) {
+        let (Some(Value::String(s)), Some(f)) = (value, self.find("slug")) else {
+            return (path_slug(self.path, dir), 0..0);
+        };
+        if !slug::is_valid(&s) {
+            let mut d = cx.error(
+                &codes::ENTRY_INVALID_SLUG,
+                format!("`{s}` is not a valid Slug"),
+                f.span.clone(),
+            );
+            let fixed = slug::corrected(&s);
+            if !fixed.is_empty() {
+                d = cx.fix(d, format!("use `{fixed}`"), f.span.clone(), fixed);
+            }
+            d = d.note(
+                "a Slug is lowercase letters, digits, `-` and `_`, in segments separated by `/`",
+            );
+            cx.push(d);
+            self.ok = false;
+        }
+        (s, f.span.clone())
+    }
+
+    /// The Terms the Entry has in each of `taxonomies`, as it spells them.
+    fn terms(
+        &mut self,
+        taxonomies: &[(&str, &Taxonomy)],
+        cx: &mut Cx<'_>,
+    ) -> BTreeMap<String, Vec<(String, Range<usize>)>> {
+        let mut terms = BTreeMap::new();
+        for (name, taxonomy) in taxonomies {
+            let Some(f) = self.find(name) else { continue };
+            let Some(got) = term_values(name, taxonomy, f, cx) else {
+                self.ok = false;
+                continue;
+            };
+            let spans: Vec<Range<usize>> = match &f.value {
+                Yaml::Seq(items) => items.iter().map(|n| n.span.clone()).collect(),
+                _ => vec![f.span.clone()],
+            };
+            let mut spelled = Vec::new();
+            for (v, at) in got.into_iter().zip(spans) {
+                let Value::String(term) = v else {
+                    unreachable!("checked as strings")
+                };
+                if slug::term_slug(&term).is_empty() {
+                    let message =
+                        format!("the Term `{term}` has no letters or digits to make a URL from");
+                    cx.push(cx.error(&codes::ENTRY_INVALID_VALUE, message, at));
+                    self.ok = false;
+                } else if !spelled.iter().any(|(t, _)| *t == term) {
+                    spelled.push((term, at));
+                }
+            }
+            terms.insert(name.to_string(), spelled);
+        }
+        terms
+    }
+}
+
+/// The field `f` of the Taxonomy `name` as Terms: a list of strings, or one
+/// string when the Taxonomy is `single`.
+fn term_values(name: &str, taxonomy: &Taxonomy, f: &Node, cx: &mut Cx<'_>) -> Option<Vec<Value>> {
+    match (&f.value, taxonomy.single) {
+        (Yaml::Str(_), true) => fields::value(&STRING, f, name, cx).map(|v| vec![v]),
+        (Yaml::Str(s), false) => {
+            let message = format!("`{name}` must be a list of Terms, not a string");
+            let d = cx.error(&codes::ENTRY_WRONG_TYPE, message, f.span.clone());
+            cx.push(cx.fix(d, "make it a list".into(), f.span.clone(), format!("[{s}]")));
+            None
+        }
+        (_, true) => {
+            let message = format!("`{name}` holds one Term, as a string, not {}", f.kind());
+            cx.push(
+                cx.error(&codes::ENTRY_WRONG_TYPE, message, f.span.clone())
+                    .note(format!("`[taxonomies.{name}]` has `single = true`")),
+            );
+            None
+        }
+        (_, false) => {
+            let list = FieldType::List {
+                items: Box::new(STRING),
+                unique: false,
+            };
+            match fields::value(&list, f, name, cx) {
+                Some(Value::List(items)) => Some(items),
+                _ => None,
+            }
+        }
+    }
 }
 
 /// The Slug from a file's path in its Collection: each folder and the file
