@@ -3,9 +3,10 @@
 //! `lib.*.d.ts` beside it, so its download is a `.tgz` the cache keeps
 //! unpacked.
 
+use std::fmt;
 use std::io;
-use std::path::Path;
-use std::process::Command;
+use std::path::{Path, PathBuf};
+use std::process::{Command, ExitStatus};
 
 use crate::tool::{Sha256, Tool};
 
@@ -90,28 +91,68 @@ pub fn tool() -> Option<Tool> {
 /// Runs `tsc` at `binary` from the project root `root` on the tsconfig at
 /// `config`, which must set `noEmit`, and returns what it prints: one
 /// line per error, as [`errors`] reads them, or nothing.
-pub fn run(binary: &Path, root: &Path, config: &Path) -> Result<String, String> {
+pub fn run(binary: &Path, root: &Path, config: &Path) -> Result<String, Error> {
     let output = Command::new(binary)
         .current_dir(root)
         .arg("--project")
         .arg(config)
         .args(["--pretty", "false"])
         .output()
-        .map_err(|e: io::Error| format!("can't run `{}`: {e}", binary.display()))?;
+        .map_err(|source| Error::Start {
+            binary: binary.to_path_buf(),
+            source,
+        })?;
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     // 1 and 2 are type errors found, with or without output written.
     match output.status.code() {
         Some(0) => Ok(stdout),
         Some(1 | 2) if !errors(&stdout).is_empty() => Ok(stdout),
-        _ => Err(format!(
-            "`{}` failed ({}): {}{}",
-            binary.display(),
-            output.status,
-            stdout.trim(),
-            String::from_utf8_lossy(&output.stderr).trim()
-        )),
+        _ => Err(Error::Failed {
+            binary: binary.to_path_buf(),
+            status: output.status,
+            stdout,
+            stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+        }),
     }
 }
+
+/// Why [`run`] has no `tsc` output to read.
+#[derive(Debug)]
+pub enum Error {
+    /// The binary couldn't be started.
+    Start { binary: PathBuf, source: io::Error },
+    /// It exited as it does for neither a clean project nor type errors.
+    Failed {
+        binary: PathBuf,
+        status: ExitStatus,
+        stdout: String,
+        stderr: String,
+    },
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::Start { binary, source } => {
+                write!(f, "can't run `{}`: {source}", binary.display())
+            }
+            Error::Failed {
+                binary,
+                status,
+                stdout,
+                stderr,
+            } => write!(
+                f,
+                "`{}` failed ({status}): {}{}",
+                binary.display(),
+                stdout.trim(),
+                stderr.trim()
+            ),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct TypeError {

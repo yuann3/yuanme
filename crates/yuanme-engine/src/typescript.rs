@@ -177,9 +177,9 @@ fn run(root: &Path, tsconfig: &str) -> Result<String, (String, String)> {
         // Left behind, it is a few bytes in `.yuanme`.
         eprintln!("warning: could not delete {}: {e}", path.display());
     }
-    result.map_err(|message| {
+    result.map_err(|e| {
         let help = format!("set `{}` to a `tsc` that runs here", typescript::ENV);
-        (message, help)
+        (e.to_string(), help)
     })
 }
 
