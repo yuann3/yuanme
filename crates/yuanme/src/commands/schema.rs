@@ -10,7 +10,7 @@ use crate::cli::Which;
 use crate::events::Event;
 use crate::out::{Out, stdout};
 use crate::project::{self, config_or_report, site_or_report};
-use crate::{Error, SITE_ERRORS, schemas, unknown};
+use crate::{Error, SITE_ERRORS, schemas};
 
 pub(crate) fn print(out: &Out, name: &str, schema: Value) -> u8 {
     if out.json {
@@ -65,7 +65,7 @@ pub(crate) fn run(root: &Path, which: Which, out: &Out) -> Result<u8, Error> {
             true => "the Site has none".to_string(),
             false => format!("the Site has {}", choices.join(", ")),
         };
-        return Err(unknown(what, item, &choices, otherwise));
+        return Err(Error::unknown(what, item, &choices, otherwise));
     };
     Ok(print(out, &name, schema))
 }

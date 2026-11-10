@@ -9,6 +9,7 @@ mod schemas;
 #[cfg(test)]
 mod tests;
 
+use std::fmt;
 use std::fs;
 use std::io::{self, IsTerminal};
 use std::process::ExitCode;
@@ -38,11 +39,43 @@ const BAD_COMMAND: u8 = 2;
 /// yuanme couldn't finish, such as when it can't write a file.
 const INTERNAL: u8 = 101;
 
+/// Why a command couldn't finish, which picks its exit code. A module
+/// with errors of its own converts them into one of these.
 #[derive(Debug)]
 enum Error {
     BadCommand(String),
     Io(io::Error),
 }
+
+impl Error {
+    /// `name` is not one of `choices`; `otherwise` says where to look when
+    /// none is close.
+    fn unknown(what: &str, name: &str, choices: &[&str], otherwise: String) -> Error {
+        let near = config::similar(name, choices.iter().copied());
+        Error::BadCommand(match near {
+            Some(near) => format!("there is no {what} `{name}`; did you mean `{near}`?"),
+            None => format!("there is no {what} `{name}`; {otherwise}"),
+        })
+    }
+
+    fn exit_code(&self) -> u8 {
+        match self {
+            Error::BadCommand(_) => BAD_COMMAND,
+            Error::Io(_) => INTERNAL,
+        }
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::BadCommand(message) => f.write_str(message),
+            Error::Io(e) => e.fmt(f),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
 
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Error {
@@ -65,13 +98,9 @@ fn main() -> ExitCode {
     };
     ExitCode::from(match run(cli, &out) {
         Ok(code) => code,
-        Err(Error::BadCommand(message)) => {
-            eprintln!("error: {message}");
-            BAD_COMMAND
-        }
-        Err(Error::Io(e)) => {
+        Err(e) => {
             eprintln!("error: {e}");
-            INTERNAL
+            e.exit_code()
         }
     })
 }
@@ -138,14 +167,4 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
             unreachable!("answered without a project")
         }
     }
-}
-
-/// `name` is not one of `choices`; `otherwise` says where to look when
-/// none is close.
-fn unknown(what: &str, name: &str, choices: &[&str], otherwise: String) -> Error {
-    let near = config::similar(name, choices.iter().copied());
-    Error::BadCommand(match near {
-        Some(near) => format!("there is no {what} `{name}`; did you mean `{near}`?"),
-        None => format!("there is no {what} `{name}`; {otherwise}"),
-    })
 }
