@@ -6,7 +6,6 @@ mod report;
 mod schemas;
 #[cfg(test)]
 mod tests;
-mod watch;
 
 use std::fs;
 use std::io::{self, IsTerminal, Write};

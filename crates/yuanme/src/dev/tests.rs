@@ -5,9 +5,9 @@ use std::time::Duration;
 
 use yuanme_engine::{Build, Cache, Mode};
 
+use super::watch::watch;
 use super::*;
 use crate::project::load::load;
-use crate::watch::watch;
 
 const SIDECARS: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),

@@ -7,6 +7,7 @@ pub mod running;
 mod serve;
 #[cfg(test)]
 mod tests;
+mod watch;
 
 use std::collections::BTreeSet;
 use std::io;
@@ -19,9 +20,10 @@ use std::time::Instant;
 use tokio::sync::{Notify, broadcast};
 use yuanme_engine::{Build, Cache, Inputs, Mode};
 
+use watch::Batch;
+
 use crate::events::Event;
 use crate::project::load;
-use crate::watch::{self, Batch};
 use crate::{ENGINE_VERSION, Error, Out, plural};
 
 /// The port `yuanme dev` tries first, then the next ones up (#21).
