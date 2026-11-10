@@ -7,6 +7,7 @@
 //! only a warning that says nothing of where it is.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt;
 use std::ops::Range;
 
 use math_core::{LatexError, LatexToMathML, MathCoreConfig, MathDisplay};
@@ -28,16 +29,32 @@ pub(crate) struct Header {
 }
 
 /// A converter for one Entry, with `macros` defined, each a name without
-/// its backslash and a definition. The error is the index of the macro
-/// that can't be read, and why.
-pub(crate) fn converter(macros: &[(String, String)]) -> Result<LatexToMathML, (usize, String)> {
+/// its backslash and a definition.
+pub(crate) fn converter(macros: &[(String, String)]) -> Result<LatexToMathML, BadMacro> {
     let config = MathCoreConfig {
         // A `\newcommand` stays defined for the rest of the Entry (#17).
         global_group: true,
         ..Default::default()
     };
-    LatexToMathML::new(config, macros.to_vec()).map_err(|(e, i, _)| (i, message(&e)))
+    LatexToMathML::new(config, macros.to_vec())
+        .map_err(|(error, index, _)| BadMacro { index, error })
 }
+
+/// A macro math-core can't read.
+#[derive(Debug)]
+pub(crate) struct BadMacro {
+    /// Its index in the macros.
+    pub index: usize,
+    pub error: Box<LatexError>,
+}
+
+impl fmt::Display for BadMacro {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&message(&self.error))
+    }
+}
+
+impl std::error::Error for BadMacro {}
 
 /// math-core's message as a Diagnostic's: `Unknown command "\x".` reads
 /// `unknown command "\x"`.

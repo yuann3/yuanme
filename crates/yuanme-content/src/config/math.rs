@@ -65,9 +65,9 @@ pub(super) fn read(math: Option<&Table<'_>>, checker: &mut Checker) -> Math {
             (name.get_ref().to_string(), definition.to_string())
         })
         .collect();
-    if let Err((i, message)) = crate::math::converter(&macros) {
-        let (name, value) = entries(math.and_then(|m| table(m, "macros")))[i];
-        let message = format!("the macro `\\{}` can't be read: {message}", name.get_ref());
+    if let Err(e) = crate::math::converter(&macros) {
+        let (name, value) = entries(math.and_then(|m| table(m, "macros")))[e.index];
+        let message = format!("the macro `\\{}` can't be read: {e}", name.get_ref());
         checker.invalid(message, value.span());
     }
     let mut theorems = Math::default().theorems;
