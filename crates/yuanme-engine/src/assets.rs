@@ -10,6 +10,7 @@ mod scripts;
 pub(crate) mod styles;
 pub(crate) mod tailwind;
 pub(crate) mod typescript;
+mod unavailable;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;

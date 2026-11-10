@@ -15,6 +15,7 @@ use yuanme_assets::{
 use yuanme_content::Config;
 use yuanme_diag::{Diagnostic, FileId, Files, Span, codes};
 
+use super::unavailable::{Tool, Unavailable};
 use crate::{Bundle, Cache, Inputs};
 
 /// Where the types are, from the project root, which a tsconfig.json
@@ -117,9 +118,9 @@ pub fn check_types(
                 cache.insert("tsc", key, output.as_bytes());
                 output
             }
-            Err((message, help)) => {
-                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, message, at);
-                return vec![d.help(help)];
+            Err(e) => {
+                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, e.to_string(), at);
+                return vec![d.help(e.help())];
             }
         },
     };
@@ -158,8 +159,8 @@ fn tsconfig(inputs: &Inputs, roots: &BTreeSet<&str>) -> String {
 }
 
 /// One run of `tsc` on `tsconfig`, written to a file of its own in
-/// `.yuanme/` and removed, or a message and help saying why it can't run.
-fn run(root: &Path, tsconfig: &str) -> Result<String, (String, String)> {
+/// `.yuanme/` and removed.
+fn run(root: &Path, tsconfig: &str) -> Result<String, Unavailable> {
     let binary = binary()?;
     static RUNS: AtomicUsize = AtomicUsize::new(0);
     let path = root.join(format!(
@@ -167,9 +168,9 @@ fn run(root: &Path, tsconfig: &str) -> Result<String, (String, String)> {
         std::process::id(),
         RUNS.fetch_add(1, Ordering::Relaxed)
     ));
-    let can_t_write = |e: io::Error| {
-        let message = format!("can't write {}: {e}", path.display());
-        (message, "make `.yuanme` writable".to_string())
+    let can_t_write = |error| Unavailable::Tsconfig {
+        path: path.clone(),
+        error,
     };
     write_types(root).map_err(can_t_write)?;
     std::fs::write(&path, tsconfig).map_err(can_t_write)?;
@@ -178,31 +179,19 @@ fn run(root: &Path, tsconfig: &str) -> Result<String, (String, String)> {
         // Left behind, it is a few bytes in `.yuanme`.
         eprintln!("warning: could not delete {}: {e}", path.display());
     }
-    result.map_err(|e| {
-        let help = format!("set `{}` to a `tsc` that runs here", TSC_ENV);
-        (e.to_string(), help)
-    })
+    result.map_err(Unavailable::Tsc)
 }
 
-/// The pinned `tsc`, or a message and help saying why there is none.
-fn binary() -> Result<PathBuf, (String, String)> {
-    let override_help = format!(
-        "set `{}` to the `tsc` of a TypeScript {} release",
-        TSC_ENV, TSC_VERSION
-    );
+/// The pinned `tsc`.
+fn binary() -> Result<PathBuf, Unavailable> {
     let Some(tool) = tsc_tool() else {
         if let Some(path) = std::env::var_os(TSC_ENV) {
             return Ok(PathBuf::from(path));
         }
-        let platform = format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH);
-        let message = format!("TypeScript publishes no `tsc` for {platform}");
-        return Err((message, override_help));
+        return Err(Unavailable::NoRelease(Tool::Tsc));
     };
-    let Some(cache) = cache_dir() else {
-        let message = "there is no folder to keep `tsc` in: `HOME` isn't set".into();
-        return Err((message, override_help));
-    };
-    tool.binary(&cache).map_err(|e| (e.to_string(), e.help()))
+    let cache = cache_dir().ok_or(Unavailable::NoCache(Tool::Tsc))?;
+    tool.binary(&cache).map_err(Unavailable::Download)
 }
 
 /// `e` at the place `tsc` puts it, in a file of the project or of

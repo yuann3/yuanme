@@ -28,8 +28,8 @@ pub use tailwind::{
     Watch as TailwindWatch, imported as imports_tailwind, input as tailwind_input, is_tailwind,
     run as run_tailwind, tokens as tailwind_tokens, tool as tailwind_tool,
 };
-pub use tool::{cache_dir, fetch, listed, sha256};
+pub use tool::{Error as ToolError, cache_dir, fetch, listed, sha256};
 pub use typescript::{
-    ENV as TSC_ENV, TYPES as SCRIPT_TYPES, TypeError, VERSION as TSC_VERSION,
+    ENV as TSC_ENV, Error as TscError, TYPES as SCRIPT_TYPES, TypeError, VERSION as TSC_VERSION,
     errors as type_errors, run as run_tsc, tool as tsc_tool,
 };

@@ -16,6 +16,7 @@ use yuanme_diag::{Diagnostic, Files, Span, codes};
 
 use super::diagnostics::{Diagnostics, SourceFiles};
 use super::project::Project;
+use super::unavailable::{Tool, Unavailable};
 use crate::Cache;
 
 /// The CLI's unminified output for each stylesheet in `entries`, by its
@@ -65,7 +66,7 @@ pub(super) fn outputs(
         }
     }
     let inputs = inputs.finalize();
-    let mut binary: Option<Result<PathBuf, (String, String)>> = None;
+    let mut binary: Option<Result<PathBuf, Unavailable>> = None;
     let mut out = BTreeMap::new();
     for entry in entries {
         let css = project
@@ -103,7 +104,7 @@ pub(super) fn outputs(
         let binary = binary.get_or_insert_with(|| self::binary(version));
         let binary = match binary {
             Ok(binary) => binary.clone(),
-            Err((message, help)) => {
+            Err(e) => {
                 let span = match &config.tailwind.version {
                     Some((_, range)) => Span {
                         file: config.file,
@@ -111,8 +112,8 @@ pub(super) fn outputs(
                     },
                     None => at(None, sources, files),
                 };
-                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, message.clone(), span);
-                diagnostics.push(d.help(help.clone()));
+                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, e.to_string(), span);
+                diagnostics.push(d.help(e.help()));
                 continue;
             }
         };
@@ -161,22 +162,16 @@ pub(super) fn outputs(
     out
 }
 
-/// The CLI for `version`, or a message and help saying why there is none.
-fn binary(version: &str) -> Result<PathBuf, (String, String)> {
-    let override_help = format!("set `{}` to a Tailwind CLI binary", TAILWIND_ENV);
+/// The CLI for `version`.
+fn binary(version: &str) -> Result<PathBuf, Unavailable> {
     let Some(tool) = tailwind_tool(version) else {
         if let Some(path) = std::env::var_os(TAILWIND_ENV) {
             return Ok(PathBuf::from(path));
         }
-        let platform = format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH);
-        let message = format!("Tailwind publishes no CLI for {platform}");
-        return Err((message, override_help));
+        return Err(Unavailable::NoRelease(Tool::Tailwind));
     };
-    let Some(cache) = cache_dir() else {
-        let message = "there is no folder to keep the Tailwind CLI in: `HOME` isn't set".into();
-        return Err((message, override_help));
-    };
-    tool.binary(&cache).map_err(|e| (e.to_string(), e.help()))
+    let cache = cache_dir().ok_or(Unavailable::NoCache(Tool::Tailwind))?;
+    tool.binary(&cache).map_err(Unavailable::Download)
 }
 
 /// One run of the CLI, from `dir`, on the stylesheet `css` with the token
