@@ -108,240 +108,304 @@ fn header<'a>(
         .map(|&(_, value, from)| (value, from))
 }
 
-/// Checks the model against `files`, the Site's, and unless `render` is
-/// false, as in dev, adds the adapter's files to them. For Vercel every
-/// file moves under `static/`, as the Build Output API reads them.
-pub(crate) fn host(
-    config: &Config,
-    mut files: BTreeMap<String, Output>,
-    render: bool,
-    cache: &mut Cache,
-) -> (BTreeMap<String, Output>, Vec<Diagnostic>) {
-    let at = |range: Range<usize>| Span {
-        file: config.file,
-        range,
-    };
-    let host = &config.host;
-    let rules = rules(config);
-    let mut diagnostics = Vec::new();
+/// The model of one Site's routing, checked and rendered by [`Model::run`]
+/// one step at a time.
+pub(crate) struct Model<'a> {
+    config: &'a Config,
+    rules: Vec<Rule<'a>>,
+    diagnostics: Vec<Diagnostic>,
+}
 
-    // Limits.
-    if let Some(rule) = rules.get(HEADER_RULES) {
-        let author = rule.headers[0].2.expect("yuanme's rules come first");
-        let message = format!(
-            "this is header rule {}, counting yuanme's 2 cache rules, but Cloudflare accepts {HEADER_RULES}",
-            HEADER_RULES + 1
-        );
-        diagnostics.push(
-            Diagnostic::error(&codes::HOST_OVER_LIMIT, message, at(author.path_at.clone()))
-                .help("merge rules: a `*` in a path, such as `/fonts/*`, covers many files"),
-        );
+impl<'a> Model<'a> {
+    pub(crate) fn new(config: &'a Config) -> Model<'a> {
+        Model {
+            config,
+            rules: rules(config),
+            diagnostics: Vec::new(),
+        }
     }
-    if let Some(redirect) = host.redirects.get(REDIRECTS) {
-        let message = format!(
-            "this is redirect {}, but Cloudflare accepts {REDIRECTS}",
-            REDIRECTS + 1
-        );
-        diagnostics.push(Diagnostic::error(
-            &codes::HOST_OVER_LIMIT,
-            message,
-            at(redirect.from_at.clone()),
-        ));
+
+    /// Checks the model against `files`, the Site's, and unless `render` is
+    /// false, as in dev, adds the adapter's files to them. For Vercel every
+    /// file moves under `static/`, as the Build Output API reads them.
+    pub(crate) fn run(
+        mut self,
+        files: BTreeMap<String, Output>,
+        render: bool,
+        cache: &mut Cache,
+    ) -> (BTreeMap<String, Output>, Vec<Diagnostic>) {
+        self.check_limits();
+        self.check_redirects(&files);
+        self.check_cache_rules(&files);
+        self.check_unsupported();
+        let failed = self
+            .diagnostics
+            .iter()
+            .any(|d| d.level == yuanme_diag::Level::Error);
+        if !render || failed {
+            return (files, self.diagnostics);
+        }
+        let written = self.adapter_files(&files, cache);
+        let mut files = self.add(files, written);
+        if self.config.host.adapter == Adapter::Vercel {
+            files = self.vercel(files);
+        }
+        (files, self.diagnostics)
     }
-    let long = |line: &str| line.chars().count() > LINE;
-    for rule in &host.headers {
-        let lines = std::iter::once(rule.path.clone())
-            .chain(rule.headers.iter().map(|(n, v)| format!("  {n}: {v}")));
-        if let Some(line) = lines.into_iter().find(|l| long(l)) {
+
+    /// A place in Site config.
+    fn at(&self, range: Range<usize>) -> Span {
+        Span {
+            file: self.config.file,
+            range,
+        }
+    }
+
+    /// An error for each part of the model over the limits of Cloudflare,
+    /// the strictest host.
+    fn check_limits(&mut self) {
+        let host = &self.config.host;
+        if let Some(rule) = self.rules.get(HEADER_RULES) {
+            let author = rule.headers[0]
+                .2
+                .expect("yuanme's two rules come first, so this one is the Author's");
             let message = format!(
-                "this rule makes a line of {} characters in `_headers`, but Cloudflare accepts {LINE}",
-                line.chars().count()
+                "this is header rule {}, counting yuanme's 2 cache rules, but Cloudflare accepts {HEADER_RULES}",
+                HEADER_RULES + 1
             );
-            diagnostics.push(Diagnostic::error(
-                &codes::HOST_OVER_LIMIT,
-                message,
-                at(rule.path_at.clone()),
-            ));
+            let span = self.at(author.path_at.clone());
+            self.diagnostics.push(
+                Diagnostic::error(&codes::HOST_OVER_LIMIT, message, span)
+                    .help("merge rules: a `*` in a path, such as `/fonts/*`, covers many files"),
+            );
         }
-    }
-    for r in &host.redirects {
-        let line = format!("{} {} {}", r.from, r.to, r.status);
-        if long(&line) {
+        if let Some(redirect) = host.redirects.get(REDIRECTS) {
             let message = format!(
-                "this redirect makes a line of {} characters in `_redirects`, but Cloudflare accepts {LINE}",
-                line.chars().count()
+                "this is redirect {}, but Cloudflare accepts {REDIRECTS}",
+                REDIRECTS + 1
             );
-            diagnostics.push(Diagnostic::error(
-                &codes::HOST_OVER_LIMIT,
-                message,
-                at(r.from_at.clone()),
-            ));
+            let span = self.at(redirect.from_at.clone());
+            self.diagnostics
+                .push(Diagnostic::error(&codes::HOST_OVER_LIMIT, message, span));
         }
-    }
-
-    // A redirect from a URL the Site serves: hosts disagree which wins.
-    let mut served: BTreeMap<String, &str> = BTreeMap::new();
-    for path in files.keys() {
-        let url = url_of(path);
-        if url.len() > 1 && url.ends_with('/') {
-            served.insert(url.trim_end_matches('/').to_string(), path);
-        }
-        served.insert(url, path);
-        served.insert(format!("/{path}"), path);
-    }
-    for r in &host.redirects {
-        if let Some(path) = served.get(&r.from) {
-            let message = format!("`{}` is where the Site serves `{path}`", r.from);
-            diagnostics.push(
-                Diagnostic::error(
-                    &codes::HOST_REDIRECT_CONFLICT,
-                    message,
-                    at(r.from_at.clone()),
-                )
-                .note("Cloudflare would follow the redirect, and Netlify serve the file")
-                .help("remove the redirect, or the file it hides"),
-            );
-        }
-    }
-
-    // #15's static output checks: hashed assets stay immutable, and Pages
-    // revalidate, whatever the Author's rules add.
-    let mut warned: Vec<&HeaderRule> = Vec::new();
-    for path in files.keys() {
-        let (ok, what): (fn(&str) -> bool, _) = if path.starts_with("assets/") {
-            (
-                |v| v.contains("immutable"),
-                format!("`{path}`, a hashed asset, which must stay immutable"),
-            )
-        } else if path.ends_with(".html") {
-            (
-                |v| {
-                    v.contains("no-cache")
-                        || v.contains("no-store")
-                        || (v.contains("max-age=0") && v.contains("must-revalidate"))
-                },
-                format!(
-                    "the Page `{path}`, which must revalidate (`max-age=0, must-revalidate`) so a deploy shows at once"
-                ),
-            )
-        } else {
-            continue;
-        };
-        let Some((value, Some(rule))) = header(&rules, &url_of(path), "cache-control") else {
-            continue;
-        };
-        if !ok(value) && !warned.iter().any(|w| std::ptr::eq(*w, rule)) {
-            warned.push(rule);
-            let message = format!("this rule sets `Cache-Control: {value}` on {what}");
-            diagnostics.push(
-                Diagnostic::warning(&codes::HOST_CACHE_RULE, message, at(rule.path_at.clone()))
-                    .help("narrow the rule's `path` to the files it is for"),
-            );
-        }
-    }
-
-    // What the adapter can't send.
-    let cant = |message: String, range: Range<usize>| {
-        Diagnostic::warning(&codes::HOST_UNSUPPORTED, message, at(range))
-    };
-    match host.adapter {
-        Adapter::GithubPages => {
-            diagnostics.push(
-                cant(
-                    "GitHub Pages can't send headers, so hashed assets aren't cached as immutable, and every file is cached for 10 minutes".into(),
-                    host.adapter_at.clone(),
-                )
-                .note("nor does it serve brotli or HTTP/3")
-                .help("a host that can is the default: `adapter = \"cloudflare\"`"),
-            );
-            for rule in &host.headers {
-                diagnostics.push(cant(
-                    "GitHub Pages can't send this rule's headers".into(),
-                    rule.path_at.clone(),
-                ));
+        let long = |line: &str| line.chars().count() > LINE;
+        for rule in &host.headers {
+            let lines = std::iter::once(rule.path.clone())
+                .chain(rule.headers.iter().map(|(n, v)| format!("  {n}: {v}")));
+            if let Some(line) = lines.into_iter().find(|l| long(l)) {
+                let message = format!(
+                    "this rule makes a line of {} characters in `_headers`, but Cloudflare accepts {LINE}",
+                    line.chars().count()
+                );
+                let span = self.at(rule.path_at.clone());
+                self.diagnostics
+                    .push(Diagnostic::error(&codes::HOST_OVER_LIMIT, message, span));
             }
-            for r in &host.redirects {
-                if stub(&r.from).is_none() {
+        }
+        for r in &host.redirects {
+            let line = format!("{} {} {}", r.from, r.to, r.status);
+            if long(&line) {
+                let message = format!(
+                    "this redirect makes a line of {} characters in `_redirects`, but Cloudflare accepts {LINE}",
+                    line.chars().count()
+                );
+                let span = self.at(r.from_at.clone());
+                self.diagnostics
+                    .push(Diagnostic::error(&codes::HOST_OVER_LIMIT, message, span));
+            }
+        }
+    }
+
+    /// An error for a redirect from a URL the Site serves: hosts disagree
+    /// which wins.
+    fn check_redirects(&mut self, files: &BTreeMap<String, Output>) {
+        let mut served: BTreeMap<String, &str> = BTreeMap::new();
+        for path in files.keys() {
+            let url = url_of(path);
+            if url.len() > 1 && url.ends_with('/') {
+                served.insert(url.trim_end_matches('/').to_string(), path);
+            }
+            served.insert(url, path);
+            served.insert(format!("/{path}"), path);
+        }
+        for r in &self.config.host.redirects {
+            if let Some(path) = served.get(&r.from) {
+                let message = format!("`{}` is where the Site serves `{path}`", r.from);
+                let span = self.at(r.from_at.clone());
+                self.diagnostics.push(
+                    Diagnostic::error(&codes::HOST_REDIRECT_CONFLICT, message, span)
+                        .note("Cloudflare would follow the redirect, and Netlify serve the file")
+                        .help("remove the redirect, or the file it hides"),
+                );
+            }
+        }
+    }
+
+    /// #15's static output checks: hashed assets stay immutable, and Pages
+    /// revalidate, whatever the Author's rules add.
+    fn check_cache_rules(&mut self, files: &BTreeMap<String, Output>) {
+        let mut warned: Vec<&HeaderRule> = Vec::new();
+        for path in files.keys() {
+            let (ok, what): (fn(&str) -> bool, _) = if path.starts_with("assets/") {
+                (
+                    |v| v.contains("immutable"),
+                    format!("`{path}`, a hashed asset, which must stay immutable"),
+                )
+            } else if path.ends_with(".html") {
+                (
+                    |v| {
+                        v.contains("no-cache")
+                            || v.contains("no-store")
+                            || (v.contains("max-age=0") && v.contains("must-revalidate"))
+                    },
+                    format!(
+                        "the Page `{path}`, which must revalidate (`max-age=0, must-revalidate`) so a deploy shows at once"
+                    ),
+                )
+            } else {
+                continue;
+            };
+            let Some((value, Some(rule))) = header(&self.rules, &url_of(path), "cache-control")
+            else {
+                continue;
+            };
+            if !ok(value) && !warned.iter().any(|w| std::ptr::eq(*w, rule)) {
+                warned.push(rule);
+                let message = format!("this rule sets `Cache-Control: {value}` on {what}");
+                let span = self.at(rule.path_at.clone());
+                self.diagnostics.push(
+                    Diagnostic::warning(&codes::HOST_CACHE_RULE, message, span)
+                        .help("narrow the rule's `path` to the files it is for"),
+                );
+            }
+        }
+    }
+
+    /// A warning for each part of the model the adapter can't send.
+    fn check_unsupported(&mut self) {
+        let host = &self.config.host;
+        let cant = |message: String, range: Range<usize>| {
+            Diagnostic::warning(&codes::HOST_UNSUPPORTED, message, self.at(range))
+        };
+        let mut found = Vec::new();
+        match host.adapter {
+            Adapter::GithubPages => {
+                found.push(
+                    cant(
+                        "GitHub Pages can't send headers, so hashed assets aren't cached as immutable, and every file is cached for 10 minutes".into(),
+                        host.adapter_at.clone(),
+                    )
+                    .note("nor does it serve brotli or HTTP/3")
+                    .help("a host that can is the default: `adapter = \"cloudflare\"`"),
+                );
+                for rule in &host.headers {
+                    found.push(cant(
+                        "GitHub Pages can't send this rule's headers".into(),
+                        rule.path_at.clone(),
+                    ));
+                }
+                for r in &host.redirects {
+                    if stub(&r.from).is_none() {
+                        let message = format!(
+                            "GitHub Pages redirects with an HTML page, which can't be served at `{}`",
+                            r.from
+                        );
+                        found.push(cant(message, r.from_at.clone()));
+                    }
+                }
+            }
+            Adapter::Static => {
+                for rule in &host.headers {
+                    found.push(cant(
+                        "the static adapter writes no host configuration: the server must send this rule's headers".into(),
+                        rule.path_at.clone(),
+                    ));
+                }
+                for r in &host.redirects {
                     let message = format!(
-                        "GitHub Pages redirects with an HTML page, which can't be served at `{}`",
+                        "the static adapter writes no host configuration: the server must redirect `{}`",
                         r.from
                     );
-                    diagnostics.push(cant(message, r.from_at.clone()));
+                    found.push(cant(message, r.from_at.clone()));
                 }
             }
+            _ => {}
         }
-        Adapter::Static => {
-            for rule in &host.headers {
-                diagnostics.push(cant(
-                    "the static adapter writes no host configuration: the server must send this rule's headers".into(),
-                    rule.path_at.clone(),
-                ));
+        self.diagnostics.extend(found);
+    }
+
+    /// The files the adapter writes beside the Site's, by their path in the
+    /// output directory.
+    fn adapter_files(
+        &self,
+        files: &BTreeMap<String, Output>,
+        cache: &mut Cache,
+    ) -> Vec<(String, Vec<u8>)> {
+        let (config, host) = (self.config, &self.config.host);
+        let mut written: Vec<(String, Vec<u8>)> = Vec::new();
+        match host.adapter {
+            Adapter::Cloudflare | Adapter::CloudflarePages => {
+                written.push(("_headers".into(), headers_file(&self.rules, true)));
+                written.extend(redirects_file(config));
             }
-            for r in &host.redirects {
+            Adapter::Netlify => {
+                written.push(("_headers".into(), headers_file(&self.rules, false)));
+                written.extend(redirects_file(config));
+            }
+            Adapter::Vercel => {}
+            Adapter::GithubPages => {
+                // Jekyll would drop `_`-prefixed folders without it.
+                written.push((".nojekyll".into(), Vec::new()));
+                if let Some(domain) = custom_domain(&config.site.url) {
+                    written.push(("CNAME".into(), format!("{domain}\n").into_bytes()));
+                }
+                for r in &host.redirects {
+                    if let Some(path) = stub(&r.from) {
+                        written.push((path, refresh(&config.site.url, &r.to).into_bytes()));
+                    }
+                }
+            }
+            Adapter::Static if host.precompress => written.extend(precompressed(files, cache)),
+            Adapter::Static => {}
+        }
+        written
+    }
+
+    /// `files` with each of `written`, or an error where a Static file is
+    /// already at its path.
+    fn add(
+        &mut self,
+        mut files: BTreeMap<String, Output>,
+        written: Vec<(String, Vec<u8>)>,
+    ) -> BTreeMap<String, Output> {
+        let host = &self.config.host;
+        for (path, bytes) in written {
+            if files.contains_key(&path) {
                 let message = format!(
-                    "the static adapter writes no host configuration: the server must redirect `{}`",
-                    r.from
+                    "`static/{path}` and the {} adapter would both write `{path}`",
+                    host.adapter.name()
                 );
-                diagnostics.push(cant(message, r.from_at.clone()));
+                let span = self.at(host.adapter_at.clone());
+                self.diagnostics.push(
+                    Diagnostic::error(&codes::HOST_OUTPUT_COLLISION, message, span)
+                        .help("delete the Static file, and write its rules as `[[host.headers]]` and `[[host.redirects]]`"),
+                );
+                continue;
             }
+            let output = Output {
+                hash: blake3::hash(&bytes),
+                body: Body::Bytes(bytes.into()),
+            };
+            files.insert(path, output);
         }
-        _ => {}
+        files
     }
 
-    let failed = diagnostics
-        .iter()
-        .any(|d| d.level == yuanme_diag::Level::Error);
-    if !render || failed {
-        return (files, diagnostics);
-    }
-
-    let mut written: Vec<(String, Vec<u8>)> = Vec::new();
-    match host.adapter {
-        Adapter::Cloudflare | Adapter::CloudflarePages => {
-            written.push(("_headers".into(), headers_file(&rules, true)));
-            written.extend(redirects_file(config));
-        }
-        Adapter::Netlify => {
-            written.push(("_headers".into(), headers_file(&rules, false)));
-            written.extend(redirects_file(config));
-        }
-        Adapter::Vercel => {}
-        Adapter::GithubPages => {
-            // Jekyll would drop `_`-prefixed folders without it.
-            written.push((".nojekyll".into(), Vec::new()));
-            if let Some(domain) = custom_domain(&config.site.url) {
-                written.push(("CNAME".into(), format!("{domain}\n").into_bytes()));
-            }
-            for r in &host.redirects {
-                if let Some(path) = stub(&r.from) {
-                    written.push((path, refresh(&config.site.url, &r.to).into_bytes()));
-                }
-            }
-        }
-        Adapter::Static if host.precompress => written.extend(precompressed(&files, cache)),
-        Adapter::Static => {}
-    }
-    for (path, bytes) in written {
-        if files.contains_key(&path) {
-            let message = format!(
-                "`static/{path}` and the {} adapter would both write `{path}`",
-                host.adapter.name()
-            );
-            diagnostics.push(
-                Diagnostic::error(&codes::HOST_OUTPUT_COLLISION, message, at(host.adapter_at.clone()))
-                    .help("delete the Static file, and write its rules as `[[host.headers]]` and `[[host.redirects]]`"),
-            );
-            continue;
-        }
-        let output = Output {
-            hash: blake3::hash(&bytes),
-            body: Body::Bytes(bytes.into()),
-        };
-        files.insert(path, output);
-    }
-    if host.adapter == Adapter::Vercel {
-        let config_json = vercel_config(config, &rules, files.contains_key("404.html"));
-        files = files
+    /// `files` as the Build Output API reads them: under `static/`, beside
+    /// `config.json`.
+    fn vercel(&self, files: BTreeMap<String, Output>) -> BTreeMap<String, Output> {
+        let config_json = vercel_config(self.config, &self.rules, files.contains_key("404.html"));
+        let mut files: BTreeMap<String, Output> = files
             .into_iter()
             .map(|(path, output)| (format!("static/{path}"), output))
             .collect();
@@ -351,8 +415,8 @@ pub(crate) fn host(
             body: Body::Bytes(bytes.into()),
         };
         files.insert("config.json".into(), output);
+        files
     }
-    (files, diagnostics)
 }
 
 /// The output file the host serves the path `output` from, such as

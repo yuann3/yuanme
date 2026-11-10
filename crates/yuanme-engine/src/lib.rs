@@ -281,7 +281,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         }
         _ => Vec::new(),
     };
-    let (files, more) = host::host(&config, files, mode != Mode::Dev, cache);
+    let (files, more) = host::Model::new(&config).run(files, mode != Mode::Dev, cache);
     diagnostics.extend(more);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
