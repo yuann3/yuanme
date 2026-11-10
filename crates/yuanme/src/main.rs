@@ -1,15 +1,12 @@
+mod commands;
 mod dev;
-mod docs;
 mod events;
-mod init;
 mod load;
-mod new;
 mod report;
 mod schemas;
 mod sync;
 #[cfg(test)]
 mod tests;
-mod update;
 mod watch;
 
 use std::fs;
@@ -26,6 +23,7 @@ use yuanme_content::slug;
 use yuanme_diag::{Diagnostic, Files, Level};
 use yuanme_engine::{Build, Cache, Mode};
 
+use commands::{docs, init, new, update};
 use events::Event;
 
 #[global_allocator]

@@ -11,11 +11,12 @@ use clap::ValueEnum;
 use yuanme_content::config::Adapter;
 use yuanme_engine::Mode;
 
+use super::docs;
 use crate::events::Event;
-use crate::{ENGINE_VERSION, Error, Out, docs, schemas};
+use crate::{ENGINE_VERSION, Error, Out, schemas};
 
 /// Each of a Starter's files, by its path from the project root, as
-/// `crates/yuanme/src/init/STARTER/` holds it.
+/// `crates/yuanme/src/commands/init/STARTER/` holds it.
 macro_rules! files {
     ($starter:literal: $($path:literal),* $(,)?) => {
         &[$(($path, include_str!(concat!("init/", $starter, "/", $path)))),*]

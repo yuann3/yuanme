@@ -81,7 +81,7 @@ git push git@github.com:yuann3/setup-yuanme.git setup-yuanme:main
 git push git@github.com:yuann3/setup-yuanme.git setup-yuanme:refs/tags/v1.0.0
 ```
 
-Publish each later change the same way, once `setup-yuanme.yml` has passed on it, with a new tag. Then pin the new commit in `crates/yuanme/src/init/deploy/build.yml`, where `init`'s deploy workflows install yuanme:
+Publish each later change the same way, once `setup-yuanme.yml` has passed on it, with a new tag. Then pin the new commit in `crates/yuanme/src/commands/init/deploy/build.yml`, where `init`'s deploy workflows install yuanme:
 
 ```yaml
       - uses: yuann3/setup-yuanme@<commit SHA> # v1.0.0

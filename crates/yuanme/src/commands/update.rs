@@ -25,7 +25,7 @@ const RELEASES: &str = "https://github.com/yuann3/yuanme/releases";
 /// The key release-sign.yml signs with. A release binary trusts it and no
 /// other: only tests pass another to [`update`].
 #[cfg(minisign_key)]
-const KEY: Option<&str> = Some(include_str!("minisign.pub"));
+const KEY: Option<&str> = Some(include_str!("../minisign.pub"));
 #[cfg(not(minisign_key))]
 const KEY: Option<&str> = None;
 

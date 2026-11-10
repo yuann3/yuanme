@@ -6,7 +6,7 @@ use std::time::SystemTime;
 use yuanme_content::site::RouteKind;
 use yuanme_engine::{Build, Cache, Inputs, Mode};
 
-use crate::docs;
+use crate::commands::docs;
 use crate::load::load;
 use crate::sync::{Report, sync};
 
