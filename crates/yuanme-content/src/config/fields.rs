@@ -4,6 +4,8 @@ use std::collections::BTreeMap;
 use std::fmt;
 use std::ops::Range;
 
+use jiff::fmt::temporal::{Pieces, PiecesOffset};
+use jiff::tz::{Offset, TimeZone};
 use toml::de::DeValue;
 
 use super::check::{Checker, kind};
@@ -133,6 +135,8 @@ enum Problem {
     Repeated,
     UnknownField(String),
     MissingField(String),
+    /// A datetime after 9999-12-30T22:00:00Z, the last instant jiff holds.
+    PastTheLastInstant,
 }
 
 /// What `min` and `max` bound: a string's length, or the number written.
@@ -163,11 +167,36 @@ impl fmt::Display for BadDefault {
             Problem::MissingField(name) => {
                 write!(f, "the default leaves out the required field `{name}`")
             }
+            Problem::PastTheLastInstant => f.write_str(
+                "the default comes after 9999-12-30T22:00:00Z, the last instant a datetime can be (without an offset, in some time zone)",
+            ),
         }
     }
 }
 
 impl std::error::Error for BadDefault {}
+
+/// Whether a datetime default is an instant jiff holds. One without an
+/// offset is in `site.timezone`, which config doesn't know here, so it
+/// must be one in every offset a zone can have.
+fn an_instant(d: &toml::value::Datetime) -> bool {
+    let written = d.to_string();
+    let Ok(p) = Pieces::parse(&written) else {
+        return false;
+    };
+    let Some(time) = p.time() else {
+        return false;
+    };
+    let offsets = match p.offset() {
+        Some(PiecesOffset::Numeric(o)) => vec![o.offset()],
+        Some(_) => vec![Offset::UTC],
+        None => vec![Offset::MIN, Offset::MAX],
+    };
+    let dt = p.date().to_datetime(time);
+    offsets
+        .into_iter()
+        .all(|o| dt.to_zoned(TimeZone::fixed(o)).is_ok())
+}
 
 /// Whether `value` is a valid value of `kind`.
 fn check_default(ty: &FieldType, value: &Value<'_>) -> Result<(), BadDefault> {
@@ -213,7 +242,10 @@ fn check_default(ty: &FieldType, value: &Value<'_>) -> Result<(), BadDefault> {
         (FieldType::Date, DeValue::Datetime(d)) if d.date.is_some() && d.time.is_none() => Ok(()),
         (FieldType::Date, _) => not("a date such as 2025-12-12"),
         (FieldType::Datetime, DeValue::Datetime(d)) if d.date.is_some() && d.time.is_some() => {
-            Ok(())
+            match an_instant(d) {
+                true => Ok(()),
+                false => fail(Problem::PastTheLastInstant),
+            }
         }
         (FieldType::Datetime, _) => not("a datetime such as 2025-12-12T09:30:00+08:00"),
         (FieldType::Url, DeValue::String(s))

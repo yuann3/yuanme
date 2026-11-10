@@ -526,7 +526,10 @@ pub(crate) fn from_default(ty: &FieldType, v: &toml::Value, tz: &TimeZone) -> Va
                 Some(_) => TimeZone::UTC,
                 None => tz.clone(),
             };
-            Value::Datetime(dt.to_zoned(tz).expect("in range"))
+            Value::Datetime(
+                dt.to_zoned(tz)
+                    .expect("config checked the default is an instant in every offset"),
+            )
         }
         (FieldType::List { items, .. }, toml::Value::Array(a)) => {
             Value::List(a.iter().map(|v| from_default(items, v, tz)).collect())

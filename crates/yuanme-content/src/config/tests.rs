@@ -660,6 +660,18 @@ const CASES: &[(&str, &str, &str)] = &[
         "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{slug}/\"\nfields = { a = { type = \"list\", items = { type = \"int\" }, default = [1, \"2\"] } }\n",
         "\"2\"",
     ),
+    // Past jiff's last instant, 9999-12-30T22:00:00Z; without an offset,
+    // in a zone behind UTC.
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{slug}/\"\nfields = { a = { type = \"datetime\", default = 9999-12-30T22:00:01Z } }\n",
+        "9999-12-30T22:00:01Z",
+    ),
+    (
+        "config/invalid-value",
+        "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{slug}/\"\nfields = { a = { type = \"datetime\", default = 9999-12-30T00:00:00 } }\n",
+        "9999-12-30T00:00:00",
+    ),
     (
         "config/invalid-value",
         "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{slug}/\"\npaginate = 5\n",
@@ -876,6 +888,21 @@ fn each_mistake_is_one_diagnostic_with_its_code_on_the_right_text() {
         })
         .collect();
     assert!(wrong.is_empty(), "{}", wrong.join("\n"));
+}
+
+/// Up to jiff's last instant, in any offset, a datetime default is valid.
+#[test]
+fn a_datetime_default_can_be_the_last_instant() {
+    for at in [
+        "9999-12-30T22:00:00Z",
+        "9999-12-31T06:00:00+08:00",
+        "9999-12-28T00:00:00",
+    ] {
+        let (config, diagnostics) = check(&format!(
+            "[site]\nurl = \"https://e.com\"\n[collections.p]\nroute = \"/{{slug}}/\"\nfields = {{ a = {{ type = \"datetime\", default = {at} }} }}\n"
+        ));
+        assert!(config.is_some(), "{at}: {diagnostics:#?}");
+    }
 }
 
 #[test]
