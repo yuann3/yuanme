@@ -140,7 +140,7 @@ fn start(root: &Path, args: &DevArgs, out: Out) -> Result<u8, Error> {
                 Err(e) => last = Some(e),
             }
         }
-        Err(last.expect("at least one port"))
+        Err(last.expect("`ports` is never empty, and each failed bind sets `last`"))
     })?;
     let address: SocketAddr = listener.local_addr()?;
     let url = format!("http://{address}/");

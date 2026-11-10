@@ -205,7 +205,7 @@ pub fn encode(
         .map(|&(width, format)| {
             let at = widths
                 .binary_search(&width)
-                .expect("every width is resized");
+                .expect("`widths` is every output's width, sorted and deduplicated");
             resized[at].encode(format, settings)
         })
         .collect()

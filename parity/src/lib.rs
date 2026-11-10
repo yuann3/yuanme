@@ -393,7 +393,10 @@ impl Side {
             if !entry.file_type().is_file() {
                 continue;
             }
-            let rel = entry.path().strip_prefix(root).expect("under the root");
+            let rel = entry
+                .path()
+                .strip_prefix(root)
+                .expect("WalkDir yields only paths under the folder it walks");
             let path = format!(
                 "/{}",
                 rel.components()
@@ -422,7 +425,10 @@ impl Side {
             } else if path.ends_with(".css") {
                 let css = String::from_utf8_lossy(&bytes);
                 for m in CSS_URL.captures_iter(&css) {
-                    let url = m.get(1).or(m.get(2)).or(m.get(3)).expect("one matches");
+                    let url =
+                        m.get(1).or(m.get(2)).or(m.get(3)).expect(
+                            "each of CSS_URL's three alternatives captures group 1, 2 or 3",
+                        );
                     side.add_ref(url.as_str(), &path);
                 }
             } else {

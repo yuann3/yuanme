@@ -152,7 +152,10 @@ fn walk(
         if !is_dir && !entry.file_type().is_some_and(|t| t.is_file()) {
             continue;
         }
-        let relative = entry.path().strip_prefix(root).expect("walked from root");
+        let relative = entry
+            .path()
+            .strip_prefix(root)
+            .expect("the walk starts under `root`, and yields only paths under its start");
         let relative = relative.to_str().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::InvalidData,

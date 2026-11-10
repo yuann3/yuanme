@@ -320,7 +320,7 @@ fn encode(
     let output = encoded
         .into_iter()
         .next()
-        .expect("one per variant")
+        .expect("encode_variants returns a result per variant, and is given one")
         .map_err(|e| Error::Encode(variant.source.clone(), e))?;
     let Body::Bytes(bytes) = &output.body else {
         unreachable!("a memory cache holds its bytes")

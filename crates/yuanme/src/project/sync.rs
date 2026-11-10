@@ -186,7 +186,9 @@ fn walk(base: &Path, dir: &Path, found: &mut impl FnMut(String)) -> io::Result<(
         if entry.file_type()?.is_dir() {
             walk(base, &path, found)?;
         } else {
-            let relative = path.strip_prefix(base).expect("walked from base");
+            let relative = path
+                .strip_prefix(base)
+                .expect("walk() is called on `base` or a folder under it");
             found(
                 relative
                     .to_string_lossy()
