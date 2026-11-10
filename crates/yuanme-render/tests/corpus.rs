@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use yuanme_content::parse_markdown;
 use yuanme_diag::Files;
-use yuanme_render::highlight;
+use yuanme_render::highlight_document;
 
 const CORPUS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../corpus/md");
 
@@ -40,10 +40,10 @@ fn render_with(path: &Path, highlighted: bool) -> String {
     match parse_markdown(&sources, file, body..text.len()) {
         (Some(doc), _) => {
             let code = match highlighted {
-                true => highlight::document(&doc),
+                true => highlight_document(&doc),
                 false => Default::default(),
             };
-            yuanme_render::html::body(&doc, &Default::default(), &code, &Default::default())
+            yuanme_render::body_html(&doc, &Default::default(), &code, &Default::default())
         }
         (None, diagnostics) => diagnostics
             .iter()

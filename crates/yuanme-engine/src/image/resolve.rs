@@ -11,8 +11,7 @@ use rayon::prelude::*;
 use yuanme_content::{Config, Document, ImagesConfig, Kind, NodeId, Site, SourceFormat, similar};
 use yuanme_diag::FileId;
 use yuanme_diag::{Diagnostic, Span, codes};
-use yuanme_render::html::{self, Pictures};
-use yuanme_render::image::{Error, Image, Picture, Request, picture};
+use yuanme_render::{Image, ImageError, Picture, Pictures, Request, alt_text, picture};
 
 use crate::hashing::hashed_path;
 use crate::image::{self, Format, Probe, Settings, Variant};
@@ -176,7 +175,7 @@ impl Images {
 
     /// The image file at `path`, from the project root, if it can be
     /// processed.
-    fn source(&self, path: &str) -> Result<&Source, Error> {
+    fn source(&self, path: &str) -> Result<&Source, ImageError> {
         match self.sources.get(path) {
             Some(Source::Invalid(why)) => Err((&codes::IMAGE_INVALID, format!("`{path}`: {why}"))),
             Some(source) => Ok(source),
@@ -199,7 +198,12 @@ impl Images {
 
     /// The Image `path`, from the project root, makes. `at` is where it is
     /// named, if that is known.
-    fn resolve(&self, path: &str, request: &Request, at: Option<&Span>) -> Result<Image, Error> {
+    fn resolve(
+        &self,
+        path: &str,
+        request: &Request,
+        at: Option<&Span>,
+    ) -> Result<Image, ImageError> {
         let source = self.source(path)?;
         let mut used = self
             .used
@@ -349,7 +353,7 @@ impl Images {
                         }
                     };
                     let org = e.format == SourceFormat::Org;
-                    let mut alt = html::alt(doc, id);
+                    let mut alt = alt_text(doc, id);
                     // Emacs's alt text when nothing else gives one.
                     let named = url.rsplit('/').next().unwrap_or(url);
                     if org && alt == named {
@@ -380,7 +384,7 @@ impl Images {
                     for (name, value) in title.iter().map(|t| ("title", t)).chain(
                         node.attrs.iter().map(|(n, v)| (n.as_str(), v)),
                     ) {
-                        attrs.push_str(&format!(" {name}=\"{}\"", yuanme_render::template::escape(value)));
+                        attrs.push_str(&format!(" {name}=\"{}\"", yuanme_render::escape(value)));
                     }
                     let markup = picture(
                         &image,
@@ -402,8 +406,8 @@ impl Images {
 
 /// `image(src)`'s `src` is a path from the project root, with a `/` or
 /// without, as an `image` field gives it.
-impl yuanme_render::image::Images for Images {
-    fn image(&self, src: &str, request: &Request, template: &str) -> Result<Image, Error> {
+impl yuanme_render::Images for Images {
+    fn image(&self, src: &str, request: &Request, template: &str) -> Result<Image, ImageError> {
         let path = from_root(src)?;
         let at = self
             .templates
@@ -412,12 +416,12 @@ impl yuanme_render::image::Images for Images {
         self.resolve(path, request, at.as_ref())
     }
 
-    fn check(&self, src: &str) -> Result<(), Error> {
+    fn check(&self, src: &str) -> Result<(), ImageError> {
         self.source(from_root(src)?).map(|_| ())
     }
 }
 
-fn from_root(src: &str) -> Result<&str, Error> {
+fn from_root(src: &str) -> Result<&str, ImageError> {
     if src.starts_with("//") || has_scheme(src) {
         let message = format!("`{src}` is remote, and yuanme never fetches an image to size it");
         return Err((&codes::IMAGE_REMOTE, message));
@@ -453,7 +457,7 @@ fn captions(doc: &Document) -> BTreeMap<NodeId, String> {
         let Some(&caption) = caption else { continue };
         for &c in children {
             if matches!(doc.node(c).kind, Kind::Image { .. }) {
-                out.insert(c, html::alt(doc, caption));
+                out.insert(c, alt_text(doc, caption));
             }
         }
     }

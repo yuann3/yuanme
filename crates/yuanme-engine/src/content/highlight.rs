@@ -6,7 +6,7 @@ use std::ops::Range;
 use rayon::prelude::*;
 use yuanme_content::{Kind, NodeId, Site, similar};
 use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
-use yuanme_render::highlight::{self, Code, Language};
+use yuanme_render::{Code, Language, highlight_block, language, language_names};
 
 use crate::Cache;
 
@@ -44,7 +44,7 @@ pub(crate) fn code(
                 let Kind::CodeBlock { lang, text } = &doc.node(id).kind else {
                     continue;
                 };
-                let grammar = match lang.as_deref().map(|l| (l, highlight::language(l))) {
+                let grammar = match lang.as_deref().map(|l| (l, language(l))) {
                     None | Some((_, Some(Language::Plain))) => None,
                     Some((_, Some(Language::Grammar(g)))) => Some(g),
                     Some((lang, None)) => {
@@ -83,7 +83,7 @@ pub(crate) fn code(
     missing.dedup_by_key(|b| b.key);
     let highlighted: Vec<(blake3::Hash, String)> = missing
         .into_par_iter()
-        .map(|b| (b.key, highlight::block(b.grammar, b.text)))
+        .map(|b| (b.key, highlight_block(b.grammar, b.text)))
         .collect();
     for (key, html) in highlighted {
         cache.insert(KIND, key, html.into_bytes());
@@ -130,7 +130,7 @@ fn unknown(sources: &Files, file: FileId, block: Range<usize>, lang: &str) -> Di
         format!("no grammar highlights `{lang}`, so this code block is plain text"),
         span.clone(),
     );
-    match similar(lang, highlight::names()) {
+    match similar(lang, language_names()) {
         Some(near) if !at.is_empty() => d.suggest(
             format!("did you mean `{near}`?"),
             Applicability::MaybeIncorrect,

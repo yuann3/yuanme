@@ -19,7 +19,7 @@ use std::sync::Arc;
 
 use yuanme_content::{Budget, Config, RouteKind, Site};
 use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
-use yuanme_render::template::scope;
+use yuanme_render::sidecar;
 
 use checks::{budgets, heavy, links};
 use content::{bodies, highlight};
@@ -178,10 +178,10 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let static_urls = statics.iter().map(|(p, _)| format!("/{p}")).collect();
     let scoped = templates
         .keys()
-        .filter(|t| inputs.files.contains_key(&scope::sidecar(t)))
+        .filter(|t| inputs.files.contains_key(&sidecar(t)))
         .cloned()
         .collect();
-    let (pages, more) = yuanme_render::template::render(
+    let (pages, more) = yuanme_render::render_page(
         &config,
         &site,
         &sources,

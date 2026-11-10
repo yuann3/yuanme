@@ -8,9 +8,10 @@ use std::sync::Arc;
 
 use yuanme_content::{Config, Project, Site, parse_config, read_entry, resolve_site, sort_sources};
 use yuanme_diag::{Diagnostic, FileId, Files, Level, codes};
-use yuanme_render::image::{self, Image, Images, Request};
-use yuanme_render::template::{self, Page, scope};
-use yuanme_render::{highlight, html};
+use yuanme_render::{
+    Image, ImageError, Images, Page, Request, body_html, context_schemas, highlight_document,
+    render_page, scope_attribute, sidecar,
+};
 
 /// Every file under `dir`, by its path from `dir`.
 fn read(dir: &Path) -> Vec<(String, String)> {
@@ -70,11 +71,11 @@ fn fixture(base: &str, files: &str) -> Vec<(String, String)> {
 struct NoImages;
 
 impl Images for NoImages {
-    fn image(&self, src: &str, _: &Request, _: &str) -> Result<Image, image::Error> {
+    fn image(&self, src: &str, _: &Request, _: &str) -> Result<Image, ImageError> {
         self.check(src).map(|_| unreachable!())
     }
 
-    fn check(&self, src: &str) -> Result<(), image::Error> {
+    fn check(&self, src: &str) -> Result<(), ImageError> {
         Err((&codes::IMAGE_NOT_FOUND, format!("no image at `{src}`")))
     }
 }
@@ -83,7 +84,7 @@ impl Images for NoImages {
 /// right; only its Templates may fail.
 fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
     let project = resolve(written);
-    let (pages, diagnostics) = template::render(
+    let (pages, diagnostics) = render_page(
         &project.config,
         &project.site,
         &project.files,
@@ -136,7 +137,7 @@ fn resolve(written: &[(String, String)]) -> Resolved {
         .collect();
     let scoped = templates
         .keys()
-        .filter(|name| paths.contains(&scope::sidecar(name).as_str()))
+        .filter(|name| paths.contains(&sidecar(name).as_str()))
         .cloned()
         .collect();
     let statics: BTreeSet<String> = paths
@@ -166,8 +167,8 @@ fn resolve(written: &[(String, String)]) -> Resolved {
         .iter()
         .zip(&site.links)
         .map(|(e, links)| {
-            let code = highlight::document(&e.document);
-            html::body(&e.document, links, &code, &Default::default())
+            let code = highlight_document(&e.document);
+            body_html(&e.document, links, &code, &Default::default())
         })
         .collect();
     Resolved {
@@ -235,12 +236,12 @@ fn every_page_sees_what_its_context_schema_says() {
         ));
     }
     let project = resolve(&written);
-    let schemas = template::context_schemas(&project.config, &project.site);
+    let schemas = context_schemas(&project.config, &project.site);
     assert_eq!(
         schemas.keys().copied().collect::<Vec<_>>(),
         ["entry", "feed", "index", "list", "template", "term"]
     );
-    let (pages, diagnostics) = template::render(
+    let (pages, diagnostics) = render_page(
         &project.config,
         &project.site,
         &project.files,
@@ -342,8 +343,8 @@ p {}
         .replace(" C", " data-y-lxqjer");
     assert_eq!(page(&pages, "index.html").text.trim_end(), want);
     // Sites' HTML holds the attribute, so how it is made is frozen.
-    assert_eq!(scope::attribute("home.html"), "data-y-nc1e2s");
-    assert_eq!(scope::attribute("components/row.html"), "data-y-v2sp31");
+    assert_eq!(scope_attribute("home.html"), "data-y-nc1e2s");
+    assert_eq!(scope_attribute("components/row.html"), "data-y-v2sp31");
 }
 
 #[test]

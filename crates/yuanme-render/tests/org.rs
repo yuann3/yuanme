@@ -33,7 +33,7 @@ fn render(name: &str, text: &str) -> String {
         .map(|d| d.render(&sources, false) + "\n")
         .collect();
     if let Some(doc) = doc {
-        out.push_str(&yuanme_render::html::body(
+        out.push_str(&yuanme_render::body_html(
             &doc,
             &Default::default(),
             &Default::default(),
@@ -48,7 +48,7 @@ fn markdown_html(name: &str, text: &str) -> String {
     let file = sources.add(name, text);
     let (doc, diagnostics) = parse_markdown(&sources, file, 0..text.len());
     assert!(diagnostics.is_empty(), "{name}: {diagnostics:?}");
-    yuanme_render::html::body(
+    yuanme_render::body_html(
         &doc.unwrap(),
         &Default::default(),
         &Default::default(),

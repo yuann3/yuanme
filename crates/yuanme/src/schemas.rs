@@ -24,7 +24,7 @@ pub(crate) fn entry_and_data(config: &Config) -> BTreeMap<String, Value> {
 }
 
 pub(crate) fn context(config: &Config, site: &Site) -> BTreeMap<String, Value> {
-    yuanme_render::template::context_schemas(config, site)
+    yuanme_render::context_schemas(config, site)
         .into_iter()
         .map(|(kind, schema)| (format!("context/{kind}"), schema))
         .collect()

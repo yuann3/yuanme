@@ -4,7 +4,7 @@
 mod check;
 mod context;
 mod filters;
-pub mod scope;
+pub(crate) mod scope;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;

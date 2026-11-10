@@ -258,7 +258,7 @@ impl Project {
                     self.dirs.insert(collection.dir.clone());
                 }
                 if let Some(site) = &build.site {
-                    let templates = yuanme_render::template::route_templates(config, site);
+                    let templates = yuanme_render::route_templates(config, site);
                     for (route, template) in site.routes.iter().zip(templates) {
                         let builtin =
                             matches!(route.kind, RouteKind::Feed { .. }) && template == "rss.xml";

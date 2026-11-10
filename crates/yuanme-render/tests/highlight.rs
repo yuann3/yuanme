@@ -13,7 +13,9 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 use yuanme_content::{Document, Kind, parse_markdown, parse_org};
 use yuanme_diag::Files;
-use yuanme_render::highlight;
+use yuanme_render::{
+    Language, code_classes, code_css, grammar, highlight_block, highlight_document, language,
+};
 
 const CORPUS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../corpus");
 
@@ -89,7 +91,7 @@ fn blocks() -> BTreeSet<(&'static str, String)> {
         let Some(doc) = document(&path) else { continue };
         for id in doc.descendants(Document::ROOT) {
             if let Kind::CodeBlock { lang, text } = &doc.node(id).kind
-                && let Some(grammar) = highlight::grammar(lang.as_deref())
+                && let Some(grammar) = grammar(lang.as_deref())
             {
                 out.insert((grammar, text.clone()));
             }
@@ -256,11 +258,11 @@ fn compare(
     lines: &Value,
     shiki_styles: &[Style],
 ) -> (Option<String>, usize) {
-    let html = highlight::block(Some(grammar), text);
+    let html = highlight_block(Some(grammar), text);
     let pre =
         format!(" class=\"y-code\" tabindex=\"0\" data-language=\"\"><code>{html}</code></pre>");
-    let classes = highlight::classes(&pre).unwrap_or_default();
-    let css = styles(&highlight::css(classes.iter().copied()));
+    let classes = code_classes(&pre).unwrap_or_default();
+    let css = styles(&code_css(classes.iter().copied()));
     let got = characters(&html);
     let want: Vec<(char, &Style)> = text
         .split('\n')
@@ -324,7 +326,7 @@ fn a_thread_holds_one_grammar_at_a_time() {
     // Twice, since a grammar loaded after another was compiled clears it.
     for _ in 0..2 {
         for (grammar, text) in &first {
-            highlight::block(Some(grammar), text);
+            highlight_block(Some(grammar), text);
         }
     }
     let held = (HELD.get() - before) as f64 / 1e6;
@@ -339,7 +341,7 @@ fn a_thread_holds_one_grammar_at_a_time() {
 /// then `jupyter-X`; the plain names are no grammar and no warning.
 #[test]
 fn languages_resolve_as_shiki_then_org_name_them() {
-    use highlight::Language::{Grammar, Plain};
+    use Language::{Grammar, Plain};
     let cases = [
         ("rust", Some(Grammar("rust"))),
         ("rs", Some(Grammar("rust"))),
@@ -365,7 +367,7 @@ fn languages_resolve_as_shiki_then_org_name_them() {
     ];
     let got: Vec<_> = cases
         .iter()
-        .map(|(name, _)| (*name, highlight::language(name)))
+        .map(|(name, _)| (*name, language(name)))
         .collect();
     assert_eq!(got, cases);
 }
@@ -375,10 +377,10 @@ fn languages_resolve_as_shiki_then_org_name_them() {
 #[test]
 fn code_markup_on_extending_c_stdlib_is_at_most_40_kb() {
     let doc = document(&Path::new(CORPUS).join("md/eyuan-me/blog--extending_c_stdlib.md")).unwrap();
-    let html = yuanme_render::html::body(
+    let html = yuanme_render::body_html(
         &doc,
         &Default::default(),
-        &highlight::document(&doc),
+        &highlight_document(&doc),
         &Default::default(),
     );
     let blocks: Vec<&str> = html

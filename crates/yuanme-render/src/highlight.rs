@@ -28,7 +28,7 @@ const LIGHT: Theme = CATPPUCCIN_LATTE;
 const DARK: Theme = CATPPUCCIN_MOCHA;
 
 /// The class of every highlighted `<pre>`.
-pub const PRE_CLASS: &str = "y-code";
+pub(crate) const PRE_CLASS: &str = "y-code";
 
 /// Names that are plain text with no warning: Org's (#16) and Shiki's.
 const PLAIN: [&str; 7] = [

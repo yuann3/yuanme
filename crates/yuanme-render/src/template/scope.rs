@@ -43,7 +43,7 @@ pub fn attribute(name: &str) -> String {
 }
 
 /// A Template's source with its scope attribute added.
-pub struct Scoped {
+pub(crate) struct Scoped {
     pub text: String,
     /// Where each insertion is in the original source, and its length, in
     /// order. Inserted text has no newline, so lines never move.
@@ -53,7 +53,7 @@ pub struct Scoped {
 impl Scoped {
     /// The byte of the original source that byte `at` of [`Scoped::text`]
     /// comes from; inserted text maps to where it was inserted.
-    pub fn original(&self, at: usize) -> usize {
+    pub(crate) fn original(&self, at: usize) -> usize {
         let mut shift = 0;
         for &(start, len) in &self.inserted {
             if start + shift >= at {
@@ -70,7 +70,7 @@ impl Scoped {
 
 /// Why a start tag can't be scoped as written.
 #[derive(Debug, PartialEq, Eq)]
-pub enum Unscoped {
+pub(crate) enum Unscoped {
     /// `<{{ tag }}>` or `<h{{ n }}>`: scoped, but no type selector can be
     /// checked against it.
     DynamicName,
@@ -117,7 +117,7 @@ impl Element {
 
 /// `source` with `attribute` added to each of its start tags, and the tags
 /// that couldn't be scoped as written.
-pub fn rewrite(source: &str, attribute: &str) -> (Scoped, Vec<(Range<usize>, Unscoped)>) {
+pub(crate) fn rewrite(source: &str, attribute: &str) -> (Scoped, Vec<(Range<usize>, Unscoped)>) {
     let scan = scan(source);
     let mut text = String::with_capacity(source.len() + scan.tags.len() * (attribute.len() + 2));
     let mut inserted = Vec::new();

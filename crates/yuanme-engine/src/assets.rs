@@ -22,7 +22,7 @@ use yuanme_assets::{
 };
 use yuanme_content::{Config, FieldValue, RouterMode};
 use yuanme_diag::{Applicability, Diagnostic, FileId, Files, Span, codes};
-use yuanme_render::template::{Page, scope};
+use yuanme_render::{Page, scope_attribute, sidecar};
 
 use diagnostics::{Diagnostics, SourceFiles, module_type, reference_span, unmatched};
 use order::{Order, Use};
@@ -77,7 +77,7 @@ pub(crate) struct Seen {
 
 impl Seen {
     fn of(text: &str) -> Seen {
-        let code = yuanme_render::highlight::classes(text);
+        let code = yuanme_render::code_classes(text);
         let mut scan = scan_html(text);
         // Only Tailwind's tokens read them, as a set; a Page of
         // highlighted code holds thousands of the same few.
@@ -148,7 +148,7 @@ impl<'a> Stage<'a> {
         let scopes: BTreeMap<String, String> = pages
             .iter()
             .flat_map(|p| &p.templates)
-            .map(|t| (scope::sidecar(t), scope::attribute(t)))
+            .map(|t| (sidecar(t), scope_attribute(t)))
             .filter(|(path, _)| inputs.files.contains_key(path))
             .collect();
         let project = Project {

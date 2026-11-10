@@ -101,7 +101,7 @@ pub fn picture(image: &Image, p: &Picture<'_>) -> String {
 /// in the format a browser picks first. It names the file in
 /// `imagesrcset` even when there is one, since the assets stage takes a
 /// `<link href>` for a project file to bundle or copy.
-pub fn preload(image: &Image) -> String {
+pub(crate) fn preload(image: &Image) -> String {
     let (ty, srcset) = match image.sources.first() {
         Some((ty, srcset)) => (format!(" type=\"{}\"", escape(ty)), srcset),
         None => (String::new(), &image.srcset),

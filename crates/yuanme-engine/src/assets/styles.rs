@@ -34,7 +34,7 @@ pub(crate) fn code(
     if showing.is_empty() {
         return;
     }
-    let css = yuanme_render::highlight::css(classes);
+    let css = yuanme_render::code_css(classes);
     let tag = format!(
         "<link rel=\"stylesheet\" href=\"{}\">",
         placeholder(assets.len())

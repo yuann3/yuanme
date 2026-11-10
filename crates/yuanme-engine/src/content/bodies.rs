@@ -8,12 +8,12 @@ use std::sync::Arc;
 
 use rayon::prelude::*;
 use yuanme_content::{Document, Links, Site};
-use yuanme_render::html::{self, Pictures};
+use yuanme_render::{Pictures, body_html};
 
 use super::highlight;
 use crate::Cache;
 
-/// One body and everything [`html::body`] read to write it, but its code
+/// One body and everything [`body_html`] read to write it, but its code
 /// blocks, which are highlighted from the Document by this Engine.
 pub(crate) struct Rendered {
     /// The very Document, not an equal one: a Document is immutable, and
@@ -53,7 +53,7 @@ pub(crate) fn bodies(
             });
             (!same).then(|| {
                 let code = highlight::of(read, code);
-                html::body(&e.document, links, &code, pictures)
+                body_html(&e.document, links, &code, pictures)
             })
         })
         .collect();

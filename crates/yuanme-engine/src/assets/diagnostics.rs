@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use yuanme_assets::{Compound, CssError, CssErrorKind};
 use yuanme_diag::{Diagnostic, Edit, FileId, Files, Level, Span, codes};
-use yuanme_render::template::{Page, scope};
+use yuanme_render::{Page, scoped_elements, sidecar};
 
 use super::project::{Problem, Project};
 
@@ -164,11 +164,11 @@ pub(super) fn unmatched(
 ) -> Option<Diagnostic> {
     let mut own = templates
         .iter()
-        .filter(|(name, _)| scope::sidecar(name) == compound.at.file)
+        .filter(|(name, _)| sidecar(name) == compound.at.file)
         .peekable();
     let template = own.peek()?.0.clone();
     let matched = own.any(|(_, &file)| {
-        scope::elements(sources.text(file))
+        scoped_elements(sources.text(file))
             .iter()
             .any(|e| e.matches(compound.name.as_deref(), &compound.classes, &compound.ids))
     });
