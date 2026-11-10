@@ -1,4 +1,5 @@
 use super::*;
+use crate::content::entries;
 
 const CONFIG: &[u8] = b"[site]\nurl = \"https://example.com\"\n";
 

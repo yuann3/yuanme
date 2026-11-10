@@ -20,16 +20,15 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use yuanme_content::config::{self, Budget, Config};
-use yuanme_content::site::{self, Project, RouteKind, Site};
+use yuanme_content::config::{Budget, Config};
+use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
 use yuanme_render::template::scope;
 
-use content::{bodies, entries, highlight};
+use content::{bodies, highlight};
 
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
-use inputs::utf8;
 pub use inputs::{Input, Inputs};
 use link::link;
 pub use typescript::{check_types, write_types};
@@ -154,11 +153,12 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         images: BTreeMap::new(),
         budgets: Vec::new(),
     };
-    let (config, mut diagnostics) = site_config(inputs, cache.engine_version(), &mut sources);
+    let (config, mut diagnostics) =
+        content::site_config(inputs, cache.engine_version(), &mut sources);
     let Some(config) = config else {
         return failed(diagnostics, sources, None, None);
     };
-    let (site, more) = resolve(inputs, &config, mode.drafts(), &mut sources, cache);
+    let (site, more) = content::resolve(inputs, &config, mode.drafts(), &mut sources, cache);
     diagnostics.extend(more);
     let Some(site) = site else {
         return failed(diagnostics, sources, Some(config), None);
@@ -306,63 +306,6 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         cache.sweep();
     }
     build
-}
-
-fn site_config(
-    inputs: &Inputs,
-    engine: &str,
-    sources: &mut Files,
-) -> (Option<Config>, Vec<Diagnostic>) {
-    const PATH: &str = "yuanme.toml";
-    let input = inputs.files.get(PATH).expect("a project has yuanme.toml");
-    let bytes = input
-        .bytes
-        .as_deref()
-        .expect("yuanme.toml is read, not streamed");
-    match utf8(PATH, bytes, &codes::CONFIG_SYNTAX, sources) {
-        Ok(file) => config::parse(sources, file, engine),
-        Err(d) => (None, vec![d]),
-    }
-}
-
-/// Reads every Entry and Data file and resolves the Site.
-fn resolve(
-    inputs: &Inputs,
-    config: &Config,
-    drafts: bool,
-    sources: &mut Files,
-    cache: &mut Cache,
-) -> (Option<Site>, Vec<Diagnostic>) {
-    let (entries, data) = site::sources(config, inputs.files.keys().map(String::as_str));
-    let mut diagnostics = Vec::new();
-    let mut add = |path: &str| {
-        let bytes = inputs.files[path]
-            .bytes
-            .as_deref()
-            .expect("text is read, not streamed");
-        utf8(path, bytes, &codes::ENTRY_SYNTAX, sources)
-            .map_err(|d| diagnostics.push(d))
-            .ok()
-    };
-    let entries: Vec<_> = entries
-        .into_iter()
-        .filter_map(|(c, p)| Some((c, add(p)?)))
-        .collect();
-    let data: Vec<_> = data.into_iter().filter_map(&mut add).collect();
-    if !diagnostics.is_empty() {
-        return (None, diagnostics);
-    }
-    let is_file = |p: &str| inputs.files.contains_key(p);
-    let is_dir = |d: &str| inputs.is_dir(d);
-    let entries = entries::read(inputs, config, &entries, sources, cache);
-    let project = Project {
-        files: sources,
-        entries,
-        data,
-        is_file: &is_file,
-        is_dir: &is_dir,
-    };
-    site::resolve(config, project, drafts)
 }
 
 /// A Static file and a Route that would write the same output path (#18).
