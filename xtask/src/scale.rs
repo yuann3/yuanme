@@ -115,7 +115,7 @@ const SERIES: &[&str] = &[
 ];
 
 /// Writes the Scale Site into `out`, which must not exist yet.
-pub fn generate(out: &Path) -> io::Result<()> {
+pub(crate) fn generate(out: &Path) -> io::Result<()> {
     let root = crate::root();
     copy_dir(&root.join(TEMPLATES), out)?;
     fs::remove_dir_all(out.join("content/posts"))?;

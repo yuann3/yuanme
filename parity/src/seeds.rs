@@ -8,10 +8,10 @@ use std::path::Path;
 
 use parity::Difference;
 
-pub struct Seed {
-    pub name: &'static str,
+pub(crate) struct Seed {
+    pub(crate) name: &'static str,
     edits: &'static [Edit],
-    pub expect: fn(&[Difference]) -> bool,
+    pub(crate) expect: fn(&[Difference]) -> bool,
 }
 
 enum Edit {
@@ -29,7 +29,7 @@ fn dom(differences: &[Difference], on: &str) -> bool {
     matches!(differences, [Difference::Dom { page, .. }] if page == on)
 }
 
-pub const SEEDS: &[Seed] = &[
+pub(crate) const SEEDS: &[Seed] = &[
     // Caught.
     Seed {
         name: "a Page removed",
@@ -200,7 +200,7 @@ pub const SEEDS: &[Seed] = &[
 ];
 
 impl Seed {
-    pub fn apply(&self, site: &Path) -> Result<(), String> {
+    pub(crate) fn apply(&self, site: &Path) -> Result<(), String> {
         for edit in self.edits {
             match edit {
                 Edit::Replace(file, from, to) => {
@@ -252,7 +252,7 @@ fn pages(site: &Path) -> Vec<std::path::PathBuf> {
         .collect()
 }
 
-pub fn copy(from: &Path, to: &Path) -> Result<(), String> {
+pub(crate) fn copy(from: &Path, to: &Path) -> Result<(), String> {
     for entry in walkdir::WalkDir::new(from) {
         let entry = entry.map_err(|e| e.to_string())?;
         let target = to.join(entry.path().strip_prefix(from).expect("under it"));

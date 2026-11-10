@@ -16,26 +16,26 @@ use std::time::{Duration, Instant};
 
 use serde_json::Value;
 
-pub enum Stat {
+pub(crate) enum Stat {
     Median,
     P95,
     Max,
 }
 
-pub struct Gate {
-    pub name: &'static str,
+pub(crate) struct Gate {
+    pub(crate) name: &'static str,
     /// In seconds, or bytes for memory.
-    pub limit: f64,
+    pub(crate) limit: f64,
     /// What is held to the limit.
-    pub stat: Stat,
+    pub(crate) stat: Stat,
     /// Whether it may be no more than 10% slower than `main`, which is
     /// judged on medians: a p95 of 50 edits moves more than 10% between
     /// two runs of the same binary.
-    pub relative: bool,
+    pub(crate) relative: bool,
 }
 
 /// #15's numbers for the Scale Site.
-pub const GATES: &[Gate] = &[
+pub(crate) const GATES: &[Gate] = &[
     // Excluding image encoding, which the next Gate covers.
     Gate {
         name: "cold build",
@@ -84,7 +84,7 @@ pub const GATES: &[Gate] = &[
 ];
 
 /// #15's numbers for the Reference site, each of them a Gate.
-pub const REFERENCE: &[Gate] = &[
+pub(crate) const REFERENCE: &[Gate] = &[
     Gate {
         name: "cold build",
         limit: 2.0,
@@ -168,7 +168,7 @@ impl Gate {
 
 /// How far `gate` is over its budget, in words: reported, not failed on,
 /// until the Engine meets #15's numbers on the Scale Site (#73).
-pub fn over(gate: &Gate, head: &[f64]) -> Option<String> {
+pub(crate) fn over(gate: &Gate, head: &[f64]) -> Option<String> {
     let value = gate.value(head);
     (value > gate.limit).then(|| {
         format!(
@@ -181,7 +181,7 @@ pub fn over(gate: &Gate, head: &[f64]) -> Option<String> {
 }
 
 /// How much slower than main `gate` is, in words, when that fails it.
-pub fn slower(gate: &Gate, head: &[f64], base: &[f64]) -> Option<String> {
+pub(crate) fn slower(gate: &Gate, head: &[f64], base: &[f64]) -> Option<String> {
     let (now, before) = (median(head), median(base));
     (gate.relative && now > before * SLOWER).then(|| {
         format!(
@@ -206,7 +206,7 @@ struct Side {
 
 /// Runs every Gate on `head`, against `base` when there is one, and fails
 /// if one breaches.
-pub fn run(head: &Path, base: Option<&Path>) -> ExitCode {
+pub(crate) fn run(head: &Path, base: Option<&Path>) -> ExitCode {
     let work = crate::root().join("target/gates");
     let mut sides = Vec::new();
     for (name, bin) in [("main", base), ("head", Some(head))] {
@@ -292,7 +292,7 @@ const REPORTED: [&str; 1] = ["peak RSS"];
 
 /// Runs every Gate on the Reference site at `site`, as `head` builds a
 /// copy of it, and fails if a number is over its budget.
-pub fn reference(head: &Path, site: &Path) -> ExitCode {
+pub(crate) fn reference(head: &Path, site: &Path) -> ExitCode {
     let work = crate::root().join("target/gates");
     let dir = work.join("reference");
     let _ = fs::remove_dir_all(&dir);
@@ -564,7 +564,7 @@ fn dev(bin: &Path, dir: &Path) -> (Child, mpsc::Receiver<Value>, String) {
 
 /// `cargo xtask first-page YUANME DIR`, which hyperfine times: starts
 /// `yuanme dev` and fetches the home page, then stops it.
-pub fn first_page(bin: &Path, dir: &Path) -> ExitCode {
+pub(crate) fn first_page(bin: &Path, dir: &Path) -> ExitCode {
     let (mut child, _events, url) = dev(bin, dir);
     let address = url
         .trim_start_matches("http://")
