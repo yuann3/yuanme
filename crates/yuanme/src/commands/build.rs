@@ -22,7 +22,9 @@ pub(crate) fn run(root: &Path, args: BuildArgs, out: &Out) -> Result<u8, Error> 
         out: out_dir,
     } = args;
     let out_dir = out_dir.map(|d| root.join(d));
-    if let Some(dir) = out_dir.as_ref().filter(|d| root.starts_with(d)) {
+    let canonical = root.canonicalize()?;
+    let holds = |d: &Path| canonical.starts_with(project::resolve(&canonical, d));
+    if let Some(dir) = out_dir.as_ref().filter(|d| holds(d)) {
         return Err(Error::BadCommand(format!(
             "--out {} would hold the project itself",
             dir.display()

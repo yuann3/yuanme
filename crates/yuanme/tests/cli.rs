@@ -889,6 +889,20 @@ fn exit_codes_and_the_project_folder() {
     let (code, events) = json(elsewhere.path(), &["-C", path, "check"]);
     assert_eq!((code, events.len()), (0, 2));
     assert_eq!(yuanme(root, &["build", "--out", "."]).code, 2);
+
+    // A `..` that leaves the project still holds it: a build there would
+    // write the Site around the project, and `--clean` would delete it.
+    let nested = root.join("nested");
+    write(&nested, SITE);
+    for out in ["..", "public/../.."] {
+        let refused = yuanme(&nested, &["build", "--out", out]);
+        assert_eq!(refused.code, 2, "--out {out}");
+        assert!(refused.stderr.contains("would hold the project itself"));
+    }
+    assert!(!root.join("index.html").exists());
+    let beside = yuanme(&nested, &["build", "--out", "../beside"]);
+    assert_eq!(beside.code, 0, "{}", beside.stderr);
+    assert!(root.join("beside/index.html").is_file());
 }
 
 /// A build with no install receipt, as `cargo install` and Homebrew make,
