@@ -20,8 +20,9 @@ use tokio::sync::{Notify, broadcast};
 use yuanme_engine::{Build, Cache, Inputs, Mode};
 
 use crate::events::Event;
+use crate::project::load;
 use crate::watch::{self, Batch};
-use crate::{ENGINE_VERSION, Error, Out, load, plural};
+use crate::{ENGINE_VERSION, Error, Out, plural};
 
 /// The port `yuanme dev` tries first, then the next ones up (#21).
 const PORT: u16 = 4590;
@@ -279,7 +280,7 @@ fn rebuild(
 fn mirror(root: &Path, dir: &Path, build: &Build) {
     let key = blake3::hash(dir.as_os_str().as_encoded_bytes()).to_hex();
     let manifest = root.join(format!(".yuanme/cache/write-{}.manifest", &key[..16]));
-    if let Err(e) = crate::sync::sync(build, root, dir, &manifest) {
+    if let Err(e) = crate::project::sync::sync(build, root, dir, &manifest) {
         eprintln!("warning: can't write the Site to {}: {e}", dir.display());
     }
 }

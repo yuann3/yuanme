@@ -1,10 +1,9 @@
 mod commands;
 mod dev;
 mod events;
-mod load;
+mod project;
 mod report;
 mod schemas;
-mod sync;
 #[cfg(test)]
 mod tests;
 mod watch;
@@ -25,6 +24,7 @@ use yuanme_engine::{Build, Cache, Mode};
 
 use commands::{docs, init, new, update};
 use events::Event;
+use project::{load, sync};
 
 #[global_allocator]
 static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;

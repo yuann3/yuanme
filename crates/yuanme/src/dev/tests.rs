@@ -6,7 +6,7 @@ use std::time::Duration;
 use yuanme_engine::{Build, Cache, Mode};
 
 use super::*;
-use crate::load::load;
+use crate::project::load::load;
 use crate::watch::watch;
 
 const SIDECARS: &str = concat!(

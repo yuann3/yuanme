@@ -13,7 +13,7 @@ use yuanme_content::config::{Budget, Budgets};
 use yuanme_diag::Level;
 use yuanme_engine::{Body, Build, Measured};
 
-use crate::sync;
+use crate::project::sync;
 
 /// A Page over one of its Site budgets.
 pub struct Over {

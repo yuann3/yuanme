@@ -7,8 +7,8 @@ use yuanme_content::site::RouteKind;
 use yuanme_engine::{Build, Cache, Inputs, Mode};
 
 use crate::commands::docs;
-use crate::load::load;
-use crate::sync::{Report, sync};
+use crate::project::load::load;
+use crate::project::sync::{Report, sync};
 
 const CONFIG: &str = "[site]\nurl = \"https://example.com\"\n";
 
