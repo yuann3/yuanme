@@ -183,16 +183,17 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         .filter(|t| inputs.files.contains_key(&sidecar(t)))
         .cloned()
         .collect();
-    let (pages, more) = yuanme_render::render_page(
-        &config,
-        &site,
-        &sources,
-        &templates,
-        &scoped,
-        &static_urls,
+    let (pages, more) = yuanme_render::Render {
+        config: &config,
+        site: &site,
+        files: &sources,
+        templates: &templates,
+        scoped: &scoped,
+        statics: &static_urls,
         bodies,
-        images.clone(),
-    );
+        images: images.clone(),
+    }
+    .run();
     diagnostics.extend(more);
     let Ok(images) = Arc::try_unwrap(images) else {
         unreachable!("render has dropped its Environment")

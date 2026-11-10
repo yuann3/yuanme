@@ -12,4 +12,4 @@ pub use highlight::{
 pub use html::{Pictures, alt as alt_text, body as body_html};
 pub use image::{Error as ImageError, Image, Images, Picture, Request, picture};
 pub use template::scope::{attribute as scope_attribute, elements as scoped_elements, sidecar};
-pub use template::{Page, context_schemas, escape, render as render_page, route_templates};
+pub use template::{Page, Render, context_schemas, escape, route_templates};

@@ -9,8 +9,8 @@ use std::sync::Arc;
 use yuanme_content::{Config, Project, Site, parse_config, read_entry, resolve_site, sort_sources};
 use yuanme_diag::{Diagnostic, FileId, Files, Level, codes};
 use yuanme_render::{
-    Image, ImageError, Images, Page, Request, body_html, context_schemas, highlight_document,
-    render_page, scope_attribute, sidecar,
+    Image, ImageError, Images, Page, Render, Request, body_html, context_schemas,
+    highlight_document, scope_attribute, sidecar,
 };
 
 /// Every file under `dir`, by its path from `dir`.
@@ -87,16 +87,17 @@ impl Images for NoImages {
 /// right; only its Templates may fail.
 fn render(written: &[(String, String)]) -> (Files, Vec<Page>, Vec<Diagnostic>) {
     let project = resolve(written);
-    let (pages, diagnostics) = render_page(
-        &project.config,
-        &project.site,
-        &project.files,
-        &project.templates,
-        &project.scoped,
-        &project.statics,
-        project.bodies,
-        Arc::new(NoImages),
-    );
+    let (pages, diagnostics) = Render {
+        config: &project.config,
+        site: &project.site,
+        files: &project.files,
+        templates: &project.templates,
+        scoped: &project.scoped,
+        statics: &project.statics,
+        bodies: project.bodies,
+        images: Arc::new(NoImages),
+    }
+    .run();
     (project.files, pages, diagnostics)
 }
 
@@ -244,16 +245,17 @@ fn every_page_sees_what_its_context_schema_says() {
         schemas.keys().copied().collect::<Vec<_>>(),
         ["entry", "feed", "index", "list", "template", "term"]
     );
-    let (pages, diagnostics) = render_page(
-        &project.config,
-        &project.site,
-        &project.files,
-        &project.templates,
-        &project.scoped,
-        &project.statics,
-        project.bodies,
-        Arc::new(NoImages),
-    );
+    let (pages, diagnostics) = Render {
+        config: &project.config,
+        site: &project.site,
+        files: &project.files,
+        templates: &project.templates,
+        scoped: &project.scoped,
+        statics: &project.statics,
+        bodies: project.bodies,
+        images: Arc::new(NoImages),
+    }
+    .run();
     assert!(diagnostics.is_empty(), "{diagnostics:#?}");
     let mut kinds = BTreeSet::new();
     for page in pages.iter().filter(|p| !p.output.starts_with("sitemap")) {
