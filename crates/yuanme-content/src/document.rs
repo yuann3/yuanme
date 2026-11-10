@@ -436,10 +436,9 @@ fn word_count(text: &str) -> u64 {
     let Some(mut start) = (0..units.len()).find(|&i| !bound(i)) else {
         return 0;
     };
-    let end = (0..units.len())
-        .rev()
-        .find(|&i| !bound(i))
-        .expect("start exists");
+    let end = (0..units.len()).rev().find(|&i| !bound(i)).expect(
+        "searching from the start found a unit that isn't a boundary, so from the end finds one",
+    );
     // The text has a newline appended, so the last unit ends a word.
     let bound = |i: usize| i == units.len() || bound(i);
     let mut words = 0;
@@ -466,6 +465,6 @@ pub(crate) fn reading_time(words: u64) -> u64 {
     // that is a multiple of 0.005 is never exactly halfway.
     format!("{minutes:.2}")
         .parse::<f64>()
-        .expect("a number")
+        .expect("`{:.2}` writes a finite f64 as digits, which parse back")
         .ceil() as u64
 }

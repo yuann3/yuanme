@@ -105,7 +105,7 @@ fn offset(text: &str, s: &str) -> usize {
     (s.as_ptr() as usize)
         .checked_sub(text.as_ptr() as usize)
         .filter(|&o| o <= text.len())
-        .expect("a slice of the file")
+        .expect("organic borrows each node's text from the file it parsed")
 }
 
 /// Runs of whitespace as one space, as Org compares link paths and titles.

@@ -28,8 +28,12 @@ pub(crate) fn read(
     for &file in &project.data {
         let path = project.files.path(file);
         let text = project.files.text(file);
-        let file_name = path.strip_prefix("data/").expect("a Data file");
-        let (name, ext) = file_name.rsplit_once('.').expect("has an extension");
+        let file_name = path
+            .strip_prefix("data/")
+            .expect("Project::data holds the files sort_sources found under data/");
+        let (name, ext) = file_name
+            .rsplit_once('.')
+            .expect("sort_sources lists only Data files with an extension");
         if let Some(&first) = seen.get(name) {
             let message = format!(
                 "`{}` and `{path}` are both `data.{name}`",

@@ -51,7 +51,10 @@ impl Checker {
 
     /// Adds to the Diagnostic just reported.
     pub(super) fn then(&mut self, add: impl FnOnce(Diagnostic) -> Diagnostic) {
-        let d = self.diagnostics.pop().expect("a Diagnostic to add to");
+        let d = self
+            .diagnostics
+            .pop()
+            .expect("then() is called only right after a Diagnostic is reported");
         self.diagnostics.push(add(d));
     }
 
@@ -117,7 +120,9 @@ impl Checker {
                         }],
                     );
                     self.diagnostics.push(warning);
-                    let (_, value) = table.remove_entry(name.as_str()).expect("listed above");
+                    let (_, value) = table
+                        .remove_entry(name.as_str())
+                        .expect("`present` lists the table's own keys, and `name` is one");
                     table.insert(
                         Spanned::new(key_span.clone(), Cow::Owned(to.to_string())),
                         value,
@@ -128,7 +133,9 @@ impl Checker {
                 }
             };
             let name = key.name;
-            let value = table.get_mut(name).expect("listed above");
+            let value = table
+                .get_mut(name)
+                .expect("`name` is in the table: present there, or just renamed to");
             self.value(&key.shape, value, key_span, &join(path, name));
         }
         let missing = keys
