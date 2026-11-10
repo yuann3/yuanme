@@ -276,8 +276,15 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let budgets = match (&config.budgets, &measured) {
         (Some(budgets), Some(bodies)) => {
             let math_font = math_font.as_deref();
-            let (measured, more) =
-                budgets::measure(&config, budgets, &site, &files, bodies, math_font, cache);
+            let (measured, more) = budgets::Measure {
+                config: &config,
+                budgets,
+                site: &site,
+                files: &files,
+                bodies,
+                math_font,
+            }
+            .run(cache);
             diagnostics.extend(more);
             measured
         }

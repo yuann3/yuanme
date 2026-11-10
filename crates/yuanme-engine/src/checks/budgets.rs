@@ -37,36 +37,171 @@ struct Plan<'a> {
     requests: BTreeSet<String>,
 }
 
-/// `bodies` is each Entry's body, in the order of `site.entries`; `math_font` the
-/// math font's path, if a Page shows math.
-pub(crate) fn measure(
-    config: &Config,
-    budgets: &Budgets,
-    site: &Site,
-    files: &BTreeMap<String, Output>,
-    bodies: &[String],
-    math_font: Option<&str>,
-    cache: &mut Cache,
-) -> (Vec<Measured>, Vec<Diagnostic>) {
-    let origin = config.site.url.trim_end_matches('/');
-    let plans: Vec<Plan<'_>> = site
-        .routes
-        .par_iter()
-        .filter(|r| r.output.ends_with(".html"))
-        .filter_map(|r| {
-            let text = text(files.get(&r.output)?)?;
-            let body = match r.kind {
-                RouteKind::Entry(i) => Some(bodies[i].as_str()),
-                _ => None,
-            };
-            Some(plan(
-                &r.url, &r.output, text, body, files, math_font, origin,
-            ))
-        })
-        .collect();
+/// Measures each HTML Page of a build against `budgets`.
+pub(crate) struct Measure<'a> {
+    pub(crate) config: &'a Config,
+    pub(crate) budgets: &'a Budgets,
+    pub(crate) site: &'a Site,
+    pub(crate) files: &'a BTreeMap<String, Output>,
+    /// Each Entry's body, in the order of `site.entries`.
+    pub(crate) bodies: &'a [String],
+    /// The math font's path, if a Page shows math.
+    pub(crate) math_font: Option<&'a str>,
+}
 
-    // Each distinct text once: a stylesheet is on most Pages. A part with
-    // no Budget is an Entry's body.
+/// Each distinct text a Page is made of, by id, and each Page's parts: the
+/// Budget each counts towards, `None` for an Entry's body, and its text.
+struct Parts<'a> {
+    blobs: Vec<&'a [u8]>,
+    pages: Vec<Vec<(Option<Budget>, usize)>>,
+}
+
+/// Each text's size: estimated at [`ESTIMATE`], and exact where it counts
+/// towards a Budget that isn't.
+struct Sizes {
+    estimates: Vec<u64>,
+    exact: Vec<u64>,
+}
+
+/// The body goes with its Page's HTML.
+fn budget_of(b: Option<Budget>) -> Budget {
+    b.unwrap_or(Budget::Html)
+}
+
+impl<'a> Measure<'a> {
+    pub(crate) fn run(&self, cache: &mut Cache) -> (Vec<Measured>, Vec<Diagnostic>) {
+        let plans = self.plans();
+        let parts = parts(&plans, self.files);
+        let estimates = sizes(&parts.blobs, ESTIMATE, cache);
+        let estimated = self.estimated(&parts, &estimates);
+        let exact = exact(&parts, &estimated, cache);
+        let sizes = Sizes { estimates, exact };
+        let mut diagnostics = Vec::new();
+        let measured: Vec<Measured> = plans
+            .iter()
+            .zip(parts.pages)
+            .zip(estimated)
+            .map(|((plan, parts), estimated)| {
+                self.page(plan, parts, estimated, &sizes, &mut diagnostics)
+            })
+            .collect();
+        diagnostics.extend(self.unknown_pages(&measured));
+        (measured, diagnostics)
+    }
+
+    fn origin(&self) -> &'a str {
+        self.config.site.url.trim_end_matches('/')
+    }
+
+    /// What each HTML Page's numbers are made of.
+    fn plans(&self) -> Vec<Plan<'a>> {
+        self.site
+            .routes
+            .par_iter()
+            .filter(|r| r.output.ends_with(".html"))
+            .filter_map(|r| {
+                let text = text(self.files.get(&r.output)?)?;
+                let body = match r.kind {
+                    RouteKind::Entry(i) => Some(self.bodies[i].as_str()),
+                    _ => None,
+                };
+                Some(self.plan(&r.url, &r.output, text, body))
+            })
+            .collect()
+    }
+
+    /// For each Page, the Budgets whose numbers are estimates: those under
+    /// half their limit. Not its limit and allowance: a number over its
+    /// limit is listed even when an Acknowledged overage allows it.
+    fn estimated(&self, parts: &Parts<'_>, estimates: &[u64]) -> Vec<BTreeSet<Budget>> {
+        parts
+            .pages
+            .iter()
+            .map(|parts| {
+                let mut sums: BTreeMap<Budget, u64> = BTreeMap::new();
+                for (b, id) in parts {
+                    if let Some(b) = b {
+                        *sums.entry(*b).or_default() += estimates[*id];
+                    }
+                }
+                sums.into_iter()
+                    .filter(|(b, sum)| 2 * sum <= self.budgets.limit(*b))
+                    .map(|(b, _)| b)
+                    .collect()
+            })
+            .collect()
+    }
+
+    /// One Page's numbers, with a Diagnostic in `diagnostics` for each
+    /// over its limit and allowance.
+    fn page(
+        &self,
+        plan: &Plan<'_>,
+        parts: Vec<(Option<Budget>, usize)>,
+        estimated: BTreeSet<Budget>,
+        sizes: &Sizes,
+        diagnostics: &mut Vec<Diagnostic>,
+    ) -> Measured {
+        let mut values: BTreeMap<Budget, u64> = Budget::ALL.map(|b| (b, 0)).into();
+        let mut body = None;
+        for (budget, id) in parts {
+            let size = match estimated.contains(&budget_of(budget)) {
+                true => sizes.estimates[id],
+                false => sizes.exact[id],
+            };
+            match budget {
+                Some(b) => {
+                    *values
+                        .get_mut(&b)
+                        .expect("`values` starts with every Budget at 0") += size
+                }
+                None => body = Some(size),
+            }
+        }
+        // The Page itself is a request too.
+        values.insert(Budget::Requests, 1 + plan.requests.len() as u64);
+        for (&budget, &value) in &values {
+            if value > self.budgets.limit(budget) + self.budgets.allowance(plan.url, budget) {
+                diagnostics.push(breach(self.config, self.budgets, plan.url, budget, value));
+            }
+        }
+        Measured {
+            url: plan.url.to_string(),
+            values,
+            body,
+            estimated,
+        }
+    }
+
+    /// A warning for each Acknowledged overage that names no HTML Page.
+    fn unknown_pages(&self, measured: &[Measured]) -> Vec<Diagnostic> {
+        let urls: Vec<&str> = measured.iter().map(|m| m.url.as_str()).collect();
+        let mut named = BTreeSet::new();
+        let mut diagnostics = Vec::new();
+        for o in &self.budgets.overages {
+            if urls.contains(&o.page.as_str()) || !named.insert(&o.page) {
+                continue;
+            }
+            let span = Span {
+                file: self.config.file,
+                range: o.page_at.clone(),
+            };
+            let d = Diagnostic::warning(
+                &codes::BUDGET_UNKNOWN_PAGE,
+                format!("`{}` is no HTML Page of the Site", o.page),
+                span,
+            );
+            diagnostics.push(match similar(&o.page, urls.iter().copied()) {
+                Some(near) => d.help(format!("did you mean `{near}`?")),
+                None => d.help("use the Page's URL, as `yuanme routes` lists it"),
+            });
+        }
+        diagnostics
+    }
+}
+
+/// Each distinct text once: a stylesheet is on most Pages.
+fn parts<'a>(plans: &'a [Plan<'a>], files: &'a BTreeMap<String, Output>) -> Parts<'a> {
     let mut blobs: Vec<&[u8]> = Vec::new();
     let mut index: HashMap<&[u8], usize> = HashMap::new();
     let mut id = |bytes| {
@@ -75,7 +210,7 @@ pub(crate) fn measure(
             blobs.len() - 1
         })
     };
-    let parts: Vec<Vec<(Option<Budget>, usize)>> = plans
+    let pages = plans
         .iter()
         .map(|p| {
             let files = p
@@ -94,99 +229,33 @@ pub(crate) fn measure(
                 .collect()
         })
         .collect();
-    let sizes = |texts: &[&[u8]], quality, cache: &mut Cache| -> Vec<u64> {
-        host::brotli(texts, quality, cache)
-            .iter()
-            .map(|br| br.len() as u64)
-            .collect()
-    };
-    let estimates = sizes(&blobs, ESTIMATE, cache);
-    // The body goes with its Page's HTML.
-    let budget_of = |b: Option<Budget>| b.unwrap_or(Budget::Html);
-    let estimated: Vec<BTreeSet<Budget>> = parts
+    Parts { blobs, pages }
+}
+
+/// Each of `texts`' size in Brotli at `quality`.
+fn sizes(texts: &[&[u8]], quality: i32, cache: &mut Cache) -> Vec<u64> {
+    host::brotli(texts, quality, cache)
         .iter()
-        .map(|parts| {
-            let mut sums: BTreeMap<Budget, u64> = BTreeMap::new();
-            for (b, id) in parts {
-                if let Some(b) = b {
-                    *sums.entry(*b).or_default() += estimates[*id];
-                }
-            }
-            // Not its limit and allowance: a number over its limit is
-            // listed even when an Acknowledged overage allows it.
-            sums.into_iter()
-                .filter(|(b, sum)| 2 * sum <= budgets.limit(*b))
-                .map(|(b, _)| b)
-                .collect()
-        })
-        .collect();
-    let mut wanted = vec![false; blobs.len()];
-    for (parts, estimated) in parts.iter().zip(&estimated) {
+        .map(|br| br.len() as u64)
+        .collect()
+}
+
+/// Each text's size at quality 11, for the texts some Page counts towards
+/// a Budget it doesn't estimate; 0 for the rest.
+fn exact(parts: &Parts<'_>, estimated: &[BTreeSet<Budget>], cache: &mut Cache) -> Vec<u64> {
+    let mut wanted = vec![false; parts.blobs.len()];
+    for (parts, estimated) in parts.pages.iter().zip(estimated) {
         for (b, id) in parts {
             wanted[*id] |= !estimated.contains(&budget_of(*b));
         }
     }
-    let ids: Vec<usize> = (0..blobs.len()).filter(|i| wanted[*i]).collect();
-    let texts: Vec<&[u8]> = ids.iter().map(|i| blobs[*i]).collect();
-    let mut exact = vec![0; blobs.len()];
+    let ids: Vec<usize> = (0..parts.blobs.len()).filter(|i| wanted[*i]).collect();
+    let texts: Vec<&[u8]> = ids.iter().map(|i| parts.blobs[*i]).collect();
+    let mut exact = vec![0; parts.blobs.len()];
     for (i, size) in ids.into_iter().zip(sizes(&texts, 11, cache)) {
         exact[i] = size;
     }
-
-    let mut measured = Vec::with_capacity(plans.len());
-    let mut diagnostics = Vec::new();
-    for ((plan, parts), estimated) in plans.iter().zip(parts).zip(estimated) {
-        let mut values: BTreeMap<Budget, u64> = Budget::ALL.map(|b| (b, 0)).into();
-        let mut body = None;
-        for (budget, id) in parts {
-            let size = match estimated.contains(&budget_of(budget)) {
-                true => estimates[id],
-                false => exact[id],
-            };
-            match budget {
-                Some(b) => {
-                    *values
-                        .get_mut(&b)
-                        .expect("`values` starts with every Budget at 0") += size
-                }
-                None => body = Some(size),
-            }
-        }
-        // The Page itself is a request too.
-        values.insert(Budget::Requests, 1 + plan.requests.len() as u64);
-        for (&budget, &value) in &values {
-            if value > budgets.limit(budget) + budgets.allowance(plan.url, budget) {
-                diagnostics.push(breach(config, budgets, plan.url, budget, value));
-            }
-        }
-        measured.push(Measured {
-            url: plan.url.to_string(),
-            values,
-            body,
-            estimated,
-        });
-    }
-    let urls: Vec<&str> = measured.iter().map(|m| m.url.as_str()).collect();
-    let mut named = BTreeSet::new();
-    for o in &budgets.overages {
-        if urls.contains(&o.page.as_str()) || !named.insert(&o.page) {
-            continue;
-        }
-        let span = Span {
-            file: config.file,
-            range: o.page_at.clone(),
-        };
-        let d = Diagnostic::warning(
-            &codes::BUDGET_UNKNOWN_PAGE,
-            format!("`{}` is no HTML Page of the Site", o.page),
-            span,
-        );
-        diagnostics.push(match similar(&o.page, urls.iter().copied()) {
-            Some(near) => d.help(format!("did you mean `{near}`?")),
-            None => d.help("use the Page's URL, as `yuanme routes` lists it"),
-        });
-    }
-    (measured, diagnostics)
+    exact
 }
 
 fn text(output: &Output) -> Option<&str> {
@@ -196,108 +265,105 @@ fn text(output: &Output) -> Option<&str> {
     }
 }
 
-fn plan<'a>(
-    url: &'a str,
-    output: &str,
-    text: &'a str,
-    body: Option<&'a str>,
-    files: &'a BTreeMap<String, Output>,
-    math_font: Option<&str>,
-    origin: &str,
-) -> Plan<'a> {
-    let base = format!("/{output}");
-    let mut plan = Plan {
-        url,
-        files: BTreeSet::new(),
-        texts: Vec::new(),
-        body: None,
-        requests: BTreeSet::new(),
-    };
-    // The body of an Entry's Page isn't in its first flight (#15).
-    let first_flight = match body.and_then(|b| Some((b, text.find(b)?))) {
-        Some((b, at)) if !b.is_empty() => {
-            plan.body = Some(b);
-            Cow::Owned([&text[..at], &text[at + b.len()..]].concat())
-        }
-        _ => Cow::Borrowed(text),
-    };
-    plan.texts.push((Budget::Html, first_flight));
-    // `path` from the root.
-    let font = |path: &str| match Some(&path[1..]) == math_font {
-        true => Budget::MathFont,
-        false => Budget::Fonts,
-    };
-    let mut stylesheets = Vec::new();
-    let scan = scan_html(text);
-    for r in &scan.references {
-        let link = r.url.trim();
-        let budget = match r.kind {
-            ReferenceKind::Stylesheet => Some(Budget::Css),
-            ReferenceKind::Module | ReferenceKind::Classic => Some(Budget::Js),
-            ReferenceKind::Link if r.preload => None,
-            ReferenceKind::Link => continue,
+impl<'a> Measure<'a> {
+    /// What the Page at `url`, written to `output` as `text`, is made of.
+    /// `body` is its Entry's.
+    fn plan(&self, url: &'a str, output: &str, text: &'a str, body: Option<&'a str>) -> Plan<'a> {
+        let (files, math_font, origin) = (self.files, self.math_font, self.origin());
+        let base = format!("/{output}");
+        let mut plan = Plan {
+            url,
+            files: BTreeSet::new(),
+            texts: Vec::new(),
+            body: None,
+            requests: BTreeSet::new(),
         };
-        let Some((path, _)) = internal(link, &base, origin) else {
-            if remote(link) {
-                plan.requests.insert(link.to_string());
+        // The body of an Entry's Page isn't in its first flight (#15).
+        let first_flight = match body.and_then(|b| Some((b, text.find(b)?))) {
+            Some((b, at)) if !b.is_empty() => {
+                plan.body = Some(b);
+                Cow::Owned([&text[..at], &text[at + b.len()..]].concat())
             }
-            continue;
+            _ => Cow::Borrowed(text),
         };
-        let file = &path[1..];
-        let budget = budget.or_else(|| {
-            let ext = |e: &str| file.ends_with(e);
-            if ext(".css") {
-                Some(Budget::Css)
-            } else if ext(".js") || ext(".mjs") {
-                Some(Budget::Js)
-            } else {
-                FONTS.iter().any(|e| ext(e)).then(|| font(&path))
-            }
-        });
-        if let (Some(budget), Some((file, _))) = (budget, files.get_key_value(file)) {
-            plan.files.insert((budget, file.as_str()));
-            if budget == Budget::Css {
-                stylesheets.push(file.as_str());
-            }
-        }
-        plan.requests.insert(path);
-    }
-    let mut css = Vec::new();
-    for inline in &scan.inline {
-        let code = &text[inline.at.clone()];
-        let budget = match inline.script {
-            true => Budget::Js,
-            false => {
-                css.push((code, base.clone()));
-                Budget::Css
-            }
+        plan.texts.push((Budget::Html, first_flight));
+        // `path` from the root.
+        let font = |path: &str| match Some(&path[1..]) == math_font {
+            true => Budget::MathFont,
+            false => Budget::Fonts,
         };
-        plan.texts.push((budget, Cow::Borrowed(code)));
-    }
-    for path in stylesheets {
-        if let Some(code) = files.get(path).and_then(self::text) {
-            css.push((code, format!("/{path}")));
-        }
-    }
-    let is_font = |url: &str| {
-        let path = &url[..url.len() - suffix(url).len()];
-        FONTS.iter().any(|e| path.ends_with(e))
-    };
-    for (code, base) in css {
-        for link in css_urls(code).into_iter().filter(|u| is_font(u)) {
+        let mut stylesheets = Vec::new();
+        let scan = scan_html(text);
+        for r in &scan.references {
+            let link = r.url.trim();
+            let budget = match r.kind {
+                ReferenceKind::Stylesheet => Some(Budget::Css),
+                ReferenceKind::Module | ReferenceKind::Classic => Some(Budget::Js),
+                ReferenceKind::Link if r.preload => None,
+                ReferenceKind::Link => continue,
+            };
             let Some((path, _)) = internal(link, &base, origin) else {
                 if remote(link) {
                     plan.requests.insert(link.to_string());
                 }
                 continue;
             };
-            if let Some((file, _)) = files.get_key_value(&path[1..]) {
-                plan.files.insert((font(&path), file.as_str()));
+            let file = &path[1..];
+            let budget = budget.or_else(|| {
+                let ext = |e: &str| file.ends_with(e);
+                if ext(".css") {
+                    Some(Budget::Css)
+                } else if ext(".js") || ext(".mjs") {
+                    Some(Budget::Js)
+                } else {
+                    FONTS.iter().any(|e| ext(e)).then(|| font(&path))
+                }
+            });
+            if let (Some(budget), Some((file, _))) = (budget, files.get_key_value(file)) {
+                plan.files.insert((budget, file.as_str()));
+                if budget == Budget::Css {
+                    stylesheets.push(file.as_str());
+                }
             }
             plan.requests.insert(path);
         }
+        let mut css = Vec::new();
+        for inline in &scan.inline {
+            let code = &text[inline.at.clone()];
+            let budget = match inline.script {
+                true => Budget::Js,
+                false => {
+                    css.push((code, base.clone()));
+                    Budget::Css
+                }
+            };
+            plan.texts.push((budget, Cow::Borrowed(code)));
+        }
+        for path in stylesheets {
+            if let Some(code) = files.get(path).and_then(self::text) {
+                css.push((code, format!("/{path}")));
+            }
+        }
+        let is_font = |url: &str| {
+            let path = &url[..url.len() - suffix(url).len()];
+            FONTS.iter().any(|e| path.ends_with(e))
+        };
+        for (code, base) in css {
+            for link in css_urls(code).into_iter().filter(|u| is_font(u)) {
+                let Some((path, _)) = internal(link, &base, origin) else {
+                    if remote(link) {
+                        plan.requests.insert(link.to_string());
+                    }
+                    continue;
+                };
+                if let Some((file, _)) = files.get_key_value(&path[1..]) {
+                    plan.files.insert((font(&path), file.as_str()));
+                }
+                plan.requests.insert(path);
+            }
+        }
+        plan
     }
-    plan
 }
 
 /// A URL on another origin, which a Page fetches but whose bytes the
