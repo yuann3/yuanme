@@ -28,7 +28,7 @@ const STREAMED: &[&str] = &["avif", "gif", "jpeg", "jpg", "png", "webp"];
 /// Walks the project at `root`, honouring `.gitignore` and `.ignore`, and
 /// hashes every file a build could read. `skip` are folders under `root`
 /// that yuanme writes, such as the output directory.
-pub fn load(root: &Path, skip: &[PathBuf]) -> io::Result<Inputs> {
+pub(crate) fn load(root: &Path, skip: &[PathBuf]) -> io::Result<Inputs> {
     let mut inputs = Inputs::at(root.to_path_buf());
     let (files, dirs) = walk(root, skip, "", None)?;
     for dir in dirs {
@@ -43,7 +43,7 @@ pub fn load(root: &Path, skip: &[PathBuf]) -> io::Result<Inputs> {
 /// editor's save can arrive as a rename alone (#11). A folder is walked
 /// again whole, and so is the project on `rescan`, when the watcher lost
 /// track. Returns whether anything a build reads changed.
-pub fn refresh(
+pub(crate) fn refresh(
     inputs: &mut Inputs,
     root: &Path,
     skip: &[PathBuf],

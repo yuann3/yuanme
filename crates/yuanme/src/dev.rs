@@ -3,7 +3,7 @@
 //! Site (ADR 0011), and the Pages whose files changed are what the dev
 //! client reloads.
 
-pub mod running;
+pub(crate) mod running;
 mod serve;
 #[cfg(test)]
 mod tests;
@@ -371,24 +371,24 @@ fn report(build: &Build, started: Instant, urls: Vec<String>, out: Out) -> serve
 
 /// What browsers are served: a Build that succeeded, or the first one,
 /// and the Inputs it read, which images are encoded from on request.
-pub struct Snapshot {
-    pub build: Build,
-    pub inputs: Inputs,
+pub(crate) struct Snapshot {
+    pub(crate) build: Build,
+    pub(crate) inputs: Inputs,
 }
 
-pub struct Session {
+pub(crate) struct Session {
     root: PathBuf,
     /// What the walk leaves out: the output directory of `yuanme build`,
     /// and `--write`'s.
     skip: Vec<PathBuf>,
     inputs: Inputs,
     /// Shared with the requests that encode images.
-    pub cache: Arc<Mutex<Cache>>,
+    pub(crate) cache: Arc<Mutex<Cache>>,
     snapshot: Arc<Snapshot>,
 }
 
 /// What one change did.
-pub enum Update {
+pub(crate) enum Update {
     /// The Site's URLs whose files changed, sorted, now served.
     Built(Vec<String>),
     /// The build failed: the last good snapshot is still served.
@@ -398,7 +398,7 @@ pub enum Update {
 impl Session {
     /// Loads and builds the project at `root`, which must be canonical,
     /// as the watcher's paths are.
-    pub fn start(root: PathBuf, skip: Vec<PathBuf>, cache: Cache) -> io::Result<Session> {
+    pub(crate) fn start(root: PathBuf, skip: Vec<PathBuf>, cache: Cache) -> io::Result<Session> {
         let inputs = load::load(&root, &skip)?;
         let mut cache = cache;
         let build = yuanme_engine::build(&inputs, &mut cache, Mode::Dev);
@@ -415,13 +415,13 @@ impl Session {
         })
     }
 
-    pub fn snapshot(&self) -> Arc<Snapshot> {
+    pub(crate) fn snapshot(&self) -> Arc<Snapshot> {
         self.snapshot.clone()
     }
 
     /// Reads the files `batch` names again, returning whether anything a
     /// build reads changed.
-    pub fn refresh(&mut self, batch: &Batch) -> io::Result<bool> {
+    pub(crate) fn refresh(&mut self, batch: &Batch) -> io::Result<bool> {
         load::refresh(
             &mut self.inputs,
             &self.root,
@@ -431,7 +431,7 @@ impl Session {
         )
     }
 
-    pub fn build(&mut self) -> Update {
+    pub(crate) fn build(&mut self) -> Update {
         let mut cache = self.cache.lock().expect("a build doesn't panic");
         let build = yuanme_engine::build(&self.inputs, &mut cache, Mode::Dev);
         drop(cache);

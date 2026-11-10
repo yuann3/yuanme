@@ -17,11 +17,11 @@ const HEADER: &str = "yuanme output manifest 1";
 
 /// Output paths, each sorted.
 #[derive(Debug, Default, PartialEq, Eq)]
-pub struct Report {
-    pub written: Vec<String>,
-    pub deleted: Vec<String>,
+pub(crate) struct Report {
+    pub(crate) written: Vec<String>,
+    pub(crate) deleted: Vec<String>,
     /// Files the Engine never wrote. They are left alone.
-    pub unknown: Vec<String>,
+    pub(crate) unknown: Vec<String>,
 }
 
 /// What the previous build wrote to one path, and what `stat` said after.
@@ -35,7 +35,7 @@ struct Record {
 /// deletes the files the previous build wrote that this one didn't.
 /// `manifest` holds what the previous build wrote; every file is checked
 /// with `stat` against it, so a file edited outside the Engine is rewritten.
-pub fn sync(build: &Build, root: &Path, out: &Path, manifest: &Path) -> io::Result<Report> {
+pub(crate) fn sync(build: &Build, root: &Path, out: &Path, manifest: &Path) -> io::Result<Report> {
     if build.failed() {
         return Err(io::Error::other("a failed build writes nothing"));
     }

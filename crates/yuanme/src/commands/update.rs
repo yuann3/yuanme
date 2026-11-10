@@ -32,31 +32,31 @@ const KEY: Option<&str> = Some(include_str!("../minisign.pub"));
 const KEY: Option<&str> = None;
 
 /// Where releases are published, and the key that signs them.
-pub struct Source<'a> {
+pub(crate) struct Source<'a> {
     /// The repository's `/releases`, under which GitHub serves
     /// `download/vX.Y.Z/FILE` and the newest release's
     /// `latest/download/FILE`.
-    pub url: &'a str,
+    pub(crate) url: &'a str,
     /// A minisign public key file. `None` in a build from before the
     /// release key was committed.
-    pub key: Option<&'a str>,
+    pub(crate) key: Option<&'a str>,
 }
 
 /// An install the install script made, as its receipt records it.
-pub struct Install {
+pub(crate) struct Install {
     binary: PathBuf,
     receipt: PathBuf,
     json: Value,
 }
 
-pub struct Outcome {
+pub(crate) struct Outcome {
     /// The release it looked at: the newest, or the one named.
-    pub release: String,
-    pub replaced: bool,
+    pub(crate) release: String,
+    pub(crate) replaced: bool,
 }
 
 /// `yuanme self update [VERSION]`, or with `check`, `--check`.
-pub fn run(version: Option<String>, check: bool, out: &Out) -> Result<u8, Error> {
+pub(crate) fn run(version: Option<String>, check: bool, out: &Out) -> Result<u8, Error> {
     let source = Source {
         url: RELEASES,
         key: KEY,
@@ -102,7 +102,7 @@ pub fn run(version: Option<String>, check: bool, out: &Out) -> Result<u8, Error>
 }
 
 /// clap's check of `VERSION`: an exact release.
-pub fn version(arg: &str) -> Result<String, NotARelease> {
+pub(crate) fn version(arg: &str) -> Result<String, NotARelease> {
     match parse(arg) {
         Some(_) if !arg.contains('+') => Ok(arg.to_string()),
         _ => Err(NotARelease),
@@ -111,7 +111,7 @@ pub fn version(arg: &str) -> Result<String, NotARelease> {
 
 /// A `VERSION` that isn't X.Y.Z, which clap reports.
 #[derive(Debug)]
-pub struct NotARelease;
+pub(crate) struct NotARelease;
 
 impl fmt::Display for NotARelease {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -122,14 +122,14 @@ impl fmt::Display for NotARelease {
 impl std::error::Error for NotARelease {}
 
 /// The newest release's version, from its signed `sha256.txt`.
-pub fn newest(source: &Source) -> Result<String, Error> {
+pub(crate) fn newest(source: &Source) -> Result<String, Error> {
     Ok(release(source, None)?.0)
 }
 
 /// Replaces the install's binary with the release `version` names, or
 /// with the newest when it is newer than `current`, and records it in the
 /// receipt. `target` picks the archive.
-pub fn update(
+pub(crate) fn update(
     source: &Source,
     install: &Install,
     current: &str,
@@ -195,7 +195,7 @@ pub fn update(
 impl Install {
     /// The install `exe`, the running binary, belongs to, from the first
     /// of `receipts` that exists.
-    pub fn find(exe: &Path, receipts: &[PathBuf]) -> Result<Install, Error> {
+    pub(crate) fn find(exe: &Path, receipts: &[PathBuf]) -> Result<Install, Error> {
         let own_tool = "update it the way you installed it, such as with `brew upgrade yuanme` or `cargo install --locked yuanme`";
         let Some((receipt, text)) = receipts
             .iter()

@@ -16,19 +16,19 @@ use yuanme_engine::{Body, Build, Measured};
 use crate::project::sync;
 
 /// A Page over one of its Site budgets.
-pub struct Over {
-    pub page: String,
-    pub budget: Budget,
-    pub value: u64,
-    pub limit: u64,
+pub(crate) struct Over {
+    pub(crate) page: String,
+    pub(crate) budget: Budget,
+    pub(crate) value: u64,
+    pub(crate) limit: u64,
     /// Its Acknowledged overage, or 0.
-    pub allowance: u64,
+    pub(crate) allowance: u64,
     /// The overage allows it.
-    pub acknowledged: bool,
+    pub(crate) acknowledged: bool,
 }
 
 /// Every breach, in the order of the Pages and then of the Budgets.
-pub fn over(measured: &[Measured], budgets: &Budgets) -> Vec<Over> {
+pub(crate) fn over(measured: &[Measured], budgets: &Budgets) -> Vec<Over> {
     let mut out = Vec::new();
     for page in measured {
         for (&budget, &value) in &page.values {
@@ -49,15 +49,15 @@ pub fn over(measured: &[Measured], budgets: &Budgets) -> Vec<Over> {
     out
 }
 
-pub struct Stages {
-    pub load: Duration,
-    pub build: Duration,
-    pub write: Duration,
+pub(crate) struct Stages {
+    pub(crate) load: Duration,
+    pub(crate) build: Duration,
+    pub(crate) write: Duration,
 }
 
 /// Writes both files into `dir`. `written` is `None` for a build that
 /// failed, which writes nothing.
-pub fn write(
+pub(crate) fn write(
     dir: &Path,
     root: &Path,
     build: &Build,

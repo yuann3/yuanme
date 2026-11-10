@@ -39,16 +39,16 @@ const TOPICS: &[(&str, &str)] = &[
     ("budgets", include_str!("docs/budgets.md")),
 ];
 
-pub struct Page {
-    pub title: String,
+pub(crate) struct Page {
+    pub(crate) title: String,
     /// One sentence, for the index.
-    pub description: String,
-    pub body: String,
+    pub(crate) description: String,
+    pub(crate) body: String,
 }
 
 impl Page {
     /// The page as `yuanme docs` prints it and `.yuanme/docs/` holds it.
-    pub fn markdown(&self) -> String {
+    pub(crate) fn markdown(&self) -> String {
         format!("# {}\n\n{}", self.title, self.body)
     }
 }
@@ -101,7 +101,7 @@ fn code_page(code: &Code) -> Page {
 }
 
 /// A topic or code page by its name. The index is made from these.
-pub fn get(name: &str) -> Option<Page> {
+pub(crate) fn get(name: &str) -> Option<Page> {
     if let Some((name, source)) = TOPICS.iter().find(|(n, _)| *n == name) {
         return Some(topic(name, source));
     }
@@ -112,14 +112,14 @@ pub fn get(name: &str) -> Option<Page> {
 }
 
 /// Each topic's name and description, in the index's order.
-pub fn topics() -> impl Iterator<Item = (&'static str, String)> {
+pub(crate) fn topics() -> impl Iterator<Item = (&'static str, String)> {
     TOPICS
         .iter()
         .map(|(name, source)| (*name, topic(name, source).description))
 }
 
 /// The index, `yuanme docs` with no argument.
-pub fn index() -> String {
+pub(crate) fn index() -> String {
     let mut out = String::from(
         "# yuanme docs\n\nRun `yuanme docs NAME` for a page; each one is also in `.yuanme/docs/NAME.md`.\n\n## Topics\n\n",
     );
@@ -135,7 +135,7 @@ pub fn index() -> String {
 
 /// A page by its name: a topic such as `templates`, a code such as
 /// `math/unknown-label`, or `index`.
-pub fn page(name: &str) -> Option<String> {
+pub(crate) fn page(name: &str) -> Option<String> {
     match name {
         "index" => Some(index()),
         _ => get(name).map(|p| p.markdown()),
@@ -143,7 +143,7 @@ pub fn page(name: &str) -> Option<String> {
 }
 
 /// Every page name, for "did you mean".
-pub fn names() -> impl Iterator<Item = &'static str> {
+pub(crate) fn names() -> impl Iterator<Item = &'static str> {
     std::iter::once("index")
         .chain(TOPICS.iter().map(|(n, _)| *n))
         .chain(codes::ALL.iter().map(|c| c.name))
@@ -151,7 +151,7 @@ pub fn names() -> impl Iterator<Item = &'static str> {
 
 /// Writes every page to `dir` unless its `VERSION` already says `version`,
 /// so the files always match the binary that runs in the project (#21).
-pub fn write(dir: &Path, version: &str) -> io::Result<()> {
+pub(crate) fn write(dir: &Path, version: &str) -> io::Result<()> {
     let stamp = dir.join("VERSION");
     if fs::read_to_string(&stamp).is_ok_and(|v| v.trim() == version) {
         return Ok(());

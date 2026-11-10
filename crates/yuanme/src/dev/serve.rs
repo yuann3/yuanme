@@ -28,44 +28,44 @@ use crate::out::Out;
 /// "urls": [...]}`, the `reload` event's, and `{"type": "overlay",
 /// "failed": bool, "diagnostics": [...]}`, the rendered errors to show,
 /// none to hide it; it sends `browser-console` events' shape back.
-pub const SOCKET: &str = "/__yuanme/ws";
+pub(crate) const SOCKET: &str = "/__yuanme/ws";
 /// The last build, as [`Status::json`].
-pub const STATUS: &str = "/__yuanme/status";
+pub(crate) const STATUS: &str = "/__yuanme/status";
 /// `POST` with [`PID`] set to the server's pid stops it. A browser can't
 /// send that header to another origin without asking first, and nothing
 /// answers it, so a web page can't stop a dev server.
-pub const STOP: &str = "/__yuanme/stop";
+pub(crate) const STOP: &str = "/__yuanme/stop";
 /// On every answer, so `yuanme dev status` knows the server is the one
 /// `.yuanme/dev.json` names.
-pub const PID: &str = "x-yuanme-pid";
+pub(crate) const PID: &str = "x-yuanme-pid";
 
-pub struct Shared {
-    pub snapshot: RwLock<Arc<Snapshot>>,
-    pub cache: Arc<Mutex<Cache>>,
+pub(crate) struct Shared {
+    pub(crate) snapshot: RwLock<Arc<Snapshot>>,
+    pub(crate) cache: Arc<Mutex<Cache>>,
     /// Each message to dev clients, as JSON.
-    pub messages: broadcast::Sender<String>,
-    pub status: RwLock<Status>,
+    pub(crate) messages: broadcast::Sender<String>,
+    pub(crate) status: RwLock<Status>,
     /// Notified by a `POST` to [`STOP`].
-    pub stop: Notify,
-    pub out: Out,
+    pub(crate) stop: Notify,
+    pub(crate) out: Out,
 }
 
 /// The last build, and once they are checked, the type errors of the
 /// last good one (#60).
-pub struct Status {
+pub(crate) struct Status {
     /// `build-finished`'s fields, and its Diagnostics as `--json` prints
     /// them.
-    pub json: Value,
+    pub(crate) json: Value,
     /// The overlay message.
-    pub overlay: String,
+    pub(crate) overlay: String,
     /// Which build of the server's it is, from 0.
-    pub build: usize,
+    pub(crate) build: usize,
 }
 
 impl Status {
     /// `diagnostics` are the build's, rendered from `files`, and the type
     /// errors when they are checked.
-    pub fn new(
+    pub(crate) fn new(
         build: &Build,
         diagnostics: &[Diagnostic],
         files: &Files,
@@ -102,7 +102,7 @@ impl Status {
 
     /// Adds the type errors of the build that succeeded, which the overlay
     /// then shows.
-    pub fn add_type_errors(&mut self, errors: &[Diagnostic], files: &Files) {
+    pub(crate) fn add_type_errors(&mut self, errors: &[Diagnostic], files: &Files) {
         let json = &mut self.json;
         let all = json["diagnostics"].as_array_mut().expect("a list");
         all.extend(errors.iter().map(|d| d.to_json(files)));
@@ -113,12 +113,12 @@ impl Status {
         self.overlay = overlay.to_string();
     }
 
-    pub fn shows_errors(&self) -> bool {
+    pub(crate) fn shows_errors(&self) -> bool {
         self.json["errors"] != 0
     }
 }
 
-pub fn router(shared: Arc<Shared>) -> Router {
+pub(crate) fn router(shared: Arc<Shared>) -> Router {
     let pid = std::process::id().to_string();
     Router::new()
         .route(SOCKET, get(socket))

@@ -19,13 +19,13 @@ const POLL: Duration = Duration::from_millis(100);
 
 /// What changed since the last batch.
 #[derive(Debug, Default)]
-pub struct Batch {
+pub(crate) struct Batch {
     /// Absolute, as the watcher reports them: files and folders created,
     /// changed, removed or renamed, without saying which.
-    pub paths: BTreeSet<PathBuf>,
+    pub(crate) paths: BTreeSet<PathBuf>,
     /// The watcher lost events, so only walking the whole project again
     /// is sure to see them.
-    pub rescan: bool,
+    pub(crate) rescan: bool,
 }
 
 /// One event, as notify reports it.
@@ -35,7 +35,7 @@ type Raw = notify::Result<notify::Event>;
 /// the operating system reports are. `poll` looks at every file every
 /// 100 ms instead, for file systems that report no events, such as some
 /// network and container mounts. Batches arrive while the watcher lives.
-pub fn watch(
+pub(crate) fn watch(
     root: &Path,
     poll: bool,
 ) -> notify::Result<(Box<dyn Watcher + Send>, Receiver<Batch>)> {

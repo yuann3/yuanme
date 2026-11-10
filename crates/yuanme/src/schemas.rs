@@ -12,7 +12,7 @@ use yuanme_content::site::{self, Site};
 
 /// By name, `entry/<collection>` and `data/<name>`. Site config's is
 /// `config`, and each kind of Route's context `context/<kind>`.
-pub fn entry_and_data(config: &Config) -> BTreeMap<String, Value> {
+pub(crate) fn entry_and_data(config: &Config) -> BTreeMap<String, Value> {
     let mut out = BTreeMap::new();
     for (name, collection) in site::collections(config) {
         let schema = config::entry_schema(config, &name, &collection);
@@ -24,7 +24,7 @@ pub fn entry_and_data(config: &Config) -> BTreeMap<String, Value> {
     out
 }
 
-pub fn context(config: &Config, site: &Site) -> BTreeMap<String, Value> {
+pub(crate) fn context(config: &Config, site: &Site) -> BTreeMap<String, Value> {
     yuanme_render::template::context_schemas(config, site)
         .into_iter()
         .map(|(kind, schema)| (format!("context/{kind}"), schema))
@@ -45,7 +45,7 @@ fn file(name: &str) -> String {
 /// one while the Author fixes it; a Collection or kind that is gone loses
 /// its file. Files are rewritten only when they changed, so editors
 /// watching them aren't woken.
-pub fn write(dir: &Path, config: Option<&Config>, site: Option<&Site>) -> io::Result<()> {
+pub(crate) fn write(dir: &Path, config: Option<&Config>, site: Option<&Site>) -> io::Result<()> {
     let mut schemas = BTreeMap::from([("config".to_string(), config::json_schema())]);
     let mut owned = Vec::new();
     if let Some(config) = config {

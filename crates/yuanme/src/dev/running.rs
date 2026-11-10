@@ -18,21 +18,21 @@ use crate::{ENGINE_VERSION, Error, SITE_ERRORS};
 /// From the project root.
 const FILE: &str = ".yuanme/dev.json";
 /// Where a server started with `--background` writes what it prints.
-pub const LOG: &str = ".yuanme/dev.log";
+pub(crate) const LOG: &str = ".yuanme/dev.log";
 
 /// A dev server that answers as the one `dev.json` names.
-pub struct Running {
+pub(crate) struct Running {
     /// `dev.json`.
-    pub info: Value,
-    pub pid: u32,
-    pub url: String,
+    pub(crate) info: Value,
+    pub(crate) pid: u32,
+    pub(crate) url: String,
     /// `/__yuanme/status`.
-    pub build: Value,
+    pub(crate) build: Value,
 }
 
 /// The server `dev.json` names, if it answers as that server. A file
 /// whose server is gone, as one killed with SIGKILL leaves, is removed.
-pub fn find(root: &Path) -> Option<Running> {
+pub(crate) fn find(root: &Path) -> Option<Running> {
     let path = root.join(FILE);
     let text = fs::read_to_string(&path).ok()?;
     let found = (|| {
@@ -58,7 +58,7 @@ pub fn find(root: &Path) -> Option<Running> {
 }
 
 /// Writes `dev.json` for this process, serving at `url`.
-pub fn record(root: &Path, url: &str, port: u16, log: Option<&str>) -> io::Result<()> {
+pub(crate) fn record(root: &Path, url: &str, port: u16, log: Option<&str>) -> io::Result<()> {
     let info = json!({
         "pid": std::process::id(),
         "port": port,
@@ -75,7 +75,7 @@ pub fn record(root: &Path, url: &str, port: u16, log: Option<&str>) -> io::Resul
 }
 
 /// Removes `dev.json` if it is still this process's.
-pub fn forget(root: &Path) {
+pub(crate) fn forget(root: &Path) {
     let path = root.join(FILE);
     if recorded_pid(root) == Some(std::process::id()) {
         let _ = fs::remove_file(path);
@@ -119,7 +119,7 @@ fn request(url: &str, method: &str, path: &str, pid: u32) -> io::Result<(u16, St
 }
 
 /// What `dev` says when a server already runs for the project.
-pub fn already(running: &Running, out: Out) {
+pub(crate) fn already(running: &Running, out: Out) {
     out.say(&format!(
         "yuanme dev is already running here, at {} (pid {})",
         running.url, running.pid
@@ -134,7 +134,7 @@ pub fn already(running: &Running, out: Out) {
 /// own, which prints into [`LOG`], and relays what it prints until its
 /// first build has finished and it serves. 1 if that build failed, though
 /// the server runs on.
-pub fn background(root: &Path, args: &[String], out: Out) -> Result<u8, Error> {
+pub(crate) fn background(root: &Path, args: &[String], out: Out) -> Result<u8, Error> {
     if let Some(running) = find(root) {
         already(&running, out);
         return Ok(0);
@@ -224,7 +224,7 @@ fn relay(log: &Path, from: &mut u64, all: bool, out: Out) -> io::Result<()> {
 }
 
 /// `yuanme dev status`.
-pub fn status(root: &Path, out: Out) -> Result<u8, Error> {
+pub(crate) fn status(root: &Path, out: Out) -> Result<u8, Error> {
     let Some(running) = find(root) else {
         out.say("no yuanme dev is running here");
         out.event(Event::DevStatus(None));
@@ -259,7 +259,7 @@ pub fn status(root: &Path, out: Out) -> Result<u8, Error> {
 
 /// `yuanme dev stop`: asks the server to stop, and waits until it has
 /// saved its cache and stopped its Tailwind CLIs.
-pub fn stop(root: &Path, out: Out) -> Result<u8, Error> {
+pub(crate) fn stop(root: &Path, out: Out) -> Result<u8, Error> {
     if let Some(running) = find(root) {
         let (status, _, body) = request(&running.url, "POST", STOP, running.pid)?;
         if status != 202 {
@@ -288,7 +288,7 @@ pub fn stop(root: &Path, out: Out) -> Result<u8, Error> {
 
 /// `yuanme dev logs`: what the server started with `--background` last
 /// printed, and with `follow`, what it prints next until it stops.
-pub fn logs(root: &Path, follow: bool) -> Result<u8, Error> {
+pub(crate) fn logs(root: &Path, follow: bool) -> Result<u8, Error> {
     let mut file = File::open(root.join(LOG)).map_err(|e| match e.kind() {
         io::ErrorKind::NotFound => Error::BadCommand(
             "no yuanme dev has run in the background here: `yuanme dev --background` starts one"

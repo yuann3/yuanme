@@ -6,7 +6,7 @@
 use serde_json::{Value, json};
 use yuanme_diag::{Diagnostic, Files};
 
-pub enum Event<'a> {
+pub(crate) enum Event<'a> {
     Diagnostic(&'a Diagnostic, &'a Files),
     BuildStarted {
         command: &'static str,
@@ -71,19 +71,19 @@ pub enum Event<'a> {
 
 /// What the dev client forwards from a browser's console (#21).
 #[derive(Debug, PartialEq, Eq)]
-pub struct Console {
+pub(crate) struct Console {
     /// log, info, warn, error or debug.
-    pub level: String,
-    pub message: String,
+    pub(crate) level: String,
+    pub(crate) message: String,
     /// The Page's.
-    pub url: String,
-    pub stack: Option<String>,
+    pub(crate) url: String,
+    pub(crate) stack: Option<String>,
 }
 
 impl Console {
     /// The dev client's message, the event's own shape, or `None` for
     /// anything else.
-    pub fn parse(text: &str) -> Option<Console> {
+    pub(crate) fn parse(text: &str) -> Option<Console> {
         let json: Value = serde_json::from_str(text).ok()?;
         let field = |key: &str| json.get(key)?.as_str().map(str::to_string);
         if json.get("type")?.as_str()? != "browser-console" {
@@ -103,26 +103,26 @@ impl Console {
 }
 
 /// One Route and what produces it, for `yuanme routes`.
-pub struct Route {
-    pub url: String,
-    pub output: String,
+pub(crate) struct Route {
+    pub(crate) url: String,
+    pub(crate) output: String,
     /// As `page.kind` names it: entry, list, term, index, template or feed.
-    pub kind: &'static str,
-    pub template: String,
+    pub(crate) kind: &'static str,
+    pub(crate) template: String,
     /// The Entry file, for an Entry's Route.
-    pub entry: Option<String>,
+    pub(crate) entry: Option<String>,
     /// The Collection of an Entry or list.
-    pub collection: Option<String>,
-    pub taxonomy: Option<String>,
-    pub term: Option<String>,
+    pub(crate) collection: Option<String>,
+    pub(crate) taxonomy: Option<String>,
+    pub(crate) term: Option<String>,
     /// The page of a list or Term, from 1.
-    pub page: Option<usize>,
+    pub(crate) page: Option<usize>,
     /// The name Site config gives a Template's Route or a feed.
-    pub name: Option<String>,
+    pub(crate) name: Option<String>,
 }
 
 impl Event<'_> {
-    pub fn to_json(&self) -> Value {
+    pub(crate) fn to_json(&self) -> Value {
         let mut json = match self {
             Event::Diagnostic(d, files) => return d.to_json(files),
             Event::BuildStarted { command } => {
@@ -245,7 +245,7 @@ impl Event<'_> {
 }
 
 /// The draft 2020-12 JSON Schema of every event, `yuanme schema events`.
-pub fn schema() -> Value {
+pub(crate) fn schema() -> Value {
     let string = json!({ "type": "string" });
     let strings = json!({ "type": "array", "items": { "type": "string" } });
     let count = json!({ "type": "integer", "minimum": 0 });

@@ -28,7 +28,7 @@ macro_rules! files {
 /// project root; `init` adds the `#:schema` line and `yuanme = "X.Y"` to
 /// the top of its `yuanme.toml`.
 #[derive(Clone, Copy, ValueEnum)]
-pub enum Starter {
+pub(crate) enum Starter {
     /// A personal site: Posts in Markdown and Org with math and code,
     /// projects, tags, an about Page and an RSS feed.
     Blog,
@@ -171,7 +171,7 @@ fn stale_skill(text: &str) -> bool {
 /// yuanme wrote, as `dev`, `build` and `check` do (#21): the block of
 /// `AGENTS.md` unless `[agents] manage_agents_md = false`, and each skill
 /// the Author hasn't edited. It never makes one that isn't there.
-pub fn refresh(root: &Path, manage_agents_md: bool, out: &Out) -> io::Result<()> {
+pub(crate) fn refresh(root: &Path, manage_agents_md: bool, out: &Out) -> io::Result<()> {
     let agents = root.join("AGENTS.md");
     if manage_agents_md
         && let Ok(text) = fs::read_to_string(&agents)
@@ -266,7 +266,7 @@ enum Write {
     Update(String),
 }
 
-pub fn run(
+pub(crate) fn run(
     cwd: &Path,
     dir: Option<&Path>,
     starter: Starter,

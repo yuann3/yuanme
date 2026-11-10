@@ -18,24 +18,24 @@ use crate::out::{Out, stdout};
 use crate::project::{self, config_or_report};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, clap::ValueEnum)]
-pub enum Format {
+pub(crate) enum Format {
     Md,
     Org,
 }
 
-pub struct Created {
+pub(crate) struct Created {
     /// From the project root.
-    pub path: String,
-    pub url: String,
-    pub text: String,
+    pub(crate) path: String,
+    pub(crate) url: String,
+    pub(crate) text: String,
     /// Required fields with no valid value to give, such as an image.
-    pub unfilled: Vec<String>,
+    pub(crate) unfilled: Vec<String>,
 }
 
 /// Why `new` writes no Entry. Each is the command's mistake, not the
 /// Site's.
 #[derive(Debug)]
-pub enum Error {
+pub(crate) enum Error {
     MultilineTitle,
     /// The title, which has no letters or digits.
     NoSlug(String),
@@ -76,7 +76,7 @@ impl From<Error> for crate::Error {
 }
 
 /// The Entry `new` writes. `today` is the date in the Site's time zone.
-pub fn entry(
+pub(crate) fn entry(
     collection: &Collection,
     title: &str,
     format: Format,
@@ -184,7 +184,7 @@ fn yaml_string(s: &str) -> String {
 }
 
 /// The Collection `name`, the built-in `pages` included.
-pub fn collection(config: &Config, name: &str) -> Result<Collection, Error> {
+pub(crate) fn collection(config: &Config, name: &str) -> Result<Collection, Error> {
     let collections = yuanme_content::site::collections(config);
     collections
         .get(name)
