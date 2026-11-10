@@ -8,7 +8,8 @@ use toml::Spanned;
 use super::check::{Checker, similar};
 use super::fields::field;
 use super::{
-    Field, FieldType, Table, Value, as_table, boolean, entries, int, items, string, strings, table,
+    Field, FieldType, Table, Value, as_str, as_table, boolean, entries, int, items, required,
+    string, strings, table,
 };
 
 #[derive(Clone, Debug)]
@@ -161,7 +162,7 @@ fn collection(
             |d| d.trim_end_matches('/').to_string(),
         ),
         dir_at: c.get("dir").map_or(key.span(), |d| d.span()),
-        route: string(c, "route").expect("required"),
+        route: required(c, "route"),
         list_route,
         paginate: paginate.map(|p| int(p) as u64),
         sort: sort(c.get("sort"), &sortable, &unsortable, checker),
@@ -188,7 +189,7 @@ fn taxonomy(
     let no_fields = BTreeMap::new();
     let (mut sortable, mut unsortable) = sortable(&no_fields);
     for collection in items(&t["collections"]) {
-        let s = collection.get_ref().as_str().expect("checked");
+        let s = as_str(collection);
         if let Some(c) = collections.get(s) {
             let (yes, no) = self::sortable(&c.fields);
             sortable.extend(yes);
@@ -199,7 +200,7 @@ fn taxonomy(
     }
     Taxonomy {
         collections: strings(&t["collections"]),
-        route: string(t, "route").expect("required"),
+        route: required(t, "route"),
         paginate: t.get("paginate").map(|p| int(p) as u64),
         single: boolean(t, "single"),
         sort: sort(t.get("sort"), &sortable, &unsortable, checker),
@@ -207,7 +208,7 @@ fn taxonomy(
         slugs: entries(table(t, "slugs"))
             .iter()
             .map(|(term, slug)| {
-                let s = slug.get_ref().as_str().expect("checked");
+                let s = as_str(slug);
                 if !crate::slug::is_valid(s) {
                     checker.invalid(format!("`{s}` is not a valid Slug"), slug.span());
                     let fixed = crate::slug::corrected(s);
@@ -229,7 +230,7 @@ fn taxonomy(
 
 /// Checks that `name` is a Collection's.
 pub(super) fn collection_name(name: &Value<'_>, names: &BTreeSet<&str>, checker: &mut Checker) {
-    let s = name.get_ref().as_str().expect("checked");
+    let s = as_str(name);
     if names.contains(s) {
         return;
     }
@@ -277,7 +278,7 @@ fn sort(
     items(keys)
         .iter()
         .map(|key| {
-            let s = key.get_ref().as_str().expect("checked");
+            let s = as_str(key);
             let (field, descending) = match s.strip_prefix('-') {
                 Some(field) => (field, true),
                 None => (s, false),

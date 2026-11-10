@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use toml::de::DeValue;
 
 use super::check::Checker;
-use super::{Table, as_table, entries, string, table};
+use super::{Table, as_str, as_table, entries, string, table};
 
 /// `[math]` (#17).
 #[derive(Debug)]
@@ -61,7 +61,7 @@ pub(super) fn read(math: Option<&Table<'_>>, checker: &mut Checker) -> Math {
     let macros: Vec<(String, String)> = entries(math.and_then(|m| table(m, "macros")))
         .iter()
         .map(|(name, value)| {
-            let definition = value.get_ref().as_str().expect("checked as a string");
+            let definition = as_str(value);
             (name.get_ref().to_string(), definition.to_string())
         })
         .collect();

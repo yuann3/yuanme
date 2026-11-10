@@ -5,7 +5,7 @@ use std::ops::Range;
 
 use super::check::Checker;
 use super::collections::{self, Collection, collection_name};
-use super::{Table, as_table, entries, items, string, strings};
+use super::{Table, as_table, entries, items, required, string, strings};
 
 /// A Page made by a Template alone (#19).
 #[derive(Debug)]
@@ -30,8 +30,8 @@ pub(super) fn read(routes: Option<&Table<'_>>) -> BTreeMap<String, TemplateRoute
         .map(|(name, r)| {
             let r = as_table(r);
             let route = TemplateRoute {
-                path: string(r, "path").expect("the first pass requires `path`"),
-                template: string(r, "template").expect("the first pass requires `template`"),
+                path: required(r, "path"),
+                template: required(r, "template"),
                 template_at: r["template"].span(),
             };
             (name.get_ref().to_string(), route)
@@ -55,7 +55,7 @@ pub(super) fn feeds(
             }
             let feed = Feed {
                 collections: strings(&f["collections"]),
-                path: string(f, "path").expect("the first pass requires `path`"),
+                path: required(f, "path"),
                 template: string(f, "template").unwrap_or_else(|| "rss.xml".into()),
                 template_at: f.get("template").map_or(name.span(), |t| t.span()),
             };

@@ -197,11 +197,11 @@ fn read(root: &Table<'_>, checker: &mut Checker) -> Config {
     }
 }
 
+// The helpers below read values the first pass checked against the schema,
+// so a value of another type or a required key left out is a bug in it.
+
 fn strings(v: &Value<'_>) -> Vec<String> {
-    items(v)
-        .iter()
-        .map(|s| s.get_ref().as_str().expect("checked").to_string())
-        .collect()
+    items(v).iter().map(|s| as_str(s).to_string()).collect()
 }
 
 fn entries<'a, 'i>(
@@ -228,13 +228,18 @@ fn items<'a, 'i>(v: &'a Value<'i>) -> &'a [Value<'i>] {
     }
 }
 
+fn as_str<'a>(v: &'a Value<'_>) -> &'a str {
+    v.get_ref()
+        .as_str()
+        .expect("the first pass checked it is a string")
+}
+
 fn string(t: &Table<'_>, key: &str) -> Option<String> {
-    t.get(key).map(|v| {
-        v.get_ref()
-            .as_str()
-            .expect("checked as a string")
-            .to_string()
-    })
+    t.get(key).map(|v| as_str(v).to_string())
+}
+
+fn required(t: &Table<'_>, key: &str) -> String {
+    string(t, key).expect("the first pass checked a required key is there")
 }
 
 fn boolean(t: &Table<'_>, key: &str) -> bool {

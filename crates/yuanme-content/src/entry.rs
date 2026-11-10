@@ -111,7 +111,7 @@ pub(crate) fn front_matter(text: &str, cx: &mut Cx<'_>) -> Option<Head> {
             body: bom..text.len(),
         });
     }
-    let start = text.find('\n').expect("checked") + 1;
+    let start = text.find('\n').expect("`first_line` found a line ending") + 1;
     let mut at = start;
     let close = loop {
         let end = text[at..].find('\n').map_or(text.len(), |i| at + i);

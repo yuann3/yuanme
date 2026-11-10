@@ -7,7 +7,8 @@ use toml::de::DeValue;
 
 use super::check::{Checker, kind};
 use super::{
-    Table, Value, as_table, boolean, entries, float, int, items, string, table, text, to_value,
+    Table, Value, as_str, as_table, boolean, entries, float, int, items, string, table, text,
+    to_value,
 };
 
 #[derive(Clone, Debug, PartialEq)]
@@ -35,7 +36,7 @@ pub enum FieldType {
 }
 
 pub(super) fn field(spec: &Table<'_>, in_table: bool, checker: &mut Checker) -> Field {
-    let kind = match spec["type"].get_ref().as_str().expect("checked") {
+    let kind = match as_str(&spec["type"]) {
         "string" => FieldType::String {
             min: spec.get("min").map(|v| int(v) as u64),
             max: spec.get("max").map(|v| int(v) as u64),
@@ -61,7 +62,7 @@ pub(super) fn field(spec: &Table<'_>, in_table: bool, checker: &mut Checker) -> 
             FieldType::Enum(
                 items(values)
                     .iter()
-                    .map(|v| v.get_ref().as_str().expect("checked").to_string())
+                    .map(|v| as_str(v).to_string())
                     .collect(),
             )
         }

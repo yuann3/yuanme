@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use std::ops::Range;
 
 use super::check::parse_browser_version;
-use super::{Table, entries, string, table};
+use super::{Table, as_str, entries, string, table};
 
 /// How a visitor moves between Pages (#20, ADR 0007).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -62,10 +62,10 @@ pub(super) fn read(build: Option<&Table<'_>>) -> Build {
         Some(targets) => entries(Some(targets))
             .iter()
             .map(|(browser, version)| {
-                let version = version.get_ref().as_str().expect("checked");
+                let version = as_str(version);
                 (
                     browser.get_ref().to_string(),
-                    parse_browser_version(version).expect("checked"),
+                    parse_browser_version(version).expect("the first pass checked the version"),
                 )
             })
             .collect(),
@@ -90,7 +90,7 @@ pub(super) fn tailwind(tailwind: Option<&Table<'_>>) -> Tailwind {
     Tailwind {
         version: tailwind
             .and_then(|t| t.get("version"))
-            .map(|v| (v.get_ref().as_str().expect("checked").to_string(), v.span())),
+            .map(|v| (as_str(v).to_string(), v.span())),
     }
 }
 

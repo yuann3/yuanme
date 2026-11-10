@@ -3,7 +3,7 @@
 use std::ops::Range;
 
 use super::check::Checker;
-use super::{Table, as_table, boolean, entries, int, items, string, table};
+use super::{Table, as_str, as_table, boolean, entries, int, items, required, string, table};
 
 /// The static host the Site is deployed to (#25).
 #[derive(Debug)]
@@ -136,7 +136,7 @@ pub(super) fn read(host: Option<&Table<'_>>, checker: &mut Checker) -> Host {
 fn header_rule(rule: &Table<'_>, checker: &mut Checker) -> HeaderRule {
     let path = &rule["path"];
     let path_at = path.span();
-    let path = path.get_ref().as_str().expect("checked").to_string();
+    let path = as_str(path).to_string();
     if let Some(why) = path_problem(&path, true) {
         checker.invalid(format!("`{path}` {why}"), path_at.clone());
     }
@@ -144,7 +144,7 @@ fn header_rule(rule: &Table<'_>, checker: &mut Checker) -> HeaderRule {
         .iter()
         .map(|(name, value)| {
             let name_text = name.get_ref().to_string();
-            let value_text = value.get_ref().as_str().expect("checked").to_string();
+            let value_text = as_str(value).to_string();
             if name_text.is_empty()
                 || !name_text
                     .bytes()
@@ -178,9 +178,9 @@ fn header_rule(rule: &Table<'_>, checker: &mut Checker) -> HeaderRule {
 
 /// `[[host.redirects]]`; `before` are the ones above it.
 fn redirect_rule(redirect: &Table<'_>, before: &[Redirect], checker: &mut Checker) -> Redirect {
-    let from = string(redirect, "from").expect("required");
+    let from = required(redirect, "from");
     let from_at = redirect["from"].span();
-    let to = string(redirect, "to").expect("required");
+    let to = required(redirect, "to");
     let to_at = redirect["to"].span();
     if let Some(why) = path_problem(&from, false) {
         checker.invalid(format!("`{from}` {why}"), from_at.clone());

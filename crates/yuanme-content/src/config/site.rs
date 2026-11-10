@@ -1,7 +1,7 @@
 //! `[site]`: what the Site says of itself.
 
 use super::check::Checker;
-use super::{Table, string, to_value};
+use super::{Table, as_str, required, string, to_value};
 
 #[derive(Debug)]
 pub struct Site {
@@ -16,7 +16,7 @@ pub struct Site {
 
 pub(super) fn read(site: &Table<'_>, checker: &mut Checker) -> Site {
     if let Some(tz) = site.get("timezone") {
-        let name = tz.get_ref().as_str().expect("checked");
+        let name = as_str(tz);
         // The bundled database, so a build never depends on the machine's.
         if jiff::tz::TimeZone::get(name).is_err() {
             checker.invalid(
@@ -31,7 +31,7 @@ pub(super) fn read(site: &Table<'_>, checker: &mut Checker) -> Site {
         None => toml::Table::new(),
     };
     Site {
-        url: string(site, "url").expect("required"),
+        url: required(site, "url"),
         title: string(site, "title"),
         description: string(site, "description"),
         language: string(site, "language"),
