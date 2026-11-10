@@ -83,7 +83,7 @@ impl SourceFiles {
     ) -> Diagnostic {
         let (needle, file) = match &e.kind {
             CssErrorKind::Project(problem) => (problem.url.as_str(), problem.file.clone()),
-            CssErrorKind::Css(_) => ("", None),
+            CssErrorKind::Css(_) | CssErrorKind::Local => ("", None),
         };
         let span = match (file, &e.at) {
             (Some((path, at)), _) => Span {
@@ -95,8 +95,8 @@ impl SourceFiles {
         };
         match e.kind {
             CssErrorKind::Project(problem) => problem.diagnostic(span),
-            CssErrorKind::Css(message) => {
-                Diagnostic::error(&codes::ASSET_INVALID_CSS, message, span)
+            CssErrorKind::Css(_) | CssErrorKind::Local => {
+                Diagnostic::error(&codes::ASSET_INVALID_CSS, e.to_string(), span)
             }
         }
     }

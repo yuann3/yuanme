@@ -72,8 +72,25 @@ pub enum ErrorKind<E> {
     /// From [`Project`], such as an `@import` that names nothing.
     Project(E),
     /// What lightningcss reports: invalid CSS, or `@import`s it can't merge.
+    /// Its message, since its errors borrow the CSS they are about.
     Css(String),
+    /// `:local()` in a Sidecar, whose selectors are scoped already.
+    Local,
 }
+
+impl<E: fmt::Display> fmt::Display for Error<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.kind {
+            ErrorKind::Project(e) => e.fmt(f),
+            ErrorKind::Css(message) => f.write_str(message),
+            ErrorKind::Local => {
+                f.write_str("`:local()` isn't supported: a Sidecar's selectors are scoped already")
+            }
+        }
+    }
+}
+
+impl<E: fmt::Debug + fmt::Display> std::error::Error for Error<E> {}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Location {
@@ -133,14 +150,12 @@ pub fn bundle<P: Project>(
     })?;
     let mut compounds = Vec::new();
     if !scopes.is_empty() {
-        scope::scope(&mut sheet.rules, &sheet.sources, scopes, &mut compounds).map_err(
-            |(message, at)| {
-                Box::new(Error {
-                    kind: ErrorKind::Css(message),
-                    at: Some(at),
-                })
-            },
-        )?;
+        scope::scope(&mut sheet.rules, &sheet.sources, scopes, &mut compounds).map_err(|at| {
+            Box::new(Error {
+                kind: ErrorKind::Local,
+                at: Some(at),
+            })
+        })?;
     }
     sheet
         .minify(MinifyOptions {

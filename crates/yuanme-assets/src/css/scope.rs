@@ -41,13 +41,14 @@ pub(super) fn modules() -> Config {
 /// Scopes the rules of each stylesheet `scopes` names by the attribute it
 /// gives, `sources` naming each rule's stylesheet by its source index.
 /// `:global()` is unwrapped in every rule. Rules in `@scope` are left as
-/// written: native scoping is the Author's opt-in.
+/// written: native scoping is the Author's opt-in. Fails where a selector
+/// uses `:local()`.
 pub(super) fn scope(
     rules: &mut CssRuleList<'_>,
     sources: &[String],
     scopes: &BTreeMap<String, String>,
     compounds: &mut Vec<Compound>,
-) -> Result<(), (String, Location)> {
+) -> Result<(), Location> {
     for rule in rules.0.iter_mut() {
         let (selectors, nested, loc) = match rule {
             CssRule::Style(r) => (Some(&mut r.selectors.0), &mut r.rules, r.loc),
@@ -90,7 +91,7 @@ fn scope_selector<'i>(
     attribute: Option<&str>,
     at: &Location,
     compounds: &mut Vec<Compound>,
-) -> Result<(), (String, Location)> {
+) -> Result<(), Location> {
     // Each compound in parse order, and the combinator after it.
     // `iter_raw_parse_order_from` yields compounds left to right, each one's
     // simple selectors reversed, and `Selector::from` wants them in order:
@@ -124,10 +125,7 @@ fn scope_selector<'i>(
             .iter()
             .any(|c| matches!(c, Component::NonTSPseudoClass(PseudoClass::Local { .. })))
         {
-            return Err((
-                "`:local()` isn't supported: a Sidecar's selectors are scoped already".into(),
-                at.clone(),
-            ));
+            return Err(at.clone());
         }
         let only_global = !compound.is_empty() && compound.iter().all(is_global);
         let skip = compound
