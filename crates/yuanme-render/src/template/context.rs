@@ -6,11 +6,7 @@ use std::collections::BTreeMap;
 
 use minijinja::Value;
 use rayon::prelude::*;
-use yuanme_content::config::Config;
-use yuanme_content::entry::Entry;
-use yuanme_content::fields::{self, Image};
-use yuanme_content::site::{Route, RouteKind, Site};
-use yuanme_content::slug;
+use yuanme_content::{Config, Entry, FieldImage, FieldValue, Route, RouteKind, Site, term_slug};
 
 use super::filters::absolute_url;
 
@@ -285,11 +281,11 @@ fn entry(config: &Config, site: &Site, e: &Entry, url: &str, body: String) -> Va
         // A Term is shown as its Taxonomy names it; one only Unlisted
         // Entries use has no Term, so it keeps its spelling.
         let shown = |spelled: &str| {
-            let identity = slug::term_slug(spelled);
+            let identity = term_slug(spelled);
             let final_slug = t
                 .slugs
                 .iter()
-                .find(|(k, _)| slug::term_slug(k) == identity)
+                .find(|(k, _)| term_slug(k) == identity)
                 .map_or(identity, |(_, v)| v.clone());
             site.taxonomies[name]
                 .iter()
@@ -317,8 +313,8 @@ fn entry(config: &Config, site: &Site, e: &Entry, url: &str, body: String) -> Va
 
 /// A field value. Dates and datetimes are ISO text, which sorts in date
 /// order and which `dateformat` reads.
-fn value(v: &fields::Value) -> Value {
-    use fields::Value as F;
+fn value(v: &FieldValue) -> Value {
+    use FieldValue as F;
     match v {
         F::String(s) | F::Url(s) => Value::from(s.as_str()),
         F::Int(i) => Value::from(*i),
@@ -327,7 +323,7 @@ fn value(v: &fields::Value) -> Value {
         F::Date(d) => Value::from(d.to_string()),
         F::Datetime(z) => Value::from(z.strftime("%Y-%m-%dT%H:%M:%S%:z").to_string()),
         // `image()` turns these into images with #63.
-        F::Image(Image::Local(path) | Image::Remote(path)) => Value::from(path.as_str()),
+        F::Image(FieldImage::Local(path) | FieldImage::Remote(path)) => Value::from(path.as_str()),
         F::List(items) => Value::from(items.iter().map(value).collect::<Vec<_>>()),
         F::Object(o) => Value::from(
             o.iter()

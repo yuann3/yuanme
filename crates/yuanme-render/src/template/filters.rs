@@ -10,8 +10,7 @@ use jiff::tz::TimeZone;
 use jiff::{Timestamp, Zoned};
 use minijinja::value::{Kwargs, Value, ValueKind};
 use minijinja::{Environment, Error, ErrorKind, State};
-use yuanme_content::document::{Document, Kind, Links};
-use yuanme_content::{config, markdown, org};
+use yuanme_content::{Document, Kind, Links, parse_markdown, parse_org, similar};
 use yuanme_diag::{Code, Diagnostic, Files, Level, codes};
 
 use crate::highlight;
@@ -201,7 +200,7 @@ fn url(site: &Site, path: &str) -> Result<String, Error> {
         return Ok(path.to_string());
     }
     let mut message = format!("`{bare}` is no Route, feed or Static file of the Site");
-    if let Some(near) = config::similar(bare, site.urls.iter().map(String::as_str)) {
+    if let Some(near) = similar(bare, site.urls.iter().map(String::as_str)) {
         message.push_str(&format!("; did you mean `{near}`?"));
     }
     Err(coded(&codes::TEMPLATE_UNKNOWN_URL, message))
@@ -268,14 +267,14 @@ fn attrs(v: Value) -> Result<Value, Error> {
 fn markdown(text: &str, kw: Kwargs) -> Result<Value, Error> {
     let mut files = Files::default();
     let file = files.add("<markdown>", text);
-    let (doc, diagnostics) = markdown::document(&files, file, 0..text.len());
+    let (doc, diagnostics) = parse_markdown(&files, file, 0..text.len());
     fragment("markdown", "Markdown", doc, &diagnostics, kw)
 }
 
 fn org(text: &str, kw: Kwargs) -> Result<Value, Error> {
     let mut files = Files::default();
     let file = files.add("<org>", text);
-    let (doc, diagnostics) = org::document(&files, file);
+    let (doc, diagnostics) = parse_org(&files, file);
     fragment("org", "Org", doc, &diagnostics, kw)
 }
 

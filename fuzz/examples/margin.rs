@@ -46,7 +46,7 @@ fn walk(dir: &Path, out: &mut Vec<(f64, u64, usize, String)>, options: &Options)
 }
 
 fn main() -> ExitCode {
-    let options = yuanme_content::markdown::options();
+    let options = yuanme_content::markdown_options();
     let mut files = Vec::new();
     for dir in std::env::args().skip(1) {
         walk(Path::new(&dir), &mut files, &options);

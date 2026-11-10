@@ -54,7 +54,7 @@ mod bits {
 /// Orders two values of one field, for Collection `sort`. Values of
 /// different kinds, which two Collections can give one field, order by
 /// kind, so the order stays total.
-pub fn compare(a: &Value, b: &Value) -> Ordering {
+pub(crate) fn compare(a: &Value, b: &Value) -> Ordering {
     use Value::*;
     match (a, b) {
         (Int(a), Int(b)) => a.cmp(b),

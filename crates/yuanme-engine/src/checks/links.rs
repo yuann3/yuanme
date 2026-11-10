@@ -7,8 +7,7 @@ use std::collections::BTreeMap;
 use rayon::prelude::*;
 
 use yuanme_assets::html_urls;
-use yuanme_content::config::{self, Config};
-use yuanme_content::site::{RouteKind, Site};
+use yuanme_content::{Config, RouteKind, Site, similar};
 use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 
 use super::heavy::{self, Heavy};
@@ -151,7 +150,7 @@ pub(crate) fn links(
                             format!("`{url}` is no file of the Site"),
                             place().0,
                         );
-                        match config::similar(&path, urls.iter().map(String::as_str)) {
+                        match similar(&path, urls.iter().map(String::as_str)) {
                             Some(near) => d.help(format!("did you mean `{}`?", fixed(near))),
                             None => d,
                         }

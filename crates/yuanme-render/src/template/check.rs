@@ -31,8 +31,7 @@ use std::rc::Rc;
 use minijinja::machinery::ast::{self, Spanned, Stmt};
 use minijinja::machinery::parse;
 use minijinja::{Environment, context};
-use yuanme_content::config::{Config, similar};
-use yuanme_content::site::Site;
+use yuanme_content::{Config, Site, similar};
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Span};
 
 use crate::image::Images;

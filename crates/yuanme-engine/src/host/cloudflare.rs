@@ -3,7 +3,7 @@
 
 use std::ops::Range;
 
-use yuanme_content::config::Adapter;
+use yuanme_content::Adapter;
 use yuanme_diag::{Diagnostic, Span, codes};
 
 use crate::Build;

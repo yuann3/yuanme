@@ -11,7 +11,7 @@ mod vercel;
 use std::collections::BTreeMap;
 use std::ops::Range;
 
-use yuanme_content::config::{Adapter, Config, HeaderRule, Host};
+use yuanme_content::{Adapter, Config, HeaderRule, Host};
 use yuanme_diag::{Diagnostic, Span, codes};
 
 pub use cloudflare::wrangler;

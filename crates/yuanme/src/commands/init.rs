@@ -8,7 +8,7 @@ use std::io;
 use std::path::Path;
 
 use clap::ValueEnum;
-use yuanme_content::config::Adapter;
+use yuanme_content::Adapter;
 use yuanme_engine::Mode;
 
 use super::docs;

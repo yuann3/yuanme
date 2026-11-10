@@ -22,21 +22,23 @@ use toml::Spanned;
 use toml::de::{DeTable, DeValue};
 use yuanme_diag::{Diagnostic, FileId, Files, codes};
 
-pub use budgets::{Budget, Budgets, Overage};
-pub use build::{Agents, Build, RouterMode, Tailwind, TypeScript};
+pub use budgets::{Budget, Budgets};
+pub use build::RouterMode;
+pub(crate) use build::{Agents, Build, Tailwind, TypeScript};
 pub use check::similar;
 use check::{Checker, parse_version};
-pub use collections::{Collection, SortKey, Taxonomy};
-pub use data::DataSchema;
+pub use collections::Collection;
+pub(crate) use collections::{SortKey, Taxonomy};
+pub(crate) use data::DataSchema;
 pub use fields::{Field, FieldType};
-pub use host::{Adapter, HeaderRule, Host, Redirect};
+pub use host::{Adapter, HeaderRule, Host};
 pub use images::Images;
-pub use math::{Math, TheoremKind};
-pub use routes::{Feed, TemplateRoute};
+pub(crate) use math::{Math, TheoremKind};
+pub(crate) use routes::{Feed, TemplateRoute};
 #[cfg(test)]
 use schema::{Key, Shape};
 pub use schema::{data_schema, entry_schema, json_schema};
-pub use site::Site;
+pub(crate) use site::Site;
 
 #[derive(Debug)]
 pub struct Config {

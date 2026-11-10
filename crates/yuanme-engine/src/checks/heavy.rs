@@ -4,7 +4,7 @@
 
 use std::collections::BTreeMap;
 
-use yuanme_content::config;
+use yuanme_content::ImagesConfig;
 use yuanme_diag::{Diagnostic, Span, codes};
 
 use crate::image::resolve::{RASTERS, Used};
@@ -39,7 +39,7 @@ pub(crate) struct Heavy {
 /// `allow_unoptimized` doesn't list, by its path in the output directory.
 pub(crate) fn heavy(
     inputs: &Inputs,
-    config: &config::Images,
+    config: &ImagesConfig,
     files: &BTreeMap<String, Output>,
     used: &Used,
 ) -> BTreeMap<String, Heavy> {

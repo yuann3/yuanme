@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use yuanme_content::markdown;
+use yuanme_content::parse_markdown;
 use yuanme_diag::Files;
 use yuanme_render::highlight;
 
@@ -37,7 +37,7 @@ fn render_with(path: &Path, highlighted: bool) -> String {
     let mut sources = Files::default();
     let name = path.strip_prefix(CORPUS).unwrap_or(path).to_str().unwrap();
     let file = sources.add(name, text.as_str());
-    match markdown::document(&sources, file, body..text.len()) {
+    match parse_markdown(&sources, file, body..text.len()) {
         (Some(doc), _) => {
             let code = match highlighted {
                 true => highlight::document(&doc),

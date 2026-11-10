@@ -6,8 +6,7 @@ pub(crate) mod bodies;
 pub(crate) mod entries;
 pub(crate) mod highlight;
 
-use yuanme_content::config::{self, Config};
-use yuanme_content::site::{self, Project, Site};
+use yuanme_content::{Config, Project, Site, parse_config, resolve_site, sort_sources};
 use yuanme_diag::{Diagnostic, Files, codes};
 
 use crate::inputs::utf8;
@@ -29,7 +28,7 @@ pub(crate) fn site_config(
         .as_deref()
         .expect("only images are streamed, and yuanme.toml is text");
     match utf8(PATH, bytes, &codes::CONFIG_SYNTAX, sources) {
-        Ok(file) => config::parse(sources, file, engine),
+        Ok(file) => parse_config(sources, file, engine),
         Err(d) => (None, vec![d]),
     }
 }
@@ -42,7 +41,7 @@ pub(crate) fn resolve(
     sources: &mut Files,
     cache: &mut Cache,
 ) -> (Option<Site>, Vec<Diagnostic>) {
-    let (entries, data) = site::sources(config, inputs.files.keys().map(String::as_str));
+    let (entries, data) = sort_sources(config, inputs.files.keys().map(String::as_str));
     let mut diagnostics = Vec::new();
     let mut add = |path: &str| {
         let bytes = inputs.files[path]
@@ -71,5 +70,5 @@ pub(crate) fn resolve(
         is_file: &is_file,
         is_dir: &is_dir,
     };
-    site::resolve(config, project, drafts)
+    resolve_site(config, project, drafts)
 }

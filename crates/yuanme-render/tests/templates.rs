@@ -6,8 +6,7 @@ use std::fmt::Write;
 use std::path::Path;
 use std::sync::Arc;
 
-use yuanme_content::config::{self, Config};
-use yuanme_content::site::{self, Project, Site};
+use yuanme_content::{Config, Project, Site, parse_config, read_entry, resolve_site, sort_sources};
 use yuanme_diag::{Diagnostic, FileId, Files, Level, codes};
 use yuanme_render::image::{self, Image, Images, Request};
 use yuanme_render::template::{self, Page, scope};
@@ -112,10 +111,10 @@ fn resolve(written: &[(String, String)]) -> Resolved {
     let mut files = Files::default();
     let text = |path: &str| &written.iter().find(|(p, _)| p == path).expect("listed").1;
     let config_file = files.add("yuanme.toml", text("yuanme.toml").as_str());
-    let (config, diagnostics) = config::parse(&files, config_file, "1.0.0");
+    let (config, diagnostics) = parse_config(&files, config_file, "1.0.0");
     let config = config.unwrap_or_else(|| panic!("{diagnostics:#?}"));
     let paths: Vec<&str> = written.iter().map(|(p, _)| p.as_str()).collect();
-    let (entries, data) = site::sources(&config, paths.iter().copied());
+    let (entries, data) = sort_sources(&config, paths.iter().copied());
     let entries: Vec<_> = entries
         .into_iter()
         .map(|(c, p)| (c, files.add(p, text(p).as_str())))
@@ -148,9 +147,9 @@ fn resolve(written: &[(String, String)]) -> Resolved {
     let is_dir = |d: &str| paths.iter().any(|p| p.starts_with(&format!("{d}/")));
     let entries = entries
         .into_iter()
-        .map(|(c, file)| site::read(&config, &c, file, &files, &is_file))
+        .map(|(c, file)| read_entry(&config, &c, file, &files, &is_file))
         .collect();
-    let (site, diagnostics) = site::resolve(
+    let (site, diagnostics) = resolve_site(
         &config,
         Project {
             files: &files,

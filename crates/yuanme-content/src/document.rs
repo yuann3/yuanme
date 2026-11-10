@@ -460,7 +460,7 @@ fn word_count(text: &str) -> u64 {
 }
 
 /// Minutes at 200 words a minute, as `Math.ceil(minutes.toFixed(2))`.
-pub fn reading_time(words: u64) -> u64 {
+pub(crate) fn reading_time(words: u64) -> u64 {
     let minutes = words as f64 / 200.0;
     // Rust rounds the double's exact value as toFixed does, and a double
     // that is a multiple of 0.005 is never exactly halfway.

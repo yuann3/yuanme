@@ -13,7 +13,7 @@ use std::path::Path;
 
 use clap::CommandFactory;
 use serde_json::Value;
-use yuanme_content::config;
+use yuanme_content::config_schema;
 use yuanme_diag::codes::{self, Code};
 
 use crate::Error;
@@ -253,7 +253,7 @@ fn option(arg: &clap::Arg) -> String {
 /// Every key of Site config, from its JSON Schema, so the page can't drift
 /// from what `check` accepts.
 fn config_reference() -> String {
-    let schema = config::json_schema();
+    let schema = config_schema();
     let mut out = String::from("\n## Reference\n");
     table(&schema, "", &mut out);
     for (name, title) in [

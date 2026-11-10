@@ -12,7 +12,7 @@ use serde_json::json;
 use yuanme_assets::{
     SCRIPT_TYPES, TSC_ENV, TSC_VERSION, TypeError, cache_dir, run_tsc, tsc_tool, type_errors,
 };
-use yuanme_content::config::Config;
+use yuanme_content::Config;
 use yuanme_diag::{Diagnostic, FileId, Files, Span, codes};
 
 use crate::{Bundle, Cache, Inputs};

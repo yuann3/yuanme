@@ -17,8 +17,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use yuanme_content::config::{Budget, Config};
-use yuanme_content::site::{RouteKind, Site};
+use yuanme_content::{Budget, Config, RouteKind, Site};
 use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
 use yuanme_render::template::scope;
 

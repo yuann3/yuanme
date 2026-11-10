@@ -1,21 +1,20 @@
 //! Math converted at parse time (#50): amsmath's numbering per Entry in
 //! both Source formats, macros, and the Labels math shares with headings.
 
-use yuanme_content::document::{Document, Kind};
-use yuanme_content::{markdown, org};
+use yuanme_content::{Document, Kind, parse_markdown, parse_org};
 use yuanme_diag::{Diagnostic, Files};
 
 fn markdown(text: &str) -> (Document, Vec<Diagnostic>) {
     let mut files = Files::default();
     let file = files.add("a.md", text);
-    let (doc, diagnostics) = markdown::document(&files, file, 0..text.len());
+    let (doc, diagnostics) = parse_markdown(&files, file, 0..text.len());
     (doc.expect("it parses"), diagnostics)
 }
 
 fn org(text: &str) -> (Document, Vec<Diagnostic>) {
     let mut files = Files::default();
     let file = files.add("a.org", text);
-    let (doc, diagnostics) = org::document(&files, file);
+    let (doc, diagnostics) = parse_org(&files, file);
     (doc.expect("it parses"), diagnostics)
 }
 

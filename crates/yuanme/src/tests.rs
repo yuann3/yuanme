@@ -3,7 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::time::SystemTime;
 
-use yuanme_content::site::RouteKind;
+use yuanme_content::RouteKind;
 use yuanme_engine::{Build, Cache, Inputs, Mode};
 
 use crate::commands::docs;

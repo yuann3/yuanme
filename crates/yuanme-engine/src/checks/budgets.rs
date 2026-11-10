@@ -9,8 +9,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use rayon::prelude::*;
 use yuanme_assets::{ReferenceKind, scan_html};
-use yuanme_content::config::{self, Budget, Budgets, Config};
-use yuanme_content::site::{RouteKind, Site};
+use yuanme_content::{Budget, Budgets, Config, RouteKind, Site, similar};
 use yuanme_diag::{Diagnostic, Span, codes};
 
 use crate::url::{internal, suffix};
@@ -182,7 +181,7 @@ pub(crate) fn measure(
             format!("`{}` is no HTML Page of the Site", o.page),
             span,
         );
-        diagnostics.push(match config::similar(&o.page, urls.iter().copied()) {
+        diagnostics.push(match similar(&o.page, urls.iter().copied()) {
             Some(near) => d.help(format!("did you mean `{near}`?")),
             None => d.help("use the Page's URL, as `yuanme routes` lists it"),
         });

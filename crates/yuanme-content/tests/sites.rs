@@ -4,10 +4,11 @@
 use std::collections::BTreeSet;
 use std::fmt::Write;
 
-use yuanme_content::config;
-use yuanme_content::document::{Document, Kind};
-use yuanme_content::fields::{Image, Value};
-use yuanme_content::site::{self, Project, RouteKind, Site};
+use yuanme_content::{
+    Config, Document, FieldImage, FieldValue, Kind, Project, RouteKind, Site, Yaml, YamlNode,
+    collections, data_schema, entry_schema, parse_config, parse_yaml, read_entry, resolve_site,
+    sort_sources,
+};
 use yuanme_diag::{Diagnostic, Files, codes};
 
 /// A project written as `=== path` lines, each followed by the file's text.
@@ -36,7 +37,7 @@ fn resolve(fixture: &str, drafts: bool) -> (Files, Option<Site>, Vec<Diagnostic>
         .expect("a yuanme.toml")
         .1;
     let config_file = files.add("yuanme.toml", config_text.as_str());
-    let (config, diagnostics) = config::parse(&files, config_file, "1.0.0");
+    let (config, diagnostics) = parse_config(&files, config_file, "1.0.0");
     let config =
         config.unwrap_or_else(|| panic!("the fixture's config is wrong: {diagnostics:#?}"));
 
@@ -45,7 +46,7 @@ fn resolve(fixture: &str, drafts: bool) -> (Files, Option<Site>, Vec<Diagnostic>
         .map(|(p, _)| p.as_str())
         .filter(|p| !p.ends_with('/'))
         .collect();
-    let (entries, data) = site::sources(&config, paths.iter().copied());
+    let (entries, data) = sort_sources(&config, paths.iter().copied());
     let mut id = |path: &str| {
         let text = &written.iter().find(|(p, _)| p == path).expect("listed").1;
         files.add(path, text.as_str())
@@ -62,7 +63,7 @@ fn resolve(fixture: &str, drafts: bool) -> (Files, Option<Site>, Vec<Diagnostic>
     let (site, diagnostics) = {
         let entries = entries
             .into_iter()
-            .map(|(c, file)| site::read(&config, &c, file, &files, &is_file))
+            .map(|(c, file)| read_entry(&config, &c, file, &files, &is_file))
             .collect();
         let project = Project {
             files: &files,
@@ -71,7 +72,7 @@ fn resolve(fixture: &str, drafts: bool) -> (Files, Option<Site>, Vec<Diagnostic>
             is_file: &is_file,
             is_dir: &is_dir,
         };
-        site::resolve(&config, project, drafts)
+        resolve_site(&config, project, drafts)
     };
     (files, site, diagnostics)
 }
@@ -182,21 +183,21 @@ title: About
 {"github": "yuann3", "followers": 12}
 "#;
 
-fn show(v: &Value) -> String {
+fn show(v: &FieldValue) -> String {
     match v {
-        Value::String(s) | Value::Url(s) => format!("{s:?}"),
-        Value::Int(i) => i.to_string(),
-        Value::Float(f) => f.to_string(),
-        Value::Bool(b) => b.to_string(),
-        Value::Date(d) => d.to_string(),
-        Value::Datetime(z) => z.to_string(),
-        Value::Image(Image::Local(p)) => format!("local {p}"),
-        Value::Image(Image::Remote(u)) => format!("remote {u}"),
-        Value::List(items) => format!(
+        FieldValue::String(s) | FieldValue::Url(s) => format!("{s:?}"),
+        FieldValue::Int(i) => i.to_string(),
+        FieldValue::Float(f) => f.to_string(),
+        FieldValue::Bool(b) => b.to_string(),
+        FieldValue::Date(d) => d.to_string(),
+        FieldValue::Datetime(z) => z.to_string(),
+        FieldValue::Image(FieldImage::Local(p)) => format!("local {p}"),
+        FieldValue::Image(FieldImage::Remote(u)) => format!("remote {u}"),
+        FieldValue::List(items) => format!(
             "[{}]",
             items.iter().map(show).collect::<Vec<_>>().join(", ")
         ),
-        Value::Object(o) => format!(
+        FieldValue::Object(o) => format!(
             "{{{}}}",
             o.iter()
                 .map(|(k, v)| format!("{k}: {}", show(v)))
@@ -1173,8 +1174,7 @@ fn spans_after_a_lone_carriage_return_point_at_the_right_text() {
 
 /// Front matter as the JSON a schema validates.
 fn front_matter(text: &str) -> serde_json::Value {
-    use yuanme_content::yaml::{self, Node, Yaml};
-    fn json(n: &Node) -> serde_json::Value {
+    fn json(n: &YamlNode) -> serde_json::Value {
         match &n.value {
             Yaml::Null => serde_json::Value::Null,
             Yaml::Bool(b) => (*b).into(),
@@ -1192,7 +1192,7 @@ fn front_matter(text: &str) -> serde_json::Value {
         .strip_prefix("---\n")
         .and_then(|rest| rest.split_once("---\n"))
         .map_or("", |(yaml, _)| yaml);
-    json(&yaml::parse(yaml, 0).unwrap())
+    json(&parse_yaml(yaml, 0).unwrap())
 }
 
 /// `yuanme schema entry` and `schema data` agree with what a build
@@ -1204,11 +1204,11 @@ fn the_front_matter_and_data_schemas_accept_what_resolves() {
         let mut files = Files::default();
         let text = &project(fixture)[0].1;
         let file = files.add("yuanme.toml", text.as_str());
-        config::parse(&files, file, "1.0.0").0.unwrap()
+        parse_config(&files, file, "1.0.0").0.unwrap()
     };
-    let validator = |config: &config::Config, collection: &str| {
-        let collections = site::collections(config);
-        let schema = config::entry_schema(config, collection, &collections[collection]);
+    let validator = |config: &Config, collection: &str| {
+        let collections = collections(config);
+        let schema = entry_schema(config, collection, &collections[collection]);
         jsonschema::validator_for(&schema).unwrap()
     };
 
@@ -1228,7 +1228,7 @@ fn the_front_matter_and_data_schemas_accept_what_resolves() {
             .collect();
         assert!(errors.is_empty(), "{path}: {errors:?}");
     }
-    let nav = config::data_schema("nav", &config.data["nav"]);
+    let nav = data_schema("nav", &config.data["nav"]);
     assert!(jsonschema::is_valid(
         &nav,
         &serde_json::json!([{ "name": "Blog", "href": "/blog/" }])

@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use std::ops::Range;
 
 use minijinja::machinery::ast::{self, Expr, Spanned, Stmt};
-use yuanme_content::config::similar;
+use yuanme_content::similar;
 use yuanme_diag::{Applicability, Edit, Span, codes};
 
 use super::headers::Prop;

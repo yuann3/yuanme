@@ -8,10 +8,7 @@ use std::sync::Mutex;
 
 use rayon::prelude::*;
 
-use yuanme_content::config::{self, Config};
-use yuanme_content::document::{Document, Kind, NodeId};
-use yuanme_content::entry::SourceFormat;
-use yuanme_content::site::Site;
+use yuanme_content::{Config, Document, ImagesConfig, Kind, NodeId, Site, SourceFormat, similar};
 use yuanme_diag::FileId;
 use yuanme_diag::{Diagnostic, Span, codes};
 use yuanme_render::html::{self, Pictures};
@@ -115,7 +112,7 @@ pub(crate) struct Images {
     sources: BTreeMap<String, Source>,
     /// Every Static file, which is copied as it is, unprobed.
     statics: BTreeSet<String>,
-    config: config::Images,
+    config: ImagesConfig,
     /// Each Template's file, for an error encoding what it named.
     templates: BTreeMap<String, FileId>,
     used: Mutex<Used>,
@@ -192,7 +189,7 @@ impl Images {
             }
             None => {
                 let mut message = format!("no image at `{path}`");
-                if let Some(near) = config::similar(path, self.sources.keys().map(String::as_str)) {
+                if let Some(near) = similar(path, self.sources.keys().map(String::as_str)) {
                     message.push_str(&format!("; did you mean `{near}`?"));
                 }
                 Err((&codes::IMAGE_NOT_FOUND, message))

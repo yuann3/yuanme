@@ -9,9 +9,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use yuanme_content::config::Config;
-use yuanme_content::site::Site;
-use yuanme_content::slug;
+use yuanme_content::{Config, Site, url_path};
 use yuanme_diag::Level;
 use yuanme_engine::{Build, Cache, Mode};
 
@@ -89,7 +87,7 @@ pub(crate) fn url_of(output: &str) -> String {
         Some(dir) if dir.is_empty() || dir.ends_with('/') => dir,
         _ => output,
     };
-    slug::url_path(&format!("/{path}"))
+    url_path(&format!("/{path}"))
 }
 
 /// Site config, from a build so that its Diagnostics are the build's.

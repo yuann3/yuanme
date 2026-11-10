@@ -20,8 +20,7 @@ use yuanme_assets::{
     Packages, ReferenceKind, Scan, ScriptEntry, bundle_css, imports_tailwind, js_strings,
     scan_html, tailwind_tokens,
 };
-use yuanme_content::config::{Config, RouterMode};
-use yuanme_content::fields::Value;
+use yuanme_content::{Config, FieldValue, RouterMode};
 use yuanme_diag::{Applicability, Diagnostic, FileId, Files, Span, codes};
 use yuanme_render::template::{Page, scope};
 
@@ -177,7 +176,7 @@ impl<'a> Stage<'a> {
 
     /// `pages` with placeholders for the assets they name, and those
     /// assets, unless a step has an error.
-    pub(crate) fn run(mut self, data: &BTreeMap<String, Value>, pages: Vec<Page>) -> Staged {
+    pub(crate) fn run(mut self, data: &BTreeMap<String, FieldValue>, pages: Vec<Page>) -> Staged {
         self.check_scopes();
         let seen = self.scan(&pages);
         let mut named = self.references(&pages, &seen);
@@ -401,7 +400,7 @@ impl<'a> Stage<'a> {
     /// rolldown build; `None` when it fails.
     fn bundle_scripts(
         &mut self,
-        data: &BTreeMap<String, Value>,
+        data: &BTreeMap<String, FieldValue>,
         script_entries: &[String],
         page_scripts: Vec<Vec<String>>,
     ) -> Option<Scripts> {

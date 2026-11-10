@@ -7,9 +7,7 @@ use std::fs;
 use std::path::Path;
 
 use jiff::civil::Date;
-use yuanme_content::config::{Collection, Config, Field, FieldType};
-use yuanme_content::slug;
-use yuanme_content::yaml::{self, Yaml};
+use yuanme_content::{Collection, Config, Field, FieldType, Yaml, parse_yaml, slug, url_path};
 use yuanme_engine::Mode;
 
 use crate::SITE_ERRORS;
@@ -85,7 +83,7 @@ pub(crate) fn entry(
     if title.contains(['\n', '\r']) {
         return Err(Error::MultilineTitle);
     }
-    let slug = slug::slug(title.trim());
+    let slug = slug(title.trim());
     if slug.is_empty() {
         return Err(Error::NoSlug(title.to_string()));
     }
@@ -126,7 +124,7 @@ pub(crate) fn entry(
     };
     Ok(Created {
         path: format!("{}/{slug}.{ext}", collection.dir),
-        url: slug::url_path(&collection.route.replace("{slug}", &slug)),
+        url: url_path(&collection.route.replace("{slug}", &slug)),
         text,
         unfilled,
     })
@@ -172,7 +170,7 @@ fn object(fields: &BTreeMap<String, Field>, today: Date) -> Option<String> {
 /// `s` as plain YAML if it reads back as that string, or else quoted.
 fn yaml_string(s: &str) -> String {
     let plain = matches!(
-        yaml::parse(s, 0).map(|n| n.value),
+        parse_yaml(s, 0).map(|n| n.value),
         Ok(Yaml::Str(read)) if read == s
     );
     // Plain text with `, ` or `}` would break a flow mapping it sits in.
@@ -185,13 +183,13 @@ fn yaml_string(s: &str) -> String {
 
 /// The Collection `name`, the built-in `pages` included.
 pub(crate) fn collection(config: &Config, name: &str) -> Result<Collection, Error> {
-    let collections = yuanme_content::site::collections(config);
+    let collections = yuanme_content::collections(config);
     collections
         .get(name)
         .cloned()
         .ok_or_else(|| Error::NoCollection {
             name: name.to_string(),
-            near: yuanme_content::config::similar(name, collections.keys().map(String::as_str))
+            near: yuanme_content::similar(name, collections.keys().map(String::as_str))
                 .map(str::to_string),
         })
 }

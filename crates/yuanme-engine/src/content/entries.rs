@@ -1,13 +1,11 @@
 //! Parsed Entries, a leaf cache (ADR 0011): each content file read into an
-//! Entry, keyed by everything [`site::read`] reads, so a build parses only
+//! Entry, keyed by everything [`read_entry`] reads, so a build parses only
 //! the files that changed.
 
 use std::cell::RefCell;
 
 use serde::{Deserialize, Serialize};
-use yuanme_content::config::Config;
-use yuanme_content::entry::Entry;
-use yuanme_content::site;
+use yuanme_content::{Config, Entry, read_entry};
 use yuanme_diag::{Diagnostic, FileId, Files};
 
 use crate::{Cache, Inputs};
@@ -68,7 +66,7 @@ pub(crate) fn read(
             asked.borrow_mut().push((p.to_string(), found));
             found
         };
-        let (entry, diagnostics) = site::read(config, collection, *file, sources, &asking);
+        let (entry, diagnostics) = read_entry(config, collection, *file, sources, &asking);
         if let Some(entry) = &entry
             && diagnostics.is_empty()
         {

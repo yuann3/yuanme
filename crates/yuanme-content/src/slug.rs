@@ -19,7 +19,7 @@ pub fn slug(text: &str) -> String {
 
 /// Slugs unique within one document: github-slugger's `BananaSlug`.
 #[derive(Debug, Default)]
-pub struct Slugger {
+pub(crate) struct Slugger {
     /// Every slug handed out, and for each original slug how many times it
     /// has been suffixed.
     occurrences: HashMap<String, usize>,
@@ -29,7 +29,7 @@ impl Slugger {
     /// github-slugger: a repeated slug gets `-1`, `-2`, …, skipping any
     /// suffixed slug that was itself handed out, so `x`, `x`, `x-1` give
     /// `x`, `x-1`, `x-1-1`.
-    pub fn slug(&mut self, text: &str) -> String {
+    pub(crate) fn slug(&mut self, text: &str) -> String {
         let original = slug(text);
         let mut result = original.clone();
         while self.occurrences.contains_key(&result) {
@@ -46,7 +46,7 @@ impl Slugger {
     /// trailing `-` stripped, so `Ruskey 🦀` → `ruskey`. The strip comes after
     /// the dedupe and is Astro's, not github-slugger's: the slugger remembers
     /// `ruskey-`, so a later `Ruskey` heading also gets `ruskey`.
-    pub fn heading_id(&mut self, text: &str) -> String {
+    pub(crate) fn heading_id(&mut self, text: &str) -> String {
         let mut id = self.slug(text);
         if id.ends_with('-') {
             id.pop();
@@ -68,12 +68,12 @@ pub fn term_slug(term: &str) -> String {
 
 /// Whether `s` is already a valid Slug: segments separated by `/`, each one
 /// non-empty and unchanged by [`slug`].
-pub fn is_valid(s: &str) -> bool {
+pub(crate) fn is_valid(s: &str) -> bool {
     !s.is_empty() && s.split('/').all(|seg| !seg.is_empty() && slug(seg) == seg)
 }
 
 /// The Slug `s` most likely meant, for the fix on an invalid one.
-pub fn corrected(s: &str) -> String {
+pub(crate) fn corrected(s: &str) -> String {
     let segments: Vec<String> = s
         .split('/')
         .map(slug)

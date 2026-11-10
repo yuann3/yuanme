@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use yuanme_content::site::RouteKind;
+use yuanme_content::RouteKind;
 use yuanme_engine::Mode;
 
 use crate::events::{self, Event};

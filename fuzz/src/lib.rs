@@ -84,10 +84,10 @@ pub fn check(text: &str) {
     }
 }
 
-fn parse(text: &str) -> Option<yuanme_content::document::Document> {
+fn parse(text: &str) -> Option<yuanme_content::Document> {
     let mut files = Files::default();
     let file = files.add("a.md", text);
-    yuanme_content::markdown::document(&files, file, 0..text.len()).0
+    yuanme_content::parse_markdown(&files, file, 0..text.len()).0
 }
 
 /// How long #15 lets `text` take to parse on the machine the fuel was

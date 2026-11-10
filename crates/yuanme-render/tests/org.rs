@@ -4,7 +4,7 @@
 
 use std::path::{Path, PathBuf};
 
-use yuanme_content::{markdown, org};
+use yuanme_content::{parse_markdown, parse_org};
 use yuanme_diag::Files;
 
 const CORPUS: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../corpus/org");
@@ -27,7 +27,7 @@ fn files(dir: &Path, ext: &str) -> Vec<PathBuf> {
 fn render(name: &str, text: &str) -> String {
     let mut sources = Files::default();
     let file = sources.add(name, text);
-    let (doc, diagnostics) = org::document(&sources, file);
+    let (doc, diagnostics) = parse_org(&sources, file);
     let mut out: String = diagnostics
         .iter()
         .map(|d| d.render(&sources, false) + "\n")
@@ -46,7 +46,7 @@ fn render(name: &str, text: &str) -> String {
 fn markdown_html(name: &str, text: &str) -> String {
     let mut sources = Files::default();
     let file = sources.add(name, text);
-    let (doc, diagnostics) = markdown::document(&sources, file, 0..text.len());
+    let (doc, diagnostics) = parse_markdown(&sources, file, 0..text.len());
     assert!(diagnostics.is_empty(), "{name}: {diagnostics:?}");
     yuanme_render::html::body(
         &doc.unwrap(),

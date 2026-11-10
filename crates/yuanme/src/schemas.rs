@@ -7,19 +7,18 @@ use std::io;
 use std::path::Path;
 
 use serde_json::Value;
-use yuanme_content::config::{self, Config};
-use yuanme_content::site::{self, Site};
+use yuanme_content::{Config, Site, collections, config_schema, data_schema, entry_schema};
 
 /// By name, `entry/<collection>` and `data/<name>`. Site config's is
 /// `config`, and each kind of Route's context `context/<kind>`.
 pub(crate) fn entry_and_data(config: &Config) -> BTreeMap<String, Value> {
     let mut out = BTreeMap::new();
-    for (name, collection) in site::collections(config) {
-        let schema = config::entry_schema(config, &name, &collection);
+    for (name, collection) in collections(config) {
+        let schema = entry_schema(config, &name, &collection);
         out.insert(format!("entry/{name}"), schema);
     }
     for (name, data) in &config.data {
-        out.insert(format!("data/{name}"), config::data_schema(name, data));
+        out.insert(format!("data/{name}"), data_schema(name, data));
     }
     out
 }
@@ -46,7 +45,7 @@ fn file(name: &str) -> String {
 /// its file. Files are rewritten only when they changed, so editors
 /// watching them aren't woken.
 pub(crate) fn write(dir: &Path, config: Option<&Config>, site: Option<&Site>) -> io::Result<()> {
-    let mut schemas = BTreeMap::from([("config".to_string(), config::json_schema())]);
+    let mut schemas = BTreeMap::from([("config".to_string(), config_schema())]);
     let mut owned = Vec::new();
     if let Some(config) = config {
         schemas.extend(entry_and_data(config));

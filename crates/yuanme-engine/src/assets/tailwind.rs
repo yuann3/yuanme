@@ -11,7 +11,7 @@ use yuanme_assets::{
     TAILWIND_ENV, TAILWIND_VERSION, TailwindError, TailwindWatch, cache_dir, run_tailwind,
     tailwind_input, tailwind_tool,
 };
-use yuanme_content::config::Config;
+use yuanme_content::Config;
 use yuanme_diag::{Diagnostic, Files, Span, codes};
 
 use super::diagnostics::{Diagnostics, SourceFiles};

@@ -1,6 +1,6 @@
 //! The vercel adapter: the Build Output API's `config.json`.
 
-use yuanme_content::config::Config;
+use yuanme_content::Config;
 
 use super::Rule;
 

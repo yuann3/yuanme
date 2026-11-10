@@ -4,9 +4,7 @@
 use std::ops::Range;
 
 use rayon::prelude::*;
-use yuanme_content::config;
-use yuanme_content::document::{Kind, NodeId};
-use yuanme_content::site::Site;
+use yuanme_content::{Kind, NodeId, Site, similar};
 use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 use yuanme_render::highlight::{self, Code, Language};
 
@@ -132,7 +130,7 @@ fn unknown(sources: &Files, file: FileId, block: Range<usize>, lang: &str) -> Di
         format!("no grammar highlights `{lang}`, so this code block is plain text"),
         span.clone(),
     );
-    match config::similar(lang, highlight::names()) {
+    match similar(lang, highlight::names()) {
         Some(near) if !at.is_empty() => d.suggest(
             format!("did you mean `{near}`?"),
             Applicability::MaybeIncorrect,

@@ -5,9 +5,7 @@
 
 use std::collections::BTreeMap;
 
-use yuanme_content::document::{
-    Align, Checkbox, Document, Kind, Links, NodeId, footnote_identifier,
-};
+use yuanme_content::{Align, Checkbox, Document, Kind, Links, NodeId, footnote_identifier};
 
 use crate::highlight::{self, Code};
 

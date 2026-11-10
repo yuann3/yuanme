@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use rayon::prelude::*;
 use yuanme_assets::{NCM_MATH, subset_font, woff2};
-use yuanme_content::site::Site;
+use yuanme_content::Site;
 
 use crate::assets::Seen;
 use crate::hashing::{Asset, hashed_path, placeholder};

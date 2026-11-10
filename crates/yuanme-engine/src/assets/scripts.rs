@@ -5,9 +5,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use yuanme_assets::{JsProject, ProblemAt, ProblemKind, ScriptEntry, ScriptProblem, bundle_js};
-use yuanme_content::config::{Config, RouterMode};
-use yuanme_content::fields::{Image, Value};
-use yuanme_content::site;
+use yuanme_content::{Config, FieldImage, FieldValue, RouterMode, sort_sources};
 use yuanme_diag::{Applicability, Diagnostic, Edit, Files, Span, codes};
 
 use super::diagnostics::{Diagnostics, SourceFiles};
@@ -34,7 +32,7 @@ pub(super) const EXTENSIONS: &[&str] = &[".ts", ".js", ".mts", ".mjs"];
 pub(super) fn bundle(
     project: &Project<'_>,
     config: &Config,
-    data: &BTreeMap<String, Value>,
+    data: &BTreeMap<String, FieldValue>,
     entries: &[ScriptEntry],
     sources: &mut Files,
     files: &mut SourceFiles,
@@ -64,11 +62,11 @@ pub(super) fn bundle(
         .collect();
     // A Data file is the value Templates read as `data.<name>`, with its
     // schema's defaults.
-    let (_, data_files) = site::sources(config, inputs.files.keys().map(String::as_str));
+    let (_, data_files) = sort_sources(config, inputs.files.keys().map(String::as_str));
     for path in data_files {
         let name = path["data/".len()..]
             .rsplit_once('.')
-            .expect("site::sources lists only Data files with an extension")
+            .expect("sources lists only Data files with an extension")
             .0;
         if let Some(value) = data.get(name) {
             let text =
@@ -195,18 +193,20 @@ pub(super) fn bundle(
 
 /// A Data file's value as a JSON module: dates as ISO text, as Templates
 /// see them.
-fn json(v: &Value) -> serde_json::Value {
+fn json(v: &FieldValue) -> serde_json::Value {
     use serde_json::Value as J;
     match v {
-        Value::String(s) | Value::Url(s) => J::from(s.as_str()),
-        Value::Int(i) => J::from(*i),
-        Value::Float(f) => J::from(*f),
-        Value::Bool(b) => J::from(*b),
-        Value::Date(d) => J::from(d.to_string()),
-        Value::Datetime(z) => J::from(z.strftime("%Y-%m-%dT%H:%M:%S%:z").to_string()),
-        Value::Image(Image::Local(path) | Image::Remote(path)) => J::from(path.as_str()),
-        Value::List(items) => J::Array(items.iter().map(json).collect()),
-        Value::Object(o) => J::Object(o.iter().map(|(k, v)| (k.clone(), json(v))).collect()),
+        FieldValue::String(s) | FieldValue::Url(s) => J::from(s.as_str()),
+        FieldValue::Int(i) => J::from(*i),
+        FieldValue::Float(f) => J::from(*f),
+        FieldValue::Bool(b) => J::from(*b),
+        FieldValue::Date(d) => J::from(d.to_string()),
+        FieldValue::Datetime(z) => J::from(z.strftime("%Y-%m-%dT%H:%M:%S%:z").to_string()),
+        FieldValue::Image(FieldImage::Local(path) | FieldImage::Remote(path)) => {
+            J::from(path.as_str())
+        }
+        FieldValue::List(items) => J::Array(items.iter().map(json).collect()),
+        FieldValue::Object(o) => J::Object(o.iter().map(|(k, v)| (k.clone(), json(v))).collect()),
     }
 }
 

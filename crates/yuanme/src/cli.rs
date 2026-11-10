@@ -4,7 +4,7 @@
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
-use yuanme_content::config::Adapter;
+use yuanme_content::Adapter;
 
 use crate::ENGINE_VERSION;
 use crate::commands::{init, new, update};

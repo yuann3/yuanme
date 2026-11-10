@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use ferriki::{FontStyle, Highlighter, StandardAssetCatalogs, TokenizeOptions};
 use memchr::memmem;
-use yuanme_content::document::{Document, Kind, NodeId};
+use yuanme_content::{Document, Kind, NodeId};
 
 use crate::html::text;
 

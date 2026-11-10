@@ -5,7 +5,7 @@ use std::ops::Range;
 use std::rc::Rc;
 
 use minijinja::machinery::ast::{self, CallArg, Expr, Spanned};
-use yuanme_content::config::similar;
+use yuanme_content::similar;
 use yuanme_diag::{Applicability, Edit, codes};
 
 use super::Checker;

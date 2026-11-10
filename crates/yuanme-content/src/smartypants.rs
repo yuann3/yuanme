@@ -18,7 +18,7 @@ use std::ops::Deref;
 
 /// One mdast node remark-smartypants reads, in document order.
 #[derive(Debug, Clone, Copy)]
-pub enum Piece<'a> {
+pub(crate) enum Piece<'a> {
     /// A `text` node's value, anywhere: paragraphs, headings, links,
     /// emphasis, table cells.
     Text(&'a str),
@@ -33,7 +33,7 @@ pub enum Piece<'a> {
 
 /// What `--` and `---` become.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Dashes {
+pub(crate) enum Dashes {
     /// retext-smartypants' default, as Astro's Markdown uses it: `--` → `—`,
     /// `---` left alone.
     Default,
@@ -48,7 +48,7 @@ pub enum Dashes {
 /// over the whole document's text joined together, so quotes around a link
 /// or bold text pair up across nodes. Then each text node on its own gets
 /// backticks (` `` ` → `“`, `''` → `”`), dashes and ellipses (`...` → `…`).
-pub fn smarten(pieces: &[Piece<'_>], dashes: Dashes) -> Vec<String> {
+pub(crate) fn smarten(pieces: &[Piece<'_>], dashes: Dashes) -> Vec<String> {
     let mut joined: Vec<u16> = Vec::new();
     for piece in pieces {
         match piece {

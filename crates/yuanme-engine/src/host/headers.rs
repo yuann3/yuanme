@@ -2,7 +2,7 @@
 
 use std::fmt::Write;
 
-use yuanme_content::config::Config;
+use yuanme_content::Config;
 
 use super::Rule;
 

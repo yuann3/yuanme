@@ -9,7 +9,7 @@ use std::path::Path;
 use std::time::Duration;
 
 use serde_json::{Value, json};
-use yuanme_content::config::{Budget, Budgets};
+use yuanme_content::{Budget, Budgets};
 use yuanme_diag::Level;
 use yuanme_engine::{Body, Build, Measured};
 

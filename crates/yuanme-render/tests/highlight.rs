@@ -11,8 +11,7 @@ use std::path::{Path, PathBuf};
 use rayon::prelude::*;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use yuanme_content::document::{Document, Kind};
-use yuanme_content::{markdown, org};
+use yuanme_content::{Document, Kind, parse_markdown, parse_org};
 use yuanme_diag::Files;
 use yuanme_render::highlight;
 
@@ -73,13 +72,13 @@ fn document(path: &Path) -> Option<Document> {
     let mut sources = Files::default();
     let file = sources.add("x", text.as_str());
     if path.extension().is_some_and(|e| e == "org") {
-        return org::document(&sources, file).0;
+        return parse_org(&sources, file).0;
     }
     let body = text
         .strip_prefix("---\n")
         .and_then(|rest| rest.find("\n---\n"))
         .map_or(0, |end| end + 9);
-    markdown::document(&sources, file, body..text.len()).0
+    parse_markdown(&sources, file, body..text.len()).0
 }
 
 /// Every code block in the corpus that has a grammar, once, by its

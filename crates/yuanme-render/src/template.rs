@@ -16,8 +16,7 @@ use minijinja::syntax::SyntaxConfig;
 use minijinja::value::ValueKind;
 use minijinja::{AutoEscape, Environment, Error, ErrorKind, UndefinedBehavior};
 use rayon::prelude::*;
-use yuanme_content::config::{Collection, Config};
-use yuanme_content::site::{self, RouteKind, Site};
+use yuanme_content::{Collection, Config, RouteKind, Site, collections};
 use yuanme_diag::{Code, Diagnostic, FileId, Files, Level, Span, codes};
 
 use crate::image::Images;
@@ -140,7 +139,7 @@ pub fn render(
         }
     }
 
-    let collections = site::collections(config);
+    let collections = collections(config);
     let chosen: Vec<(String, Span)> = site
         .routes
         .iter()
@@ -260,7 +259,7 @@ fn head_end(html: &str) -> usize {
 
 /// Each Route's Template, in `site.routes`' order, as Site config chooses it.
 pub fn route_templates(config: &Config, site: &Site) -> Vec<String> {
-    let collections = site::collections(config);
+    let collections = collections(config);
     site.routes
         .iter()
         .map(|r| template_of(config, &collections, site, &r.kind).0)

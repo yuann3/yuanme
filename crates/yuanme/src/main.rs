@@ -15,7 +15,7 @@ use std::io::{self, IsTerminal};
 use std::process::ExitCode;
 
 use clap::Parser;
-use yuanme_content::config::{self, Adapter};
+use yuanme_content::{Adapter, config_schema, parse_config, similar};
 use yuanme_diag::Files;
 
 use cli::{Cli, Color, Command, DevArgs, Itself, Which};
@@ -51,7 +51,7 @@ impl Error {
     /// `name` is not one of `choices`; `otherwise` says where to look when
     /// none is close.
     fn unknown(what: &str, name: &str, choices: &[&str], otherwise: String) -> Error {
-        let near = config::similar(name, choices.iter().copied());
+        let near = similar(name, choices.iter().copied());
         Error::BadCommand(match near {
             Some(near) => format!("there is no {what} `{name}`; did you mean `{near}`?"),
             None => format!("there is no {what} `{name}`; {otherwise}"),
@@ -124,7 +124,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
         }
         Command::Schema {
             which: Which::Config,
-        } => return Ok(schema::print(out, "config", config::json_schema())),
+        } => return Ok(schema::print(out, "config", config_schema())),
         Command::Schema {
             which: Which::Events,
         } => return Ok(schema::print(out, "events", events::schema())),
@@ -149,7 +149,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
         let text = fs::read_to_string(root.join("yuanme.toml"))?;
         let mut files = Files::default();
         let file = files.add("yuanme.toml", text);
-        if let (Some(config), _) = config::parse(&files, file, ENGINE_VERSION) {
+        if let (Some(config), _) = parse_config(&files, file, ENGINE_VERSION) {
             init::refresh(&root, config.agents.manage_agents_md, out)?;
         }
     }

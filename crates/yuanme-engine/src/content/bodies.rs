@@ -7,8 +7,7 @@
 use std::sync::Arc;
 
 use rayon::prelude::*;
-use yuanme_content::document::{Document, Links};
-use yuanme_content::site::Site;
+use yuanme_content::{Document, Links, Site};
 use yuanme_render::html::{self, Pictures};
 
 use super::highlight;

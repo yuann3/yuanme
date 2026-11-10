@@ -6,7 +6,7 @@
 use std::collections::BTreeSet;
 
 use regex::Regex;
-use yuanme_content::config::Budget;
+use yuanme_content::Budget;
 use yuanme_engine::{Body, Build, Cache, Inputs, Measured, Mode, build};
 
 /// Bytes of Brotli at quality 11, as #15 counts them.

@@ -5,9 +5,9 @@ use std::collections::BTreeMap;
 use std::rc::Rc;
 
 use serde_json::{Value, json};
-use yuanme_content::config::{Collection, Config, Field as Declared, FieldType};
-use yuanme_content::fields;
-use yuanme_content::site::{self, RouteKind, Site};
+use yuanme_content::{
+    Collection, Config, Field as Declared, FieldType, FieldValue, RouteKind, Site, collections,
+};
 
 use super::types::{Field, Obj, Ty, closed, list_of, merge, obj};
 
@@ -24,7 +24,7 @@ pub(super) struct Schema {
 
 impl Schema {
     pub(super) fn new(config: &Config, site: &Site) -> Schema {
-        let collections = site::collections(config);
+        let collections = collections(config);
         let entries: BTreeMap<String, Ty> = collections
             .iter()
             .map(|(name, c)| (name.clone(), entry(config, name, c)))
@@ -265,7 +265,7 @@ fn entry(config: &Config, name: &str, c: &Collection) -> Ty {
 /// any of their contexts.
 pub fn context_schemas(config: &Config, site: &Site) -> BTreeMap<&'static str, Value> {
     let schema = Schema::new(config, site);
-    let collections = site::collections(config);
+    let collections = collections(config);
     let mut variants: BTreeMap<&'static str, Vec<Vec<(&'static str, Ty)>>> = BTreeMap::new();
     for ty in schema.entries.values() {
         variants
@@ -414,8 +414,8 @@ fn field_ty(path: &str, kind: &FieldType) -> Ty {
 }
 
 /// The type of a Data file with no schema, from the values in it (#19).
-fn infer(path: &str, v: &fields::Value) -> Ty {
-    use fields::Value as V;
+fn infer(path: &str, v: &FieldValue) -> Ty {
+    use FieldValue as V;
     match v {
         V::String(_) => Ty::Str,
         V::Url(_) => Ty::Url,

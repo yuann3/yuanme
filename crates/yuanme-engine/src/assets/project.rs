@@ -6,7 +6,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use yuanme_assets::{CssProject, Import, Packages, is_tailwind};
-use yuanme_content::config;
+use yuanme_content::similar;
 use yuanme_diag::{Code, Diagnostic, Span, codes};
 
 use super::{SIDECARS_ENTRY, file_name};
@@ -143,7 +143,7 @@ impl Project<'_> {
             .keys()
             .map(|p| p.strip_prefix("static/").unwrap_or(p))
             .collect();
-        config::similar(path, candidates).map(str::to_string)
+        similar(path, candidates).map(str::to_string)
     }
 }
 
