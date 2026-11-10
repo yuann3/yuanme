@@ -8,9 +8,10 @@ use minijinja::machinery::ast::{self, CallArg, Expr, Spanned};
 use yuanme_content::config::similar;
 use yuanme_diag::{Applicability, Edit, codes};
 
+use super::Checker;
 use super::calls::IMAGE;
+use super::infer::{Mode, range};
 use super::types::{Ty, assignable};
-use super::{Checker, Mode, range};
 use crate::template::filters::{known_format, unknown_format};
 
 /// For "did you mean": minijinja can't list its filters and tests, so these

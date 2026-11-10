@@ -7,9 +7,10 @@ use std::rc::Rc;
 use minijinja::machinery::ast::{self, CallArg, Expr, Spanned};
 use yuanme_diag::codes;
 
+use super::Checker;
+use super::infer::{Mode, path_of, range};
 use super::signatures::{Sig, Slot};
 use super::types::{Ty, assignable, obj};
-use super::{Checker, Mode, path_of, range};
 
 /// The type `image()` returns, by the name `picture` knows it by.
 pub(super) const IMAGE: &str = "Image";

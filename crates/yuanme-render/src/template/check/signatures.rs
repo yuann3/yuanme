@@ -9,8 +9,9 @@ use minijinja::machinery::{Token, tokenize};
 use minijinja::syntax::SyntaxConfig;
 use yuanme_diag::codes;
 
+use super::Checker;
 use super::headers::{Prop, headers};
-use super::{Checker, range};
+use super::infer::range;
 
 /// A macro, as its signature and props comment declare it.
 pub(super) struct Sig {
