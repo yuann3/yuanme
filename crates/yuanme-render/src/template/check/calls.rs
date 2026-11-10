@@ -181,9 +181,9 @@ impl<'a> Checker<'a> {
                     self.push(d);
                 }
                 if let Some(path) = e.as_const().and_then(|v| v.as_str().map(String::from))
-                    && let Err((code, message)) = self.images.check(&path)
+                    && let Err(error) = self.images.check(&path)
                 {
-                    let d = self.error(code, format!("`image`: {message}"), range(e));
+                    let d = self.error(error.code, format!("`image`: {error}"), range(e));
                     self.push(d);
                 }
             }

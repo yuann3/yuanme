@@ -18,7 +18,7 @@ use serde_json::{Value, json};
 use tokio::sync::{Notify, broadcast};
 use yuanme_assets::Settings;
 use yuanme_diag::{Diagnostic, Files, Level};
-use yuanme_engine::{Body, Build, Cache, ImageError, Variant, encode_variants};
+use yuanme_engine::{Body, Build, Cache, EncodeError, Variant, encode_variants};
 
 use super::Snapshot;
 use crate::ENGINE_VERSION;
@@ -336,7 +336,7 @@ fn encode(
 #[derive(Debug)]
 enum Error {
     /// The source image's path, and why it didn't encode.
-    Encode(String, ImageError),
+    Encode(String, EncodeError),
     Cache(io::Error),
 }
 

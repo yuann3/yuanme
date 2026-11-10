@@ -29,7 +29,7 @@ use image::resolve::Images;
 pub use assets::typescript::{check_types, write_types};
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
-pub use image::{Error as ImageError, Variant, encode as encode_variants};
+pub use image::{Error as EncodeError, Variant, encode as encode_variants};
 pub use inputs::Inputs;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

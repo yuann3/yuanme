@@ -391,7 +391,7 @@ fn image(images: &dyn Images, state: &State, src: &str, kw: Kwargs) -> Result<Va
     };
     let image = images
         .image(src, &request, state.name())
-        .map_err(|(code, message)| coded(code, format!("`image`: {message}")))?;
+        .map_err(|e| coded(e.code, format!("`image`: {e}")))?;
     let mut m = BTreeMap::from([
         ("url", Value::from(image.url)),
         ("srcset", Value::from(image.srcset)),

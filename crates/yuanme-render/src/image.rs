@@ -2,6 +2,8 @@
 //! names and sizes an image's outputs; this writes them as markup, for
 //! body images and the `picture` filter alike.
 
+use std::fmt;
+
 use yuanme_diag::Code;
 
 use crate::template::escape;
@@ -33,8 +35,29 @@ pub struct Request {
     pub sizes: Option<String>,
 }
 
-/// Why `image()` can't give an Image: a Diagnostic's code and message.
-pub type Error = (&'static Code, String);
+/// Why `image()` can't give an Image, as a Diagnostic says it.
+#[derive(Debug)]
+pub struct Error {
+    pub code: &'static Code,
+    pub message: String,
+}
+
+impl Error {
+    pub fn new(code: &'static Code, message: impl Into<String>) -> Error {
+        Error {
+            code,
+            message: message.into(),
+        }
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
+impl std::error::Error for Error {}
 
 /// What `image()` asks of the Engine, which knows the project's images.
 pub trait Images: Send + Sync {

@@ -76,7 +76,10 @@ impl Images for NoImages {
     }
 
     fn check(&self, src: &str) -> Result<(), ImageError> {
-        Err((&codes::IMAGE_NOT_FOUND, format!("no image at `{src}`")))
+        Err(ImageError::new(
+            &codes::IMAGE_NOT_FOUND,
+            format!("no image at `{src}`"),
+        ))
     }
 }
 

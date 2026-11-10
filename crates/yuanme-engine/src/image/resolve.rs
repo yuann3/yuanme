@@ -177,21 +177,24 @@ impl Images {
     /// processed.
     fn source(&self, path: &str) -> Result<&Source, ImageError> {
         match self.sources.get(path) {
-            Some(Source::Invalid(why)) => Err((&codes::IMAGE_INVALID, format!("`{path}`: {why}"))),
+            Some(Source::Invalid(why)) => Err(ImageError::new(
+                &codes::IMAGE_INVALID,
+                format!("`{path}`: {why}"),
+            )),
             Some(source) => Ok(source),
             None if self.statics.contains(path) => {
                 let url = &path["static".len()..];
                 let message = format!(
                     "`{path}` is a Static file, which is copied as it is, to `{url}`; move it out of `static/` to have it processed"
                 );
-                Err((&codes::IMAGE_INVALID, message))
+                Err(ImageError::new(&codes::IMAGE_INVALID, message))
             }
             None => {
                 let mut message = format!("no image at `{path}`");
                 if let Some(near) = similar(path, self.sources.keys().map(String::as_str)) {
                     message.push_str(&format!("; did you mean `{near}`?"));
                 }
-                Err((&codes::IMAGE_NOT_FOUND, message))
+                Err(ImageError::new(&codes::IMAGE_NOT_FOUND, message))
             }
         }
     }
@@ -343,9 +346,9 @@ impl Images {
                     }
                     let image = match self.resolve(&path, &Request::default(), Some(&span)) {
                         Ok(image) => image,
-                        Err((code, message)) => {
-                            let mut d = Diagnostic::error(code, message, span);
-                            if code == &codes::IMAGE_NOT_FOUND {
+                        Err(e) => {
+                            let mut d = Diagnostic::error(e.code, e.message, span);
+                            if e.code == &codes::IMAGE_NOT_FOUND {
                                 d = d.help("a relative path starts from the Entry's folder, and one starting with `/` from the project root");
                             }
                             diagnostics.push(d);
@@ -424,7 +427,7 @@ impl yuanme_render::Images for Images {
 fn from_root(src: &str) -> Result<&str, ImageError> {
     if src.starts_with("//") || has_scheme(src) {
         let message = format!("`{src}` is remote, and yuanme never fetches an image to size it");
-        return Err((&codes::IMAGE_REMOTE, message));
+        return Err(ImageError::new(&codes::IMAGE_REMOTE, message));
     }
     Ok(src.strip_prefix('/').unwrap_or(src))
 }
