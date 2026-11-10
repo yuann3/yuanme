@@ -49,37 +49,7 @@ impl<'a> Checker<'a> {
             Stmt::EmitExpr(e) => {
                 self.expr(&e.expr, Mode::Use);
             }
-            Stmt::ForLoop(f) => {
-                let (iter, _) = self.expr(&f.iter, Mode::Use);
-                let item = match iter {
-                    Ty::List(item) => (*item).clone(),
-                    // A map loops over its keys.
-                    Ty::Obj(_) | Ty::Attrs => Ty::Str,
-                    Ty::Any => Ty::Any,
-                    other => {
-                        let at = range(&f.iter);
-                        let what =
-                            path_of(&f.iter).unwrap_or_else(|| self.text(at.clone()).to_string());
-                        let d = self.error(
-                            &codes::TEMPLATE_WRONG_TYPE,
-                            format!("`{what}` has type `{other}`, which can't be looped over"),
-                            at,
-                        );
-                        self.push(d);
-                        Ty::Any
-                    }
-                };
-                self.scopes.push(BTreeMap::new());
-                self.bind_target(&f.target, Bind::new(item, false));
-                self.bind("loop", Bind::new(Ty::Any, false));
-                let mut paths = Vec::new();
-                if let Some(filter) = &f.filter_expr {
-                    paths = self.cond(filter);
-                }
-                self.narrowed_body(paths, &f.body);
-                self.scopes.pop();
-                self.body(&f.else_body);
-            }
+            Stmt::ForLoop(f) => self.for_loop(f),
             Stmt::IfCond(i) => {
                 let paths = self.cond(&i.expr);
                 self.narrowed_body(paths, &i.true_body);
@@ -94,23 +64,7 @@ impl<'a> Checker<'a> {
                 self.body(&w.body);
                 self.scopes.pop();
             }
-            Stmt::Set(set) => {
-                let (ty, optional) = self.expr(&set.expr, Mode::Pass);
-                let literal = set
-                    .expr
-                    .as_const()
-                    .and_then(|v| v.as_str().map(String::from));
-                let at = Some(self.span(range(&set.expr)));
-                self.bind_target(
-                    &set.target,
-                    Bind {
-                        ty,
-                        optional,
-                        literal,
-                        at,
-                    },
-                );
-            }
+            Stmt::Set(set) => self.set(set),
             Stmt::SetBlock(set) => {
                 if let Some(f) = &set.filter {
                     self.expr(f, Mode::Use);
@@ -127,30 +81,7 @@ impl<'a> Checker<'a> {
                 self.body(&f.body);
             }
             Stmt::Block(b) => self.block(b),
-            Stmt::Include(i) => {
-                let names = match i.ignore_missing {
-                    // `ignore missing` may name what doesn't exist.
-                    true => match &i.name {
-                        Expr::Const(c) => c
-                            .value
-                            .as_str()
-                            .filter(|n| self.templates.contains_key(*n))
-                            .into_iter()
-                            .collect(),
-                        _ => self.template_names(&i.name, "include"),
-                    },
-                    false => self.template_names(&i.name, "include"),
-                };
-                for name in names {
-                    let name = self.asts.get_key_value(name).map(|(k, _)| *k);
-                    if let Some(name) = name {
-                        // A Partial sees what the including Template sees.
-                        self.scopes.push(BTreeMap::new());
-                        self.walk(name, None);
-                        self.scopes.pop();
-                    }
-                }
-            }
+            Stmt::Include(i) => self.include(i),
             Stmt::Import(i) => {
                 let ty = match self.template_names(&i.expr, "import").first() {
                     Some(name) => Ty::Module(Rc::from(*name)),
@@ -158,48 +89,8 @@ impl<'a> Checker<'a> {
                 };
                 self.bind_target(&i.name, Bind::new(ty, false));
             }
-            Stmt::FromImport(i) => {
-                let file = self.template_names(&i.expr, "import").first().copied();
-                for (name, alias) in &i.names {
-                    let Expr::Var(v) = name else { continue };
-                    let target = alias.as_ref().unwrap_or(name);
-                    let sigs = file.and_then(|f| self.macros.get(f));
-                    let ty = match sigs.map(|m| m.get(v.id)) {
-                        Some(Some(sig)) => Ty::Macro(sig.clone()),
-                        Some(None) => {
-                            let file = file.expect("its macros were found");
-                            let at = range(name);
-                            let d = self.error(
-                                &codes::TEMPLATE_UNKNOWN_FILTER,
-                                format!("`{file}` has no macro `{}`", v.id),
-                                at.clone(),
-                            );
-                            let candidates: Vec<&str> = self.macros[file].keys().copied().collect();
-                            let d = Self::near(d, self.span(at), v.id, candidates);
-                            self.push(d);
-                            Ty::Any
-                        }
-                        // A Template that didn't parse; `render` reports it.
-                        None => Ty::Any,
-                    };
-                    self.bind_target(target, Bind::new(ty, false));
-                }
-            }
-            Stmt::Macro(m) => {
-                let file = *self.stack.last().expect("inside a Template");
-                let sig = self.macros.get(file).and_then(|s| s.get(m.name)).cloned();
-                match sig {
-                    Some(sig) => {
-                        self.bind(m.name, Bind::new(Ty::Macro(sig.clone()), false));
-                        // A Component's body is checked once, on its own; a
-                        // local macro's in the Template that defines it.
-                        if !file.starts_with("components/") {
-                            self.macro_body(m, &sig);
-                        }
-                    }
-                    None => self.bind(m.name, Bind::new(Ty::Any, false)),
-                }
-            }
+            Stmt::FromImport(i) => self.import_names(i),
+            Stmt::Macro(m) => self.define_macro(m),
             Stmt::CallBlock(c) => {
                 self.call(&c.call, true);
                 self.scopes.push(BTreeMap::new());
@@ -212,6 +103,124 @@ impl<'a> Checker<'a> {
             Stmt::Do(d) => {
                 self.call(&d.call, false);
             }
+        }
+    }
+
+    fn for_loop(&mut self, f: &'a Spanned<ast::ForLoop<'a>>) {
+        let (iter, _) = self.expr(&f.iter, Mode::Use);
+        let item = match iter {
+            Ty::List(item) => (*item).clone(),
+            // A map loops over its keys.
+            Ty::Obj(_) | Ty::Attrs => Ty::Str,
+            Ty::Any => Ty::Any,
+            other => {
+                let at = range(&f.iter);
+                let what = path_of(&f.iter).unwrap_or_else(|| self.text(at.clone()).to_string());
+                let d = self.error(
+                    &codes::TEMPLATE_WRONG_TYPE,
+                    format!("`{what}` has type `{other}`, which can't be looped over"),
+                    at,
+                );
+                self.push(d);
+                Ty::Any
+            }
+        };
+        self.scopes.push(BTreeMap::new());
+        self.bind_target(&f.target, Bind::new(item, false));
+        self.bind("loop", Bind::new(Ty::Any, false));
+        let mut paths = Vec::new();
+        if let Some(filter) = &f.filter_expr {
+            paths = self.cond(filter);
+        }
+        self.narrowed_body(paths, &f.body);
+        self.scopes.pop();
+        self.body(&f.else_body);
+    }
+
+    fn set(&mut self, set: &'a Spanned<ast::Set<'a>>) {
+        let (ty, optional) = self.expr(&set.expr, Mode::Pass);
+        let literal = set
+            .expr
+            .as_const()
+            .and_then(|v| v.as_str().map(String::from));
+        let at = Some(self.span(range(&set.expr)));
+        self.bind_target(
+            &set.target,
+            Bind {
+                ty,
+                optional,
+                literal,
+                at,
+            },
+        );
+    }
+
+    fn include(&mut self, i: &'a Spanned<ast::Include<'a>>) {
+        let names = match i.ignore_missing {
+            // `ignore missing` may name what doesn't exist.
+            true => match &i.name {
+                Expr::Const(c) => c
+                    .value
+                    .as_str()
+                    .filter(|n| self.templates.contains_key(*n))
+                    .into_iter()
+                    .collect(),
+                _ => self.template_names(&i.name, "include"),
+            },
+            false => self.template_names(&i.name, "include"),
+        };
+        for name in names {
+            let name = self.asts.get_key_value(name).map(|(k, _)| *k);
+            if let Some(name) = name {
+                // A Partial sees what the including Template sees.
+                self.scopes.push(BTreeMap::new());
+                self.walk(name, None);
+                self.scopes.pop();
+            }
+        }
+    }
+
+    fn import_names(&mut self, i: &'a Spanned<ast::FromImport<'a>>) {
+        let file = self.template_names(&i.expr, "import").first().copied();
+        for (name, alias) in &i.names {
+            let Expr::Var(v) = name else { continue };
+            let target = alias.as_ref().unwrap_or(name);
+            let sigs = file.and_then(|f| self.macros.get(f));
+            let ty = match sigs.map(|m| m.get(v.id)) {
+                Some(Some(sig)) => Ty::Macro(sig.clone()),
+                Some(None) => {
+                    let file = file.expect("its macros were found");
+                    let at = range(name);
+                    let d = self.error(
+                        &codes::TEMPLATE_UNKNOWN_FILTER,
+                        format!("`{file}` has no macro `{}`", v.id),
+                        at.clone(),
+                    );
+                    let candidates: Vec<&str> = self.macros[file].keys().copied().collect();
+                    let d = Self::near(d, self.span(at), v.id, candidates);
+                    self.push(d);
+                    Ty::Any
+                }
+                // A Template that didn't parse; `render` reports it.
+                None => Ty::Any,
+            };
+            self.bind_target(target, Bind::new(ty, false));
+        }
+    }
+
+    fn define_macro(&mut self, m: &'a Spanned<ast::Macro<'a>>) {
+        let file = *self.stack.last().expect("inside a Template");
+        let sig = self.macros.get(file).and_then(|s| s.get(m.name)).cloned();
+        match sig {
+            Some(sig) => {
+                self.bind(m.name, Bind::new(Ty::Macro(sig.clone()), false));
+                // A Component's body is checked once, on its own; a
+                // local macro's in the Template that defines it.
+                if !file.starts_with("components/") {
+                    self.macro_body(m, &sig);
+                }
+            }
+            None => self.bind(m.name, Bind::new(Ty::Any, false)),
         }
     }
 
