@@ -2,15 +2,14 @@
 //! project into every file of the Site, in memory (ADR 0011).
 
 mod assets;
-mod budgets;
 mod cache;
+mod checks;
 mod content;
 mod hashing;
 mod host;
 pub mod image;
 mod images;
 mod inputs;
-mod links;
 mod math;
 #[cfg(test)]
 mod tests;
@@ -26,6 +25,7 @@ use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
 use yuanme_render::template::scope;
 
+use checks::{budgets, links};
 use content::{bodies, highlight};
 
 pub use cache::Cache;
