@@ -92,9 +92,19 @@ pub enum Error {
         width: u32,
         height: u32,
     },
-    /// The source isn't an image the pipeline reads, or it is damaged.
+    /// The source isn't an image the pipeline reads, or it is damaged, as
+    /// the decoder says.
     Decode(String),
-    Encode(String),
+    /// The encoder for `format` failed, as it says.
+    Encode {
+        format: Format,
+        message: String,
+    },
+    /// libwebp's limit.
+    WebpTooLarge {
+        width: u32,
+        height: u32,
+    },
 }
 
 impl fmt::Display for Error {
@@ -104,7 +114,19 @@ impl fmt::Display for Error {
                 write!(f, "{width}×{height} is over the 100-megapixel limit")
             }
             Error::Decode(e) => write!(f, "can't decode the image: {e}"),
-            Error::Encode(e) => write!(f, "can't encode the image as {e}"),
+            Error::Encode { format, message } => {
+                let format = match format {
+                    Format::Avif => "AVIF",
+                    Format::Jpeg => "JPEG",
+                    Format::Png => "PNG",
+                    Format::Webp => "WebP",
+                };
+                write!(f, "can't encode the image as {format}: {message}")
+            }
+            Error::WebpTooLarge { width, height } => write!(
+                f,
+                "can't encode the image as WebP: libwebp takes at most 16383×16383, not {width}×{height}"
+            ),
         }
     }
 }
@@ -327,9 +349,10 @@ impl Pixels {
                 .collect();
             encoder.encode_rgb(ravif::Img::new(&pixels[..], width, height))
         };
-        encoded
-            .map(|e| e.avif_file)
-            .map_err(|e| Error::Encode(format!("AVIF: {e}")))
+        encoded.map(|e| e.avif_file).map_err(|e| Error::Encode {
+            format: Format::Avif,
+            message: e.to_string(),
+        })
     }
 
     /// libvips' settings, which sharp uses: baseline, Annex K tables,
@@ -341,7 +364,10 @@ impl Pixels {
             .quant_tables(mozjpeg_rs::QuantTableIdx::JpegAnnexK)
             .optimize_huffman(true)
             .encode_rgb(&rgb, self.width, self.height)
-            .map_err(|e| Error::Encode(format!("JPEG: {e}")))
+            .map_err(|e| Error::Encode {
+                format: Format::Jpeg,
+                message: e.to_string(),
+            })
     }
 
     fn png(&self) -> Result<Vec<u8>, Error> {
@@ -355,7 +381,10 @@ impl Pixels {
         let mut out = Vec::new();
         PngEncoder::new_with_quality(&mut out, CompressionType::Default, FilterType::Adaptive)
             .write_image(&self.bytes, self.width, self.height, color)
-            .map_err(|e| Error::Encode(format!("PNG: {e}")))?;
+            .map_err(|e| Error::Encode {
+                format: Format::Png,
+                message: e.to_string(),
+            })?;
         Ok(out)
     }
 
@@ -389,10 +418,10 @@ impl Pixels {
                 )
             };
             if len == 0 {
-                return Err(Error::Encode(format!(
-                    "WebP: libwebp takes at most 16383×16383, not {}×{}",
-                    self.width, self.height
-                )));
+                return Err(Error::WebpTooLarge {
+                    width: self.width,
+                    height: self.height,
+                });
             }
             let bytes = std::slice::from_raw_parts(out, len).to_vec();
             libwebp_sys::WebPFree(out.cast());

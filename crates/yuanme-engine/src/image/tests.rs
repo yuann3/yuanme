@@ -200,7 +200,7 @@ fn a_streamed_source_is_read_from_the_project_and_checked() {
         std::slice::from_ref(&jpeg),
         &settings,
     ));
-    assert_eq!(changed.err(), Some(Error::Changed));
+    assert!(matches!(changed, Err(Error::Changed)));
     assert!(cache.get_large(&jpeg.key).is_none());
 
     std::fs::write(dir.path().join("park.jpg"), &park).unwrap();

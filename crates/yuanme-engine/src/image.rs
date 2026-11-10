@@ -9,7 +9,8 @@ mod tests;
 
 use std::collections::BTreeMap;
 use std::fmt;
-use std::sync::Mutex;
+use std::io;
+use std::sync::{Arc, Mutex};
 
 use rayon::prelude::*;
 pub(crate) use yuanme_assets::{Format, Probe, Settings};
@@ -35,9 +36,11 @@ pub struct Variant {
 }
 
 /// Why a source image has no outputs: an error at the reference (#28).
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub enum Error {
-    Read(String),
+    /// In an Arc, since one source's error is every variant's.
+    Read(Arc<io::Error>),
+    WriteCache(Arc<io::Error>),
     /// The file is no longer what the build loaded, so its outputs would be
     /// cached under the old bytes' names.
     Changed,
@@ -48,6 +51,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::Read(e) => write!(f, "can't read the image: {e}"),
+            Error::WriteCache(e) => write!(f, "can't read the image: writing the cache: {e}"),
             Error::Changed => f.write_str("the image changed during the build"),
             Error::Image(e) => e.fmt(f),
         }
@@ -176,7 +180,7 @@ pub fn encode(
                 variants.iter().zip(encoded).try_for_each(|(v, bytes)| {
                     cache
                         .insert_large(v.key, &bytes)
-                        .map_err(|e| Error::Read(format!("writing the cache: {e}")))
+                        .map_err(|e| Error::WriteCache(Arc::new(e)))
                 })
             });
             inserted.err().map(|e| (source, e))
@@ -204,7 +208,7 @@ fn read(inputs: &Inputs, source: &str) -> Result<Vec<u8>, Error> {
         .root
         .as_ref()
         .expect("only a project's Inputs stream files");
-    let bytes = std::fs::read(root.join(source)).map_err(|e| Error::Read(e.to_string()))?;
+    let bytes = std::fs::read(root.join(source)).map_err(|e| Error::Read(Arc::new(e)))?;
     if blake3::hash(&bytes) != input.hash {
         return Err(Error::Changed);
     }
