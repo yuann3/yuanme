@@ -412,15 +412,18 @@ impl<'a> Stage<'a> {
             .chain(page_scripts.into_iter().map(ScriptEntry::Page))
             .chain(self.dev.then_some(ScriptEntry::Client))
             .collect();
-        scripts::bundle(
-            &self.project,
-            self.config,
-            data,
-            &entries,
-            self.sources,
-            &mut self.files,
-            &mut self.diagnostics,
-        )
+        let (scripts, problems) = scripts::bundle(&self.project, self.config, data, &entries);
+        for problem in problems {
+            let d = scripts::diagnostic(
+                problem,
+                &self.project,
+                self.config,
+                self.sources,
+                &mut self.files,
+            );
+            self.diagnostics.push(d);
+        }
+        scripts
     }
 
     /// Each of `stylesheets` that imports Tailwind, built by it from the

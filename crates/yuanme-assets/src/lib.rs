@@ -20,7 +20,7 @@ pub use image::{
     Error as ImageError, Format, Probe, Settings, encode as encode_image, probe as probe_image,
 };
 pub use js::{
-    At as ProblemAt, Entry as ScriptEntry, Problem as ScriptProblem, ProblemKind,
+    At as ProblemAt, Chunk, Entry as ScriptEntry, Problem as ScriptProblem, ProblemKind,
     Project as JsProject, bundle as bundle_js, strings as js_strings,
 };
 pub use tailwind::{

@@ -4,11 +4,13 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use yuanme_assets::{JsProject, ProblemAt, ProblemKind, ScriptEntry, ScriptProblem, bundle_js};
+use yuanme_assets::{
+    Chunk, JsProject, ProblemAt, ProblemKind, ScriptEntry, ScriptProblem, bundle_js,
+};
 use yuanme_content::{Config, FieldImage, FieldValue, RouterMode, sort_sources};
 use yuanme_diag::{Applicability, Diagnostic, Edit, Files, Span, codes};
 
-use super::diagnostics::{Diagnostics, SourceFiles};
+use super::diagnostics::SourceFiles;
 use super::project::Project;
 use crate::hashing::{Asset, hashed_path};
 use crate::{Body, Bundle};
@@ -27,28 +29,44 @@ pub(super) struct Scripts {
 /// The extensions of a Script.
 pub(super) const EXTENSIONS: &[&str] = &[".ts", ".js", ".mts", ".mjs"];
 
-/// Bundles `entries`. `None` when it fails, with the Diagnostics in
-/// `diagnostics`.
+/// Bundles `entries`, with rolldown's problems: `None` when it fails, and
+/// the problems are errors, or else they are warnings.
 pub(super) fn bundle(
     project: &Project<'_>,
     config: &Config,
     data: &BTreeMap<String, FieldValue>,
     entries: &[ScriptEntry],
-    sources: &mut Files,
-    files: &mut SourceFiles,
-    diagnostics: &mut Diagnostics,
-) -> Option<Scripts> {
+) -> (Option<Scripts>, Vec<ScriptProblem>) {
     if entries.is_empty() {
-        return Some(Scripts {
-            assets: Vec::new(),
-            entries: Vec::new(),
-            preloads: Vec::new(),
-            report: Vec::new(),
-        });
+        return (Some(Scripts::new(&[], 0)), Vec::new());
     }
+    let result = bundle_js(
+        JsProject {
+            root: project.inputs.root.clone(),
+            files: modules(project, config, data),
+        },
+        entries,
+        config.router == RouterMode::Swap,
+        &config.build.targets,
+    );
+    match result {
+        Ok(bundles) => (
+            Some(Scripts::new(&bundles.chunks, entries.len())),
+            bundles.warnings,
+        ),
+        Err(problems) => (None, problems),
+    }
+}
+
+/// What a Script may import, by path. A stylesheet or JSX file is here so
+/// that an import of one is reported as what it is. A Data file is the
+/// value Templates read as `data.<name>`, with its schema's defaults.
+fn modules(
+    project: &Project<'_>,
+    config: &Config,
+    data: &BTreeMap<String, FieldValue>,
+) -> BTreeMap<String, Arc<[u8]>> {
     let inputs = project.inputs;
-    // What a Script may import. A stylesheet or JSX file is here so that an
-    // import of one is reported as what it is.
     let mut modules: BTreeMap<String, Arc<[u8]>> = inputs
         .files
         .iter()
@@ -60,8 +78,6 @@ pub(super) fn bundle(
         })
         .filter_map(|(path, input)| Some((path.clone(), input.bytes.clone()?)))
         .collect();
-    // A Data file is the value Templates read as `data.<name>`, with its
-    // schema's defaults.
     let (_, data_files) = sort_sources(config, inputs.files.keys().map(String::as_str));
     for path in data_files {
         let name = path["data/".len()..]
@@ -74,35 +90,72 @@ pub(super) fn bundle(
             modules.insert(path.to_string(), Arc::from(text.into_bytes()));
         }
     }
-    let result = bundle_js(
-        JsProject {
-            root: inputs.root.clone(),
-            files: modules,
-        },
-        entries,
-        config.router == RouterMode::Swap,
-        &config.build.targets,
-    );
-    let bundles = match result {
-        Ok(bundles) => bundles,
-        Err(problems) => {
-            for problem in problems {
-                diagnostics.push(diagnostic(problem, project, config, sources, files));
-            }
-            return None;
-        }
-    };
-    for warning in bundles.warnings {
-        diagnostics.push(diagnostic(warning, project, config, sources, files));
-    }
-    let chunks = bundles.chunks;
+    modules
+}
 
-    // A chunk's name is the hash of itself and every chunk it can reach.
-    // Its bytes hold the names of the chunks it imports, so this changes
-    // whenever they do, even where chunks import each other, which a hash
-    // of its final bytes couldn't do. Its own file goes first, as chunks in
-    // a cycle reach the same ones.
-    let hashes: Vec<blake3::Hash> = (0..chunks.len())
+impl Scripts {
+    /// rolldown's chunks for `entries` entries, each named by its hash and
+    /// importing the others by those names.
+    fn new(chunks: &[Chunk], entries: usize) -> Scripts {
+        let hashes = hashes(chunks);
+        let names: Vec<String> = chunks.iter().map(|c| format!("{}.js", c.name)).collect();
+        let paths: Vec<String> = names
+            .iter()
+            .zip(&hashes)
+            .map(|(name, hash)| hashed_path(name, hash))
+            .collect();
+        let mut assets = Vec::with_capacity(chunks.len());
+        let mut report = Vec::with_capacity(chunks.len());
+        for (i, chunk) in chunks.iter().enumerate() {
+            // Every chunk is in `/assets/`, so an import stays relative. Static
+            // imports are quoted with `"` and `import()` with a backtick.
+            let mut code = chunk.code.clone();
+            for &d in chunk.imports.iter().chain(&chunk.dynamic_imports) {
+                let to = paths[d]
+                    .strip_prefix("assets/")
+                    .expect("hashed_path puts every chunk in assets/");
+                for quote in ['"', '\'', '`'] {
+                    code = code.replace(
+                        &format!("{quote}./{}{quote}", chunks[d].file),
+                        &format!("{quote}./{to}{quote}"),
+                    );
+                }
+            }
+            report.push(Bundle {
+                file: paths[i].clone(),
+                size: code.len(),
+                modules: chunk.modules.clone(),
+            });
+            assets.push(Asset::Copy {
+                name: names[i].clone(),
+                body: Body::Bytes(code.into_bytes().into()),
+                hash: hashes[i],
+            });
+        }
+        let entries = (0..entries)
+            .map(|e| {
+                chunks
+                    .iter()
+                    .position(|c| c.entry == Some(e))
+                    .expect("rolldown makes a chunk for each entry it is given")
+            })
+            .collect();
+        Scripts {
+            assets,
+            entries,
+            preloads: preloads(chunks),
+            report,
+        }
+    }
+}
+
+/// Each chunk's name: the hash of itself and every chunk it can reach.
+/// Its bytes hold the names of the chunks it imports, so this changes
+/// whenever they do, even where chunks import each other, which a hash of
+/// its final bytes couldn't do. Its own file goes first, as chunks in a
+/// cycle reach the same ones.
+fn hashes(chunks: &[Chunk]) -> Vec<blake3::Hash> {
+    (0..chunks.len())
         .map(|i| {
             let mut reach = vec![i];
             let mut next = 0;
@@ -126,42 +179,13 @@ pub(super) fn bundle(
             }
             hasher.finalize()
         })
-        .collect();
-    let names: Vec<String> = chunks.iter().map(|c| format!("{}.js", c.name)).collect();
-    let paths: Vec<String> = names
-        .iter()
-        .zip(&hashes)
-        .map(|(name, hash)| hashed_path(name, hash))
-        .collect();
-    let mut assets = Vec::with_capacity(chunks.len());
-    let mut report = Vec::with_capacity(chunks.len());
-    for (i, chunk) in chunks.iter().enumerate() {
-        // Every chunk is in `/assets/`, so an import stays relative. Static
-        // imports are quoted with `"` and `import()` with a backtick.
-        let mut code = chunk.code.clone();
-        for &d in chunk.imports.iter().chain(&chunk.dynamic_imports) {
-            let to = paths[d]
-                .strip_prefix("assets/")
-                .expect("hashed_path puts every chunk in assets/");
-            for quote in ['"', '\'', '`'] {
-                code = code.replace(
-                    &format!("{quote}./{}{quote}", chunks[d].file),
-                    &format!("{quote}./{to}{quote}"),
-                );
-            }
-        }
-        report.push(Bundle {
-            file: paths[i].clone(),
-            size: code.len(),
-            modules: chunk.modules.clone(),
-        });
-        assets.push(Asset::Copy {
-            name: names[i].clone(),
-            body: Body::Bytes(code.into_bytes().into()),
-            hash: hashes[i],
-        });
-    }
-    let preloads = (0..chunks.len())
+        .collect()
+}
+
+/// The chunks each chunk imports, through every chunk between, in the
+/// order a browser finds them.
+fn preloads(chunks: &[Chunk]) -> Vec<Vec<usize>> {
+    (0..chunks.len())
         .map(|i| {
             let mut out: Vec<usize> = Vec::new();
             let mut stack: Vec<usize> = chunks[i].imports.iter().rev().copied().collect();
@@ -174,21 +198,7 @@ pub(super) fn bundle(
             }
             out
         })
-        .collect();
-    let entries = (0..entries.len())
-        .map(|e| {
-            chunks
-                .iter()
-                .position(|c| c.entry == Some(e))
-                .expect("rolldown makes a chunk for each entry it is given")
-        })
-        .collect();
-    Some(Scripts {
-        assets,
-        entries,
-        preloads,
-        report,
-    })
+        .collect()
 }
 
 /// A Data file's value as a JSON module: dates as ISO text, as Templates
@@ -210,7 +220,7 @@ fn json(v: &FieldValue) -> serde_json::Value {
     }
 }
 
-fn diagnostic(
+pub(super) fn diagnostic(
     problem: ScriptProblem,
     project: &Project<'_>,
     config: &Config,
