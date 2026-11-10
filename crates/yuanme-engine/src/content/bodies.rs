@@ -11,7 +11,8 @@ use yuanme_content::document::{Document, Links};
 use yuanme_content::site::Site;
 use yuanme_render::html::{self, Pictures};
 
-use crate::{Cache, highlight};
+use super::highlight;
+use crate::Cache;
 
 /// One body and everything [`html::body`] read to write it, but its code
 /// blocks, which are highlighted from the Document by this Engine.

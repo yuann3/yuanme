@@ -10,7 +10,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::assets::{self, tailwind::Watching};
-use crate::{Body, bodies, entries, link};
+use crate::content::{bodies, entries};
+use crate::{Body, link};
 
 /// Entries no build has read for this many successful builds are deleted.
 const KEEP: u64 = 10;

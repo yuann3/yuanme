@@ -2,11 +2,9 @@
 //! project into every file of the Site, in memory (ADR 0011).
 
 mod assets;
-mod bodies;
 mod budgets;
 mod cache;
-mod entries;
-mod highlight;
+mod content;
 mod host;
 pub mod image;
 mod images;
@@ -26,6 +24,8 @@ use yuanme_content::config::{self, Budget, Config};
 use yuanme_content::site::{self, Project, RouteKind, Site};
 use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
 use yuanme_render::template::scope;
+
+use content::{bodies, entries, highlight};
 
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
