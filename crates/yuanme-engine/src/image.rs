@@ -3,6 +3,7 @@
 //! when a browser asks. Encoded variants are large cache entries
 //! (ADR 0011), so a warm build reads no image at all.
 
+pub(crate) mod resolve;
 #[cfg(test)]
 mod tests;
 

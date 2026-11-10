@@ -8,7 +8,6 @@ mod content;
 mod hashing;
 mod host;
 pub mod image;
-mod images;
 mod inputs;
 mod math;
 #[cfg(test)]
@@ -171,7 +170,9 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     }
     let (code, more) = highlight::code(&site, &sources, cache);
     diagnostics.extend(more);
-    let images = Arc::new(images::Images::new(inputs, cache, &config, &templates));
+    let images = Arc::new(image::resolve::Images::new(
+        inputs, cache, &config, &templates,
+    ));
     let (pictures, more) = images.bodies(&site);
     diagnostics.extend(more);
     let bodies = bodies::bodies(&site, &code, pictures, cache, mode == Mode::Dev);
@@ -248,15 +249,17 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let math_font = math::stylesheet(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
     let mut files = hashing::link(pages, assets, cache, mode == Mode::Dev);
     files.extend(statics);
-    files.extend(images::copies(inputs, &used));
+    files.extend(image::resolve::copies(inputs, &used));
     let fallback = Span {
         file: config.file,
         range: 0..0,
     };
     if mode.encodes() {
-        diagnostics.extend(images::encode(inputs, cache, &used, &mut files, &fallback));
+        diagnostics.extend(image::resolve::encode(
+            inputs, cache, &used, &mut files, &fallback,
+        ));
     }
-    let heavy = images::heavy(inputs, &config.images, &files, &used);
+    let heavy = image::resolve::heavy(inputs, &config.images, &files, &used);
     let more = links::links(
         &config,
         &site,
@@ -270,7 +273,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         cache,
     );
     diagnostics.extend(more);
-    let more = images::in_css(inputs, &files, &heavy, &mut sources, &fallback);
+    let more = image::resolve::in_css(inputs, &files, &heavy, &mut sources, &fallback);
     diagnostics.extend(more);
     let budgets = match (&config.budgets, &measured) {
         (Some(budgets), Some(bodies)) => {

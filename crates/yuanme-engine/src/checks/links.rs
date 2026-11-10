@@ -11,8 +11,8 @@ use yuanme_content::config::{self, Config};
 use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 
+use crate::image::resolve::{self, Heavy};
 use crate::image::{Settings, Variant};
-use crate::images::{self, Heavy};
 use crate::url::{internal, normalize, percent_decode, suffix, url_of};
 use crate::{Body, Cache, Inputs, Output};
 
@@ -138,7 +138,7 @@ pub(crate) fn links(
                 if link.loaded
                     && let Some(h) = heavy.get(&path[1..])
                 {
-                    let d = images::unoptimized(url, h, place().0);
+                    let d = resolve::unoptimized(url, h, place().0);
                     found.push(d.note(format!("in the Page written to `{output}`")));
                 }
                 let d = match verdict(&path, files, images, config) {
