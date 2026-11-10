@@ -7,7 +7,7 @@ use std::collections::BTreeSet;
 use std::sync::Arc;
 
 use rayon::prelude::*;
-use yuanme_assets::font::{self, NCM_MATH};
+use yuanme_assets::{NCM_MATH, subset_font, woff2};
 use yuanme_content::site::Site;
 
 use crate::assets::Seen;
@@ -146,7 +146,7 @@ fn subset(cache: &mut Cache, chars: &BTreeSet<char>) -> Arc<[u8]> {
     if let Some(bytes) = cache.get(KIND, &key) {
         return bytes;
     }
-    let bytes: Arc<[u8]> = font::woff2(&font::subset(NCM_MATH, chars)).into();
+    let bytes: Arc<[u8]> = woff2(&subset_font(NCM_MATH, chars)).into();
     cache.insert(KIND, key, bytes.clone());
     bytes
 }

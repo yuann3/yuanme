@@ -5,7 +5,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use yuanme_assets::css;
+use yuanme_assets::{Compound, CssError, CssErrorKind};
 use yuanme_diag::{Diagnostic, Edit, FileId, Files, Level, Span, codes};
 use yuanme_render::template::{Page, scope};
 
@@ -76,14 +76,14 @@ impl SourceFiles {
     /// A bundle's error, in the stylesheet it is in.
     pub(super) fn error(
         &mut self,
-        e: css::Error<Problem>,
+        e: CssError<Problem>,
         entry: &str,
         project: &Project<'_>,
         sources: &mut Files,
     ) -> Diagnostic {
         let (needle, file) = match &e.kind {
-            css::ErrorKind::Project(problem) => (problem.url.as_str(), problem.file.clone()),
-            css::ErrorKind::Css(_) => ("", None),
+            CssErrorKind::Project(problem) => (problem.url.as_str(), problem.file.clone()),
+            CssErrorKind::Css(_) => ("", None),
         };
         let span = match (file, &e.at) {
             (Some((path, at)), _) => Span {
@@ -94,8 +94,8 @@ impl SourceFiles {
             (None, None) => self.span(project, sources, entry, 1, 1, needle),
         };
         match e.kind {
-            css::ErrorKind::Project(problem) => problem.diagnostic(span),
-            css::ErrorKind::Css(message) => {
+            CssErrorKind::Project(problem) => problem.diagnostic(span),
+            CssErrorKind::Css(message) => {
                 Diagnostic::error(&codes::ASSET_INVALID_CSS, message, span)
             }
         }
@@ -156,7 +156,7 @@ impl SourceFiles {
 /// A warning for a compound selector of a Sidecar that no tag its
 /// Template writes can match.
 pub(super) fn unmatched(
-    compound: &css::Compound,
+    compound: &Compound,
     templates: &BTreeMap<String, FileId>,
     project: &Project<'_>,
     sources: &mut Files,

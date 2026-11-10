@@ -16,9 +16,10 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use rayon::prelude::*;
-use yuanme_assets::css::{self, Packages};
-use yuanme_assets::html::{self, Kind};
-use yuanme_assets::{js, tailwind as tw};
+use yuanme_assets::{
+    Packages, ReferenceKind, Scan, ScriptEntry, bundle_css, imports_tailwind, js_strings,
+    scan_html, tailwind_tokens,
+};
 use yuanme_content::config::{Config, RouterMode};
 use yuanme_content::fields::Value;
 use yuanme_diag::{Applicability, Diagnostic, FileId, Files, Span, codes};
@@ -70,7 +71,7 @@ impl Staged {
 /// code's classes, and whether it has math. It reads nothing but the text,
 /// so `yuanme dev` keeps it with the text for its next build.
 pub(crate) struct Seen {
-    pub scan: html::Scan,
+    pub scan: Scan,
     pub code: Option<BTreeSet<String>>,
     pub math: bool,
 }
@@ -78,7 +79,7 @@ pub(crate) struct Seen {
 impl Seen {
     fn of(text: &str) -> Seen {
         let code = yuanme_render::highlight::classes(text);
-        let mut scan = html::scan(text);
+        let mut scan = scan_html(text);
         // Only Tailwind's tokens read them, as a set; a Page of
         // highlighted code holds thousands of the same few.
         scan.classes.sort_unstable();
@@ -287,7 +288,7 @@ impl<'a> Stage<'a> {
                     }
                 };
                 let use_ = match r.kind {
-                    Kind::Classic => {
+                    ReferenceKind::Classic => {
                         let (span, found) = at_template();
                         let mut d = Diagnostic::error(
                             &codes::ASSET_CLASSIC_SCRIPT,
@@ -305,7 +306,7 @@ impl<'a> Stage<'a> {
                         self.diagnostics.push(d.note(note(page)));
                         continue;
                     }
-                    Kind::Module => {
+                    ReferenceKind::Module => {
                         let problem = if path.ends_with(".jsx") || path.ends_with(".tsx") {
                             Some((&codes::ASSET_JSX, "is JSX, which yuanme doesn't compile"))
                         } else if !scripts::EXTENSIONS.iter().any(|e| path.ends_with(e)) {
@@ -325,11 +326,11 @@ impl<'a> Stage<'a> {
                         }
                         Use::Script(path)
                     }
-                    Kind::Stylesheet => Use::Bundle(path),
+                    ReferenceKind::Stylesheet => Use::Bundle(path),
                     // A preload of a stylesheet must fetch the bundle that
                     // `<link rel=stylesheet>` gets.
-                    Kind::Link if path.ends_with(".css") => Use::Bundle(path),
-                    Kind::Link => {
+                    ReferenceKind::Link if path.ends_with(".css") => Use::Bundle(path),
+                    ReferenceKind::Link => {
                         named.copies.insert(path.clone());
                         Use::Copy(path)
                     }
@@ -404,11 +405,11 @@ impl<'a> Stage<'a> {
         script_entries: &[String],
         page_scripts: Vec<Vec<String>>,
     ) -> Option<Scripts> {
-        let entries: Vec<js::Entry> = script_entries
+        let entries: Vec<ScriptEntry> = script_entries
             .iter()
-            .map(|path| js::Entry::Script(path.clone()))
-            .chain(page_scripts.into_iter().map(js::Entry::Page))
-            .chain(self.dev.then_some(js::Entry::Client))
+            .map(|path| ScriptEntry::Script(path.clone()))
+            .chain(page_scripts.into_iter().map(ScriptEntry::Page))
+            .chain(self.dev.then_some(ScriptEntry::Client))
             .collect();
         scripts::bundle(
             &self.project,
@@ -433,7 +434,11 @@ impl<'a> Stage<'a> {
     ) -> Vec<String> {
         let tailwind: Vec<String> = stylesheets
             .iter()
-            .filter(|e| self.project.text(e).is_some_and(|css| tw::imported(&css)))
+            .filter(|e| {
+                self.project
+                    .text(e)
+                    .is_some_and(|css| imports_tailwind(&css))
+            })
             .cloned()
             .collect();
         if let (Some(scripts), false) = (scripts, tailwind.is_empty()) {
@@ -445,7 +450,7 @@ impl<'a> Stage<'a> {
                     ..
                 } = asset
                 {
-                    strings.extend(js::strings(&String::from_utf8_lossy(code)));
+                    strings.extend(js_strings(&String::from_utf8_lossy(code)));
                 }
             }
             let sidecar_texts: Vec<String> = self
@@ -453,7 +458,7 @@ impl<'a> Stage<'a> {
                 .keys()
                 .filter_map(|p| self.project.text(p))
                 .collect();
-            let tokens = tw::tokens(
+            let tokens = tailwind_tokens(
                 classes
                     .map(String::as_str)
                     .chain(strings.iter().map(String::as_str))
@@ -506,7 +511,7 @@ impl<'a> Stage<'a> {
                 if is_tailwind && !project.tailwind.contains_key(*entry) {
                     return None;
                 }
-                Some(css::bundle(project, entry, targets, scopes, is_tailwind))
+                Some(bundle_css(project, entry, targets, scopes, is_tailwind))
             })
             .collect();
         let mut out = Vec::new();

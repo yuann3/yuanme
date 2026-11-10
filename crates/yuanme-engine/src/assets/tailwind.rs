@@ -7,8 +7,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use yuanme_assets::tailwind::{self, Error, Watch};
-use yuanme_assets::tool;
+use yuanme_assets::{
+    TAILWIND_ENV, TAILWIND_VERSION, TailwindError, TailwindWatch, cache_dir, run_tailwind,
+    tailwind_input, tailwind_tool,
+};
 use yuanme_content::config::Config;
 use yuanme_diag::{Diagnostic, Files, Span, codes};
 
@@ -38,7 +40,7 @@ pub(super) fn outputs(
         .tailwind
         .version
         .as_ref()
-        .map_or(tailwind::VERSION, |(v, _)| v.as_str());
+        .map_or(TAILWIND_VERSION, |(v, _)| v.as_str());
     // Everything of the project Tailwind may read but the token file: its
     // stylesheets, JS plugins and installed packages. A Template's Sidecars
     // are tokens already. An `@source` of the Author's has it scan files
@@ -135,7 +137,7 @@ pub(super) fn outputs(
                 cache.insert("tailwind", key, output.as_bytes());
                 out.insert(entry.clone(), output);
             }
-            Err(Error::Tailwind(message)) => {
+            Err(TailwindError::Tailwind(message)) => {
                 // Tailwind quotes what it is about in backticks, such as
                 // the utility an `@apply` names.
                 let quoted = message.split('`').nth(1).filter(|q| !q.is_empty());
@@ -146,12 +148,12 @@ pub(super) fn outputs(
                     span,
                 ));
             }
-            Err(Error::Run(message)) => {
+            Err(TailwindError::Run(message)) => {
                 let span = at(None, sources, files);
                 let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, message, span);
                 diagnostics.push(d.help(format!(
                     "set `{}` to a Tailwind CLI that runs here",
-                    tailwind::ENV
+                    TAILWIND_ENV
                 )));
             }
         }
@@ -161,16 +163,16 @@ pub(super) fn outputs(
 
 /// The CLI for `version`, or a message and help saying why there is none.
 fn binary(version: &str) -> Result<PathBuf, (String, String)> {
-    let override_help = format!("set `{}` to a Tailwind CLI binary", tailwind::ENV);
-    let Some(tool) = tailwind::tool(version) else {
-        if let Some(path) = std::env::var_os(tailwind::ENV) {
+    let override_help = format!("set `{}` to a Tailwind CLI binary", TAILWIND_ENV);
+    let Some(tool) = tailwind_tool(version) else {
+        if let Some(path) = std::env::var_os(TAILWIND_ENV) {
             return Ok(PathBuf::from(path));
         }
         let platform = format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH);
         let message = format!("Tailwind publishes no CLI for {platform}");
         return Err((message, override_help));
     };
-    let Some(cache) = tool::cache_dir() else {
+    let Some(cache) = cache_dir() else {
         let message = "there is no folder to keep the Tailwind CLI in: `HOME` isn't set".into();
         return Err((message, override_help));
     };
@@ -179,15 +181,15 @@ fn binary(version: &str) -> Result<PathBuf, (String, String)> {
 
 /// One run of the CLI, from `dir`, on the stylesheet `css` with the token
 /// file holding `tokens`, written to a folder of its own and removed.
-fn run(binary: &Path, dir: &Path, css: &str, tokens: &str) -> Result<String, Error> {
+fn run(binary: &Path, dir: &Path, css: &str, tokens: &str) -> Result<String, TailwindError> {
     let scratch = scratch("tailwind");
     let file = scratch.join("tokens.txt");
     std::fs::create_dir_all(&scratch)
         .and_then(|()| std::fs::write(&file, tokens))
-        .map_err(|e| Error::Run(format!("can't write {}: {e}", file.display())))?;
-    let input = tailwind::input(css, &file)
+        .map_err(|e| TailwindError::Run(format!("can't write {}: {e}", file.display())))?;
+    let input = tailwind_input(css, &file)
         .expect("outputs() is given only stylesheets that import Tailwind");
-    let result = tailwind::run(binary, dir, &input, &scratch);
+    let result = run_tailwind(binary, dir, &input, &scratch);
     if let Err(e) = std::fs::remove_dir_all(&scratch) {
         // Left behind, it costs a few bytes in the temporary folder.
         eprintln!("warning: could not delete {}: {e}", scratch.display());
@@ -209,7 +211,7 @@ fn scratch(what: &str) -> PathBuf {
 pub(crate) struct Watching {
     /// `None` once stopped. In a lock only because the cache is shared
     /// between render's threads, which never touch it.
-    watch: Mutex<Option<Watch>>,
+    watch: Mutex<Option<TailwindWatch>>,
     /// Everything it read when it started: the binary, the release and the
     /// project's stylesheets and plugins. It reads them only then, since
     /// the stylesheet goes to it on stdin.
@@ -242,7 +244,7 @@ fn watched(
     css: &str,
     tokens: &str,
     started: blake3::Hash,
-) -> Result<String, Error> {
+) -> Result<String, TailwindError> {
     if let Some(running) = cache.tailwind.get_mut(entry) {
         let now: BTreeSet<&str> = tokens.lines().collect();
         if running.started == started && running.tokens.lines().all(|t| now.contains(t)) {
@@ -266,7 +268,7 @@ fn watched(
     drop(cache.tailwind.remove(entry));
     let folder = scratch("tailwind-watch");
     std::fs::create_dir_all(&folder)
-        .map_err(|e| Error::Run(format!("can't create {}: {e}", folder.display())))?;
+        .map_err(|e| TailwindError::Run(format!("can't create {}: {e}", folder.display())))?;
     let mut running = Watching {
         watch: Mutex::new(None),
         started,
@@ -274,10 +276,10 @@ fn watched(
         folder,
     };
     let file = running.folder.join("tokens.txt");
-    let input = tailwind::input(css, &file)
+    let input = tailwind_input(css, &file)
         .expect("outputs() is given only stylesheets that import Tailwind");
     let output = running.folder.join("out.css");
-    let (watch, css) = Watch::start(binary, dir, &input, file, tokens, output)?;
+    let (watch, css) = TailwindWatch::start(binary, dir, &input, file, tokens, output)?;
     running.watch = Mutex::new(Some(watch));
     cache.tailwind.insert(entry.to_string(), running);
     Ok(css)

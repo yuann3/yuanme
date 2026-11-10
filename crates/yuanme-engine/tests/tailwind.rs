@@ -6,8 +6,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use yuanme_assets::tailwind::{self, Watch};
-use yuanme_assets::tool;
+use yuanme_assets::{TAILWIND_VERSION, TailwindWatch, cache_dir, tailwind_input, tailwind_tool};
 use yuanme_engine::{Body, Build, Cache, Inputs, Mode, build};
 
 fn fixture(name: &str) -> PathBuf {
@@ -82,9 +81,9 @@ fn stylesheet(build: &Build, name: &str) -> String {
 
 /// The pinned CLI, downloaded as a build would.
 fn cli() -> PathBuf {
-    tailwind::tool(tailwind::VERSION)
+    tailwind_tool(TAILWIND_VERSION)
         .expect("a platform Tailwind has a binary for")
-        .binary(&tool::cache_dir().expect("a cache folder"))
+        .binary(&cache_dir().expect("a cache folder"))
         .unwrap()
 }
 
@@ -232,8 +231,8 @@ fn the_watch_process_builds_again_only_when_the_tokens_change() {
     let css = "@import \"tailwindcss\";\n";
     std::fs::create_dir(root.join("watch")).unwrap();
     let tokens = root.join("watch/tokens.txt");
-    let input = tailwind::input(css, &tokens).unwrap();
-    let (mut watch, first) = Watch::start(
+    let input = tailwind_input(css, &tokens).unwrap();
+    let (mut watch, first) = TailwindWatch::start(
         &cli(),
         &root.join("styles"),
         &input,

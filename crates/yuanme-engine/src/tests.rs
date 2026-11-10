@@ -489,17 +489,14 @@ fn pages_with_math_get_one_font_subset_for_the_site_and_its_stylesheet() {
     let chars = BTreeSet::from([
         ' ', '\u{AF}', '1', 'X', 'o', '\u{2212}', '\u{221A}', 'x', '𝑥', '∑', 'y', '𝑦',
     ]);
-    let subset = yuanme_assets::font::subset(yuanme_assets::font::NCM_MATH, &chars);
-    let expected = yuanme_assets::font::woff2(&subset);
+    let subset = yuanme_assets::subset_font(yuanme_assets::NCM_MATH, &chars);
+    let expected = yuanme_assets::woff2(&subset);
     assert_eq!(build.files[&font].hash, blake3::hash(&expected));
 
     // `yuanme dev` serves the whole font.
     let dev = super::build(&inputs, &mut cache, Mode::Dev);
     let otf = find(&dev.files, "assets/math-", ".otf");
-    assert_eq!(
-        dev.files[&otf].hash,
-        blake3::hash(yuanme_assets::font::NCM_MATH)
-    );
+    assert_eq!(dev.files[&otf].hash, blake3::hash(yuanme_assets::NCM_MATH));
     let sheet = text(&dev.files[&find(&dev.files, "assets/math-", ".css")].body);
     assert!(
         sheet.contains(&format!("src:url(\"/{otf}\") format(\"opentype\")")),

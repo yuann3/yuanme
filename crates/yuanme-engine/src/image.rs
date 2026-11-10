@@ -12,8 +12,8 @@ use std::fmt;
 use std::sync::Mutex;
 
 use rayon::prelude::*;
-use yuanme_assets::image as pipeline;
-pub use yuanme_assets::image::{Format, Probe, Settings};
+pub use yuanme_assets::{Format, Probe, Settings};
+use yuanme_assets::{ImageError, encode_image, probe_image};
 
 use crate::hashing::hashed_path;
 use crate::{Cache, Inputs, Output};
@@ -41,7 +41,7 @@ pub enum Error {
     /// The file is no longer what the build loaded, so its outputs would be
     /// cached under the old bytes' names.
     Changed,
-    Image(pipeline::Error),
+    Image(ImageError),
 }
 
 impl fmt::Display for Error {
@@ -77,7 +77,7 @@ pub fn probe(cache: &mut Cache, inputs: &Inputs, source: &str) -> Result<Probe, 
             animated: bytes[9] == 1,
         });
     }
-    let probe = pipeline::probe(&read(inputs, source)?).map_err(Error::Image)?;
+    let probe = probe_image(&read(inputs, source)?).map_err(Error::Image)?;
     let bytes = [
         &probe.width.to_le_bytes()[..],
         &probe.height.to_le_bytes(),
@@ -165,9 +165,8 @@ pub fn encode(
         .into_par_iter()
         .filter_map(|(source, variants)| {
             let outputs: Vec<_> = variants.iter().map(|v| (v.width, v.format)).collect();
-            let encoded = read(inputs, source).and_then(|bytes| {
-                pipeline::encode(&bytes, &outputs, settings).map_err(Error::Image)
-            });
+            let encoded = read(inputs, source)
+                .and_then(|bytes| encode_image(&bytes, &outputs, settings).map_err(Error::Image));
             // Inserted as each source finishes, so no more than one
             // source's outputs per thread are held in memory.
             let inserted = encoded.and_then(|encoded| {

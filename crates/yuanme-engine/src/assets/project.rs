@@ -5,8 +5,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 use std::sync::Arc;
 
-use yuanme_assets::css::{self, Import, Packages};
-use yuanme_assets::tailwind as tw;
+use yuanme_assets::{CssProject, Import, Packages, is_tailwind};
 use yuanme_content::config;
 use yuanme_diag::{Code, Diagnostic, Span, codes};
 
@@ -148,7 +147,7 @@ impl Project<'_> {
     }
 }
 
-impl css::Project for Project<'_> {
+impl CssProject for Project<'_> {
     type Error = Problem;
 
     fn read(&self, path: &str) -> Result<String, Problem> {
@@ -172,7 +171,7 @@ impl css::Project for Project<'_> {
     fn import(&self, specifier: &str, from: &str) -> Result<Import, Problem> {
         // A stylesheet that imports Tailwind is the Tailwind CLI's to build,
         // and only one a Page links gets to it.
-        if tw::is_tailwind(specifier) {
+        if is_tailwind(specifier) {
             let message =
                 format!("`@import \"{specifier}\"` is in a stylesheet that no Template links");
             return Err(Problem::new(&codes::ASSET_TAILWIND_ERROR, message)

@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 
 use rayon::prelude::*;
 
-use yuanme_assets::html;
+use yuanme_assets::html_urls;
 use yuanme_content::config::{self, Config};
 use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
@@ -103,7 +103,7 @@ pub(crate) fn links(
                 return (None, found);
             };
             let base = url_of(output);
-            for link in html::urls(text) {
+            for link in html_urls(text) {
                 let url = link.url.trim();
                 let Some((path, absolute)) = internal(url, &base, origin) else {
                     continue;

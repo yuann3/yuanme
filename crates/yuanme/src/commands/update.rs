@@ -16,7 +16,7 @@ use std::process::Command;
 
 use minisign_verify::{PublicKey, Signature};
 use serde_json::Value;
-use yuanme_assets::tool;
+use yuanme_assets::{fetch, listed, sha256};
 
 use crate::events::Event;
 use crate::out::Out;
@@ -153,15 +153,15 @@ pub(crate) fn update(
         _ => format!("yuanme-{target}.tar.xz"),
     };
     let failed = |message: String| Error::Io(io::Error::other(message));
-    let Some(want) = tool::listed(&sums, &archive) else {
+    let Some(want) = listed(&sums, &archive) else {
         return Err(failed(format!(
             "yuanme {release} has no `{archive}`: there is no release for {target}"
         )));
     };
     let url = format!("{}/download/v{release}/{archive}", source.url);
     out.say(&format!("downloading {url}"));
-    let bytes = tool::fetch(&url).map_err(|e| failed(format!("can't download {url}: {e}")))?;
-    let have = tool::sha256(&bytes);
+    let bytes = fetch(&url).map_err(|e| failed(format!("can't download {url}: {e}")))?;
+    let have = sha256(&bytes);
     if !have.eq_ignore_ascii_case(&want) {
         return Err(failed(format!(
             "{url} has SHA-256 {have}, not the {want} its signed sha256.txt lists"
@@ -269,7 +269,7 @@ fn release(source: &Source, version: Option<&str>) -> Result<(String, String), E
     };
     let get = |file: &str| {
         let url = format!("{dir}/{file}");
-        tool::fetch(&url).map_err(|e| failed(format!("can't download {url}: {e}")))
+        fetch(&url).map_err(|e| failed(format!("can't download {url}: {e}")))
     };
     let sums = get("sha256.txt")?;
     let signature = get("sha256.txt.minisig")?;

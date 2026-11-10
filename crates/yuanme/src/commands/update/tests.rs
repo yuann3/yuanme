@@ -84,12 +84,12 @@ fn publish(releases: &Path, version: &str, sk: &SecretKey, binary: &str) {
             _ => target.as_bytes().to_vec(),
         };
         fs::write(dir.join(&name), &bytes).unwrap();
-        sums.push_str(&format!("{}  {name}\n", tool::sha256(&bytes)));
+        sums.push_str(&format!("{}  {name}\n", sha256(&bytes)));
     }
     for target in ["aarch64-pc-windows-msvc", "x86_64-pc-windows-msvc"] {
         let name = format!("yuanme-{target}.zip");
         fs::write(dir.join(&name), target).unwrap();
-        sums.push_str(&format!("{}  {name}\n", tool::sha256(target.as_bytes())));
+        sums.push_str(&format!("{}  {name}\n", sha256(target.as_bytes())));
     }
     fs::write(dir.join("sha256.txt"), &sums).unwrap();
     sign(&dir, sk, &format!("yuanme v{version}"));
@@ -283,7 +283,7 @@ fn a_tampered_release_changes_nothing() {
                 let bytes = archive(dir, "echo yuanme 0.2.0; evil");
                 let sums = fs::read_to_string(dir.join("sha256.txt")).unwrap();
                 let line = sums.lines().find(|l| l.ends_with(&name)).unwrap();
-                let sums = sums.replace(line, &format!("{}  {name}", tool::sha256(&bytes)));
+                let sums = sums.replace(line, &format!("{}  {name}", sha256(&bytes)));
                 fs::write(dir.join("sha256.txt"), sums).unwrap();
                 fs::write(dir.join(name), bytes).unwrap();
             },

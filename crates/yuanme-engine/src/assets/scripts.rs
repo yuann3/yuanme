@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use yuanme_assets::js::{self, At, Problem, ProblemKind};
+use yuanme_assets::{JsProject, ProblemAt, ProblemKind, ScriptEntry, ScriptProblem, bundle_js};
 use yuanme_content::config::{Config, RouterMode};
 use yuanme_content::fields::{Image, Value};
 use yuanme_content::site;
@@ -35,7 +35,7 @@ pub(super) fn bundle(
     project: &Project<'_>,
     config: &Config,
     data: &BTreeMap<String, Value>,
-    entries: &[js::Entry],
+    entries: &[ScriptEntry],
     sources: &mut Files,
     files: &mut SourceFiles,
     diagnostics: &mut Diagnostics,
@@ -76,8 +76,8 @@ pub(super) fn bundle(
             modules.insert(path.to_string(), Arc::from(text.into_bytes()));
         }
     }
-    let result = js::bundle(
-        js::Project {
+    let result = bundle_js(
+        JsProject {
             root: inputs.root.clone(),
             files: modules,
         },
@@ -211,7 +211,7 @@ fn json(v: &Value) -> serde_json::Value {
 }
 
 fn diagnostic(
-    problem: Problem,
+    problem: ScriptProblem,
     project: &Project<'_>,
     config: &Config,
     sources: &mut Files,
@@ -223,19 +223,19 @@ fn diagnostic(
             range: 0..0,
         },
         Some(path) => match &problem.at {
-            At::Specifier(specifier) => {
+            ProblemAt::Specifier(specifier) => {
                 let file = files.file(project, sources, path);
                 let range = quoted(sources.text(file), specifier).unwrap_or(0..0);
                 Span { file, range }
             }
-            At::Position { line, column } => {
+            ProblemAt::Position { line, column } => {
                 files.span(project, sources, path, *line, column + 1, "")
             }
-            At::Byte(at) => Span {
+            ProblemAt::Byte(at) => Span {
                 file: files.file(project, sources, path),
                 range: *at..*at,
             },
-            At::Start => Span {
+            ProblemAt::Start => Span {
                 file: files.file(project, sources, path),
                 range: 0..0,
             },
@@ -244,7 +244,7 @@ fn diagnostic(
     let message = problem.message;
     match problem.kind {
         ProblemKind::NotFound { bare: true } if project.dependencies_missing() => {
-            let At::Specifier(specifier) = &problem.at else {
+            let ProblemAt::Specifier(specifier) = &problem.at else {
                 unreachable!("an import has its specifier")
             };
             Diagnostic::error(
@@ -273,7 +273,7 @@ fn diagnostic(
             if in_package {
                 return d.help("a package whose JS imports CSS can't be used yet");
             }
-            let At::Specifier(specifier) = &problem.at else {
+            let ProblemAt::Specifier(specifier) = &problem.at else {
                 unreachable!("an import has its specifier")
             };
             let import = if stylesheet.starts_with("node_modules/") {

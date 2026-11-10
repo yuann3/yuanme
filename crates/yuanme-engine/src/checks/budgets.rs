@@ -8,7 +8,7 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use rayon::prelude::*;
-use yuanme_assets::html::{self, Kind};
+use yuanme_assets::{ReferenceKind, scan_html};
 use yuanme_content::config::{self, Budget, Budgets, Config};
 use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Diagnostic, Span, codes};
@@ -229,14 +229,14 @@ fn plan<'a>(
         false => Budget::Fonts,
     };
     let mut stylesheets = Vec::new();
-    let scan = html::scan(text);
+    let scan = scan_html(text);
     for r in &scan.references {
         let link = r.url.trim();
         let budget = match r.kind {
-            Kind::Stylesheet => Some(Budget::Css),
-            Kind::Module | Kind::Classic => Some(Budget::Js),
-            Kind::Link if r.preload => None,
-            Kind::Link => continue,
+            ReferenceKind::Stylesheet => Some(Budget::Css),
+            ReferenceKind::Module | ReferenceKind::Classic => Some(Budget::Js),
+            ReferenceKind::Link if r.preload => None,
+            ReferenceKind::Link => continue,
         };
         let Some((path, _)) = internal(link, &base, origin) else {
             if remote(link) {

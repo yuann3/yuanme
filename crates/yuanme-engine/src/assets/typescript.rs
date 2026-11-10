@@ -9,8 +9,9 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use serde_json::json;
-use yuanme_assets::tool;
-use yuanme_assets::typescript::{self, TypeError};
+use yuanme_assets::{
+    SCRIPT_TYPES, TSC_ENV, TSC_VERSION, TypeError, cache_dir, run_tsc, tsc_tool, type_errors,
+};
 use yuanme_content::config::Config;
 use yuanme_diag::{Diagnostic, FileId, Files, Span, codes};
 
@@ -24,14 +25,14 @@ const TYPES: &str = ".yuanme/types/yuanme.d.ts";
 /// `.yuanme/types/yuanme.d.ts` under `root`, unless they are there.
 pub fn write_types(root: &Path) -> io::Result<()> {
     let path = root.join(TYPES);
-    if std::fs::read(&path).is_ok_and(|b| b == typescript::TYPES.as_bytes()) {
+    if std::fs::read(&path).is_ok_and(|b| b == SCRIPT_TYPES.as_bytes()) {
         return Ok(());
     }
     std::fs::create_dir_all(path.parent().expect("TYPES is a path inside .yuanme/types"))?;
     // Written whole and renamed, so an editor or a `tsc` running at the
     // same time never reads half of it.
     let tmp = path.with_extension(format!("{}.tmp", std::process::id()));
-    std::fs::write(&tmp, typescript::TYPES)?;
+    std::fs::write(&tmp, SCRIPT_TYPES)?;
     std::fs::rename(&tmp, &path)
 }
 
@@ -92,7 +93,7 @@ pub fn check_types(
 
     let tsconfig = tsconfig(inputs, &roots);
     let mut key = cache.key("tsc");
-    for part in [typescript::VERSION, &tsconfig, typescript::TYPES] {
+    for part in [TSC_VERSION, &tsconfig, SCRIPT_TYPES] {
         key.update(&(part.len() as u64).to_le_bytes());
         key.update(part.as_bytes());
     }
@@ -123,7 +124,7 @@ pub fn check_types(
         },
     };
     let mut files = BTreeMap::new();
-    typescript::errors(&output)
+    type_errors(&output)
         .into_iter()
         .map(|e| diagnostic(e, inputs, root, &at, sources, &mut files))
         .collect()
@@ -172,13 +173,13 @@ fn run(root: &Path, tsconfig: &str) -> Result<String, (String, String)> {
     };
     write_types(root).map_err(can_t_write)?;
     std::fs::write(&path, tsconfig).map_err(can_t_write)?;
-    let result = typescript::run(&binary, root, &path);
+    let result = run_tsc(&binary, root, &path);
     if let Err(e) = std::fs::remove_file(&path) {
         // Left behind, it is a few bytes in `.yuanme`.
         eprintln!("warning: could not delete {}: {e}", path.display());
     }
     result.map_err(|e| {
-        let help = format!("set `{}` to a `tsc` that runs here", typescript::ENV);
+        let help = format!("set `{}` to a `tsc` that runs here", TSC_ENV);
         (e.to_string(), help)
     })
 }
@@ -187,18 +188,17 @@ fn run(root: &Path, tsconfig: &str) -> Result<String, (String, String)> {
 fn binary() -> Result<PathBuf, (String, String)> {
     let override_help = format!(
         "set `{}` to the `tsc` of a TypeScript {} release",
-        typescript::ENV,
-        typescript::VERSION
+        TSC_ENV, TSC_VERSION
     );
-    let Some(tool) = typescript::tool() else {
-        if let Some(path) = std::env::var_os(typescript::ENV) {
+    let Some(tool) = tsc_tool() else {
+        if let Some(path) = std::env::var_os(TSC_ENV) {
             return Ok(PathBuf::from(path));
         }
         let platform = format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH);
         let message = format!("TypeScript publishes no `tsc` for {platform}");
         return Err((message, override_help));
     };
-    let Some(cache) = tool::cache_dir() else {
+    let Some(cache) = cache_dir() else {
         let message = "there is no folder to keep `tsc` in: `HOME` isn't set".into();
         return Err((message, override_help));
     };
