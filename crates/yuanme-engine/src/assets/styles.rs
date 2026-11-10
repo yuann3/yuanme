@@ -22,7 +22,7 @@ const KIND: &str = "math-font";
 const ALWAYS: [char; 7] = [' ', '\u{AF}', '1', 'X', 'o', '\u{2212}', '\u{221A}'];
 
 /// math-core's own fixes for browsers' MathML (MIT, as `vendor/math-core`).
-const MATHML_FIXES: &str = include_str!("math/mathmlfixes.css");
+const MATHML_FIXES: &str = include_str!("styles/mathmlfixes.css");
 
 /// The math font, as an asset, and a stylesheet for it, linked at the end
 /// of the head of each HTML Page that shows math. A build gets one subset

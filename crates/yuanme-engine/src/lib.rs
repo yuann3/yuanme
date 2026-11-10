@@ -9,7 +9,6 @@ mod hashing;
 mod host;
 pub mod image;
 mod inputs;
-mod math;
 #[cfg(test)]
 mod tests;
 mod url;
@@ -244,7 +243,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     }
     let (mut pages, mut assets) = (stage.pages, stage.assets);
     highlight::stylesheet(&mut pages, &stage.seen, &mut assets);
-    let math_font = math::stylesheet(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
+    let math_font =
+        assets::styles::stylesheet(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
     let mut files = hashing::link(pages, assets, cache, mode == Mode::Dev);
     files.extend(statics);
     files.extend(used.copies(inputs));

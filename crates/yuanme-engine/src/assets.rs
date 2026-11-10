@@ -4,6 +4,7 @@
 //! names by its hash.
 
 mod scripts;
+pub(crate) mod styles;
 pub(crate) mod tailwind;
 pub(crate) mod typescript;
 
@@ -77,7 +78,7 @@ impl Seen {
         Seen {
             scan,
             code: code.map(|c| c.into_iter().map(str::to_string).collect()),
-            math: crate::math::has_math(text.as_bytes()),
+            math: styles::has_math(text.as_bytes()),
         }
     }
 }
