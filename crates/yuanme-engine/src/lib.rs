@@ -257,18 +257,18 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         diagnostics.extend(used.encode(inputs, cache, &mut files, &fallback));
     }
     let heavy = heavy::heavy(inputs, &config.images, &files, &used);
-    let more = links::links(
-        &config,
-        &site,
-        &rendered,
-        &files,
-        &used.variants,
-        &heavy,
-        &templates,
-        &sources,
+    let more = links::Links {
+        config: &config,
+        site: &site,
+        pages: &rendered,
+        files: &files,
+        images: &used.variants,
+        heavy: &heavy,
+        templates: &templates,
+        sources: &sources,
         inputs,
-        cache,
-    );
+    }
+    .check(cache);
     diagnostics.extend(more);
     let more = heavy::in_css(inputs, &files, &heavy, &mut sources, &fallback);
     diagnostics.extend(more);
