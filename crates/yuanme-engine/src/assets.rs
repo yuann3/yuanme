@@ -5,6 +5,7 @@
 
 mod scripts;
 pub(crate) mod tailwind;
+pub(crate) mod typescript;
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;

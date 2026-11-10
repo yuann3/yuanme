@@ -12,7 +12,6 @@ mod inputs;
 mod math;
 #[cfg(test)]
 mod tests;
-mod typescript;
 mod url;
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -28,10 +27,10 @@ use checks::{budgets, heavy, links};
 use content::{bodies, highlight};
 use image::resolve::Images;
 
+pub use assets::typescript::{check_types, write_types};
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
 pub use inputs::{Input, Inputs};
-pub use typescript::{check_types, write_types};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mode {
