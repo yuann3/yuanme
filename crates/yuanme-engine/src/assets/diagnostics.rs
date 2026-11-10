@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use yuanme_assets::css;
 use yuanme_diag::{Diagnostic, Edit, FileId, Files, Level, Span, codes};
-use yuanme_render::template::Page;
+use yuanme_render::template::{Page, scope};
 
 use super::project::{Problem, Project};
 
@@ -151,4 +151,53 @@ impl SourceFiles {
         };
         Span { file, range }
     }
+}
+
+/// A warning for a compound selector of a Sidecar that no tag its
+/// Template writes can match.
+pub(super) fn unmatched(
+    compound: &css::Compound,
+    templates: &BTreeMap<String, FileId>,
+    project: &Project<'_>,
+    sources: &mut Files,
+    files: &mut SourceFiles,
+) -> Option<Diagnostic> {
+    let mut own = templates
+        .iter()
+        .filter(|(name, _)| scope::sidecar(name) == compound.at.file)
+        .peekable();
+    let template = own.peek()?.0.clone();
+    let matched = own.any(|(_, &file)| {
+        scope::elements(sources.text(file))
+            .iter()
+            .any(|e| e.matches(compound.name.as_deref(), &compound.classes, &compound.ids))
+    });
+    if matched {
+        return None;
+    }
+    let mut what = compound.name.clone().unwrap_or_default();
+    for id in &compound.ids {
+        what += &format!("#{id}");
+    }
+    for class in &compound.classes {
+        what += &format!(".{class}");
+    }
+    if what.is_empty() {
+        what = "*".into();
+    }
+    let at = &compound.at;
+    let mut span = files.span(project, sources, &at.file, at.line, at.column, "");
+    // The selectors, up to the rule's `{`.
+    let text = sources.text(span.file);
+    let end = text[span.range.start..]
+        .find('{')
+        .map_or(span.range.start, |i| {
+            span.range.start + text[span.range.start..][..i].trim_end().len()
+        });
+    span.range.end = end;
+    let message = format!("`{what}` matches no tag that `templates/{template}` writes");
+    Some(
+        Diagnostic::warning(&codes::ASSET_UNMATCHED_SELECTOR, message, span)
+            .help("a Sidecar styles only the tags its own Template writes: style other elements with `:global()`"),
+    )
 }

@@ -4,6 +4,7 @@
 //! names by its hash.
 
 mod diagnostics;
+mod order;
 mod project;
 mod scripts;
 pub(crate) mod styles;
@@ -23,7 +24,8 @@ use yuanme_content::fields::Value;
 use yuanme_diag::{Applicability, Diagnostic, FileId, Files, Span, codes};
 use yuanme_render::template::{Page, scope};
 
-use diagnostics::{Diagnostics, SourceFiles, module_type, reference_span};
+use diagnostics::{Diagnostics, SourceFiles, module_type, reference_span, unmatched};
+use order::{Order, Use};
 use project::{Project, Target, copy};
 use scripts::Scripts;
 
@@ -672,64 +674,6 @@ impl<'a> Stage<'a> {
     }
 }
 
-/// Where each asset the Pages name is among the stage's assets: the copies,
-/// then the stylesheet bundles, then the Script chunks. The link pass needs
-/// an asset after those it names, and bundles name copies, while chunks
-/// name only each other.
-struct Order<'s> {
-    copies: Vec<String>,
-    stylesheets: &'s [String],
-    scripts: &'s [String],
-    /// The chunk of each entry: each Script's, then each Page Script's,
-    /// then the dev client's.
-    entries: &'s [usize],
-    /// The chunks each chunk imports, as [`Scripts::preloads`] has them.
-    preloads: &'s [Vec<usize>],
-    chunks_at: usize,
-}
-
-impl Order<'_> {
-    fn index(&self, use_: &Use) -> usize {
-        match use_ {
-            Use::Copy(path) => self
-                .copies
-                .binary_search(path)
-                .expect("references and bundles add each Copy they make to `copies`"),
-            Use::Bundle(path) => {
-                let at = self.stylesheets.iter().position(|e| e == path);
-                self.copies.len() + at.expect("references adds each Bundle to `stylesheets`")
-            }
-            Use::Script(path) => self.chunk(self.script(path)),
-            Use::Url(_) => unreachable!("a URL is no asset"),
-        }
-    }
-
-    /// The asset of chunk `chunk`.
-    fn chunk(&self, chunk: usize) -> usize {
-        self.chunks_at + chunk
-    }
-
-    /// The chunk of the Script that starts from `path`.
-    fn script(&self, path: &str) -> usize {
-        let entry = self
-            .scripts
-            .iter()
-            .position(|e| e == path)
-            .expect("references adds each Script to `scripts`");
-        self.entries[entry]
-    }
-
-    /// The chunk of Page Script `i`.
-    fn page_script(&self, i: usize) -> usize {
-        self.entries[self.scripts.len() + i]
-    }
-
-    /// The asset of the Site-wide Sidecar stylesheet, the last bundle.
-    fn sidecars(&self) -> usize {
-        self.copies.len() + self.stylesheets.len()
-    }
-}
-
 impl Stylesheet {
     /// The bundle as an asset, each `url()` pointing at its asset's
     /// placeholder or at its URL.
@@ -750,55 +694,6 @@ impl Stylesheet {
     }
 }
 
-/// A warning for a compound selector of a Sidecar that no tag its
-/// Template writes can match.
-fn unmatched(
-    compound: &css::Compound,
-    templates: &BTreeMap<String, FileId>,
-    project: &Project<'_>,
-    sources: &mut Files,
-    files: &mut SourceFiles,
-) -> Option<Diagnostic> {
-    let mut own = templates
-        .iter()
-        .filter(|(name, _)| scope::sidecar(name) == compound.at.file)
-        .peekable();
-    let template = own.peek()?.0.clone();
-    let matched = own.any(|(_, &file)| {
-        scope::elements(sources.text(file))
-            .iter()
-            .any(|e| e.matches(compound.name.as_deref(), &compound.classes, &compound.ids))
-    });
-    if matched {
-        return None;
-    }
-    let mut what = compound.name.clone().unwrap_or_default();
-    for id in &compound.ids {
-        what += &format!("#{id}");
-    }
-    for class in &compound.classes {
-        what += &format!(".{class}");
-    }
-    if what.is_empty() {
-        what = "*".into();
-    }
-    let at = &compound.at;
-    let mut span = files.span(project, sources, &at.file, at.line, at.column, "");
-    // The selectors, up to the rule's `{`.
-    let text = sources.text(span.file);
-    let end = text[span.range.start..]
-        .find('{')
-        .map_or(span.range.start, |i| {
-            span.range.start + text[span.range.start..][..i].trim_end().len()
-        });
-    span.range.end = end;
-    let message = format!("`{what}` matches no tag that `templates/{template}` writes");
-    Some(
-        Diagnostic::warning(&codes::ASSET_UNMATCHED_SELECTOR, message, span)
-            .help("a Sidecar styles only the tags its own Template writes: style other elements with `:global()`"),
-    )
-}
-
 /// `text` with each range replaced, in order.
 fn splice(text: &str, edits: &[(Range<usize>, String)]) -> Vec<u8> {
     let mut out = Vec::with_capacity(text.len());
@@ -810,16 +705,6 @@ fn splice(text: &str, edits: &[(Range<usize>, String)]) -> Vec<u8> {
     }
     out.extend_from_slice(&text.as_bytes()[done..]);
     out
-}
-
-#[derive(Clone)]
-enum Use {
-    Bundle(String),
-    /// A Script, by the project file it starts from.
-    Script(String),
-    Copy(String),
-    /// Written as is.
-    Url(String),
 }
 
 fn file_name(path: &str) -> &str {
