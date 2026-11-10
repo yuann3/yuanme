@@ -6,7 +6,7 @@ pub(crate) mod sync;
 
 use std::fs;
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use yuanme_content::{Config, Site, url_path};
@@ -79,6 +79,21 @@ pub(crate) fn build(
         load,
         took: started.elapsed() - load,
     })
+}
+
+/// `path` from `root`, with its `.` and `..` resolved, since
+/// `Path::starts_with` takes `..` as a name. `root` is canonical, so a
+/// `..` leaves the folder the OS would.
+pub(crate) fn resolve(root: &Path, path: &Path) -> PathBuf {
+    let mut dir = PathBuf::new();
+    for part in root.join(path).components() {
+        match part {
+            Component::ParentDir => drop(dir.pop()),
+            Component::CurDir => {}
+            part => dir.push(part),
+        }
+    }
+    dir
 }
 
 /// An output path's URL: `blog/pew/index.html` is `/blog/pew/`.

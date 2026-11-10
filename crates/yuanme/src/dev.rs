@@ -12,7 +12,7 @@ mod watch;
 use std::collections::BTreeSet;
 use std::io;
 use std::net::{Ipv4Addr, SocketAddr};
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
@@ -25,7 +25,7 @@ use watch::Batch;
 use crate::cli::{DevArgs, Manage};
 use crate::events::Event;
 use crate::out::{Out, plural};
-use crate::project::load;
+use crate::project::{self, load};
 use crate::{ENGINE_VERSION, Error};
 
 /// The port `yuanme dev` tries first, then the next ones up (#21).
@@ -65,18 +65,7 @@ fn start(root: &Path, args: &DevArgs, out: Out) -> Result<u8, Error> {
     let (port, poll) = (args.port, args.poll);
     let (write, log) = (args.write.as_deref(), args.log.as_deref());
     let root = root.canonicalize()?;
-    // Without `..`, which `starts_with` takes as a name.
-    let write = write.map(|w| {
-        let mut dir = PathBuf::new();
-        for part in root.join(w).components() {
-            match part {
-                Component::ParentDir => drop(dir.pop()),
-                Component::CurDir => {}
-                part => dir.push(part),
-            }
-        }
-        dir
-    });
+    let write = write.map(|w| project::resolve(&root, w));
     if let Some(dir) = write.as_ref().filter(|w| root.starts_with(w)) {
         return Err(Error::BadCommand(format!(
             "--write {} would hold the project itself",
