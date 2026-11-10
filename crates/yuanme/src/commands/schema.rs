@@ -19,7 +19,9 @@ pub(crate) fn print(out: &Out, name: &str, schema: Value) -> u8 {
             schema,
         });
     } else {
-        stdout(&serde_json::to_string_pretty(&schema).expect("JSON serializes"));
+        stdout(
+            &serde_json::to_string_pretty(&schema).expect("a serde_json Value always serializes"),
+        );
     }
     0
 }
@@ -51,7 +53,9 @@ pub(crate) fn run(root: &Path, which: Which, out: &Out) -> Result<u8, Error> {
         Which::Config | Which::Events => unreachable!("answered without a project"),
     };
     let Some(schema) = schemas.remove(&name) else {
-        let (group, item) = name.split_once('/').expect("group/name");
+        let (group, item) = name
+            .split_once('/')
+            .expect("each name the match above made is group/name");
         let what = match group {
             "entry" => "Collection",
             "data" => "Data file with a schema",

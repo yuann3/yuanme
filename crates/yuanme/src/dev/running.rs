@@ -70,7 +70,10 @@ pub(crate) fn record(root: &Path, url: &str, port: u16, log: Option<&str>) -> io
     let path = root.join(FILE);
     // Whole or not at all, for a `status` that reads it now.
     let tmp = path.with_extension(format!("json.{}", std::process::id()));
-    fs::write(&tmp, serde_json::to_string_pretty(&info).expect("JSON"))?;
+    fs::write(
+        &tmp,
+        serde_json::to_string_pretty(&info).expect("a serde_json Value always serializes"),
+    )?;
     fs::rename(&tmp, &path)
 }
 

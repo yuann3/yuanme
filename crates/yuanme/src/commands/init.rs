@@ -255,7 +255,10 @@ fn host_files(adapter: Adapter, root: &Path) -> Vec<(&'static str, String)> {
 /// The release the Engine is or was built from: its version without the
 /// commit a checkout adds.
 fn release() -> &'static str {
-    ENGINE_VERSION.split('+').next().expect("a version")
+    ENGINE_VERSION
+        .split('+')
+        .next()
+        .expect("split yields at least one piece")
 }
 
 /// What `init` does to one file.
@@ -290,7 +293,10 @@ pub(crate) fn run(
     for (path, text) in starter.files() {
         let text = match *path {
             "yuanme.toml" => {
-                let minor = release().rsplit_once('.').expect("X.Y.Z").0;
+                let minor = release()
+                    .rsplit_once('.')
+                    .expect("a Cargo package version is X.Y.Z")
+                    .0;
                 let mut text = format!(
                     "#:schema ./.yuanme/schemas/yuanme.toml.json\nyuanme = \"{minor}\"\n\n{text}"
                 );

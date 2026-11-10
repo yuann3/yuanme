@@ -118,7 +118,8 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
             starter,
             host,
         } => {
-            let host = host.map(|h| Adapter::named(&h).expect("one of its possible values"));
+            let host =
+                host.map(|h| Adapter::named(&h).expect("clap accepts only an Adapter's name"));
             return init::run(&dir, folder.as_deref(), starter, host, out);
         }
         Command::Schema {

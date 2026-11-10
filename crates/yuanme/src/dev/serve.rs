@@ -104,9 +104,16 @@ impl Status {
     /// then shows.
     pub(crate) fn add_type_errors(&mut self, errors: &[Diagnostic], files: &Files) {
         let json = &mut self.json;
-        let all = json["diagnostics"].as_array_mut().expect("a list");
+        let all = json["diagnostics"]
+            .as_array_mut()
+            .expect("Status::new makes diagnostics a list");
         all.extend(errors.iter().map(|d| d.to_json(files)));
-        json["errors"] = json!(json["errors"].as_u64().expect("a count") + errors.len() as u64);
+        json["errors"] = json!(
+            json["errors"]
+                .as_u64()
+                .expect("Status::new makes errors a count")
+                + errors.len() as u64
+        );
         json["ok"] = json!(false);
         let shown: Vec<String> = errors.iter().map(|d| d.render(files, false)).collect();
         let overlay = json!({ "type": "overlay", "failed": false, "diagnostics": shown });
@@ -140,7 +147,7 @@ async fn status(State(shared): State<Arc<Shared>>) -> Response {
     let json = shared
         .status
         .read()
-        .expect("never poisoned")
+        .expect("no holder panics")
         .json
         .to_string();
     (
@@ -186,7 +193,7 @@ async fn file(State(shared): State<Arc<Shared>>, request: Request) -> Response {
         let overlay = shared
             .status
             .read()
-            .expect("never poisoned")
+            .expect("no holder panics")
             .overlay
             .clone();
         return (
@@ -228,7 +235,7 @@ async fn file(State(shared): State<Arc<Shared>>, request: Request) -> Response {
 /// What a browser is served while no build has succeeded: the errors,
 /// and a script that loads the Page again once one does.
 fn failed_page(overlay: &str) -> String {
-    let errors: Value = serde_json::from_str(overlay).expect("JSON");
+    let errors: Value = serde_json::from_str(overlay).expect("Status makes the overlay JSON");
     let mut text = String::new();
     for d in errors["diagnostics"].as_array().into_iter().flatten() {
         text.push_str(d.as_str().unwrap_or_default());
@@ -352,7 +359,7 @@ async fn socket(State(shared): State<Arc<Shared>>, upgrade: WebSocketUpgrade) ->
 async fn client(shared: Arc<Shared>, mut socket: WebSocket) {
     let mut messages = shared.messages.subscribe();
     let shown = {
-        let status = shared.status.read().expect("never poisoned");
+        let status = shared.status.read().expect("no holder panics");
         status.shows_errors().then(|| status.overlay.clone())
     };
     if let Some(overlay) = shown

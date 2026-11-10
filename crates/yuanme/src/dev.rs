@@ -274,8 +274,10 @@ fn rebuild(
                 let mut status = report(&snapshot.build, started, urls.clone(), out);
                 status.build = builds;
                 let overlay = status.overlay.clone();
-                let before =
-                    std::mem::replace(&mut *shared.status.write().expect("never poisoned"), status);
+                let before = std::mem::replace(
+                    &mut *shared.status.write().expect("no holder panics"),
+                    status,
+                );
                 if before.shows_errors() {
                     tell(overlay);
                 }
@@ -293,7 +295,7 @@ fn rebuild(
                 let mut status = report(&build, started, Vec::new(), out);
                 status.build = builds;
                 tell(status.overlay.clone());
-                *shared.status.write().expect("never poisoned") = status;
+                *shared.status.write().expect("no holder panics") = status;
             }
         }
     }
@@ -335,7 +337,7 @@ fn check_types(shared: &serve::Shared, checks: &Receiver<Check>) {
         if errors.is_empty() {
             continue;
         }
-        let mut status = shared.status.write().expect("never poisoned");
+        let mut status = shared.status.write().expect("no holder panics");
         if status.build != build_number {
             continue;
         }
