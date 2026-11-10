@@ -10,7 +10,7 @@ mod tests;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
 pub use codes::Code;
-pub use source::{FileId, Files, Position, SourceMap, SourceMapBuilder, Span};
+pub use source::{FileId, Files, Position, Span};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Level {

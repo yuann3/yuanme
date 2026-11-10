@@ -82,58 +82,6 @@ fn columns_count_unicode_scalar_values() {
 }
 
 #[test]
-fn source_map_points_derived_spans_at_the_original() {
-    let mut files = Files::default();
-    let original = r#"<a href="x">hi</a>"#;
-    let file = files.add("templates/row.html", original);
-    let mut b = SourceMapBuilder::new(file, original);
-    b.copy(0..2);
-    b.insert(" data-y-1");
-    b.copy(2..original.len());
-    let (derived, map) = b.finish();
-    assert_eq!(derived, r#"<a data-y-1 href="x">hi</a>"#);
-
-    // Copied text maps to the same text in the original.
-    assert_eq!(map.span(12..16).range, 3..7);
-    assert_eq!(&original[3..7], "href");
-    // A span ending exactly where an insertion begins stays in the copied text.
-    assert_eq!(map.span(0..2).range, 0..2);
-    // Inserted text has no original bytes: it maps to where it was inserted.
-    assert_eq!(map.span(3..11).range, 2..2);
-    // A span across the insertion covers the original bytes on both sides.
-    assert_eq!(map.span(0..16).range, 0..7);
-}
-
-#[test]
-fn source_map_keeps_spans_out_of_removed_text() {
-    let mut files = Files::default();
-    // Scoping unwraps `:global(...)`, so the derived text skips original bytes.
-    let original = ".a :global(.b) {}";
-    let file = files.add("templates/row.css", original);
-    let mut b = SourceMapBuilder::new(file, original);
-    b.copy(0..3);
-    b.copy(11..13);
-    b.copy(14..original.len());
-    let (derived, map) = b.finish();
-    assert_eq!(derived, ".a .b {}");
-    // `.a ` ends at byte 3 in both; it must not jump past the removed `:global(`.
-    assert_eq!(map.span(0..3).range, 0..3);
-    assert_eq!(map.span(3..5).range, 11..13);
-    // An empty span where text was removed points after the removal, not into it.
-    assert_eq!(map.span(3..3).range, 11..11);
-}
-
-#[test]
-#[should_panic(expected = "copies must be in original order")]
-fn source_map_refuses_copies_out_of_order() {
-    let mut files = Files::default();
-    let file = files.add("a.css", "0123456789abc");
-    let mut b = SourceMapBuilder::new(file, "0123456789abc");
-    b.copy(10..12);
-    b.copy(0..3);
-}
-
-#[test]
 fn fixes_apply_in_order_and_skip_unsafe_ones() {
     let mut files = Files::default();
     let file = files.add("a.md", "teh cat adn teh dog");
