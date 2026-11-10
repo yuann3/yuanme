@@ -24,7 +24,7 @@ use yuanme_content::site::{RouteKind, Site};
 use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
 use yuanme_render::template::scope;
 
-use checks::{budgets, links};
+use checks::{budgets, heavy, links};
 use content::{bodies, highlight};
 
 pub use cache::Cache;
@@ -259,7 +259,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
             inputs, cache, &used, &mut files, &fallback,
         ));
     }
-    let heavy = image::resolve::heavy(inputs, &config.images, &files, &used);
+    let heavy = heavy::heavy(inputs, &config.images, &files, &used);
     let more = links::links(
         &config,
         &site,
@@ -273,7 +273,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         cache,
     );
     diagnostics.extend(more);
-    let more = image::resolve::in_css(inputs, &files, &heavy, &mut sources, &fallback);
+    let more = heavy::in_css(inputs, &files, &heavy, &mut sources, &fallback);
     diagnostics.extend(more);
     let budgets = match (&config.budgets, &measured) {
         (Some(budgets), Some(bodies)) => {
