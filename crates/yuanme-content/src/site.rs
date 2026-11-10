@@ -18,7 +18,6 @@ use crate::fields::{Cx, Value, compare};
 use crate::slug;
 use crate::{data, markdown, org};
 use links::links;
-use routes::routes;
 
 #[derive(Debug)]
 pub struct Site {
@@ -291,14 +290,8 @@ pub fn resolve(
         taxonomies.insert(name.clone(), terms(name, t, &entries, &mut diagnostics));
     }
 
-    let routes = routes(
-        &collections,
-        config,
-        &entries,
-        &lists,
-        &taxonomies,
-        &mut diagnostics,
-    );
+    let routes = routes::wanted(&collections, config, &entries, &lists, &taxonomies);
+    let routes = routes::claim(routes, &entries, &mut diagnostics);
     if has_errors(&diagnostics) {
         return (None, sorted(diagnostics));
     }

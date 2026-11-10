@@ -36,15 +36,15 @@ fn page_url(first: &str, page: usize) -> String {
     }
 }
 
-pub(super) fn routes(
+/// Every Route the Site asks for, at its URL, with where it came from for
+/// a collision.
+pub(super) fn wanted(
     collections: &BTreeMap<String, Collection>,
     config: &Config,
     entries: &[Entry],
     lists: &BTreeMap<String, Vec<usize>>,
     taxonomies: &BTreeMap<String, Vec<Term>>,
-    diagnostics: &mut Vec<Diagnostic>,
-) -> Vec<Route> {
-    // Each Route, with where it came from for a collision.
+) -> Vec<(String, RouteKind, Span)> {
     let mut routes: Vec<(String, RouteKind, Span)> = Vec::new();
     for (i, e) in entries.iter().enumerate() {
         let url = collections[&e.collection].route.replace("{slug}", &e.slug);
@@ -131,7 +131,16 @@ pub(super) fn routes(
         };
         routes.push((f.path.clone(), kind, at));
     }
+    routes
+}
 
+/// Gives each wanted Route its output file: the first to want a file
+/// gets it, and each later one is an error.
+pub(super) fn claim(
+    routes: Vec<(String, RouteKind, Span)>,
+    entries: &[Entry],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Vec<Route> {
     let mut out: Vec<Route> = Vec::new();
     let mut taken: BTreeMap<String, usize> = BTreeMap::new();
     for (url, kind, at) in routes {
