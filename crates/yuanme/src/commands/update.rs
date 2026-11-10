@@ -8,6 +8,7 @@
 mod tests;
 
 use std::env;
+use std::fmt;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -101,12 +102,24 @@ pub fn run(version: Option<String>, check: bool, out: &Out) -> Result<u8, Error>
 }
 
 /// clap's check of `VERSION`: an exact release.
-pub fn version(arg: &str) -> Result<String, String> {
+pub fn version(arg: &str) -> Result<String, NotARelease> {
     match parse(arg) {
         Some(_) if !arg.contains('+') => Ok(arg.to_string()),
-        _ => Err("a release is X.Y.Z, such as 0.2.0".into()),
+        _ => Err(NotARelease),
     }
 }
+
+/// A `VERSION` that isn't X.Y.Z, which clap reports.
+#[derive(Debug)]
+pub struct NotARelease;
+
+impl fmt::Display for NotARelease {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("a release is X.Y.Z, such as 0.2.0")
+    }
+}
+
+impl std::error::Error for NotARelease {}
 
 /// The newest release's version, from its signed `sha256.txt`.
 pub fn newest(source: &Source) -> Result<String, Error> {
@@ -260,19 +273,15 @@ fn release(source: &Source, version: Option<&str>) -> Result<(String, String), E
     };
     let sums = get("sha256.txt")?;
     let signature = get("sha256.txt.minisig")?;
-    let checked = std::str::from_utf8(&signature)
-        .map_err(|e| e.to_string())
-        .and_then(|s| Signature::decode(s).map_err(|e| e.to_string()))
-        .and_then(|s| {
-            key.verify(&sums, &s, false)
-                .map(|()| s)
-                .map_err(|e| e.to_string())
-        });
-    let signature = checked.map_err(|e| {
+    let unsigned = |e: &dyn fmt::Display| {
         failed(format!(
             "{dir}/sha256.txt doesn't carry a valid signature from yuanme's release key: {e}"
         ))
-    })?;
+    };
+    let signature = std::str::from_utf8(&signature).map_err(|e| unsigned(&e))?;
+    let signature = Signature::decode(signature).map_err(|e| unsigned(&e))?;
+    key.verify(&sums, &signature, false)
+        .map_err(|e| unsigned(&e))?;
     // Signed, but maybe for another release, served to make this one look
     // older or newer than it is.
     let comment = signature.trusted_comment();
