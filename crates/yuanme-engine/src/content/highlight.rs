@@ -14,7 +14,7 @@ use yuanme_render::highlight::{self, Code, Language};
 
 use crate::Cache;
 use crate::assets::Seen;
-use crate::link::Asset;
+use crate::hashing::Asset;
 
 const KIND: &str = "highlight";
 

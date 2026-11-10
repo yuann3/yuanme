@@ -8,7 +8,7 @@ use yuanme_assets::font::{self, NCM_MATH};
 use yuanme_content::site::Site;
 
 use crate::assets::Seen;
-use crate::link::{Asset, hashed_path};
+use crate::hashing::{Asset, hashed_path};
 use crate::{Body, Cache, Mode};
 
 const KIND: &str = "math-font";

@@ -14,7 +14,7 @@ use rayon::prelude::*;
 use yuanme_assets::image as pipeline;
 pub use yuanme_assets::image::{Format, Probe, Settings};
 
-use crate::link::hashed_path;
+use crate::hashing::hashed_path;
 use crate::{Cache, Inputs, Output};
 
 /// One output of one source image.

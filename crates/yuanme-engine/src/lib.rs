@@ -5,11 +5,11 @@ mod assets;
 mod budgets;
 mod cache;
 mod content;
+mod hashing;
 mod host;
 pub mod image;
 mod images;
 mod inputs;
-mod link;
 mod links;
 mod math;
 #[cfg(test)]
@@ -30,7 +30,6 @@ use content::{bodies, highlight};
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
 pub use inputs::{Input, Inputs};
-use link::link;
 pub use typescript::{check_types, write_types};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -246,7 +245,7 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let (mut pages, mut assets) = (stage.pages, stage.assets);
     highlight::stylesheet(&mut pages, &stage.seen, &mut assets);
     let math_font = math::stylesheet(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
-    let mut files = link(pages, assets, cache, mode == Mode::Dev);
+    let mut files = hashing::link(pages, assets, cache, mode == Mode::Dev);
     files.extend(statics);
     files.extend(images::copies(inputs, &used));
     let fallback = Span {

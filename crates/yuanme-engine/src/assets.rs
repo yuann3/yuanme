@@ -20,7 +20,7 @@ use yuanme_content::fields::Value;
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Level, Span, codes};
 use yuanme_render::template::{Page, scope};
 
-use crate::link::Asset;
+use crate::hashing::Asset;
 use crate::{Body, Bundle, Cache, Inputs};
 
 /// The stylesheet holding every used Template's Sidecar CSS.

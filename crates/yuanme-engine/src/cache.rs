@@ -11,7 +11,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::assets::{self, tailwind::Watching};
 use crate::content::{bodies, entries};
-use crate::{Body, link};
+use crate::{Body, hashing};
 
 /// Entries no build has read for this many successful builds are deleted.
 const KEEP: u64 = 10;
@@ -45,7 +45,7 @@ pub struct Cache {
     /// The last build's HTML Pages whose links were all fine, by output
     /// path, with the key of everything their check read.
     pub(crate) clean: HashMap<String, blake3::Hash>,
-    pub(crate) linked: link::Linked,
+    pub(crate) linked: hashing::Linked,
 }
 
 #[derive(Default)]
@@ -76,7 +76,7 @@ impl Cache {
             bodies: HashMap::new(),
             seen: HashMap::new(),
             clean: HashMap::new(),
-            linked: link::Linked::default(),
+            linked: hashing::Linked::default(),
         }
     }
 

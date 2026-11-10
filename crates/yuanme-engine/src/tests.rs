@@ -122,18 +122,18 @@ fn link_names_assets_by_the_hash_of_their_final_bytes() {
         &blake3::hash(css.as_bytes()).to_hex()[..16]
     );
 
-    let files = link::link(
+    let files = hashing::link(
         vec![(
             "index.html".into(),
             b"<link href=\"\0asset:1\0\"><p>\0asset:0\0".to_vec(),
         )],
         vec![
-            link::Asset::Copy {
+            hashing::Asset::Copy {
                 name: "math.woff2".into(),
                 body: Body::Bytes(font.clone().into()),
                 hash: blake3::hash(&font),
             },
-            link::Asset::Linked {
+            hashing::Asset::Linked {
                 name: "site.css".into(),
                 bytes: b"@font-face{src:url(\0asset:0\0)}".to_vec(),
             },
