@@ -223,16 +223,17 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         .filter(|p| p.output.ends_with(".html"))
         .map(|p| (p.output.clone(), p.templates.clone()))
         .collect();
-    let stage = assets::assets(
+    let dev = mode == Mode::Dev;
+    let stage = assets::Stage::new(
         inputs,
         &config,
-        &site.data,
-        pages,
         &templates,
+        &pages,
         &mut sources,
         cache,
-        mode == Mode::Dev,
-    );
+        dev,
+    )
+    .run(&site.data, pages);
     diagnostics.extend(stage.diagnostics);
     if mode != Mode::Dev && !diagnostics.iter().any(|d| d.level == Level::Error) {
         let more = check_types(inputs, &config, &stage.scripts, cache, &mut sources);

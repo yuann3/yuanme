@@ -29,7 +29,7 @@ pub(super) enum Target {
 pub(super) struct Project<'a> {
     pub(super) inputs: &'a Inputs,
     /// The URL of every Page, `/blog/pew/` and `/blog/pew/index.html` both.
-    pub(super) site: &'a BTreeSet<String>,
+    pub(super) site: BTreeSet<String>,
     /// `None` for Inputs held in memory, which have no `node_modules`.
     pub(super) packages: Option<Packages>,
     /// The text of [`SIDECARS_ENTRY`].
