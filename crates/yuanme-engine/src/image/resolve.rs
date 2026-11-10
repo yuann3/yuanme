@@ -172,7 +172,9 @@ impl Images {
     }
 
     pub fn into_used(self) -> Used {
-        self.used.into_inner().expect("recording doesn't panic")
+        self.used
+            .into_inner()
+            .expect("nothing panics while holding the Used lock")
     }
 
     /// The image file at `path`, from the project root, if it can be
@@ -202,7 +204,10 @@ impl Images {
     /// named, if that is known.
     fn resolve(&self, path: &str, request: &Request, at: Option<&Span>) -> Result<Image, Error> {
         let source = self.source(path)?;
-        let mut used = self.used.lock().expect("recording doesn't panic");
+        let mut used = self
+            .used
+            .lock()
+            .expect("nothing panics while holding the Used lock");
         if let Some(at) = at {
             used.at
                 .entry(path.to_string())

@@ -268,11 +268,13 @@ fn read_pack(path: &Path) -> io::Result<Pack> {
         rest = tail;
         Ok(head)
     };
-    let u64_at = |bytes: &[u8]| u64::from_le_bytes(bytes.try_into().expect("8 bytes"));
+    let u64_at =
+        |bytes: &[u8]| u64::from_le_bytes(bytes.try_into().expect("take(8) returns 8 bytes"));
     let count = u64_at(take(8)?);
     let mut pack = Pack::default();
     for _ in 0..count {
-        let key = blake3::Hash::from_bytes(take(32)?.try_into().expect("32 bytes"));
+        let key =
+            blake3::Hash::from_bytes(take(32)?.try_into().expect("take(32) returns 32 bytes"));
         let last_used = u64_at(take(8)?);
         let len = usize::try_from(u64_at(take(8)?)).map_err(|_| corrupt())?;
         let entry = Entry {

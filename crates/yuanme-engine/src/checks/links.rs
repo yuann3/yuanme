@@ -286,6 +286,6 @@ fn span(
     let file = *files
         .clone()
         .next()
-        .expect("an HTML Page has a Template file");
+        .expect("render writes each HTML Page from at least one Template");
     (Span { file, range: 0..0 }, false)
 }

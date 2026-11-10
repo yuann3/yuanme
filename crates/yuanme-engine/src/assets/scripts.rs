@@ -66,9 +66,13 @@ pub(super) fn bundle(
     // schema's defaults.
     let (_, data_files) = site::sources(config, inputs.files.keys().map(String::as_str));
     for path in data_files {
-        let name = path["data/".len()..].rsplit_once('.').expect("has one").0;
+        let name = path["data/".len()..]
+            .rsplit_once('.')
+            .expect("site::sources lists only Data files with an extension")
+            .0;
         if let Some(value) = data.get(name) {
-            let text = serde_json::to_string(&json(value)).expect("JSON");
+            let text =
+                serde_json::to_string(&json(value)).expect("a serde_json::Value always serializes");
             modules.insert(path.to_string(), Arc::from(text.into_bytes()));
         }
     }
@@ -138,7 +142,9 @@ pub(super) fn bundle(
         // imports are quoted with `"` and `import()` with a backtick.
         let mut code = chunk.code.clone();
         for &d in chunk.imports.iter().chain(&chunk.dynamic_imports) {
-            let to = paths[d].strip_prefix("assets/").expect("in /assets/");
+            let to = paths[d]
+                .strip_prefix("assets/")
+                .expect("hashed_path puts every chunk in assets/");
             for quote in ['"', '\'', '`'] {
                 code = code.replace(
                     &format!("{quote}./{}{quote}", chunks[d].file),
@@ -176,7 +182,7 @@ pub(super) fn bundle(
             chunks
                 .iter()
                 .position(|c| c.entry == Some(e))
-                .expect("every entry has a chunk")
+                .expect("rolldown makes a chunk for each entry it is given")
         })
         .collect();
     Some(Scripts {

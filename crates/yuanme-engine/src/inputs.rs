@@ -89,7 +89,10 @@ impl Inputs {
         files
             .into_iter()
             .map(|p| {
-                let input = self.files.remove(&p).expect("listed above");
+                let input = self
+                    .files
+                    .remove(&p)
+                    .expect("`files` was listed from self.files just above");
                 (p, input)
             })
             .collect()

@@ -51,7 +51,10 @@ impl Project<'_> {
         let absolute = if path.starts_with('/') {
             normalize(path)
         } else {
-            let dir = &base[..base.rfind('/').expect("from the root") + 1];
+            let dir = &base[..base
+                .rfind('/')
+                .expect("`base` is a URL path from the root, so it has a `/`")
+                + 1];
             normalize(&format!("{dir}{path}"))
         };
         let problem = |code, message| Problem::new(code, message).url(url);
@@ -101,7 +104,7 @@ impl Project<'_> {
             .inputs
             .root
             .as_deref()
-            .expect("only Inputs::at reads node_modules");
+            .expect("a file that isn't in Inputs is a node_modules file, which is_source finds only under a root");
         std::fs::read(root.join(path))
             .map(Arc::from)
             .map_err(|e| Problem::new(&codes::ASSET_NOT_FOUND, format!("can't read `{path}`: {e}")))

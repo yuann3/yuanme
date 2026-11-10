@@ -63,7 +63,13 @@ pub fn probe(cache: &mut Cache, inputs: &Inputs, source: &str) -> Result<Probe, 
     key.update(inputs.files[source].hash.as_bytes());
     let key = key.finalize();
     if let Some(bytes) = cache.get("image-probe", &key) {
-        let u32_at = |i: usize| u32::from_le_bytes(bytes[i..i + 4].try_into().expect("4 bytes"));
+        let u32_at = |i: usize| {
+            u32::from_le_bytes(
+                bytes[i..i + 4]
+                    .try_into()
+                    .expect("probe() caches 10 bytes, and this reads 4 of them"),
+            )
+        };
         return Ok(Probe {
             width: u32_at(0),
             height: u32_at(4),
@@ -165,7 +171,9 @@ pub fn encode(
             // Inserted as each source finishes, so no more than one
             // source's outputs per thread are held in memory.
             let inserted = encoded.and_then(|encoded| {
-                let mut cache = shared.lock().expect("inserting doesn't panic");
+                let mut cache = shared
+                    .lock()
+                    .expect("nothing panics while holding the cache's lock");
                 variants.iter().zip(encoded).try_for_each(|(v, bytes)| {
                     cache
                         .insert_large(v.key, &bytes)

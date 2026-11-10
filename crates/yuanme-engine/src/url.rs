@@ -98,7 +98,10 @@ pub(crate) fn internal(url: &str, base: &str, origin: &str) -> Option<(String, b
     } else if url.starts_with('/') {
         (url.to_string(), false)
     } else {
-        let dir = &base[..base.rfind('/').expect("from the root") + 1];
+        let dir = &base[..base
+            .rfind('/')
+            .expect("`base` is a URL path from the root, so it has a `/`")
+            + 1];
         (format!("{dir}{url}"), false)
     };
     let path = &written[..written.len() - suffix(&written).len()];

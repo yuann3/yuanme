@@ -96,12 +96,13 @@ fn substitute(bytes: &[u8], urls: &[String]) -> Vec<u8> {
     while let Some(start) = memchr::memchr(0, rest) {
         out.extend_from_slice(&rest[..start]);
         let after = &rest[start + 1..];
-        let end = memchr::memchr(0, after).expect("a placeholder is closed");
+        let end = memchr::memchr(0, after)
+            .expect("NUL in a Page or asset comes only from placeholder(), which closes it");
         let id: usize = std::str::from_utf8(&after[..end])
             .ok()
             .and_then(|p| p.strip_prefix("asset:"))
             .and_then(|id| id.parse().ok())
-            .expect("a placeholder names an asset");
+            .expect("NUL in a Page or asset comes only from placeholder(), which names an index");
         let url = urls
             .get(id)
             .expect("an asset refers only to assets before it");

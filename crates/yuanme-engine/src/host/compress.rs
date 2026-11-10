@@ -86,7 +86,8 @@ fn compress(bytes: &[u8], quality: i32) -> Vec<u8> {
         ..Default::default()
     };
     let mut out = Vec::new();
-    brotli::BrotliCompress(&mut &bytes[..], &mut out, &params).expect("writing to memory");
+    brotli::BrotliCompress(&mut &bytes[..], &mut out, &params)
+        .expect("writing to a Vec can't fail");
     out
 }
 
@@ -94,6 +95,8 @@ fn compress(bytes: &[u8], quality: i32) -> Vec<u8> {
 /// every build.
 fn gzip(bytes: &[u8]) -> Vec<u8> {
     let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::best());
-    encoder.write_all(bytes).expect("writing to memory");
-    encoder.finish().expect("writing to memory")
+    encoder
+        .write_all(bytes)
+        .expect("writing to a Vec can't fail");
+    encoder.finish().expect("writing to a Vec can't fail")
 }

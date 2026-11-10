@@ -8,7 +8,7 @@ use super::Rule;
 /// redirects, then `trailingSlash: true` as Vercel compiles it, then the
 /// 404 Page for a path no file serves.
 pub(super) fn vercel_config(config: &Config, rules: &[Rule<'_>], not_found: bool) -> String {
-    let json = |s: &str| serde_json::to_string(s).expect("a string serializes");
+    let json = |s: &str| serde_json::to_string(s).expect("a &str always serializes");
     let mut routes: Vec<String> = Vec::new();
     for rule in rules {
         let headers: Vec<String> = rule

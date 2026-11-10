@@ -145,7 +145,11 @@ pub(crate) fn measure(
                 false => exact[id],
             };
             match budget {
-                Some(b) => *values.get_mut(&b).expect("every Budget") += size,
+                Some(b) => {
+                    *values
+                        .get_mut(&b)
+                        .expect("`values` starts with every Budget at 0") += size
+                }
                 None => body = Some(size),
             }
         }

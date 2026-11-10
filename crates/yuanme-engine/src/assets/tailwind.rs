@@ -66,7 +66,9 @@ pub(super) fn outputs(
     let mut binary: Option<Result<PathBuf, (String, String)>> = None;
     let mut out = BTreeMap::new();
     for entry in entries {
-        let css = project.text(entry).expect("read to find its import");
+        let css = project
+            .text(entry)
+            .expect("Stage::tailwind passes only stylesheets it read and found importing Tailwind");
         let mut key = cache.key("tailwind");
         for part in [version, entry, tokens] {
             key.update(&(part.len() as u64).to_le_bytes());
@@ -113,7 +115,9 @@ pub(super) fn outputs(
             }
         };
         let path = root.join(entry);
-        let dir = path.parent().expect("a file is in a folder");
+        let dir = path
+            .parent()
+            .expect("`path` is a file under the project root");
         let built = match watch {
             true => {
                 let mut started = blake3::Hasher::new();
@@ -181,7 +185,8 @@ fn run(binary: &Path, dir: &Path, css: &str, tokens: &str) -> Result<String, Err
     std::fs::create_dir_all(&scratch)
         .and_then(|()| std::fs::write(&file, tokens))
         .map_err(|e| Error::Run(format!("can't write {}: {e}", file.display())))?;
-    let input = tailwind::input(css, &file).expect("it imports Tailwind");
+    let input = tailwind::input(css, &file)
+        .expect("outputs() is given only stylesheets that import Tailwind");
     let result = tailwind::run(binary, dir, &input, &scratch);
     if let Err(e) = std::fs::remove_dir_all(&scratch) {
         // Left behind, it costs a few bytes in the temporary folder.
@@ -241,8 +246,14 @@ fn watched(
     if let Some(running) = cache.tailwind.get_mut(entry) {
         let now: BTreeSet<&str> = tokens.lines().collect();
         if running.started == started && running.tokens.lines().all(|t| now.contains(t)) {
-            let watch = running.watch.get_mut().expect("never poisoned");
-            let built = watch.as_mut().expect("running").update(tokens);
+            let watch = running
+                .watch
+                .get_mut()
+                .expect("nothing panics while holding a Watch's lock");
+            let built = watch
+                .as_mut()
+                .expect("a Watching enters the cache only once its Watch has started")
+                .update(tokens);
             match &built {
                 Ok(_) => running.tokens = tokens.to_string(),
                 // A new CLI for the next build, rather than one in an
@@ -263,7 +274,8 @@ fn watched(
         folder,
     };
     let file = running.folder.join("tokens.txt");
-    let input = tailwind::input(css, &file).expect("it imports Tailwind");
+    let input = tailwind::input(css, &file)
+        .expect("outputs() is given only stylesheets that import Tailwind");
     let output = running.folder.join("out.css");
     let (watch, css) = Watch::start(binary, dir, &input, file, tokens, output)?;
     running.watch = Mutex::new(Some(watch));

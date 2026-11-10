@@ -76,7 +76,8 @@ pub(crate) fn read(
                 entry: entry.clone(),
                 asked: asked.into_inner(),
             };
-            let bytes = serde_json::to_vec(&read).expect("an Entry is JSON");
+            let bytes = serde_json::to_vec(&read)
+                .expect("an Entry derives Serialize, with only string keys");
             cache.insert(KIND, key, bytes);
             cache.entries.insert(key, read);
         }

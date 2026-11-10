@@ -27,7 +27,7 @@ pub fn write_types(root: &Path) -> io::Result<()> {
     if std::fs::read(&path).is_ok_and(|b| b == typescript::TYPES.as_bytes()) {
         return Ok(());
     }
-    std::fs::create_dir_all(path.parent().expect("in .yuanme/types"))?;
+    std::fs::create_dir_all(path.parent().expect("TYPES is a path inside .yuanme/types"))?;
     // Written whole and renamed, so an editor or a `tsc` running at the
     // same time never reads half of it.
     let tmp = path.with_extension(format!("{}.tmp", std::process::id()));
@@ -153,7 +153,7 @@ fn tsconfig(inputs: &Inputs, roots: &BTreeSet<&str>) -> String {
     };
     tsconfig["include"] = json!([]);
     tsconfig["files"] = json!(files);
-    serde_json::to_string_pretty(&tsconfig).expect("JSON")
+    serde_json::to_string_pretty(&tsconfig).expect("a serde_json::Value always serializes")
 }
 
 /// One run of `tsc` on `tsconfig`, written to a file of its own in

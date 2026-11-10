@@ -103,8 +103,11 @@ pub(crate) fn of(cache: &Cache, blocks: &Blocks) -> Code {
     blocks
         .iter()
         .map(|(id, key)| {
-            let bytes = cache.get(KIND, key).expect("highlighted by code()");
-            let html = String::from_utf8(bytes.to_vec()).expect("cached as UTF-8");
+            let bytes = cache
+                .get(KIND, key)
+                .expect("code() inserted every block's key before bodies read them");
+            let html =
+                String::from_utf8(bytes.to_vec()).expect("code() caches the highlighter's String");
             (*id, html)
         })
         .collect()

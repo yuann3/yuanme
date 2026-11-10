@@ -20,11 +20,14 @@ pub(crate) fn site_config(
     sources: &mut Files,
 ) -> (Option<Config>, Vec<Diagnostic>) {
     const PATH: &str = "yuanme.toml";
-    let input = inputs.files.get(PATH).expect("a project has yuanme.toml");
+    let input = inputs
+        .files
+        .get(PATH)
+        .expect("the caller found the project by its yuanme.toml");
     let bytes = input
         .bytes
         .as_deref()
-        .expect("yuanme.toml is read, not streamed");
+        .expect("only images are streamed, and yuanme.toml is text");
     match utf8(PATH, bytes, &codes::CONFIG_SYNTAX, sources) {
         Ok(file) => config::parse(sources, file, engine),
         Err(d) => (None, vec![d]),
@@ -45,7 +48,7 @@ pub(crate) fn resolve(
         let bytes = inputs.files[path]
             .bytes
             .as_deref()
-            .expect("text is read, not streamed");
+            .expect("only images are streamed, and Entries and Data files are text");
         utf8(path, bytes, &codes::ENTRY_SYNTAX, sources)
             .map_err(|d| diagnostics.push(d))
             .ok()
