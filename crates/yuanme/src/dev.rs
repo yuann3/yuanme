@@ -23,8 +23,9 @@ use yuanme_engine::{Build, Cache, Inputs, Mode};
 use watch::Batch;
 
 use crate::events::Event;
+use crate::out::{Out, plural};
 use crate::project::load;
-use crate::{ENGINE_VERSION, Error, Out, plural};
+use crate::{ENGINE_VERSION, Error};
 
 /// The port `yuanme dev` tries first, then the next ones up (#21).
 const PORT: u16 = 4590;
@@ -329,7 +330,7 @@ fn check_types(shared: &serve::Shared, checks: &Receiver<Check>) {
 fn report(build: &Build, started: Instant, urls: Vec<String>, out: Out) -> serve::Status {
     out.diagnostics(&build.diagnostics, &build.sources);
     let ms = started.elapsed().as_millis();
-    let (errors, warnings) = crate::counts(build);
+    let (errors, warnings) = crate::out::counts(build);
     match build.failed() {
         true => out.say(&format!(
             "build failed with {} and {}; serving the last build that succeeded",
@@ -343,7 +344,7 @@ fn report(build: &Build, started: Instant, urls: Vec<String>, out: Out) -> serve
         )),
     }
     let status = serve::Status::new(build, &build.diagnostics, &build.sources, ms, urls.clone());
-    crate::finish(&out, build, started, urls);
+    crate::out::finish(&out, build, started, urls);
     status
 }
 
@@ -443,7 +444,7 @@ fn changed_urls(before: &Build, now: &Build) -> Vec<String> {
     let urls: BTreeSet<String> = paths
         .into_iter()
         .filter_map(|p| host.map_or(Some(p), |h| yuanme_engine::served(h, p)))
-        .map(crate::url_of)
+        .map(crate::project::url_of)
         .collect();
     urls.into_iter().collect()
 }

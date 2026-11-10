@@ -16,6 +16,10 @@ use serde_json::Value;
 use yuanme_content::config;
 use yuanme_diag::codes::{self, Code};
 
+use crate::events::Event;
+use crate::out::{Out, stdout};
+use crate::{Error, unknown};
+
 /// The hand-written pages by name, in the index's order (#21). Each starts
 /// with `title:` and `description:` lines between `---` lines.
 const TOPICS: &[(&str, &str)] = &[
@@ -418,4 +422,21 @@ fn plural(kind: &str) -> String {
         k if k.starts_with("one of") || k.starts_with("list") || k.starts_with("table") => k.into(),
         k => format!("{k}s"),
     }
+}
+
+pub(crate) fn docs(name: &str, out: &Out) -> Result<u8, Error> {
+    let Some(markdown) = page(name) else {
+        let names: Vec<&str> = names().collect();
+        let otherwise = "`yuanme docs` lists every page".to_string();
+        return Err(unknown("docs page", name, &names, otherwise));
+    };
+    if out.json {
+        out.event(Event::Docs {
+            page: name.to_string(),
+            markdown,
+        });
+    } else {
+        stdout(markdown.trim_end());
+    }
+    Ok(0)
 }

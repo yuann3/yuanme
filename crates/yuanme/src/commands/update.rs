@@ -18,7 +18,8 @@ use serde_json::Value;
 use yuanme_assets::tool;
 
 use crate::events::Event;
-use crate::{ENGINE_VERSION, Error, Out};
+use crate::out::Out;
+use crate::{ENGINE_VERSION, Error};
 
 const RELEASES: &str = "https://github.com/yuann3/yuanme/releases";
 

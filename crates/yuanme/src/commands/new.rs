@@ -2,11 +2,19 @@
 //! are filled in and valid, so it builds before the Author writes a word.
 
 use std::collections::BTreeMap;
+use std::fs;
+use std::path::Path;
 
 use jiff::civil::Date;
 use yuanme_content::config::{Collection, Config, Field, FieldType};
 use yuanme_content::slug;
 use yuanme_content::yaml::{self, Yaml};
+use yuanme_engine::Mode;
+
+use crate::events::Event;
+use crate::out::{Out, stdout};
+use crate::project::{config_or_report, engine_build};
+use crate::{Error, SITE_ERRORS};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, clap::ValueEnum)]
 pub enum Format {
@@ -145,4 +153,48 @@ pub fn collection(config: &Config, name: &str) -> Result<Collection, String> {
         }
         message
     })
+}
+
+pub(crate) fn new(
+    root: &Path,
+    collection: &str,
+    title: &str,
+    format: Format,
+    out: &Out,
+) -> Result<u8, Error> {
+    let run = engine_build(root, None, Mode::Check { drafts: false }, false, false)?;
+    let Some(config) = config_or_report(&run, out) else {
+        return Ok(SITE_ERRORS);
+    };
+    let found = self::collection(config, collection).map_err(Error::BadCommand)?;
+    let zone =
+        jiff::tz::TimeZone::get(&config.site.timezone).expect("Site config checked the zone");
+    let today = jiff::Zoned::now().with_time_zone(zone).date();
+    let created = entry(&found, title, format, today).map_err(Error::BadCommand)?;
+    let path = root.join(&created.path);
+    if path.exists() {
+        return Err(Error::BadCommand(format!(
+            "{} already exists",
+            created.path
+        )));
+    }
+    fs::create_dir_all(path.parent().expect("in a Collection's folder"))?;
+    fs::write(&path, &created.text)?;
+    for field in &created.unfilled {
+        out.say(&format!(
+            "warning: fill in `{field}` in {}: it needs an image",
+            created.path
+        ));
+    }
+    if out.json {
+        out.event(Event::EntryCreated {
+            path: created.path,
+            url: created.url,
+            collection: collection.to_string(),
+            unfilled: created.unfilled,
+        });
+    } else {
+        stdout(&format!("{}\n{}", created.path, created.url));
+    }
+    Ok(0)
 }

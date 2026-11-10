@@ -13,7 +13,8 @@ use yuanme_engine::Mode;
 
 use super::docs;
 use crate::events::Event;
-use crate::{ENGINE_VERSION, Error, Out, schemas};
+use crate::out::Out;
+use crate::{ENGINE_VERSION, Error, schemas};
 
 /// Each of a Starter's files, by its path from the project root, as
 /// `crates/yuanme/src/commands/init/STARTER/` holds it.
@@ -389,7 +390,7 @@ pub fn run(
     yuanme_engine::write_types(&root)?;
     // As `yuanme dev` builds, which checks no types: `init` works offline,
     // and leaves downloading `tsc` to the first check.
-    let run = crate::engine_build(&root, None, Mode::Dev, false, false)?;
+    let run = crate::project::engine_build(&root, None, Mode::Dev, false, false)?;
     schemas::write(
         &root.join(".yuanme/schemas"),
         run.build.config.as_ref(),

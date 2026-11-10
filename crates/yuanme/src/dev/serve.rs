@@ -18,8 +18,9 @@ use yuanme_diag::{Diagnostic, Files, Level};
 use yuanme_engine::{Body, Build, Cache, image};
 
 use super::Snapshot;
+use crate::ENGINE_VERSION;
 use crate::events::{Console, Event};
-use crate::{ENGINE_VERSION, Out};
+use crate::out::Out;
 
 /// Where the dev client connects. Messages to it are `{"type": "reload",
 /// "urls": [...]}`, the `reload` event's, and `{"type": "overlay",

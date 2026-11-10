@@ -12,7 +12,8 @@ use serde_json::{Value, json};
 
 use super::serve::{PID, STATUS, STOP};
 use crate::events::Event;
-use crate::{ENGINE_VERSION, Error, Out, SITE_ERRORS};
+use crate::out::Out;
+use crate::{ENGINE_VERSION, Error, SITE_ERRORS};
 
 /// From the project root.
 const FILE: &str = ".yuanme/dev.json";
@@ -213,7 +214,7 @@ fn relay(log: &Path, from: &mut u64, all: bool, out: Out) -> io::Result<()> {
     };
     for line in text[..end].lines() {
         if out.json && line.starts_with('{') {
-            crate::stdout(line);
+            crate::out::stdout(line);
         } else {
             eprintln!("{line}");
         }
@@ -232,7 +233,7 @@ pub fn status(root: &Path, out: Out) -> Result<u8, Error> {
     let build = &running.build;
     let count = |key: &str, one: &str| {
         let n = build[key].as_u64().unwrap_or(0) as usize;
-        crate::plural(n, one)
+        crate::out::plural(n, one)
     };
     let last = match build["ok"] == true {
         true => format!(
