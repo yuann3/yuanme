@@ -269,7 +269,7 @@ fn a_rule_whose_exception_is_missing_fails_the_test() {
     without.remove("apex-origin");
     let s = site(&format!("=== index.html\n{}", page("", "")));
     let err = compare(s.path(), s.path(), &without).unwrap_err();
-    assert!(err.contains("apex-origin"), "{err}");
+    assert!(err.to_string().contains("apex-origin"), "{err}");
 }
 
 #[test]

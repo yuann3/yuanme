@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 use std::fs;
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::LazyLock;
 
 use html5ever::tendril::TendrilSink;
@@ -174,6 +174,35 @@ pub struct Report {
     pub tolerated: BTreeMap<&'static str, usize>,
 }
 
+/// Why two Sites couldn't be compared.
+#[derive(Debug)]
+pub enum Error {
+    /// The harness has rules under these ids, which
+    /// `docs/parity-exceptions.md` lacks.
+    UnknownIds(Vec<&'static str>),
+    Walk(PathBuf, walkdir::Error),
+    Read(PathBuf, io::Error),
+    /// The folder holds no files.
+    Empty(PathBuf),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::UnknownIds(ids) => write!(
+                f,
+                "the harness tolerates differences under ids that docs/parity-exceptions.md lacks: {}",
+                ids.join(", ")
+            ),
+            Error::Walk(path, e) => write!(f, "{}: {e}", path.display()),
+            Error::Read(path, e) => write!(f, "{}: {e}", path.display()),
+            Error::Empty(path) => write!(f, "{}: no files", path.display()),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
+
 /// The ids of `docs/parity-exceptions.md`'s tables: the first column of
 /// each row.
 pub fn exception_ids(path: &Path) -> io::Result<BTreeSet<String>> {
@@ -186,17 +215,10 @@ pub fn exception_ids(path: &Path) -> io::Result<BTreeSet<String>> {
 
 /// Compares two Site directories. Fails, before comparing, if a rule names
 /// an id that `ids` lacks.
-pub fn compare(
-    baseline: &Path,
-    candidate: &Path,
-    ids: &BTreeSet<String>,
-) -> Result<Report, String> {
+pub fn compare(baseline: &Path, candidate: &Path, ids: &BTreeSet<String>) -> Result<Report, Error> {
     let unknown: Vec<&str> = RULES.into_iter().filter(|id| !ids.contains(*id)).collect();
     if !unknown.is_empty() {
-        return Err(format!(
-            "the harness tolerates differences under ids that docs/parity-exceptions.md lacks: {}",
-            unknown.join(", ")
-        ));
+        return Err(Error::UnknownIds(unknown));
     }
     let b = Side::load(baseline, "baseline")?;
     let c = Side::load(candidate, "candidate")?;
@@ -356,7 +378,7 @@ struct Side {
 }
 
 impl Side {
-    fn load(root: &Path, name: &'static str) -> Result<Side, String> {
+    fn load(root: &Path, name: &'static str) -> Result<Side, Error> {
         let mut side = Side {
             name,
             files: BTreeSet::new(),
@@ -367,7 +389,7 @@ impl Side {
         };
         let mut sources = Vec::new();
         for entry in walkdir::WalkDir::new(root).sort_by_file_name() {
-            let entry = entry.map_err(|e| format!("{}: {e}", root.display()))?;
+            let entry = entry.map_err(|e| Error::Walk(root.to_path_buf(), e))?;
             if !entry.file_type().is_file() {
                 continue;
             }
@@ -385,10 +407,10 @@ impl Side {
             side.files.insert(path);
         }
         if side.files.is_empty() {
-            return Err(format!("{}: no files", root.display()));
+            return Err(Error::Empty(root.to_path_buf()));
         }
         for (path, file) in sources {
-            let bytes = fs::read(&file).map_err(|e| format!("{}: {e}", file.display()))?;
+            let bytes = fs::read(&file).map_err(|e| Error::Read(file.clone(), e))?;
             if path.ends_with(".xml") {
                 let xml = String::from_utf8_lossy(&bytes);
                 if xml.contains("<rss") {
@@ -407,7 +429,7 @@ impl Side {
                 let dom = html5ever::parse_document(RcDom::default(), Default::default())
                     .from_utf8()
                     .read_from(&mut &bytes[..])
-                    .map_err(|e| format!("{}: {e}", file.display()))?;
+                    .map_err(|e| Error::Read(file.clone(), e))?;
                 let mut out = String::new();
                 for node in dom.document.children.borrow().iter() {
                     side.render(node, &path, 0, &mut out);

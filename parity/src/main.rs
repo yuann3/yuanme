@@ -4,8 +4,10 @@
 //! `self-test` checks the harness against the baseline itself.
 
 use std::collections::BTreeSet;
+use std::fmt;
+use std::io;
 use std::path::{Path, PathBuf};
-use std::process::{Command, ExitCode};
+use std::process::{Command, ExitCode, ExitStatus};
 
 use parity::{Difference, Report, compare, exception_ids};
 use serde_json::Value;
@@ -25,7 +27,7 @@ fn main() -> ExitCode {
         ["build", project, out] => build(Path::new(project), Path::new(out), "yuanme"),
         ["build", project, out, "--yuanme", bin] => build(Path::new(project), Path::new(out), bin),
         ["self-test", baseline] => self_test(Path::new(baseline)),
-        _ => Err(USAGE.to_string()),
+        _ => Err(Error::Usage),
     };
     match result {
         Ok(true) => ExitCode::SUCCESS,
@@ -37,24 +39,93 @@ fn main() -> ExitCode {
     }
 }
 
-fn ids() -> Result<BTreeSet<String>, String> {
-    let file = Path::new(env!("CARGO_MANIFEST_DIR")).join("../docs/parity-exceptions.md");
-    exception_ids(&file).map_err(|e| format!("{}: {e}", file.display()))
+/// Why a command couldn't finish, which exits with 2.
+#[derive(Debug)]
+enum Error {
+    Usage,
+    /// `docs/parity-exceptions.md` couldn't be read.
+    Exceptions(PathBuf, io::Error),
+    NotABaseline(PathBuf),
+    Compare(parity::Error),
+    Out(io::Error),
+    Run {
+        yuanme: String,
+        error: io::Error,
+    },
+    /// A line of yuanme's stdout that isn't a JSON event.
+    Event {
+        yuanme: String,
+        line: String,
+        error: serde_json::Error,
+    },
+    NotFinished {
+        yuanme: String,
+        status: ExitStatus,
+        stderr: String,
+    },
+    Temp(io::Error),
+    Copy(seeds::Error),
+    Seed {
+        name: &'static str,
+        error: seeds::Error,
+    },
 }
 
-/// The Site inside an unpacked Parity baseline.
-fn baseline_site(baseline: &Path) -> Result<PathBuf, String> {
-    let site = baseline.join("site");
-    match site.is_dir() {
-        true => Ok(site),
-        false => Err(format!(
-            "{} isn't an unpacked Parity baseline: it has no site/",
-            baseline.display()
-        )),
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::Usage => f.write_str(USAGE),
+            Error::Exceptions(file, e) => write!(f, "{}: {e}", file.display()),
+            Error::NotABaseline(baseline) => write!(
+                f,
+                "{} isn't an unpacked Parity baseline: it has no site/",
+                baseline.display()
+            ),
+            Error::Compare(e) => e.fmt(f),
+            Error::Out(e) | Error::Temp(e) => e.fmt(f),
+            Error::Run { yuanme, error } => write!(f, "can't run {yuanme}: {error}"),
+            Error::Event {
+                yuanme,
+                line,
+                error,
+            } => write!(f, "{yuanme} printed {line:?}: {error}"),
+            Error::NotFinished {
+                yuanme,
+                status,
+                stderr,
+            } => write!(
+                f,
+                "{yuanme} build ended ({status}) without a build-finished event:\n{stderr}"
+            ),
+            Error::Copy(e) => e.fmt(f),
+            Error::Seed { name, error } => write!(f, "seed {name}: {error}"),
+        }
     }
 }
 
-fn check(baseline: &Path, site: &Path) -> Result<bool, String> {
+impl std::error::Error for Error {}
+
+impl From<parity::Error> for Error {
+    fn from(e: parity::Error) -> Error {
+        Error::Compare(e)
+    }
+}
+
+fn ids() -> Result<BTreeSet<String>, Error> {
+    let file = Path::new(env!("CARGO_MANIFEST_DIR")).join("../docs/parity-exceptions.md");
+    exception_ids(&file).map_err(|e| Error::Exceptions(file, e))
+}
+
+/// The Site inside an unpacked Parity baseline.
+fn baseline_site(baseline: &Path) -> Result<PathBuf, Error> {
+    let site = baseline.join("site");
+    match site.is_dir() {
+        true => Ok(site),
+        false => Err(Error::NotABaseline(baseline.to_path_buf())),
+    }
+}
+
+fn check(baseline: &Path, site: &Path) -> Result<bool, Error> {
     let report = compare(&baseline_site(baseline)?, site, &ids()?)?;
     for d in &report.differences {
         println!("{d}");
@@ -75,19 +146,25 @@ fn print_tolerated(report: &Report) {
 
 /// Builds PROJECT into OUT as #65's CLI does for an agent, and reads its
 /// `build-finished` event. The report is in PROJECT/.yuanme/report.json.
-fn build(project: &Path, out: &Path, yuanme: &str) -> Result<bool, String> {
-    let out = std::path::absolute(out).map_err(|e| e.to_string())?;
+fn build(project: &Path, out: &Path, yuanme: &str) -> Result<bool, Error> {
+    let out = std::path::absolute(out).map_err(Error::Out)?;
     let run = Command::new(yuanme)
         .arg("-C")
         .arg(project)
         .args(["build", "--json", "--out"])
         .arg(&out)
         .output()
-        .map_err(|e| format!("can't run {yuanme}: {e}"))?;
+        .map_err(|error| Error::Run {
+            yuanme: yuanme.to_string(),
+            error,
+        })?;
     let mut finished = None;
     for line in String::from_utf8_lossy(&run.stdout).lines() {
-        let event: Value =
-            serde_json::from_str(line).map_err(|e| format!("{yuanme} printed {line:?}: {e}"))?;
+        let event: Value = serde_json::from_str(line).map_err(|error| Error::Event {
+            yuanme: yuanme.to_string(),
+            line: line.to_string(),
+            error,
+        })?;
         match event["type"].as_str() {
             Some("diagnostic") => eprintln!(
                 "{}",
@@ -101,11 +178,11 @@ fn build(project: &Path, out: &Path, yuanme: &str) -> Result<bool, String> {
         }
     }
     let Some(finished) = finished else {
-        return Err(format!(
-            "{yuanme} build ended ({}) without a build-finished event:\n{}",
-            run.status,
-            String::from_utf8_lossy(&run.stderr)
-        ));
+        return Err(Error::NotFinished {
+            yuanme: yuanme.to_string(),
+            status: run.status,
+            stderr: String::from_utf8_lossy(&run.stderr).into_owned(),
+        });
     };
     if finished["ok"] != true {
         eprintln!(
@@ -120,7 +197,7 @@ fn build(project: &Path, out: &Path, yuanme: &str) -> Result<bool, String> {
 
 /// The baseline compared with itself passes, and every seeded change is
 /// caught, or let through, as it should be.
-fn self_test(baseline: &Path) -> Result<bool, String> {
+fn self_test(baseline: &Path) -> Result<bool, Error> {
     let site = baseline_site(baseline)?;
     let ids = ids()?;
     let mut ok = true;
@@ -136,10 +213,12 @@ fn self_test(baseline: &Path) -> Result<bool, String> {
         if ok { "ok  " } else { "FAIL" }
     );
     for seed in seeds::SEEDS {
-        let copy = tempfile::tempdir().map_err(|e| e.to_string())?;
-        seeds::copy(&site, copy.path())?;
-        seed.apply(copy.path())
-            .map_err(|e| format!("seed {}: {e}", seed.name))?;
+        let copy = tempfile::tempdir().map_err(Error::Temp)?;
+        seeds::copy(&site, copy.path()).map_err(Error::Copy)?;
+        seed.apply(copy.path()).map_err(|error| Error::Seed {
+            name: seed.name,
+            error,
+        })?;
         let report = compare(&site, copy.path(), &ids)?;
         let pass = (seed.expect)(&report.differences);
         ok &= pass;

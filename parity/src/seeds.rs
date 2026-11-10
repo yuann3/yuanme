@@ -3,8 +3,10 @@
 //! covers, which it must let through. Each edit must still apply, so a new
 //! baseline can't turn a seed into a no-op.
 
+use std::fmt;
 use std::fs;
-use std::path::Path;
+use std::io;
+use std::path::{Path, PathBuf};
 
 use parity::Difference;
 
@@ -199,8 +201,35 @@ pub(crate) const SEEDS: &[Seed] = &[
     },
 ];
 
+/// Why a seed couldn't be applied, or the baseline copied.
+#[derive(Debug)]
+pub(crate) enum Error {
+    /// A `Replace` whose text isn't in its file.
+    Missing {
+        from: &'static str,
+        file: &'static str,
+    },
+    /// About the file or folder at the path.
+    At(PathBuf, io::Error),
+    Io(io::Error),
+    Walk(walkdir::Error),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::Missing { from, file } => write!(f, "{from:?} isn't in {file}"),
+            Error::At(path, e) => write!(f, "{}: {e}", path.display()),
+            Error::Io(e) => e.fmt(f),
+            Error::Walk(e) => e.fmt(f),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
+
 impl Seed {
-    pub(crate) fn apply(&self, site: &Path) -> Result<(), String> {
+    pub(crate) fn apply(&self, site: &Path) -> Result<(), Error> {
         for edit in self.edits {
             match edit {
                 Edit::Replace(file, from, to) => {
@@ -212,26 +241,26 @@ impl Seed {
                     for file in files {
                         let text = read(&file)?;
                         found |= text.contains(from);
-                        fs::write(&file, text.replace(from, to)).map_err(|e| e.to_string())?;
+                        fs::write(&file, text.replace(from, to)).map_err(Error::Io)?;
                     }
                     if !found {
-                        return Err(format!("{from:?} isn't in {file}"));
+                        return Err(Error::Missing { from, file });
                     }
                 }
                 Edit::Delete(file) => {
-                    fs::remove_file(site.join(file)).map_err(|e| format!("{file}: {e}"))?
+                    fs::remove_file(site.join(file)).map_err(|e| Error::At(file.into(), e))?
                 }
                 Edit::Rename(from, to) => {
                     let to = site.join(to);
-                    fs::create_dir_all(to.parent().expect("in the Site"))
-                        .map_err(|e| e.to_string())?;
-                    fs::rename(site.join(from), to).map_err(|e| format!("{from}: {e}"))?
+                    fs::create_dir_all(to.parent().expect("a seed's file is in the Site"))
+                        .map_err(Error::Io)?;
+                    fs::rename(site.join(from), to).map_err(|e| Error::At(from.into(), e))?
                 }
                 Edit::Write(file, text) => {
                     let file = site.join(file);
-                    fs::create_dir_all(file.parent().expect("in the Site"))
-                        .map_err(|e| e.to_string())?;
-                    fs::write(file, text).map_err(|e| e.to_string())?
+                    fs::create_dir_all(file.parent().expect("a seed's file is in the Site"))
+                        .map_err(Error::Io)?;
+                    fs::write(file, text).map_err(Error::Io)?
                 }
             }
         }
@@ -239,8 +268,8 @@ impl Seed {
     }
 }
 
-fn read(file: &Path) -> Result<String, String> {
-    fs::read_to_string(file).map_err(|e| format!("{}: {e}", file.display()))
+fn read(file: &Path) -> Result<String, Error> {
+    fs::read_to_string(file).map_err(|e| Error::At(file.to_path_buf(), e))
 }
 
 fn pages(site: &Path) -> Vec<std::path::PathBuf> {
@@ -252,14 +281,19 @@ fn pages(site: &Path) -> Vec<std::path::PathBuf> {
         .collect()
 }
 
-pub(crate) fn copy(from: &Path, to: &Path) -> Result<(), String> {
+pub(crate) fn copy(from: &Path, to: &Path) -> Result<(), Error> {
     for entry in walkdir::WalkDir::new(from) {
-        let entry = entry.map_err(|e| e.to_string())?;
-        let target = to.join(entry.path().strip_prefix(from).expect("under it"));
+        let entry = entry.map_err(Error::Walk)?;
+        let target = to.join(
+            entry
+                .path()
+                .strip_prefix(from)
+                .expect("WalkDir yields only paths under the folder it walks"),
+        );
         if entry.file_type().is_dir() {
-            fs::create_dir_all(&target).map_err(|e| e.to_string())?;
+            fs::create_dir_all(&target).map_err(Error::Io)?;
         } else {
-            fs::copy(entry.path(), &target).map_err(|e| e.to_string())?;
+            fs::copy(entry.path(), &target).map_err(Error::Io)?;
         }
     }
     Ok(())
