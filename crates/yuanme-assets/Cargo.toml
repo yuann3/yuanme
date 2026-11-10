@@ -62,3 +62,6 @@ insta = "1.49.0"
 tempfile = "3.27.0"
 # skera 0.9.0's, to draw the subset's glyphs.
 skrifa = "=0.49.0"
+
+[lints]
+workspace = true

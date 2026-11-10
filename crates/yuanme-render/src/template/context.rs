@@ -32,7 +32,7 @@ fn map(pairs: impl IntoIterator<Item = (&'static str, Value)>) -> Value {
 }
 
 impl Context {
-    pub fn new(config: &Config, site: &Site, bodies: Vec<String>, origin: &str) -> Context {
+    pub(super) fn new(config: &Config, site: &Site, bodies: Vec<String>, origin: &str) -> Context {
         let mut lists: BTreeMap<String, Vec<String>> = BTreeMap::new();
         let mut term_pages: BTreeMap<(String, usize), Vec<String>> = BTreeMap::new();
         let mut index = BTreeMap::new();
@@ -144,7 +144,7 @@ impl Context {
     }
 
     /// The context of one Route's Page.
-    pub fn page(&self, route: &Route) -> Value {
+    pub(super) fn page(&self, route: &Route) -> Value {
         let mut ctx = self.globals.clone();
         let entries = |ids: &[usize]| {
             Value::from(

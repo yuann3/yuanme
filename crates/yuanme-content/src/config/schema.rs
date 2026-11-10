@@ -18,7 +18,7 @@ pub(crate) struct Key {
 }
 
 impl Key {
-    pub const fn required(name: &'static str, shape: Shape, doc: &'static str) -> Key {
+    pub(super) const fn required(name: &'static str, shape: Shape, doc: &'static str) -> Key {
         Key {
             name,
             shape,
@@ -28,7 +28,7 @@ impl Key {
         }
     }
 
-    pub const fn optional(name: &'static str, shape: Shape, doc: &'static str) -> Key {
+    pub(super) const fn optional(name: &'static str, shape: Shape, doc: &'static str) -> Key {
         Key {
             name,
             shape,
@@ -41,7 +41,7 @@ impl Key {
     /// A key that still works under its old name until the next major
     /// release, with a `config/deprecated` warning (ADR 0015).
     #[cfg_attr(not(test), expect(dead_code, reason = "no key has been renamed yet"))]
-    pub const fn renamed(name: &'static str, to: &'static str) -> Key {
+    pub(super) const fn renamed(name: &'static str, to: &'static str) -> Key {
         Key {
             name,
             shape: Shape::Any,

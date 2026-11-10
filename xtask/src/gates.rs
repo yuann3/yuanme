@@ -494,6 +494,7 @@ fn yuanme(side: &Side, args: &[&str]) -> Command {
 
 /// The child's peak resident set size in bytes, once it exits; it must
 /// succeed.
+#[allow(unsafe_code, reason = "only wait4 reports a child's peak RSS")]
 fn wait_for_rss(child: Child, side: &Side) -> f64 {
     let mut status = 0;
     // SAFETY: rusage is plain data that wait4 fills in.

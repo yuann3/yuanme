@@ -16,3 +16,6 @@ similar = "2.7.0"
 tempfile = "3.27.0"
 url = "2.5.8"
 walkdir = "2.5.0"
+
+[lints]
+workspace = true

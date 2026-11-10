@@ -36,3 +36,6 @@ jsonschema = { version = "0.60.1", default-features = false }
 # get it: only test builds turn it on.
 minijinja = { version = "=3.0.1", features = ["json"] }
 sha2 = "0.10"
+
+[lints]
+workspace = true

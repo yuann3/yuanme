@@ -25,6 +25,12 @@ comrak = { package = "yuanme-comrak", path = "vendor/comrak", version = "0.0.0" 
 ravif = { package = "yuanme-ravif", path = "vendor/ravif", version = "0.0.0" }
 math-core = { package = "yuanme-math-core", path = "vendor/math-core", version = "0.0.0" }
 
+# Every crate but vendor/'s opts in with `[lints] workspace = true`: the
+# forks keep their upstream's lints, so they diff cleanly against it.
+[workspace.lints.rust]
+unreachable_pub = "warn"
+unsafe_code = "deny"
+
 # The image pipeline's tests encode real photos, which takes minutes
 # unoptimised. At release's opt-level, they hash release's bytes.
 [profile.dev.package]

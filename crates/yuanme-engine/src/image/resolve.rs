@@ -128,7 +128,7 @@ impl Images {
     /// Probes every image of the project but the Static files, before
     /// render, since a probe writes the cache: it reads only a header, and
     /// only on a cache miss.
-    pub fn new(
+    pub(crate) fn new(
         inputs: &Inputs,
         cache: &mut Cache,
         config: &Config,
@@ -171,7 +171,7 @@ impl Images {
         }
     }
 
-    pub fn into_used(self) -> Used {
+    pub(crate) fn into_used(self) -> Used {
         self.used
             .into_inner()
             .expect("nothing panics while holding the Used lock")
@@ -292,7 +292,7 @@ impl Images {
     /// The markup of every processed image in each Entry's body. The first
     /// image of a body is eager, as one above the fold must be; the others
     /// are lazy.
-    pub fn bodies(&self, site: &Site) -> (Vec<Pictures>, Vec<Diagnostic>) {
+    pub(crate) fn bodies(&self, site: &Site) -> (Vec<Pictures>, Vec<Diagnostic>) {
         let mut diagnostics = Vec::new();
         // Each Document's images and captions, walked on threads of their
         // own; the images are resolved in order, since the first Entry to

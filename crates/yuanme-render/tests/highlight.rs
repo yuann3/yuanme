@@ -32,6 +32,7 @@ fn count(bytes: usize, sign: isize) {
 }
 
 // SAFETY: every call is passed on to the system allocator as it is.
+#[allow(unsafe_code, reason = "counting allocations takes a GlobalAlloc")]
 unsafe impl GlobalAlloc for Counting {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         count(layout.size(), 1);

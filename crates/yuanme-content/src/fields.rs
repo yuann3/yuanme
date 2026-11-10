@@ -42,11 +42,11 @@ pub enum Image {
 mod bits {
     use serde::{Deserialize, Deserializer, Serializer};
 
-    pub fn serialize<S: Serializer>(f: &f64, s: S) -> Result<S::Ok, S::Error> {
+    pub(super) fn serialize<S: Serializer>(f: &f64, s: S) -> Result<S::Ok, S::Error> {
         s.serialize_u64(f.to_bits())
     }
 
-    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<f64, D::Error> {
+    pub(super) fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<f64, D::Error> {
         u64::deserialize(d).map(f64::from_bits)
     }
 }
@@ -107,22 +107,27 @@ pub(crate) struct Cx<'a> {
 }
 
 impl Cx<'_> {
-    pub fn span(&self, range: Range<usize>) -> Span {
+    pub(crate) fn span(&self, range: Range<usize>) -> Span {
         Span {
             file: self.file,
             range,
         }
     }
 
-    pub fn error(&self, code: &'static Code, message: String, at: Range<usize>) -> Diagnostic {
+    pub(crate) fn error(
+        &self,
+        code: &'static Code,
+        message: String,
+        at: Range<usize>,
+    ) -> Diagnostic {
         Diagnostic::error(code, message, self.span(at))
     }
 
-    pub fn push(&mut self, d: Diagnostic) {
+    pub(crate) fn push(&mut self, d: Diagnostic) {
         self.diagnostics.push(d);
     }
 
-    pub fn fix(
+    pub(crate) fn fix(
         &self,
         d: Diagnostic,
         message: String,

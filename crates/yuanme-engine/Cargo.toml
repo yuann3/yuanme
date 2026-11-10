@@ -32,3 +32,6 @@ insta = "1.49.0"
 image = { version = "=0.25.10", default-features = false, features = ["gif", "jpeg", "png"] }
 regex = "1.13.1"
 lightningcss = { version = "=1.0.0-alpha.72", default-features = false }
+
+[lints]
+workspace = true

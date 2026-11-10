@@ -367,6 +367,7 @@ impl Pixels {
         // SAFETY: `bytes` holds `height` rows of `width` pixels, each 3 or 4
         // bytes as the function expects, and libwebp only reads it. The
         // returned buffer is copied and then freed with WebPFree.
+        #[allow(unsafe_code, reason = "libwebp is C, and sound as SAFETY says")]
         unsafe {
             let len = if self.alpha {
                 libwebp_sys::WebPEncodeRGBA(

@@ -16,29 +16,29 @@ pub(crate) struct Checker {
 }
 
 impl Checker {
-    pub fn new(file: FileId) -> Checker {
+    pub(super) fn new(file: FileId) -> Checker {
         Checker {
             file,
             diagnostics: Vec::new(),
         }
     }
 
-    pub fn file(&self) -> FileId {
+    pub(super) fn file(&self) -> FileId {
         self.file
     }
 
-    pub fn failed(&self) -> bool {
+    pub(super) fn failed(&self) -> bool {
         self.diagnostics.iter().any(|d| d.level == Level::Error)
     }
 
-    pub fn span(&self, range: Range<usize>) -> Span {
+    pub(super) fn span(&self, range: Range<usize>) -> Span {
         Span {
             file: self.file,
             range,
         }
     }
 
-    pub fn error(
+    pub(super) fn error(
         &mut self,
         code: &'static yuanme_diag::Code,
         message: String,
@@ -50,13 +50,13 @@ impl Checker {
     }
 
     /// Adds to the Diagnostic just reported.
-    pub fn then(&mut self, add: impl FnOnce(Diagnostic) -> Diagnostic) {
+    pub(super) fn then(&mut self, add: impl FnOnce(Diagnostic) -> Diagnostic) {
         let d = self.diagnostics.pop().expect("a Diagnostic to add to");
         self.diagnostics.push(add(d));
     }
 
     /// An edit replacing `at` that a person or agent should confirm first.
-    pub fn suggest(&mut self, message: String, at: Range<usize>, replacement: String) {
+    pub(super) fn suggest(&mut self, message: String, at: Range<usize>, replacement: String) {
         let edit = Edit {
             span: self.span(at),
             replacement,
@@ -64,13 +64,19 @@ impl Checker {
         self.then(|d| d.suggest(message, Applicability::MaybeIncorrect, vec![edit]));
     }
 
-    pub fn invalid(&mut self, message: String, at: Range<usize>) {
+    pub(super) fn invalid(&mut self, message: String, at: Range<usize>) {
         self.error(&codes::CONFIG_INVALID_VALUE, message, at);
     }
 
     /// Checks `table` against `keys`. `at` is where the table is named, for a
     /// missing key; `path` is its dotted name.
-    pub fn table(&mut self, keys: &[&Key], table: &mut DeTable<'_>, at: Range<usize>, path: &str) {
+    pub(super) fn table(
+        &mut self,
+        keys: &[&Key],
+        table: &mut DeTable<'_>,
+        at: Range<usize>,
+        path: &str,
+    ) {
         let present: Vec<(String, Range<usize>)> = table
             .iter()
             .map(|(k, _)| (k.get_ref().to_string(), k.span()))
