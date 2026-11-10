@@ -13,7 +13,7 @@ use yuanme_engine::Mode;
 
 use crate::events::Event;
 use crate::out::{Out, stdout};
-use crate::project::{config_or_report, engine_build};
+use crate::project::{self, config_or_report};
 use crate::{Error, SITE_ERRORS};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, clap::ValueEnum)]
@@ -155,14 +155,14 @@ pub fn collection(config: &Config, name: &str) -> Result<Collection, String> {
     })
 }
 
-pub(crate) fn new(
+pub(crate) fn run(
     root: &Path,
     collection: &str,
     title: &str,
     format: Format,
     out: &Out,
 ) -> Result<u8, Error> {
-    let run = engine_build(root, None, Mode::Check { drafts: false }, false, false)?;
+    let run = project::build(root, None, Mode::Check { drafts: false }, false, false)?;
     let Some(config) = config_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };

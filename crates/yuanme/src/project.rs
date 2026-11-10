@@ -30,7 +30,7 @@ pub(crate) struct Run {
 /// adapter's output directory is `dist` or hidden. Only `yuanme build`
 /// encodes images and measures the Site budgets: every other command builds
 /// as `check` does.
-pub(crate) fn engine_build(
+pub(crate) fn build(
     root: &Path,
     out: Option<&Path>,
     mode: Mode,

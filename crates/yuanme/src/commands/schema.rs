@@ -9,10 +9,10 @@ use yuanme_engine::Mode;
 use crate::cli::Which;
 use crate::events::Event;
 use crate::out::{Out, stdout};
-use crate::project::{config_or_report, engine_build, site_or_report};
+use crate::project::{self, config_or_report, site_or_report};
 use crate::{Error, SITE_ERRORS, schemas, unknown};
 
-pub(crate) fn print_schema(out: &Out, name: &str, schema: Value) -> u8 {
+pub(crate) fn print(out: &Out, name: &str, schema: Value) -> u8 {
     if out.json {
         out.event(Event::Schema {
             name: name.to_string(),
@@ -24,8 +24,8 @@ pub(crate) fn print_schema(out: &Out, name: &str, schema: Value) -> u8 {
     0
 }
 
-pub(crate) fn schema(root: &Path, which: Which, out: &Out) -> Result<u8, Error> {
-    let run = engine_build(root, None, Mode::Check { drafts: false }, false, false)?;
+pub(crate) fn run(root: &Path, which: Which, out: &Out) -> Result<u8, Error> {
+    let run = project::build(root, None, Mode::Check { drafts: false }, false, false)?;
     let (name, mut schemas) = match which {
         Which::Entry { collection } => {
             let Some(config) = config_or_report(&run, out) else {
@@ -67,5 +67,5 @@ pub(crate) fn schema(root: &Path, which: Which, out: &Out) -> Result<u8, Error> 
         };
         return Err(unknown(what, item, &choices, otherwise));
     };
-    Ok(print_schema(out, &name, schema))
+    Ok(print(out, &name, schema))
 }

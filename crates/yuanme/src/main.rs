@@ -80,7 +80,7 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
     let cwd = std::env::current_dir()?;
     let dir = cli.dir.map_or(cwd.clone(), |d| cwd.join(d));
     match cli.command {
-        Command::Docs { topic } => return docs::docs(topic.as_deref().unwrap_or("index"), out),
+        Command::Docs { topic } => return docs::run(topic.as_deref().unwrap_or("index"), out),
         Command::Itself(Itself::Update { version, check }) => {
             return update::run(version, check, out);
         }
@@ -94,10 +94,10 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
         }
         Command::Schema {
             which: Which::Config,
-        } => return Ok(schema::print_schema(out, "config", config::json_schema())),
+        } => return Ok(schema::print(out, "config", config::json_schema())),
         Command::Schema {
             which: Which::Events,
-        } => return Ok(schema::print_schema(out, "events", events::schema())),
+        } => return Ok(schema::print(out, "events", events::schema())),
         _ => {}
     }
     if !dir.join("yuanme.toml").is_file() {
@@ -131,9 +131,9 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
             out: out_dir,
         } => {
             let out_dir = out_dir.map(|d| root.join(d));
-            build::build(&root, out_dir, clean, &check, strict_budgets, out)
+            build::run(&root, out_dir, clean, &check, strict_budgets, out)
         }
-        Command::Check(args) => check::check(&root, &args, out),
+        Command::Check(args) => check::run(&root, &args, out),
         Command::Dev(args) => match args.manage {
             Some(Manage::Status) => dev::running::status(&root, *out),
             Some(Manage::Stop) => dev::running::stop(&root, *out),
@@ -165,9 +165,9 @@ fn run(cli: Cli, out: &Out) -> Result<u8, Error> {
             collection,
             title,
             format,
-        } => new::new(&root, &collection, &title, format, out),
-        Command::Routes { drafts } => routes::routes(&root, drafts, out),
-        Command::Schema { which } => schema::schema(&root, which, out),
+        } => new::run(&root, &collection, &title, format, out),
+        Command::Routes { drafts } => routes::run(&root, drafts, out),
+        Command::Schema { which } => schema::run(&root, which, out),
         Command::Docs { .. } | Command::Init { .. } | Command::Itself(_) => {
             unreachable!("answered without a project")
         }

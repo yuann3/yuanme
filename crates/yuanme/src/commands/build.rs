@@ -11,10 +11,10 @@ use yuanme_engine::Mode;
 use crate::cli::CheckArgs;
 use crate::events::Event;
 use crate::out::{Out, counts, finish, plural};
-use crate::project::{Run, engine_build, sync, url_of};
+use crate::project::{self, Run, sync, url_of};
 use crate::{Error, report, schemas};
 
-pub(crate) fn build(
+pub(crate) fn run(
     root: &Path,
     out_dir: Option<PathBuf>,
     clean: bool,
@@ -40,7 +40,7 @@ pub(crate) fn build(
         out: out_dir,
         load,
         took,
-    } = engine_build(root, out_dir.as_deref(), mode, args.strict, strict_budgets)?;
+    } = project::build(root, out_dir.as_deref(), mode, args.strict, strict_budgets)?;
     let out_dir = out_dir.as_path();
     schemas::write(
         &root.join(".yuanme/schemas"),

@@ -424,7 +424,7 @@ fn plural(kind: &str) -> String {
     }
 }
 
-pub(crate) fn docs(name: &str, out: &Out) -> Result<u8, Error> {
+pub(crate) fn run(name: &str, out: &Out) -> Result<u8, Error> {
     let Some(markdown) = page(name) else {
         let names: Vec<&str> = names().collect();
         let otherwise = "`yuanme docs` lists every page".to_string();

@@ -9,16 +9,16 @@ use yuanme_engine::Mode;
 use crate::cli::CheckArgs;
 use crate::events::Event;
 use crate::out::{Out, counts, finish, plural};
-use crate::project::{Run, engine_build};
+use crate::project::{self, Run};
 use crate::{Error, schemas};
 
-pub(crate) fn check(root: &Path, args: &CheckArgs, out: &Out) -> Result<u8, Error> {
+pub(crate) fn run(root: &Path, args: &CheckArgs, out: &Out) -> Result<u8, Error> {
     let started = Instant::now();
     out.event(Event::BuildStarted { command: "check" });
     let mode = Mode::Check {
         drafts: args.drafts,
     };
-    let Run { build, .. } = engine_build(root, None, mode, args.strict, false)?;
+    let Run { build, .. } = project::build(root, None, mode, args.strict, false)?;
     schemas::write(
         &root.join(".yuanme/schemas"),
         build.config.as_ref(),

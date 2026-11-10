@@ -7,11 +7,11 @@ use yuanme_engine::Mode;
 
 use crate::events::{self, Event};
 use crate::out::{Out, stdout};
-use crate::project::{engine_build, site_or_report};
+use crate::project::{self, site_or_report};
 use crate::{Error, SITE_ERRORS};
 
-pub(crate) fn routes(root: &Path, drafts: bool, out: &Out) -> Result<u8, Error> {
-    let run = engine_build(root, None, Mode::Check { drafts }, false, false)?;
+pub(crate) fn run(root: &Path, drafts: bool, out: &Out) -> Result<u8, Error> {
+    let run = project::build(root, None, Mode::Check { drafts }, false, false)?;
     let Some((config, site)) = site_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };
