@@ -3,6 +3,8 @@
 //! client what to reload and show, and the endpoints `yuanme dev status`
 //! and `stop` use.
 
+use std::fmt;
+use std::io;
 use std::sync::{Arc, Mutex, RwLock};
 
 use axum::Router;
@@ -203,7 +205,7 @@ async fn file(State(shared): State<Arc<Shared>>, request: Request) -> Response {
         let encoded = tokio::task::spawn_blocking(move || {
             match encode(&shared.cache, &snapshot, &variant, &settings) {
                 Ok(body) => send(&snapshot, &path, &body, StatusCode::OK),
-                Err(message) => (StatusCode::INTERNAL_SERVER_ERROR, message).into_response(),
+                Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
             }
         });
         return encoded.await.expect("encoding doesn't panic");
@@ -296,7 +298,7 @@ fn encode(
     snapshot: &Snapshot,
     variant: &image::Variant,
     settings: &image::Settings,
-) -> Result<Body, String> {
+) -> Result<Body, Error> {
     if let Some(body) = cache
         .lock()
         .expect("a build doesn't panic")
@@ -311,16 +313,35 @@ fn encode(
         .into_iter()
         .next()
         .expect("one per variant")
-        .map_err(|e| format!("{}: {e}", variant.source))?;
+        .map_err(|e| Error::Encode(variant.source.clone(), e))?;
     let Body::Bytes(bytes) = &output.body else {
         unreachable!("a memory cache holds its bytes")
     };
     let mut cache = cache.lock().expect("a build doesn't panic");
     cache
         .insert_large(variant.key, bytes)
-        .map_err(|e| format!("can't write the cache: {e}"))?;
+        .map_err(Error::Cache)?;
     Ok(output.body)
 }
+
+/// Why an image variant can't be served, which the browser is told.
+#[derive(Debug)]
+enum Error {
+    /// The source image's path, and why it didn't encode.
+    Encode(String, image::Error),
+    Cache(io::Error),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::Encode(source, e) => write!(f, "{source}: {e}"),
+            Error::Cache(e) => write!(f, "can't write the cache: {e}"),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
 
 async fn socket(State(shared): State<Arc<Shared>>, upgrade: WebSocketUpgrade) -> Response {
     upgrade.on_upgrade(move |socket| client(shared, socket))
