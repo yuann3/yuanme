@@ -28,7 +28,7 @@ pub struct Compound {
 /// and layer names stay global, as in Astro, since Scripts name them.
 pub(super) fn modules() -> Config {
     Config {
-        pattern: Pattern::parse("[local]").expect("a valid pattern"),
+        pattern: Pattern::parse("[local]").expect("`[local]` is a constant pattern that parses"),
         dashed_idents: false,
         animation: false,
         grid: false,

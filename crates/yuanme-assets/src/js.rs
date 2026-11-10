@@ -176,7 +176,7 @@ pub fn bundle(
         .iter()
         .map(|e| match e {
             Entry::Script(path) => format!("{prefix}{path}"),
-            Entry::Page(_) => format!("{PAGE}{}", page.next().expect("endless")),
+            Entry::Page(_) => format!("{PAGE}{}", page.next().expect("`0..` never ends")),
             Entry::Client => CLIENT.to_string(),
         })
         .collect();
@@ -185,7 +185,8 @@ pub fn bundle(
             groups: Some(vec![MatchGroup {
                 name: MatchGroupName::Static("yuanme".to_string()),
                 test: Some(MatchGroupTest::Regex(
-                    HybridRegex::new(r"^\x00yuanme:(mount|swap|router)$").expect("a regex"),
+                    HybridRegex::new(r"^\x00yuanme:(mount|swap|router)$")
+                        .expect("a constant regex that parses"),
                 )),
                 ..MatchGroup::default()
             }]),
@@ -242,7 +243,11 @@ pub fn bundle(
         bundler.close().await?;
         output
     });
-    let mut problems = std::mem::take(&mut *problems.lock().expect("not poisoned"));
+    let mut problems = std::mem::take(
+        &mut *problems
+            .lock()
+            .expect("nothing panics while holding `problems`"),
+    );
     let problem = |d: &BuildDiagnostic, kind| {
         let message = d.to_message_with(&diagnostic_options);
         let location = d
@@ -433,17 +438,20 @@ impl Files {
         importer: &str,
         specifier: &str,
     ) -> HookResolveIdReturn {
-        self.problems.lock().expect("not poisoned").push(Problem {
-            kind,
-            message,
-            file: Some(
-                importer
-                    .strip_prefix(&self.prefix)
-                    .unwrap_or(importer)
-                    .to_string(),
-            ),
-            at: At::Specifier(specifier.to_string()),
-        });
+        self.problems
+            .lock()
+            .expect("nothing panics while holding `problems`")
+            .push(Problem {
+                kind,
+                message,
+                file: Some(
+                    importer
+                        .strip_prefix(&self.prefix)
+                        .unwrap_or(importer)
+                        .to_string(),
+                ),
+                at: At::Specifier(specifier.to_string()),
+            });
         Ok(Some(HookResolveIdOutput {
             id: specifier.into(),
             external: Some(ResolvedExternal::Bool(true)),
@@ -569,7 +577,10 @@ impl Plugin for Files {
         if let Some(name) = args.id.strip_prefix('\0') {
             let (code, module_type) = match name.strip_prefix(&PAGE[1..]) {
                 Some(i) => (
-                    self.pages[i.parse::<usize>().expect("an index")].clone(),
+                    self.pages[i
+                        .parse::<usize>()
+                        .expect("a Page module's id is PAGE and its index")]
+                    .clone(),
                     ModuleType::Js,
                 ),
                 None if name == ROUTER && !self.router => (NAVIGATE.to_string(), ModuleType::Js),
@@ -577,7 +588,10 @@ impl Plugin for Files {
                     (include_str!("js/router.ts").to_string(), ModuleType::Ts)
                 }
                 None => {
-                    let (_, code) = MODULES.iter().find(|(m, _)| *m == name).expect("resolved");
+                    let (_, code) = MODULES
+                        .iter()
+                        .find(|(m, _)| *m == name)
+                        .expect("resolve_id resolves only the names in MODULES");
                     (code.to_string(), ModuleType::Ts)
                 }
             };
@@ -594,12 +608,15 @@ impl Plugin for Files {
         let code = match std::str::from_utf8(bytes) {
             Ok(code) => code,
             Err(e) => {
-                self.problems.lock().expect("not poisoned").push(Problem {
-                    kind: ProblemKind::Invalid,
-                    message: format!("`{path}` is not UTF-8"),
-                    file: Some(path.to_string()),
-                    at: At::Byte(e.valid_up_to()),
-                });
+                self.problems
+                    .lock()
+                    .expect("nothing panics while holding `problems`")
+                    .push(Problem {
+                        kind: ProblemKind::Invalid,
+                        message: format!("`{path}` is not UTF-8"),
+                        file: Some(path.to_string()),
+                        at: At::Byte(e.valid_up_to()),
+                    });
                 ""
             }
         };

@@ -160,7 +160,7 @@ pub fn bundle<P: Project>(
         .map_err(|e| css_error(e.kind.to_string(), e.loc))?;
     let urls = printed
         .dependencies
-        .expect("asked for")
+        .expect("analyze_dependencies is set, so the printer lists them")
         .into_iter()
         .map(|d| {
             let (url, placeholder, loc) = match d {
@@ -288,7 +288,8 @@ impl<P: Project> SourceProvider for Provider<'_, P> {
 
 /// Every path lightningcss has came from [`Project`] as a `&str`.
 fn path(file: &Path) -> &str {
-    file.to_str().expect("a path from Project")
+    file.to_str()
+        .expect("lightningcss has only the paths Project gave it, as &str")
 }
 
 /// npm packages in `node_modules`, found as Tailwind finds a stylesheet's
@@ -320,7 +321,9 @@ impl Packages {
     /// real paths there.
     pub fn resolve(&self, specifier: &str, from: &str) -> Result<String, ResolveError> {
         let dir = self.root.join(from);
-        let dir = dir.parent().expect("a file is in a folder");
+        let dir = dir
+            .parent()
+            .expect("`from` names a file, which is in a folder");
         let resolved = self
             .resolver
             .resolve(dir, specifier)

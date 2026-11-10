@@ -138,7 +138,11 @@ fn math_closure(math: &Math, glyphs: &mut IntSet<GlyphId>) {
             for v in construction.math_glyph_variant_records() {
                 found.push(GlyphId::from(v.variant_glyph()));
             }
-            if let Some(assembly) = construction.glyph_assembly().transpose().expect("parses") {
+            if let Some(assembly) = construction
+                .glyph_assembly()
+                .transpose()
+                .expect("the bundled math font's MATH parses")
+            {
                 for part in assembly.part_records() {
                     found.push(GlyphId::from(part.glyph_id()));
                 }

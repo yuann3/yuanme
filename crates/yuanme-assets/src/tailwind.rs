@@ -343,7 +343,7 @@ pub fn run(binary: &Path, dir: &Path, input: &str, tmp: &Path) -> Result<String,
         .stdout(Stdio::piped())
         .spawn()
         .map_err(|e| Error::Run(format!("can't run `{}`: {e}", binary.display())))?;
-    let mut stdin = child.stdin.take().expect("piped");
+    let mut stdin = child.stdin.take().expect("command() pipes stdin");
     // Written beside the read of its output, so neither pipe fills up.
     let input = input.to_string();
     let writer = std::thread::spawn(move || stdin.write_all(input.as_bytes()));
@@ -425,7 +425,9 @@ impl Watch {
         output: PathBuf,
     ) -> Result<(Watch, String), Error> {
         write_atomic(&tokens, first)?;
-        let tmp = tokens.parent().expect("a file is in a folder");
+        let tmp = tokens
+            .parent()
+            .expect("the token file is in its Watch's folder");
         let mut child = command(binary, dir, tmp)
             .arg("--input")
             .arg("-")
@@ -435,12 +437,12 @@ impl Watch {
             .stdout(Stdio::null())
             .spawn()
             .map_err(|e| Error::Run(format!("can't run `{}`: {e}", binary.display())))?;
-        let mut stdin = child.stdin.take().expect("piped");
+        let mut stdin = child.stdin.take().expect("command() pipes stdin");
         let written = stdin.write_all(input.as_bytes());
         // `--watch=always` keeps watching once its input has ended.
         drop(stdin);
         written.map_err(|e| Error::Run(format!("can't write to Tailwind: {e}")))?;
-        let stderr = child.stderr.take().expect("piped");
+        let stderr = child.stderr.take().expect("command() pipes stderr");
         let (send, builds) = mpsc::channel();
         std::thread::spawn(move || {
             // What it printed since the last build ended.
