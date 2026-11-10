@@ -108,17 +108,7 @@ impl Writer<'_> {
                 level,
                 id: anchor,
                 attrs,
-            } => {
-                self.out
-                    .push_str(&format!("<h{level} id=\"{}\"", attribute(anchor)));
-                for (name, value) in attrs {
-                    self.out
-                        .push_str(&format!(" {name}=\"{}\"", attribute(value)));
-                }
-                self.out.push('>');
-                self.inline(id);
-                self.out.push_str(&format!("</h{level}>"));
-            }
+            } => self.heading(id, *level, anchor, attrs),
             Kind::ThematicBreak => self.out.push_str(&format!("<hr{}>", self.attrs(id))),
             Kind::BlockQuote => {
                 let open = format!("<blockquote{}>", self.attrs(id));
@@ -133,53 +123,14 @@ impl Writer<'_> {
                 unreachable!("written by its list")
             }
             Kind::DescriptionList { tight } => self.description_list(id, !tight),
-            Kind::CodeBlock { lang, .. } if self.code.contains_key(&id) => {
-                // As Astro names it: the language as written if it has a
-                // grammar or is plain text.
-                let language = lang
-                    .as_deref()
-                    .filter(|l| highlight::language(l).is_some())
-                    .unwrap_or("plaintext");
-                self.out.push_str(&format!(
-                    "<pre{} class=\"{}\" tabindex=\"0\" data-language=\"{}\"><code>{}</code></pre>",
-                    self.attrs(id),
-                    highlight::PRE_CLASS,
-                    attribute(language),
-                    self.code[&id]
-                ));
-            }
-            Kind::CodeBlock { lang, text: code } => {
-                self.out.push_str(&format!("<pre{}><code", self.attrs(id)));
-                if let Some(lang) = lang {
-                    self.out
-                        .push_str(&format!(" class=\"language-{}\"", attribute(lang)));
-                }
-                self.out.push('>');
-                if !code.is_empty() {
-                    self.out.push_str(&text(code));
-                    self.out.push('\n');
-                }
-                self.out.push_str("</code></pre>");
-            }
+            Kind::CodeBlock { lang, text: code } => self.code_block(id, lang.as_deref(), code),
             Kind::HtmlBlock(raw) | Kind::HtmlInline(raw) => {
                 self.out.push_str(&raw.replace('\0', "\u{FFFD}"))
             }
             Kind::Table { align } => self.table(id, align),
             Kind::TableRow { .. } | Kind::TableCell => unreachable!("written by its table"),
             Kind::FootnoteDefinition { .. } => unreachable!("written in the footer"),
-            // A `class` from `#+ATTR_HTML` joins the block's own, as in ox-html.
-            Kind::Directive { name } => {
-                let mut class = name.clone();
-                let mut rest = String::new();
-                for (attr, value) in &node.attrs {
-                    match attr.as_str() {
-                        "class" => class = format!("{class} {value}"),
-                        _ => rest.push_str(&format!(" {attr}=\"{}\"", attribute(value))),
-                    }
-                }
-                let open = format!("<div class=\"{}\"{rest}>", attribute(&class));
-                self.block(&open, "div", id);
-            }
+            Kind::Directive { name } => self.directive(id, name),
             Kind::Theorem { kind, name } => self.theorem(id, kind, name),
             Kind::Figure => {
                 let open = format!("<figure{}>", self.attrs(id));
@@ -202,53 +153,13 @@ impl Writer<'_> {
             Kind::Timestamp {
                 datetime,
                 text: raw,
-            } => {
-                self.out
-                    .push_str("<span class=\"timestamp-wrapper\"><time class=\"timestamp\"");
-                if let Some(datetime) = datetime {
-                    self.out
-                        .push_str(&format!(" datetime=\"{}\"", attribute(datetime)));
-                }
-                self.out.push_str(&format!(">{}</time></span>", text(raw)));
-            }
+            } => self.timestamp(datetime.as_deref(), raw),
             Kind::Target { id: anchor } => {
                 self.out
                     .push_str(&format!("<a id=\"{}\"></a>", attribute(anchor)));
             }
-            Kind::Link { url, title } => {
-                let link = self.links.get(&id);
-                let href = normalize_uri(link.map_or(url, |l| &l.href));
-                self.out
-                    .push_str(&format!("<a href=\"{}\"", attribute(&href)));
-                if let Some(title) = title {
-                    self.out
-                        .push_str(&format!(" title=\"{}\"", attribute(title)));
-                }
-                self.out.push_str(&self.attrs(id));
-                self.out.push('>');
-                match link.and_then(|l| l.text.as_deref()) {
-                    Some(number) => self.out.push_str(&text(number)),
-                    None => self.inline(id),
-                }
-                self.out.push_str("</a>");
-            }
-            Kind::Image { .. } if self.pictures.contains_key(&id) => {
-                self.out.push_str(&self.pictures[&id]);
-            }
-            Kind::Image { url, title } => {
-                let alt = alt(doc, id);
-                self.out.push_str(&format!(
-                    "<img src=\"{}\" alt=\"{}\"",
-                    attribute(&normalize_uri(url)),
-                    attribute(&alt)
-                ));
-                if let Some(title) = title {
-                    self.out
-                        .push_str(&format!(" title=\"{}\"", attribute(title)));
-                }
-                self.out.push_str(&self.attrs(id));
-                self.out.push('>');
-            }
+            Kind::Link { url, title } => self.link(id, url, title.as_deref()),
+            Kind::Image { url, title } => self.image(id, url, title.as_deref()),
             Kind::LineBreak => self.out.push_str("<br>\n"),
             Kind::FootnoteReference { label, number } => self.reference(label, *number),
             // Linked as an `\eqref` inside math is.
@@ -259,6 +170,112 @@ impl Writer<'_> {
             )),
             Kind::Math { mathml, .. } => self.out.push_str(mathml),
         }
+    }
+
+    fn heading(&mut self, id: NodeId, level: u8, anchor: &str, attrs: &[(String, String)]) {
+        self.out
+            .push_str(&format!("<h{level} id=\"{}\"", attribute(anchor)));
+        for (name, value) in attrs {
+            self.out
+                .push_str(&format!(" {name}=\"{}\"", attribute(value)));
+        }
+        self.out.push('>');
+        self.inline(id);
+        self.out.push_str(&format!("</h{level}>"));
+    }
+
+    /// Highlighted, when `code` has it, or else as its text.
+    fn code_block(&mut self, id: NodeId, lang: Option<&str>, code: &str) {
+        if let Some(highlighted) = self.code.get(&id) {
+            // As Astro names it: the language as written if it has a
+            // grammar or is plain text.
+            let language = lang
+                .filter(|l| highlight::language(l).is_some())
+                .unwrap_or("plaintext");
+            self.out.push_str(&format!(
+                "<pre{} class=\"{}\" tabindex=\"0\" data-language=\"{}\"><code>{}</code></pre>",
+                self.attrs(id),
+                highlight::PRE_CLASS,
+                attribute(language),
+                highlighted
+            ));
+            return;
+        }
+        self.out.push_str(&format!("<pre{}><code", self.attrs(id)));
+        if let Some(lang) = lang {
+            self.out
+                .push_str(&format!(" class=\"language-{}\"", attribute(lang)));
+        }
+        self.out.push('>');
+        if !code.is_empty() {
+            self.out.push_str(&text(code));
+            self.out.push('\n');
+        }
+        self.out.push_str("</code></pre>");
+    }
+
+    /// A `class` from `#+ATTR_HTML` joins the block's own, as in ox-html.
+    fn directive(&mut self, id: NodeId, name: &str) {
+        let mut class = name.to_string();
+        let mut rest = String::new();
+        for (attr, value) in &self.doc.node(id).attrs {
+            match attr.as_str() {
+                "class" => class = format!("{class} {value}"),
+                _ => rest.push_str(&format!(" {attr}=\"{}\"", attribute(value))),
+            }
+        }
+        let open = format!("<div class=\"{}\"{rest}>", attribute(&class));
+        self.block(&open, "div", id);
+    }
+
+    fn timestamp(&mut self, datetime: Option<&str>, raw: &str) {
+        self.out
+            .push_str("<span class=\"timestamp-wrapper\"><time class=\"timestamp\"");
+        if let Some(datetime) = datetime {
+            self.out
+                .push_str(&format!(" datetime=\"{}\"", attribute(datetime)));
+        }
+        self.out.push_str(&format!(">{}</time></span>", text(raw)));
+    }
+
+    /// To where `links` resolved it, when it did, and with its number as
+    /// its text for a cross-reference that has one.
+    fn link(&mut self, id: NodeId, url: &str, title: Option<&str>) {
+        let link = self.links.get(&id);
+        let href = normalize_uri(link.map_or(url, |l| &l.href));
+        self.out
+            .push_str(&format!("<a href=\"{}\"", attribute(&href)));
+        if let Some(title) = title {
+            self.out
+                .push_str(&format!(" title=\"{}\"", attribute(title)));
+        }
+        self.out.push_str(&self.attrs(id));
+        self.out.push('>');
+        match link.and_then(|l| l.text.as_deref()) {
+            Some(number) => self.out.push_str(&text(number)),
+            None => self.inline(id),
+        }
+        self.out.push_str("</a>");
+    }
+
+    /// Its `<picture>`, when the Engine made one, or else an `<img>`.
+    fn image(&mut self, id: NodeId, url: &str, title: Option<&str>) {
+        if let Some(picture) = self.pictures.get(&id) {
+            self.out.push_str(picture);
+            return;
+        }
+        let alt = alt(self.doc, id);
+        self.out.push_str(&format!(
+            "<img src=\"{}\" alt=\"{}\"",
+            attribute(&normalize_uri(url)),
+            attribute(&alt)
+        ));
+        if let Some(title) = title {
+            self.out
+                .push_str(&format!(" title=\"{}\"", attribute(title)));
+        }
+        self.out.push_str(&self.attrs(id));
+        self.out.push('>');
     }
 
     /// A Theorem block as #17 writes it: its head runs into its first
