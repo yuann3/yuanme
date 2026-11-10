@@ -14,7 +14,7 @@ use yuanme_render::highlight::{self, Code, Language};
 
 use crate::Cache;
 use crate::assets::Seen;
-use crate::hashing::Asset;
+use crate::hashing::{Asset, placeholder};
 
 const KIND: &str = "highlight";
 
@@ -168,8 +168,8 @@ pub(crate) fn stylesheet(
     }
     let css = highlight::css(classes);
     let tag = format!(
-        "<link rel=\"stylesheet\" href=\"\0asset:{}\0\">",
-        assets.len()
+        "<link rel=\"stylesheet\" href=\"{}\">",
+        placeholder(assets.len())
     );
     assets.push(Asset::Linked {
         name: "code.css".into(),

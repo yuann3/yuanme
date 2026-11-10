@@ -112,6 +112,11 @@ fn substitute(bytes: &[u8], urls: &[String]) -> Vec<u8> {
     out
 }
 
+/// What a Page or asset writes where the URL of `assets[index]` goes.
+pub(crate) fn placeholder(index: usize) -> String {
+    format!("\0asset:{index}\0")
+}
+
 /// `site.css` → `assets/site-0123456789abcdef.css`. 64 bits keeps collisions
 /// out of reach for any one Site.
 pub(crate) fn hashed_path(name: &str, hash: &blake3::Hash) -> String {

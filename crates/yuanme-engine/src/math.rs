@@ -8,7 +8,7 @@ use yuanme_assets::font::{self, NCM_MATH};
 use yuanme_content::site::Site;
 
 use crate::assets::Seen;
-use crate::hashing::{Asset, hashed_path};
+use crate::hashing::{Asset, hashed_path, placeholder};
 use crate::{Body, Cache, Mode};
 
 const KIND: &str = "math-font";
@@ -60,14 +60,14 @@ pub(crate) fn stylesheet(
         body: Body::Bytes(bytes),
     });
     let css = format!(
-        "@font-face{{font-family:\"yuanme NCM Math\";src:url(\"\0asset:{}\0\") format(\"{format}\");font-display:block}}\
+        "@font-face{{font-family:\"yuanme NCM Math\";src:url(\"{}\") format(\"{format}\");font-display:block}}\
          math{{font-family:\"yuanme NCM Math\",math}}\
          mtext span.math-core-sans-serif-font{{font-family:sans-serif}}\n{MATHML_FIXES}",
-        assets.len() - 1
+        placeholder(assets.len() - 1)
     );
     let tag = format!(
-        "<link rel=\"stylesheet\" href=\"\0asset:{}\0\">",
-        assets.len()
+        "<link rel=\"stylesheet\" href=\"{}\">",
+        placeholder(assets.len())
     );
     assets.push(Asset::Linked {
         name: "math.css".into(),

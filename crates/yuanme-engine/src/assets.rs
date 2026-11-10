@@ -20,7 +20,7 @@ use yuanme_content::fields::Value;
 use yuanme_diag::{Applicability, Code, Diagnostic, Edit, FileId, Files, Level, Span, codes};
 use yuanme_render::template::{Page, scope};
 
-use crate::hashing::Asset;
+use crate::hashing::{Asset, placeholder};
 use crate::{Body, Bundle, Cache, Inputs};
 
 /// The stylesheet holding every used Template's Sidecar CSS.
@@ -430,12 +430,13 @@ pub(crate) fn assets(
     }
     for ((name, _), (code, urls)) in bundles.iter().zip(codes) {
         let mut code = code;
-        for (placeholder, use_) in urls {
+        // lightningcss's placeholder for each `url()`, not the link pass's.
+        for (written, use_) in urls {
             let url = match &use_ {
                 Use::Url(url) => css_string(url),
-                _ => format!("\"{}\"", placeholder_of(index(&use_))),
+                _ => format!("\"{}\"", placeholder(index(&use_))),
             };
-            code = code.replacen(&format!("\"{placeholder}\""), &url, 1);
+            code = code.replacen(&format!("\"{written}\""), &url, 1);
         }
         assets.push(Asset::Linked {
             name: name.clone(),
@@ -446,7 +447,7 @@ pub(crate) fn assets(
     let sidecars_link = (!scopes.is_empty()).then(|| {
         format!(
             "<link rel=\"stylesheet\" href=\"{}\">",
-            placeholder_of(copies.len() + entries.len())
+            placeholder(copies.len() + entries.len())
         )
     });
     let page_chunk = |i: usize| scripts.entries[script_entries.len() + i];
@@ -481,19 +482,19 @@ pub(crate) fn assets(
                 tags += "<style>@view-transition{navigation:auto}</style>";
             }
             if let Some(i) = page_script {
-                let src = placeholder_of(chunks_at + page_chunk(i));
+                let src = placeholder(chunks_at + page_chunk(i));
                 // The Router swaps in only a Page that carries it.
                 let marker = if router { " data-yuanme-router" } else { "" };
                 tags += &format!("<script type=\"module\" src=\"{src}\"{marker}></script>");
             }
             for chunk in preloads {
-                let href = placeholder_of(chunks_at + chunk);
+                let href = placeholder(chunks_at + chunk);
                 tags += &format!("<link rel=\"modulepreload\" href=\"{href}\">");
             }
             let mut edits: Vec<(Range<usize>, String)> = edits
                 .into_iter()
                 .map(|(at, use_)| {
-                    let with = placeholder_of(index(&use_)) + suffix(page.text[at.clone()].trim());
+                    let with = placeholder(index(&use_)) + suffix(page.text[at.clone()].trim());
                     (at, with)
                 })
                 .collect();
@@ -604,10 +605,6 @@ enum Use {
     Copy(String),
     /// Written as is.
     Url(String),
-}
-
-fn placeholder_of(index: usize) -> String {
-    format!("\0asset:{index}\0")
 }
 
 /// The `?query#fragment` of a URL, kept after its path is replaced.
