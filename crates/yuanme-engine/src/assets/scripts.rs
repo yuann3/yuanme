@@ -10,7 +10,8 @@ use yuanme_content::fields::{Image, Value};
 use yuanme_content::site;
 use yuanme_diag::{Applicability, Diagnostic, Edit, Files, Span, codes};
 
-use super::{Diagnostics, Project, SourceFiles};
+use super::diagnostics::{Diagnostics, SourceFiles};
+use super::project::Project;
 use crate::hashing::{Asset, hashed_path};
 use crate::{Body, Bundle};
 

@@ -12,7 +12,8 @@ use yuanme_assets::tool;
 use yuanme_content::config::Config;
 use yuanme_diag::{Diagnostic, Files, Span, codes};
 
-use super::{Diagnostics, Project, SourceFiles};
+use super::diagnostics::{Diagnostics, SourceFiles};
+use super::project::Project;
 use crate::Cache;
 
 /// The CLI's unminified output for each stylesheet in `entries`, by its
