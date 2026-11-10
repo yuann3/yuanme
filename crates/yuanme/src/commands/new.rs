@@ -2,6 +2,7 @@
 //! are filled in and valid, so it builds before the Author writes a word.
 
 use std::collections::BTreeMap;
+use std::fmt;
 use std::fs;
 use std::path::Path;
 
@@ -11,10 +12,10 @@ use yuanme_content::slug;
 use yuanme_content::yaml::{self, Yaml};
 use yuanme_engine::Mode;
 
+use crate::SITE_ERRORS;
 use crate::events::Event;
 use crate::out::{Out, stdout};
 use crate::project::{self, config_or_report};
-use crate::{Error, SITE_ERRORS};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, clap::ValueEnum)]
 pub enum Format {
@@ -31,21 +32,62 @@ pub struct Created {
     pub unfilled: Vec<String>,
 }
 
+/// Why `new` writes no Entry. Each is the command's mistake, not the
+/// Site's.
+#[derive(Debug)]
+pub enum Error {
+    MultilineTitle,
+    /// The title, which has no letters or digits.
+    NoSlug(String),
+    NoCollection {
+        name: String,
+        /// The Collection with the closest name, if one is close.
+        near: Option<String>,
+    },
+    /// The Entry's path from the project root, which holds a file.
+    Exists(String),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::MultilineTitle => f.write_str("a title is one line"),
+            Error::NoSlug(title) => {
+                write!(f, "`{title}` has no letters or digits to make a Slug from")
+            }
+            Error::NoCollection { name, near: None } => {
+                write!(f, "there is no Collection `{name}`")
+            }
+            Error::NoCollection {
+                name,
+                near: Some(near),
+            } => write!(f, "there is no Collection `{name}`; did you mean `{near}`?"),
+            Error::Exists(path) => write!(f, "{path} already exists"),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
+
+impl From<Error> for crate::Error {
+    fn from(e: Error) -> crate::Error {
+        crate::Error::BadCommand(e.to_string())
+    }
+}
+
 /// The Entry `new` writes. `today` is the date in the Site's time zone.
 pub fn entry(
     collection: &Collection,
     title: &str,
     format: Format,
     today: Date,
-) -> Result<Created, String> {
+) -> Result<Created, Error> {
     if title.contains(['\n', '\r']) {
-        return Err("a title is one line".into());
+        return Err(Error::MultilineTitle);
     }
     let slug = slug::slug(title.trim());
     if slug.is_empty() {
-        return Err(format!(
-            "`{title}` has no letters or digits to make a Slug from"
-        ));
+        return Err(Error::NoSlug(title.to_string()));
     }
     let mut fields: Vec<(String, String)> = Vec::new();
     let mut unfilled = Vec::new();
@@ -142,17 +184,16 @@ fn yaml_string(s: &str) -> String {
 }
 
 /// The Collection `name`, the built-in `pages` included.
-pub fn collection(config: &Config, name: &str) -> Result<Collection, String> {
+pub fn collection(config: &Config, name: &str) -> Result<Collection, Error> {
     let collections = yuanme_content::site::collections(config);
-    collections.get(name).cloned().ok_or_else(|| {
-        let mut message = format!("there is no Collection `{name}`");
-        if let Some(near) =
-            yuanme_content::config::similar(name, collections.keys().map(String::as_str))
-        {
-            message.push_str(&format!("; did you mean `{near}`?"));
-        }
-        message
-    })
+    collections
+        .get(name)
+        .cloned()
+        .ok_or_else(|| Error::NoCollection {
+            name: name.to_string(),
+            near: yuanme_content::config::similar(name, collections.keys().map(String::as_str))
+                .map(str::to_string),
+        })
 }
 
 pub(crate) fn run(
@@ -161,22 +202,19 @@ pub(crate) fn run(
     title: &str,
     format: Format,
     out: &Out,
-) -> Result<u8, Error> {
+) -> Result<u8, crate::Error> {
     let run = project::build(root, None, Mode::Check { drafts: false }, false, false)?;
     let Some(config) = config_or_report(&run, out) else {
         return Ok(SITE_ERRORS);
     };
-    let found = self::collection(config, collection).map_err(Error::BadCommand)?;
+    let found = self::collection(config, collection)?;
     let zone =
         jiff::tz::TimeZone::get(&config.site.timezone).expect("Site config checked the zone");
     let today = jiff::Zoned::now().with_time_zone(zone).date();
-    let created = entry(&found, title, format, today).map_err(Error::BadCommand)?;
+    let created = entry(&found, title, format, today)?;
     let path = root.join(&created.path);
     if path.exists() {
-        return Err(Error::BadCommand(format!(
-            "{} already exists",
-            created.path
-        )));
+        return Err(Error::Exists(created.path).into());
     }
     fs::create_dir_all(path.parent().expect("in a Collection's folder"))?;
     fs::write(&path, &created.text)?;
