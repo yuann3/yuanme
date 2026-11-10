@@ -242,9 +242,8 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
         return failed(diagnostics, sources, Some(config), Some(site));
     }
     let (mut pages, mut assets) = (stage.pages, stage.assets);
-    highlight::stylesheet(&mut pages, &stage.seen, &mut assets);
-    let math_font =
-        assets::styles::stylesheet(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
+    assets::styles::code(&mut pages, &stage.seen, &mut assets);
+    let math_font = assets::styles::math(&site, mode, cache, &mut pages, &stage.seen, &mut assets);
     let mut files = hashing::link(pages, assets, cache, mode == Mode::Dev);
     files.extend(statics);
     files.extend(used.copies(inputs));

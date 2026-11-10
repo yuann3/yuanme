@@ -1,9 +1,7 @@
-//! Code blocks highlighted through the leaf cache (ADR 0011), and the
-//! stylesheet for the classes the Site's Pages use (#53).
+//! Code blocks highlighted through the leaf cache (ADR 0011). The
+//! stylesheet for their classes is the assets' (`assets/styles.rs`).
 
-use std::collections::BTreeSet;
 use std::ops::Range;
-use std::sync::Arc;
 
 use rayon::prelude::*;
 use yuanme_content::config;
@@ -13,8 +11,6 @@ use yuanme_diag::{Applicability, Diagnostic, Edit, FileId, Files, Span, codes};
 use yuanme_render::highlight::{self, Code, Language};
 
 use crate::Cache;
-use crate::assets::Seen;
-use crate::hashing::{Asset, placeholder};
 
 const KIND: &str = "highlight";
 
@@ -144,47 +140,4 @@ fn unknown(sources: &Files, file: FileId, block: Range<usize>, lang: &str) -> Di
         ),
         _ => d,
     }
-}
-
-/// The stylesheet for every highlighted class the Pages use, as an asset,
-/// with a `<link>` to it at the end of the head of each HTML Page that
-/// shows code, as math's stylesheet goes only to Pages with math (#17).
-/// It comes after the assets stage's stylesheets, as a Sidecar's does.
-pub(crate) fn stylesheet(
-    pages: &mut [(String, Vec<u8>)],
-    seen: &[Option<Arc<Seen>>],
-    assets: &mut Vec<Asset>,
-) {
-    let mut classes = BTreeSet::new();
-    let mut showing = Vec::new();
-    for (i, seen) in seen.iter().enumerate() {
-        if let Some(used) = seen.as_ref().and_then(|s| s.code.as_ref()) {
-            classes.extend(used.iter().map(String::as_str));
-            showing.push(i);
-        }
-    }
-    if showing.is_empty() {
-        return;
-    }
-    let css = highlight::css(classes);
-    let tag = format!(
-        "<link rel=\"stylesheet\" href=\"{}\">",
-        placeholder(assets.len())
-    );
-    assets.push(Asset::Linked {
-        name: "code.css".into(),
-        bytes: css.into_bytes(),
-    });
-    // Each moves the rest of its Page, so on threads of their own.
-    let showing = pages
-        .par_iter_mut()
-        .zip(seen)
-        .filter(|(_, s)| s.as_ref().is_some_and(|s| s.code.is_some()));
-    showing.for_each(|((_, bytes), _)| {
-        let at = bytes
-            .windows(7)
-            .position(|w| w.eq_ignore_ascii_case(b"</head>"))
-            .unwrap_or(0);
-        bytes.splice(at..at, tag.bytes());
-    });
 }

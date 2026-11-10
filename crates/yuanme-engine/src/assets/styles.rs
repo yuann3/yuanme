@@ -1,4 +1,7 @@
-//! The math font and stylesheet, for the Pages that show math (#17, #52).
+//! The stylesheets added once the assets stage is done, each linked only
+//! from the HTML Pages that need it: one for the classes of the
+//! highlighted code the Pages show (#53), and the math font with its
+//! stylesheet (#17, #52).
 
 use std::collections::BTreeSet;
 use std::sync::Arc;
@@ -10,6 +13,38 @@ use yuanme_content::site::Site;
 use crate::assets::Seen;
 use crate::hashing::{Asset, hashed_path, placeholder};
 use crate::{Body, Cache, Mode};
+
+/// The stylesheet for every highlighted class the Pages use, as an asset,
+/// with a `<link>` to it at the end of the head of each HTML Page that
+/// shows code, as math's stylesheet goes only to Pages with math (#17).
+/// It comes after the assets stage's stylesheets, as a Sidecar's does.
+pub(crate) fn code(
+    pages: &mut [(String, Vec<u8>)],
+    seen: &[Option<Arc<Seen>>],
+    assets: &mut Vec<Asset>,
+) {
+    let mut classes = BTreeSet::new();
+    let mut showing = Vec::new();
+    for (i, seen) in seen.iter().enumerate() {
+        if let Some(used) = seen.as_ref().and_then(|s| s.code.as_ref()) {
+            classes.extend(used.iter().map(String::as_str));
+            showing.push(i);
+        }
+    }
+    if showing.is_empty() {
+        return;
+    }
+    let css = yuanme_render::highlight::css(classes);
+    let tag = format!(
+        "<link rel=\"stylesheet\" href=\"{}\">",
+        placeholder(assets.len())
+    );
+    assets.push(Asset::Linked {
+        name: "code.css".into(),
+        bytes: css.into_bytes(),
+    });
+    link(pages, seen, &tag, |s| s.code.is_some());
+}
 
 const KIND: &str = "math-font";
 
@@ -29,7 +64,7 @@ const MATHML_FIXES: &str = include_str!("styles/mathmlfixes.css");
 /// for the whole Site, of every character its Entries' math shows; `yuanme
 /// dev` serves the whole font, so an edit never waits for a subset. Returns
 /// the font's path, for the math font budget (#15).
-pub(crate) fn stylesheet(
+pub(crate) fn math(
     site: &Site,
     mode: Mode,
     cache: &mut Cache,
@@ -73,11 +108,23 @@ pub(crate) fn stylesheet(
         name: "math.css".into(),
         bytes: css.into_bytes(),
     });
+    link(pages, seen, &tag, |s| s.math);
+    Some(path)
+}
+
+/// Adds `tag` at the end of the head of each HTML Page whose [`Seen`]
+/// `shows` what the stylesheet it links is for.
+fn link(
+    pages: &mut [(String, Vec<u8>)],
+    seen: &[Option<Arc<Seen>>],
+    tag: &str,
+    shows: impl Fn(&Seen) -> bool + Sync,
+) {
     // Each moves the rest of its Page, so on threads of their own.
     let showing = pages
         .par_iter_mut()
         .zip(seen)
-        .filter(|(_, s)| s.as_ref().is_some_and(|s| s.math));
+        .filter(|(_, s)| s.as_deref().is_some_and(&shows));
     showing.for_each(|((_, bytes), _)| {
         let at = bytes
             .windows(7)
@@ -85,7 +132,6 @@ pub(crate) fn stylesheet(
             .unwrap_or(0);
         bytes.splice(at..at, tag.bytes());
     });
-    Some(path)
 }
 
 /// The subset WOFF2 for `chars`, through the cache: Brotli at quality 11
