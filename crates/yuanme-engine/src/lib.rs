@@ -10,6 +10,7 @@ mod highlight;
 mod host;
 pub mod image;
 mod images;
+mod inputs;
 mod link;
 mod links;
 mod math;
@@ -23,116 +24,15 @@ use std::sync::Arc;
 
 use yuanme_content::config::{self, Budget, Config};
 use yuanme_content::site::{self, Project, RouteKind, Site};
-use yuanme_diag::{Code, Diagnostic, FileId, Files, Level, Span, codes};
+use yuanme_diag::{Diagnostic, Files, Level, Span, codes};
 use yuanme_render::template::scope;
 
 pub use cache::Cache;
 pub use host::{file_of, served, wrangler};
+use inputs::utf8;
+pub use inputs::{Input, Inputs};
 use link::link;
 pub use typescript::{check_types, write_types};
-
-/// A snapshot of the project's files, by path relative to the project root
-/// with `/` separators. It is everything a build reads.
-#[derive(Clone, Default)]
-pub struct Inputs {
-    /// Where streamed files are read from. `None` for Inputs built in
-    /// memory, which hold every file's bytes.
-    root: Option<PathBuf>,
-    files: BTreeMap<String, Input>,
-    /// Folders the walk found, so an empty Collection folder still exists.
-    dirs: BTreeSet<String>,
-}
-
-#[derive(Clone)]
-pub struct Input {
-    pub hash: blake3::Hash,
-    /// `None` for a file whose bytes were hashed as a stream and not kept,
-    /// such as an image: it is read from the project when it is needed.
-    pub bytes: Option<Arc<[u8]>>,
-}
-
-impl Inputs {
-    /// The Inputs of the project at `root`.
-    pub fn at(root: PathBuf) -> Inputs {
-        Inputs {
-            root: Some(root),
-            ..Inputs::default()
-        }
-    }
-
-    pub fn insert(&mut self, path: impl Into<String>, bytes: impl Into<Arc<[u8]>>) {
-        let bytes = bytes.into();
-        let input = Input {
-            hash: blake3::hash(&bytes),
-            bytes: Some(bytes),
-        };
-        self.files.insert(path.into(), input);
-    }
-
-    pub fn insert_streamed(&mut self, path: impl Into<String>, hash: blake3::Hash) {
-        self.files.insert(path.into(), Input { hash, bytes: None });
-    }
-
-    pub fn insert_dir(&mut self, path: impl Into<String>) {
-        self.dirs.insert(path.into());
-    }
-
-    /// The project's folder, unless the Inputs were built in memory.
-    pub fn root(&self) -> Option<&std::path::Path> {
-        self.root.as_deref()
-    }
-
-    pub fn get(&self, path: &str) -> Option<&Input> {
-        self.files.get(path)
-    }
-
-    /// Whether the walk found the folder `dir`; the project's own is `""`.
-    pub fn contains_dir(&self, dir: &str) -> bool {
-        self.dirs.contains(dir)
-    }
-
-    pub fn remove(&mut self, path: &str) -> Option<Input> {
-        self.files.remove(path)
-    }
-
-    /// Removes the folder `dir` and everything in it, returning the files.
-    pub fn remove_dir(&mut self, dir: &str) -> Vec<(String, Input)> {
-        let under = format!("{dir}/");
-        let inside = |p: &String| p.starts_with(&under);
-        self.dirs.remove(dir);
-        self.dirs.retain(|d| !inside(d));
-        let files: Vec<String> = self
-            .files
-            .range(under.clone()..)
-            .map(|(p, _)| p)
-            .take_while(|p| inside(p))
-            .cloned()
-            .collect();
-        files
-            .into_iter()
-            .map(|p| {
-                let input = self.files.remove(&p).expect("listed above");
-                (p, input)
-            })
-            .collect()
-    }
-
-    fn is_dir(&self, dir: &str) -> bool {
-        let under = format!("{dir}/");
-        self.dirs.contains(dir)
-            || self
-                .files
-                .range(under.clone()..)
-                .next()
-                .is_some_and(|(p, _)| p.starts_with(&under))
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = (&str, &Input)> {
-        self.files
-            .iter()
-            .map(|(path, input)| (path.as_str(), input))
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mode {
@@ -263,9 +163,9 @@ pub fn build(inputs: &Inputs, cache: &mut Cache, mode: Mode) -> Build {
     let Some(site) = site else {
         return failed(diagnostics, sources, Some(config), None);
     };
-    let statics = static_files(inputs);
+    let statics = inputs.statics();
     diagnostics.extend(static_collisions(&config, &site, &statics));
-    let templates = templates(inputs, &mut sources, &mut diagnostics);
+    let templates = inputs.templates(&mut sources, &mut diagnostics);
     if diagnostics.iter().any(|d| d.level == Level::Error) {
         return failed(diagnostics, sources, Some(config), Some(site));
     }
@@ -425,33 +325,6 @@ fn site_config(
     }
 }
 
-/// Adds a text file to `sources`. Not UTF-8 is an error rather than a lossy
-/// copy, which could parse as something the Author never wrote.
-fn utf8(
-    path: &str,
-    bytes: &[u8],
-    code: &'static Code,
-    sources: &mut Files,
-) -> Result<FileId, Diagnostic> {
-    match std::str::from_utf8(bytes) {
-        Ok(text) => Ok(sources.add(path, text)),
-        Err(e) => {
-            // The lossy copy matches the bytes up to the first bad one.
-            let file = sources.add(path, String::from_utf8_lossy(bytes));
-            let at = e.valid_up_to();
-            let span = Span {
-                file,
-                range: at..at,
-            };
-            Err(Diagnostic::error(
-                code,
-                format!("{path} is not UTF-8"),
-                span,
-            ))
-        }
-    }
-}
-
 /// Reads every Entry and Data file and resolves the Site.
 fn resolve(
     inputs: &Inputs,
@@ -514,59 +387,6 @@ fn static_collisions(
             let span = Span { file, range: 0..0 };
             Diagnostic::error(&codes::ENTRY_OUTPUT_COLLISION, message, span)
                 .help("move the Static file, or change the Route")
-        })
-        .collect()
-}
-
-/// Every Template, by its path in `templates/`: every text file there but
-/// the Sidecars beside them.
-fn templates(
-    inputs: &Inputs,
-    sources: &mut Files,
-    diagnostics: &mut Vec<Diagnostic>,
-) -> BTreeMap<String, FileId> {
-    let mut out = BTreeMap::new();
-    for (path, input) in inputs.iter() {
-        let Some(name) = path.strip_prefix("templates/") else {
-            continue;
-        };
-        if [".css", ".js", ".mjs", ".ts", ".mts"]
-            .iter()
-            .any(|e| name.ends_with(e))
-        {
-            continue;
-        }
-        // An image, which is streamed, is no Template.
-        let Some(bytes) = input.bytes.as_deref() else {
-            continue;
-        };
-        match utf8(path, bytes, &codes::TEMPLATE_SYNTAX, sources) {
-            Ok(file) => {
-                out.insert(name.to_string(), file);
-            }
-            Err(d) => diagnostics.push(d),
-        }
-    }
-    out
-}
-
-/// `static/` is copied to the same path, unhashed.
-fn static_files(inputs: &Inputs) -> Vec<(String, Output)> {
-    inputs
-        .iter()
-        .filter_map(|(path, input)| {
-            let out = path.strip_prefix("static/")?;
-            let body = match &input.bytes {
-                Some(bytes) => Body::Bytes(bytes.clone()),
-                None => Body::Input(path.to_string()),
-            };
-            Some((
-                out.to_string(),
-                Output {
-                    body,
-                    hash: input.hash,
-                },
-            ))
         })
         .collect()
 }
