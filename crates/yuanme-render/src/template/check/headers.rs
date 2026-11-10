@@ -1,6 +1,7 @@
 //! Props and vars comments: `{# props: … #}` above a macro and
 //! `{# vars: … #}` in a Layout, which declare what each one takes.
 
+use std::fmt;
 use std::ops::Range;
 use std::rc::Rc;
 
@@ -97,6 +98,19 @@ fn entries(body: &str) -> Vec<(Range<usize>, &str)> {
     out
 }
 
+/// The part of a header's type that names no type, such as `strng` in
+/// `list<strng>`.
+#[derive(Debug)]
+struct UnknownType<'s>(&'s str);
+
+impl fmt::Display for UnknownType<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "there is no type `{}`", self.0)
+    }
+}
+
+impl std::error::Error for UnknownType<'_> {}
+
 impl<'a> Checker<'a> {
     pub(super) fn header(&mut self, h: &Header<'_>) -> Vec<Prop> {
         let kind = if h.props { "props" } else { "vars" };
@@ -119,11 +133,12 @@ impl<'a> Checker<'a> {
             let ty_at = at.end - ty.len()..at.end;
             let ty = match self.parse_ty(ty.trim()) {
                 Ok(ty) => ty,
-                Err(unknown) => {
-                    let ty_at = self.find(ty_at.start, &unknown);
+                Err(e) => {
+                    let unknown = e.0;
+                    let ty_at = self.find(ty_at.start, unknown);
                     let d = self.error(
                         &codes::TEMPLATE_BAD_HEADER,
-                        format!("there is no type `{unknown}`, in the {kind} comment's `{name}`"),
+                        format!("{e}, in the {kind} comment's `{name}`"),
                         ty_at.clone(),
                     );
                     let candidates: Vec<&str> = TYPES
@@ -131,7 +146,7 @@ impl<'a> Checker<'a> {
                         .copied()
                         .chain(self.named.keys().map(String::as_str))
                         .collect();
-                    let d = Self::near(d, self.span(ty_at), &unknown, candidates);
+                    let d = Self::near(d, self.span(ty_at), unknown, candidates);
                     self.push(d);
                     Ty::Any
                 }
@@ -146,8 +161,8 @@ impl<'a> Checker<'a> {
         out
     }
 
-    /// A type as a header writes it; the error is the unknown part.
-    fn parse_ty(&self, s: &str) -> Result<Ty, String> {
+    /// A type as a header writes it.
+    fn parse_ty<'s>(&self, s: &'s str) -> Result<Ty, UnknownType<'s>> {
         Ok(match s {
             "string" => Ty::Str,
             "int" => Ty::Int,
@@ -172,7 +187,7 @@ impl<'a> Checker<'a> {
                 } else if let Some(ty) = self.named.get(s) {
                     ty.clone()
                 } else {
-                    return Err(s.to_string());
+                    return Err(UnknownType(s));
                 }
             }
         })
