@@ -5,18 +5,30 @@ use yuanme_org::types::{LinkType, Object};
 use super::{Lower, squash};
 use crate::document::{Kind, NodeId};
 
+/// What every kind of Org link has, whether written `[[…]]`, `<…>` or
+/// plain.
+pub(super) struct OrgLink<'a, 's> {
+    pub(super) link_type: &'a LinkType<'a>,
+    pub(super) path: &'a str,
+    /// The target as written, such as `https://…` or `file:a.org`.
+    pub(super) raw: &'a str,
+    /// `::search` after a file's path.
+    pub(super) search: Option<&'a str>,
+    /// What it shows, if it says: only `[[link][description]]` can.
+    pub(super) description: &'a [Object<'s>],
+    pub(super) source: &'s str,
+}
+
 impl<'s> Lower<'s> {
-    #[allow(clippy::too_many_arguments)] // the fields every kind of Org link has
-    pub(super) fn link(
-        &mut self,
-        link_type: &LinkType<'_>,
-        path: &str,
-        raw: &str,
-        search: Option<&str>,
-        description: &[Object<'s>],
-        source: &'s str,
-        parent: NodeId,
-    ) {
+    pub(super) fn link(&mut self, link: OrgLink<'_, 's>, parent: NodeId) {
+        let OrgLink {
+            link_type,
+            path,
+            raw,
+            search,
+            description,
+            source,
+        } = link;
         let at = self.at(source);
         let url = match link_type {
             LinkType::Protocol(p) => match p.as_ref() {

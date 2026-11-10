@@ -7,6 +7,7 @@ use yuanme_org::types::{
     FootnoteReference, Object, StandardProperties, Timestamp, TimestampRangeType, TimestampType,
 };
 
+use super::links::OrgLink;
 use super::{Lower, Scripts, squash};
 use crate::document::{Document, Kind, NodeId, footnote_identifier};
 
@@ -127,34 +128,38 @@ impl<'s> Lower<'s> {
             }
             Object::RegularLink(l) => {
                 let search = l.get_search_option();
-                self.link(
-                    &l.link_type,
-                    &l.get_path(),
-                    &l.get_raw_link(),
-                    search.as_deref(),
-                    &l.children,
-                    l.source,
-                    parent,
-                );
+                let link = OrgLink {
+                    link_type: &l.link_type,
+                    path: &l.get_path(),
+                    raw: &l.get_raw_link(),
+                    search: search.as_deref(),
+                    description: &l.children,
+                    source: l.source,
+                };
+                self.link(link, parent);
             }
-            Object::PlainLink(l) => self.link(
-                &l.link_type,
-                l.path,
-                l.raw_link,
-                l.search_option,
-                &[],
-                l.source,
-                parent,
-            ),
-            Object::AngleLink(l) => self.link(
-                &l.link_type,
-                &l.get_path(),
-                l.raw_link,
-                l.search_option,
-                &[],
-                l.source,
-                parent,
-            ),
+            Object::PlainLink(l) => {
+                let link = OrgLink {
+                    link_type: &l.link_type,
+                    path: l.path,
+                    raw: l.raw_link,
+                    search: l.search_option,
+                    description: &[],
+                    source: l.source,
+                };
+                self.link(link, parent);
+            }
+            Object::AngleLink(l) => {
+                let link = OrgLink {
+                    link_type: &l.link_type,
+                    path: &l.get_path(),
+                    raw: l.raw_link,
+                    search: l.search_option,
+                    description: &[],
+                    source: l.source,
+                };
+                self.link(link, parent);
+            }
             Object::RadioLink(_) | Object::RadioTarget(_) => self.unsupported(
                 "radio targets and links",
                 o.get_source(),
