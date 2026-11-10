@@ -171,29 +171,7 @@ impl<'a> Checker<'a> {
                     end.saturating_sub(g.name.len())..end,
                 )
             }
-            Expr::GetItem(g) => {
-                let (base, optional) = self.infer(&g.expr);
-                if optional {
-                    self.reach_through(&g.expr, e);
-                }
-                match g
-                    .subscript_expr
-                    .as_const()
-                    .filter(|k| k.kind() == ValueKind::String)
-                {
-                    Some(key) => {
-                        let key = key.as_str().unwrap_or_default().to_string();
-                        self.field(e, &g.expr, &base, &key, range(&g.subscript_expr))
-                    }
-                    None => {
-                        self.expr(&g.subscript_expr, Mode::Use);
-                        match base {
-                            Ty::List(item) => ((*item).clone(), false),
-                            _ => (Ty::Any, false),
-                        }
-                    }
-                }
-            }
+            Expr::GetItem(g) => self.get_item(e, g),
             Expr::Slice(s) => {
                 let (ty, _) = self.expr(&s.expr, Mode::Use);
                 for part in [&s.start, &s.stop, &s.step].into_iter().flatten() {
@@ -208,44 +186,7 @@ impl<'a> Checker<'a> {
                 }
                 ast::UnaryOpKind::Neg => self.expr(&u.expr, Mode::Use),
             },
-            Expr::BinOp(b) => {
-                use ast::BinOpKind as Op;
-                match b.op {
-                    Op::ScAnd => {
-                        let paths = self.cond(&b.left);
-                        let mark = self.narrowed.len();
-                        self.narrowed.extend(paths);
-                        let (ty, _) = self.expr(&b.right, Mode::Guard);
-                        self.narrowed.truncate(mark);
-                        (ty, false)
-                    }
-                    Op::ScOr => {
-                        self.expr(&b.left, Mode::Guard);
-                        self.infer(&b.right)
-                    }
-                    Op::Concat => {
-                        self.expr(&b.left, Mode::Use);
-                        self.expr(&b.right, Mode::Use);
-                        (Ty::Str, false)
-                    }
-                    Op::Eq | Op::Ne | Op::Lt | Op::Lte | Op::Gt | Op::Gte | Op::In => {
-                        self.expr(&b.left, Mode::Compare);
-                        self.expr(&b.right, Mode::Compare);
-                        (Ty::Bool, false)
-                    }
-                    _ => {
-                        let (l, _) = self.expr(&b.left, Mode::Use);
-                        let (r, _) = self.expr(&b.right, Mode::Use);
-                        let ty = match (&l, &r) {
-                            (Ty::List(_), Ty::List(_))
-                            | (Ty::Int, Ty::Int)
-                            | (Ty::Str, Ty::Str) => merge(&l, &r),
-                            _ => Ty::Any,
-                        };
-                        (ty, false)
-                    }
-                }
-            }
+            Expr::BinOp(b) => self.bin_op(b),
             Expr::Compare(c) => {
                 self.expr(&c.expr, Mode::Compare);
                 for op in &c.ops {
@@ -253,47 +194,9 @@ impl<'a> Checker<'a> {
                 }
                 (Ty::Bool, false)
             }
-            Expr::IfExpr(i) => {
-                let paths = self.cond(&i.test_expr);
-                let mark = self.narrowed.len();
-                self.narrowed.extend(paths);
-                let (yes, yes_optional) = self.infer(&i.true_expr);
-                self.narrowed.truncate(mark);
-                self.narrowed.extend(narrows_false(&i.test_expr));
-                // `{{ a if b }}` prints nothing when `b` is false.
-                let (no, no_optional) = match &i.false_expr {
-                    Some(f) => self.infer(f),
-                    None => (Ty::None, false),
-                };
-                self.narrowed.truncate(mark);
-                (merge(&yes, &no), yes_optional || no_optional)
-            }
+            Expr::IfExpr(i) => self.if_expr(i),
             Expr::Filter(f) => self.filter(f),
-            Expr::Test(t) => {
-                let at =
-                    t.span().start_offset as usize..t.span().start_offset as usize + t.name.len();
-                if !(self.known)(true, t.name) {
-                    let d = self.error(
-                        &codes::TEMPLATE_UNKNOWN_FILTER,
-                        format!("there is no test `{}`", t.name),
-                        at.clone(),
-                    );
-                    let candidates: Vec<&str> = TESTS
-                        .iter()
-                        .copied()
-                        .filter(|n| (self.known)(true, n))
-                        .collect();
-                    let d = Self::near(d, self.span(at), t.name, candidates);
-                    self.push(d);
-                }
-                let mode = match t.name {
-                    "defined" | "undefined" | "none" => Mode::Pass,
-                    _ => Mode::Use,
-                };
-                self.expr(&t.expr, mode);
-                self.args(&t.args);
-                (Ty::Bool, false)
-            }
+            Expr::Test(t) => self.test(t),
             Expr::Call(c) => self.call(c, false),
             Expr::List(l) => {
                 let items: Vec<Ty> = l.items.iter().map(|i| self.expr(i, Mode::Use).0).collect();
@@ -305,28 +208,135 @@ impl<'a> Checker<'a> {
                 }
                 (Ty::Any, false)
             }
-            Expr::Map(m) => {
-                // A value may be absent: `attrs` leaves it out.
-                let mut fields = BTreeMap::new();
-                for (k, v) in m.keys.iter().zip(&m.values) {
-                    let (ty, optional) = self.expr(v, Mode::Pass);
-                    match k.as_const().and_then(|k| k.as_str().map(String::from)) {
-                        Some(k) => {
-                            fields.insert(k, Field { ty, optional });
-                        }
-                        None => {
-                            self.expr(k, Mode::Use);
-                        }
-                    }
+            Expr::Map(m) => self.map(m),
+        }
+    }
+
+    /// `e` is `g` as an expression, for its path.
+    fn get_item(&mut self, e: &'a Expr<'a>, g: &'a Spanned<ast::GetItem<'a>>) -> (Ty, bool) {
+        let (base, optional) = self.infer(&g.expr);
+        if optional {
+            self.reach_through(&g.expr, e);
+        }
+        match g
+            .subscript_expr
+            .as_const()
+            .filter(|k| k.kind() == ValueKind::String)
+        {
+            Some(key) => {
+                let key = key.as_str().unwrap_or_default().to_string();
+                self.field(e, &g.expr, &base, &key, range(&g.subscript_expr))
+            }
+            None => {
+                self.expr(&g.subscript_expr, Mode::Use);
+                match base {
+                    Ty::List(item) => ((*item).clone(), false),
+                    _ => (Ty::Any, false),
                 }
-                let map = Obj {
-                    name: "map".into(),
-                    fields,
-                    open: true,
-                };
-                (Ty::Obj(Rc::new(map)), false)
             }
         }
+    }
+
+    fn bin_op(&mut self, b: &'a Spanned<ast::BinOp<'a>>) -> (Ty, bool) {
+        use ast::BinOpKind as Op;
+        match b.op {
+            Op::ScAnd => {
+                let paths = self.cond(&b.left);
+                let mark = self.narrowed.len();
+                self.narrowed.extend(paths);
+                let (ty, _) = self.expr(&b.right, Mode::Guard);
+                self.narrowed.truncate(mark);
+                (ty, false)
+            }
+            Op::ScOr => {
+                self.expr(&b.left, Mode::Guard);
+                self.infer(&b.right)
+            }
+            Op::Concat => {
+                self.expr(&b.left, Mode::Use);
+                self.expr(&b.right, Mode::Use);
+                (Ty::Str, false)
+            }
+            Op::Eq | Op::Ne | Op::Lt | Op::Lte | Op::Gt | Op::Gte | Op::In => {
+                self.expr(&b.left, Mode::Compare);
+                self.expr(&b.right, Mode::Compare);
+                (Ty::Bool, false)
+            }
+            _ => {
+                let (l, _) = self.expr(&b.left, Mode::Use);
+                let (r, _) = self.expr(&b.right, Mode::Use);
+                let ty = match (&l, &r) {
+                    (Ty::List(_), Ty::List(_)) | (Ty::Int, Ty::Int) | (Ty::Str, Ty::Str) => {
+                        merge(&l, &r)
+                    }
+                    _ => Ty::Any,
+                };
+                (ty, false)
+            }
+        }
+    }
+
+    fn if_expr(&mut self, i: &'a Spanned<ast::IfExpr<'a>>) -> (Ty, bool) {
+        let paths = self.cond(&i.test_expr);
+        let mark = self.narrowed.len();
+        self.narrowed.extend(paths);
+        let (yes, yes_optional) = self.infer(&i.true_expr);
+        self.narrowed.truncate(mark);
+        self.narrowed.extend(narrows_false(&i.test_expr));
+        // `{{ a if b }}` prints nothing when `b` is false.
+        let (no, no_optional) = match &i.false_expr {
+            Some(f) => self.infer(f),
+            None => (Ty::None, false),
+        };
+        self.narrowed.truncate(mark);
+        (merge(&yes, &no), yes_optional || no_optional)
+    }
+
+    fn test(&mut self, t: &'a Spanned<ast::Test<'a>>) -> (Ty, bool) {
+        let at = t.span().start_offset as usize..t.span().start_offset as usize + t.name.len();
+        if !(self.known)(true, t.name) {
+            let d = self.error(
+                &codes::TEMPLATE_UNKNOWN_FILTER,
+                format!("there is no test `{}`", t.name),
+                at.clone(),
+            );
+            let candidates: Vec<&str> = TESTS
+                .iter()
+                .copied()
+                .filter(|n| (self.known)(true, n))
+                .collect();
+            let d = Self::near(d, self.span(at), t.name, candidates);
+            self.push(d);
+        }
+        let mode = match t.name {
+            "defined" | "undefined" | "none" => Mode::Pass,
+            _ => Mode::Use,
+        };
+        self.expr(&t.expr, mode);
+        self.args(&t.args);
+        (Ty::Bool, false)
+    }
+
+    fn map(&mut self, m: &'a Spanned<ast::Map<'a>>) -> (Ty, bool) {
+        // A value may be absent: `attrs` leaves it out.
+        let mut fields = BTreeMap::new();
+        for (k, v) in m.keys.iter().zip(&m.values) {
+            let (ty, optional) = self.expr(v, Mode::Pass);
+            match k.as_const().and_then(|k| k.as_str().map(String::from)) {
+                Some(k) => {
+                    fields.insert(k, Field { ty, optional });
+                }
+                None => {
+                    self.expr(k, Mode::Use);
+                }
+            }
+        }
+        let map = Obj {
+            name: "map".into(),
+            fields,
+            open: true,
+        };
+        (Ty::Obj(Rc::new(map)), false)
     }
 
     fn var(&mut self, v: &'a Spanned<ast::Var<'a>>) -> (Ty, bool) {
