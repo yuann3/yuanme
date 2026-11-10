@@ -129,11 +129,28 @@ fn untimed() -> TokenizeOptions {
 }
 
 thread_local! {
-    // ferriki's Highlighter is !Send, so each rayon thread keeps its own
-    // (ADR 0014), for the grammar it last highlighted. One that kept every
-    // grammar it compiled held about 250 MB a thread on a cold build of the
-    // Scale Site (#92), so callers highlight blocks by grammar.
+    /// The crate's one global state: each thread's highlighter, with the
+    /// grammar it last highlighted. Only [`with_highlighter`] reads it.
+    ///
+    /// ferriki's Highlighter is !Send, so each rayon thread keeps its own
+    /// (ADR 0014), and building one per code block would compile its
+    /// grammar every time. One that kept every grammar it compiled held
+    /// about 250 MB a thread on a cold build of the Scale Site (#92), so it
+    /// keeps one, and callers highlight blocks by grammar.
     static HIGHLIGHTER: RefCell<Option<(String, Highlighter)>> = const { RefCell::new(None) };
+}
+
+/// `f` with this thread's highlighter for `grammar`, built anew when the
+/// thread's is for another grammar.
+fn with_highlighter<T>(grammar: &str, f: impl FnOnce(&mut Highlighter) -> T) -> T {
+    HIGHLIGHTER.with_borrow_mut(|slot| {
+        if slot.as_ref().is_some_and(|(g, _)| g != grammar) {
+            // Dropped first, so a thread never holds two.
+            *slot = None;
+        }
+        let (_, h) = slot.get_or_insert_with(|| (grammar.to_string(), highlighter()));
+        f(h)
+    })
 }
 
 fn highlighter() -> Highlighter {
@@ -167,13 +184,7 @@ pub fn block(grammar: Option<&str>, source: &str) -> String {
         None => lines(source)
             .map(|line| vec![(plain, line.to_string())])
             .collect(),
-        Some(grammar) => HIGHLIGHTER.with_borrow_mut(|slot| {
-            if slot.as_ref().is_none_or(|(g, _)| g != grammar) {
-                // Dropped first, so a thread never holds two.
-                *slot = None;
-                *slot = Some((grammar.to_string(), highlighter()));
-            }
-            let (_, h) = slot.as_mut().expect("set above");
+        Some(grammar) => with_highlighter(grammar, |h| {
             let result = h
                 .highlight_with_themes_and_options(
                     source,
