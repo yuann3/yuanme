@@ -2,7 +2,7 @@
 //! built by the Tailwind CLI, a Managed tool, from the Site's class
 //! tokens, before lightningcss bundles it with Tailwind's options.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -14,38 +14,181 @@ use yuanme_assets::{
 use yuanme_content::Config;
 use yuanme_diag::{Diagnostic, Files, Span, codes};
 
-use super::diagnostics::{Diagnostics, SourceFiles};
+use super::diagnostics::SourceFiles;
 use super::project::Project;
 use super::unavailable::{Tool, Unavailable};
 use crate::Cache;
 
-/// The CLI's unminified output for each stylesheet in `entries`, by its
-/// path from the project root. Each is cached under its tokens, the CSS
-/// and plugins Tailwind may read, and the release, so a warm build runs no
-/// Tailwind. A stylesheet that fails has a Diagnostic instead. `watch`
-/// builds a miss with a CLI kept running in the cache, which is quicker
-/// than starting one.
-#[allow(clippy::too_many_arguments)] // Each is one thing the stage holds.
-pub(super) fn outputs(
-    project: &Project<'_>,
-    config: &Config,
-    cache: &mut Cache,
-    entries: &[String],
-    tokens: &str,
+/// Builds stylesheets that import Tailwind with the CLI, unminified. Each
+/// is cached under its tokens, the CSS and plugins Tailwind may read, and
+/// the release, so a warm build runs no Tailwind. With `watch`, a miss is
+/// built with a CLI kept running in the cache, which is quicker than
+/// starting one.
+pub(super) struct Tailwind<'a> {
+    project: &'a Project<'a>,
+    config: &'a Config,
+    tokens: &'a str,
     watch: bool,
-    sources: &mut Files,
-    files: &mut SourceFiles,
-    diagnostics: &mut Diagnostics,
-) -> BTreeMap<String, String> {
-    let version = config
-        .tailwind
-        .version
-        .as_ref()
-        .map_or(TAILWIND_VERSION, |(v, _)| v.as_str());
-    // Everything of the project Tailwind may read but the token file: its
-    // stylesheets, JS plugins and installed packages. A Template's Sidecars
-    // are tokens already. An `@source` of the Author's has it scan files
-    // too, which could be any of them.
+    version: &'a str,
+    /// Everything of the project Tailwind may read but the token file.
+    inputs: blake3::Hash,
+    /// The CLI, once a miss needs it.
+    binary: Option<Result<PathBuf, Unavailable>>,
+}
+
+impl<'a> Tailwind<'a> {
+    pub(super) fn new(
+        project: &'a Project<'a>,
+        config: &'a Config,
+        tokens: &'a str,
+        watch: bool,
+    ) -> Tailwind<'a> {
+        let version = config
+            .tailwind
+            .version
+            .as_ref()
+            .map_or(TAILWIND_VERSION, |(v, _)| v.as_str());
+        Tailwind {
+            project,
+            config,
+            tokens,
+            watch,
+            version,
+            inputs: read(project),
+            binary: None,
+        }
+    }
+
+    /// The CSS for the stylesheet `entry`, or the Diagnostic saying why
+    /// there is none.
+    pub(super) fn output(
+        &mut self,
+        entry: &str,
+        cache: &mut Cache,
+        sources: &mut Files,
+        files: &mut SourceFiles,
+    ) -> Result<String, Diagnostic> {
+        let css = self
+            .project
+            .text(entry)
+            .expect("Stage::tailwind passes only stylesheets it read and found importing Tailwind");
+        let mut key = cache.key("tailwind");
+        for part in [self.version, entry, self.tokens] {
+            key.update(&(part.len() as u64).to_le_bytes());
+            key.update(part.as_bytes());
+        }
+        key.update(self.inputs.as_bytes());
+        let key = key.finalize();
+        if let Some(cached) = cache.get("tailwind", &key) {
+            return Ok(String::from_utf8_lossy(&cached).into_owned());
+        }
+        let Some(root) = self.project.inputs.root.as_deref() else {
+            let message = "yuanme runs Tailwind only for a project in a folder";
+            let span = self.at(entry, None, sources, files);
+            return Err(Diagnostic::error(
+                &codes::ASSET_TAILWIND_ERROR,
+                message,
+                span,
+            ));
+        };
+        let binary = self.binary(entry, sources, files)?;
+        let path = root.join(entry);
+        let dir = path
+            .parent()
+            .expect("`path` is a file under the project root");
+        let built = match self.watch {
+            true => {
+                let mut started = blake3::Hasher::new();
+                for part in [
+                    binary.as_os_str().as_encoded_bytes(),
+                    self.version.as_bytes(),
+                ] {
+                    started.update(&(part.len() as u64).to_le_bytes());
+                    started.update(part);
+                }
+                started.update(self.inputs.as_bytes());
+                let started = started.finalize();
+                watched(cache, entry, &binary, dir, &css, self.tokens, started)
+            }
+            false => run(&binary, dir, &css, self.tokens),
+        };
+        match built {
+            Ok(output) => {
+                cache.insert("tailwind", key, output.as_bytes());
+                Ok(output)
+            }
+            Err(TailwindError::Tailwind(message)) => {
+                // Tailwind quotes what it is about in backticks, such as
+                // the utility an `@apply` names.
+                let quoted = message.split('`').nth(1).filter(|q| !q.is_empty());
+                let span = self.at(entry, quoted, sources, files);
+                Err(Diagnostic::error(
+                    &codes::ASSET_TAILWIND_ERROR,
+                    message,
+                    span,
+                ))
+            }
+            Err(e) => {
+                let span = self.at(entry, None, sources, files);
+                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, e.to_string(), span);
+                Err(d.help(format!(
+                    "set `{}` to a Tailwind CLI that runs here",
+                    TAILWIND_ENV
+                )))
+            }
+        }
+    }
+
+    /// The CLI, found or downloaded on the first miss, or the Diagnostic
+    /// saying why there is none, at `[tailwind] version` when it is set.
+    fn binary(
+        &mut self,
+        entry: &str,
+        sources: &mut Files,
+        files: &mut SourceFiles,
+    ) -> Result<PathBuf, Diagnostic> {
+        let version = self.version;
+        match self.binary.get_or_insert_with(|| binary(version)) {
+            Ok(binary) => Ok(binary.clone()),
+            Err(e) => {
+                let message = e.to_string();
+                let help = e.help();
+                let span = match &self.config.tailwind.version {
+                    Some((_, range)) => Span {
+                        file: self.config.file,
+                        range: range.clone(),
+                    },
+                    None => self.at(entry, None, sources, files),
+                };
+                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, message, span);
+                Err(d.help(help))
+            }
+        }
+    }
+
+    /// Where in `entry` `needle` is, or else where it imports Tailwind.
+    fn at(
+        &self,
+        entry: &str,
+        needle: Option<&str>,
+        sources: &mut Files,
+        files: &mut SourceFiles,
+    ) -> Span {
+        let file = files.file(self.project, sources, entry);
+        let text = sources.text(file);
+        let range = needle
+            .and_then(|n| text.find(n).map(|i| i..i + n.len()))
+            .or_else(|| import_at(text))
+            .unwrap_or(0..0);
+        Span { file, range }
+    }
+}
+
+/// A hash of everything of the project Tailwind may read but the token
+/// file: its stylesheets, JS plugins and installed packages. A Template's
+/// Sidecars are tokens already. An `@source` of the Author's has it scan
+/// files too, which could be any of them.
+fn read(project: &Project<'_>) -> blake3::Hash {
     let scans = project.inputs.iter().any(|(path, input)| {
         path.ends_with(".css")
             && input
@@ -65,101 +208,7 @@ pub(super) fn outputs(
             inputs.update(input.hash.as_bytes());
         }
     }
-    let inputs = inputs.finalize();
-    let mut binary: Option<Result<PathBuf, Unavailable>> = None;
-    let mut out = BTreeMap::new();
-    for entry in entries {
-        let css = project
-            .text(entry)
-            .expect("Stage::tailwind passes only stylesheets it read and found importing Tailwind");
-        let mut key = cache.key("tailwind");
-        for part in [version, entry, tokens] {
-            key.update(&(part.len() as u64).to_le_bytes());
-            key.update(part.as_bytes());
-        }
-        key.update(inputs.as_bytes());
-        let key = key.finalize();
-        if let Some(cached) = cache.get("tailwind", &key) {
-            out.insert(entry.clone(), String::from_utf8_lossy(&cached).into_owned());
-            continue;
-        }
-        let at = |needle: Option<&str>, sources: &mut Files, files: &mut SourceFiles| {
-            let file = files.file(project, sources, entry);
-            let text = sources.text(file);
-            let range = needle
-                .and_then(|n| text.find(n).map(|i| i..i + n.len()))
-                .or_else(|| import_at(text))
-                .unwrap_or(0..0);
-            Span { file, range }
-        };
-        let Some(root) = project.inputs.root.as_deref() else {
-            let message = "yuanme runs Tailwind only for a project in a folder".to_string();
-            diagnostics.push(Diagnostic::error(
-                &codes::ASSET_TAILWIND_ERROR,
-                message,
-                at(None, sources, files),
-            ));
-            continue;
-        };
-        let binary = binary.get_or_insert_with(|| self::binary(version));
-        let binary = match binary {
-            Ok(binary) => binary.clone(),
-            Err(e) => {
-                let span = match &config.tailwind.version {
-                    Some((_, range)) => Span {
-                        file: config.file,
-                        range: range.clone(),
-                    },
-                    None => at(None, sources, files),
-                };
-                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, e.to_string(), span);
-                diagnostics.push(d.help(e.help()));
-                continue;
-            }
-        };
-        let path = root.join(entry);
-        let dir = path
-            .parent()
-            .expect("`path` is a file under the project root");
-        let built = match watch {
-            true => {
-                let mut started = blake3::Hasher::new();
-                for part in [binary.as_os_str().as_encoded_bytes(), version.as_bytes()] {
-                    started.update(&(part.len() as u64).to_le_bytes());
-                    started.update(part);
-                }
-                started.update(inputs.as_bytes());
-                watched(cache, entry, &binary, dir, &css, tokens, started.finalize())
-            }
-            false => run(&binary, dir, &css, tokens),
-        };
-        match built {
-            Ok(output) => {
-                cache.insert("tailwind", key, output.as_bytes());
-                out.insert(entry.clone(), output);
-            }
-            Err(TailwindError::Tailwind(message)) => {
-                // Tailwind quotes what it is about in backticks, such as
-                // the utility an `@apply` names.
-                let quoted = message.split('`').nth(1).filter(|q| !q.is_empty());
-                let span = at(quoted, sources, files);
-                diagnostics.push(Diagnostic::error(
-                    &codes::ASSET_TAILWIND_ERROR,
-                    message,
-                    span,
-                ));
-            }
-            Err(e) => {
-                let span = at(None, sources, files);
-                let d = Diagnostic::error(&codes::ASSET_TOOL_UNAVAILABLE, e.to_string(), span);
-                diagnostics.push(d.help(format!(
-                    "set `{}` to a Tailwind CLI that runs here",
-                    TAILWIND_ENV
-                )));
-            }
-        }
-    }
-    out
+    inputs.finalize()
 }
 
 /// The CLI for `version`.

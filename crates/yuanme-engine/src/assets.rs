@@ -29,6 +29,7 @@ use diagnostics::{Diagnostics, SourceFiles, module_type, reference_span, unmatch
 use order::{Order, Use};
 use project::{Project, Target, copy};
 use scripts::Scripts;
+use tailwind::Tailwind;
 
 use crate::hashing::{Asset, placeholder};
 use crate::url::suffix;
@@ -464,17 +465,17 @@ impl<'a> Stage<'a> {
                     .chain(strings.iter().map(String::as_str))
                     .chain(sidecar_texts.iter().map(String::as_str)),
             );
-            self.project.tailwind = tailwind::outputs(
-                &self.project,
-                self.config,
-                self.cache,
-                &tailwind,
-                &tokens,
-                self.dev,
-                self.sources,
-                &mut self.files,
-                &mut self.diagnostics,
-            );
+            let mut cli = Tailwind::new(&self.project, self.config, &tokens, self.dev);
+            let mut outputs = BTreeMap::new();
+            for entry in &tailwind {
+                match cli.output(entry, self.cache, self.sources, &mut self.files) {
+                    Ok(css) => {
+                        outputs.insert(entry.clone(), css);
+                    }
+                    Err(d) => self.diagnostics.push(d),
+                }
+            }
+            self.project.tailwind = outputs;
         }
         tailwind
     }
