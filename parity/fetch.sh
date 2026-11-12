@@ -17,9 +17,15 @@ mkdir -p "$dir"
 
 tarball=${PARITY_BASELINE:-$dir/$tag.tar.zst}
 if [ -z "${PARITY_BASELINE:-}" ] && [ ! -f "$tarball" ]; then
-  if ! gh release view "$tag" -R yuann3/yuanme > /dev/null 2>&1; then
-    echo "fetch.sh: the release $tag isn't published" >&2
-    exit 3
+  # Only a release that isn't there skips the test: a missing gh or a
+  # failed request would otherwise pass Parity without comparing anything.
+  if ! err=$(gh release view "$tag" -R yuann3/yuanme 2>&1 > /dev/null); then
+    if [ "$err" = "release not found" ]; then
+      echo "fetch.sh: the release $tag isn't published" >&2
+      exit 3
+    fi
+    echo "fetch.sh: can't look up the release $tag: ${err:-gh failed}" >&2
+    exit 1
   fi
   gh release download "$tag" -R yuann3/yuanme -p "$tag.tar.zst" -D "$dir"
 fi
