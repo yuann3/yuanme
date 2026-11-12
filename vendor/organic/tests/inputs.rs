@@ -329,3 +329,35 @@ fn a_parse_nested_too_deeply_stops_at_its_opener() {
         other => panic!("expected TooDeep or OutOfFuel, got {:?}", other.map(|_| ())),
     }
 }
+
+/// Org reads any digits in a timestamp's place, so it reads all of these
+/// as timestamps. A date the types can't hold isn't one here, and stays
+/// plain text. A time, repeater or delay they can't hold is malformed text
+/// after the date, which a timestamp tolerates, as Org does `++y`.
+#[test]
+fn a_timestamp_value_out_of_range_is_text() {
+    for input in [
+        "<2025-13-01 Mon>\n",
+        "<2025-00-10 Mon>\n",
+        "[2025-02-30 Sun]\n",
+    ] {
+        assert_eq!(shape_of(input), ["Paragraph PlainText"], "{input:?}");
+    }
+    for input in [
+        "<2025-01-01 Wed 25:00>\n",
+        "[2025-01-01 Wed 10:61]\n",
+        "<2025-01-01 Wed +99999d>\n",
+        "<2025-01-01 Wed -99999d>\n",
+        "<2025-02-29 Sat 23:59 +65535d -65535d>\n",
+    ] {
+        assert_eq!(
+            shape_of(input),
+            ["Paragraph Timestamp PlainText"],
+            "{input:?}"
+        );
+    }
+    assert_eq!(
+        shape_of("<2025-01-01 Wed>--<2025-13-01 Mon>\n"),
+        ["Paragraph Timestamp PlainText"]
+    );
+}

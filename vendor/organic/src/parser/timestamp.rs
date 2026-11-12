@@ -20,6 +20,7 @@ use crate::context::ContextElement;
 use crate::context::ExitClass;
 use crate::context::ExitMatcherNode;
 use crate::context::RefContext;
+use crate::error::CustomError;
 use crate::error::Res;
 use crate::parser::util::get_consumed;
 use crate::types::Date;
@@ -423,12 +424,9 @@ fn date<'b, 'g, 'r, 's>(
     let (remaining, day_name) =
         opt(tuple((space1, parser_with_context!(dayname)(context))))(remaining)?;
 
-    let year = Year::new(Into::<&str>::into(year))
-        .expect("TODO: I should be able to return CustomError from nom parsers.");
-    let month = Month::new(Into::<&str>::into(month))
-        .expect("TODO: I should be able to return CustomError from nom parsers.");
-    let day_of_month = DayOfMonth::new(Into::<&str>::into(day_of_month))
-        .expect("TODO: I should be able to return CustomError from nom parsers.");
+    let year = Year::new(Into::<&str>::into(year)).map_err(out_of_range)?;
+    let month = Month::new(Into::<&str>::into(month)).map_err(out_of_range)?;
+    let day_of_month = DayOfMonth::new(Into::<&str>::into(day_of_month)).map_err(out_of_range)?;
 
     let date = Date::new(
         year,
@@ -436,7 +434,7 @@ fn date<'b, 'g, 'r, 's>(
         day_of_month,
         day_name.map(|(_, day_name)| Into::<&str>::into(day_name)),
     )
-    .expect("TODO: I should be able to return CustomError from nom parsers.");
+    .map_err(out_of_range)?;
 
     Ok((remaining, date))
 }
@@ -471,6 +469,14 @@ fn dayname_end<'b, 'g, 'r, 's>(
     }))(input)
 }
 
+/// A value the types can't hold, such as month 13 or a repeater of
+/// `+99999d`, which Org reads all the same. Its part fails to parse: a
+/// bad date isn't a timestamp, and a bad time, repeater or delay is text
+/// after the date that the timestamp tolerates.
+fn out_of_range<E>(_: E) -> nom::Err<CustomError> {
+    nom::Err::Error(CustomError::Static("A timestamp value is out of range."))
+}
+
 const fn time(
     allow_rest: bool,
 ) -> impl for<'b, 'g, 'r, 's> Fn(RefContext<'b, 'g, 'r, 's>, OrgSource<'s>) -> Res<OrgSource<'s>, Time<'s>>
@@ -495,12 +501,9 @@ fn _time<'b, 'g, 'r, 's>(
         (remaining, None)
     };
 
-    let hour = Hour::new(Into::<&str>::into(hour))
-        .expect("TODO: I should be able to return CustomError from nom parsers.");
-    let minute = Minute::new(Into::<&str>::into(minute))
-        .expect("TODO: I should be able to return CustomError from nom parsers.");
-    let time = Time::new(hour, minute, time_rest.map(Into::<&str>::into))
-        .expect("TODO: I should be able to return CustomError from nom parsers.");
+    let hour = Hour::new(Into::<&str>::into(hour)).map_err(out_of_range)?;
+    let minute = Minute::new(Into::<&str>::into(minute)).map_err(out_of_range)?;
+    let time = Time::new(hour, minute, time_rest.map(Into::<&str>::into)).map_err(out_of_range)?;
 
     Ok((remaining, time))
 }
@@ -572,9 +575,7 @@ fn repeater<'b, 'g, 'r, 's>(
         map(tag(".+"), |_| RepeaterType::Restart),
     ))(input)?;
     let (remaining, value) = digit1(remaining)?;
-    let value = Into::<&str>::into(value)
-        .parse()
-        .expect("digit1 ensures this will parse as a number.");
+    let value = Into::<&str>::into(value).parse().map_err(out_of_range)?;
     // h = hour, d = day, w = week, m = month, y = year
     let (remaining, unit) = alt((
         map(tag("h"), |_| TimeUnit::Hour),
@@ -604,9 +605,7 @@ fn warning_delay<'b, 'g, 'r, 's>(
         map(tag("-"), |_| WarningDelayType::All),
     ))(input)?;
     let (remaining, value) = digit1(remaining)?;
-    let value = Into::<&str>::into(value)
-        .parse()
-        .expect("digit1 ensures this will parse as a number.");
+    let value = Into::<&str>::into(value).parse().map_err(out_of_range)?;
     // h = hour, d = day, w = week, m = month, y = year
     let (remaining, unit) = alt((
         map(tag("h"), |_| TimeUnit::Hour),
