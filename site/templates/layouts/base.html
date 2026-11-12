@@ -16,22 +16,24 @@
 <link rel="stylesheet" href="/styles/site.css">
 </head>
 <body>
+{# Beside the page on a wide screen, with the contents below it; above the page on a phone. #}
 <header class="site-header">
-  <a class="site-title" href="{{ site.extra.base }}">yuanme docs</a>
+  <a class="brand" href="{{ site.extra.base }}">
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M10 9l6 7.5 6-7.5M16 16.5V24"/></svg>
+    <span>yuanme <span class="visually-hidden">docs</span></span>
+  </a>
   <span class="version">{{ site.extra.version }}</span>
+  <a class="contents-link" href="#contents">Contents</a>
   <form class="search" role="search" action="{{ site.extra.base }}search/">
     <label class="visually-hidden" for="q">Search the docs</label>
-    <input id="q" name="q" type="search" placeholder="Search the docs" autocomplete="off">
-    <button>Search</button>
+    <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+    <input id="q" name="q" type="search" placeholder="Search" autocomplete="off">
   </form>
-  <a class="contents-link" href="#contents">Contents</a>
 </header>
-<div class="shell">
 <main id="main">
 {% block content %}{% endblock %}
 </main>
 {% include "partials/nav.html" %}
-</div>
 <footer class="site-footer">
   <p>
   {% if site.extra.version == "main" %}
@@ -41,7 +43,7 @@
   {% endif %}
   A project's own docs, for the yuanme it uses, are in its <code>.yuanme/docs/</code> folder, and <code>yuanme docs</code> prints them.
   </p>
-  <p><a href="https://github.com/yuann3/yuanme">yuanme on GitHub</a> · <a href="{{ site.extra.base }}llms.txt">llms.txt</a></p>
+  <p><a href="https://github.com/yuann3/yuanme">GitHub</a> · <a href="{{ site.extra.base }}llms.txt">llms.txt</a></p>
 </footer>
 </body>
 </html>
