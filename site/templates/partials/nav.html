@@ -4,7 +4,19 @@
   <ul>
   {% for slug in section.pages %}
     {% set doc = collections.docs | selectattr("slug", "eq", slug) | first %}
-    <li><a href="{{ doc.url }}"{{ {"aria-current": "page" if page.url == doc.url else none} | attrs }}>{{ doc.title }}</a></li>
+    <li><a href="{{ doc.url }}"{{ {"aria-current": "page" if page.url == doc.url else none} | attrs }}>{{ doc.title }}</a>
+    {# The page's own sections, under its link. #}
+    {% if page.url == doc.url %}
+    {% set sections = doc.headings | selectattr("level", "eq", 2) | list %}
+    {% if sections %}
+      <ul class="toc">
+      {% for h in sections %}
+        <li><a href="#{{ h.id }}">{{ h.text }}</a></li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+    {% endif %}
+    </li>
   {% endfor %}
   {% if loop.last %}
     {% set codes = site.extra.base ~ "codes/" %}
