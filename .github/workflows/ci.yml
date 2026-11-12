@@ -24,9 +24,13 @@ env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
 
+# Linux jobs run on the self-hosted runners on the orbs2 server, each in a
+# fresh container. A fork's pull request runs on ubuntu-latest instead, so
+# a stranger's code never runs on that server. The timing gates measure
+# that server, not ubuntu-latest.
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -41,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && !github.event.pull_request.head.repo.fork && fromJSON('["self-hosted", "orbs2"]') || matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -66,7 +70,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && !github.event.pull_request.head.repo.fork && fromJSON('["self-hosted", "orbs2"]') || matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -89,7 +93,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && !github.event.pull_request.head.repo.fork && fromJSON('["self-hosted", "orbs2"]') || matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -104,7 +108,7 @@ jobs:
   # #15's Gate: image encoding takes at most 75 ms of wall time per output
   # on ubuntu-latest.
   image-budget:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -118,7 +122,7 @@ jobs:
   # #15's Gate: a prose edit to a Site the size of the Reference site
   # rebuilds in yuanme dev in at most 50 ms at p95 on ubuntu-latest (#67).
   dev-budget:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -135,7 +139,7 @@ jobs:
   # built and timed in the same run, fails. Each number against its budget
   # is in the job summary, and fails nothing until the Engine meets them.
   gates:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -167,7 +171,7 @@ jobs:
   # The Router's feel checks (#61) on a fixture Site, in the three engines.
   # Its size, at most 2 KB br, is a test in the test job.
   router:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     defaults:
       run:
         working-directory: crates/yuanme-engine/tests/router
@@ -192,7 +196,7 @@ jobs:
   # CPU; on an M4 Max it is the slower of the two at p95 (80 ms against 72
   # headed). It times the Engine too, so yuanme is a release build.
   dev-client:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     defaults:
       run:
         working-directory: crates/yuanme/tests/client
@@ -220,7 +224,7 @@ jobs:
   # Pagefind search site/assemble.ts downloads; the test job builds it
   # under the same Budgets.
   starters:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -248,7 +252,7 @@ jobs:
   # and passes its solution. The projects download tsc and the Tailwind
   # CLI, so it isn't in the test job.
   evals:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -271,7 +275,7 @@ jobs:
   # instrumentation slows parsing down, so the replay times the inputs found
   # again in a plain release build.
   fuzz:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     defaults:
       run:
         working-directory: vendor/organic
@@ -310,7 +314,7 @@ jobs:
   # Markdown corpus, and the margin check fails if a corpus file has less
   # than ten times the fuel it needs.
   fuzz-markdown:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install
@@ -344,7 +348,7 @@ jobs:
   # The committed math font is the one math-font.py builds from its pinned
   # math-core-fonts commit (#52), with Ubuntu 24.04's FontForge.
   math-font:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: sudo apt-get update && sudo apt-get install -y python3-fontforge
@@ -359,7 +363,7 @@ jobs:
           path: crates/yuanme-assets/src/font
 
   supply-chain:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: rustup toolchain install

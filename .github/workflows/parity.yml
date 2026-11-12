@@ -32,9 +32,12 @@ env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
 
+# Linux jobs run on the self-hosted runners on the orbs2 server, each in a
+# fresh container. A fork's pull request runs on ubuntu-latest instead, so
+# a stranger's code never runs on that server.
 jobs:
   self-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     env:
       ENGINES: ${{ inputs.engines || 'chromium' }}
       GH_TOKEN: ${{ github.token }}
@@ -92,7 +95,7 @@ jobs:
       fail-fast: false
       matrix:
         engine: [chromium, firefox, webkit]
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -159,7 +162,7 @@ jobs:
   # --strict-budgets; its build numbers, timed as the Scale Site's are
   # (#73); and its lab numbers on `/`, a Post and `/about/`.
   gates:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || fromJSON('["self-hosted", "orbs2"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: reference

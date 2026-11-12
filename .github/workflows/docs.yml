@@ -22,9 +22,10 @@ permissions:
 env:
   CARGO_TERM_COLOR: always
 
+# Runs on the self-hosted runners on the orbs2 server.
 jobs:
   secrets:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, orbs2]
     outputs:
       found: ${{ steps.look.outputs.found }}
     steps:
@@ -42,7 +43,7 @@ jobs:
   deploy:
     needs: secrets
     if: needs.secrets.outputs.found == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, orbs2]
     # One deploy at a time; each deploys both Sites, so the newest wins.
     concurrency:
       group: docs-deploy
