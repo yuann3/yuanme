@@ -19,7 +19,8 @@
 {# Beside the page on a wide screen, with the contents below it; above the page on a phone. #}
 <header class="site-header">
   <a class="brand" href="{{ site.extra.base }}">
-    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8"/><path d="M10 9l6 7.5 6-7.5M16 16.5V24"/></svg>
+    {# The mark: a y that is a tree of Pages, from its root. Also static/favicon.svg. #}
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="ym-t" x2="0" y2="1"><stop offset="0" stop-color="#2b3128"/><stop offset="1" stop-color="#121611"/></linearGradient><linearGradient id="ym-s" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient><radialGradient id="ym-r" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffb06b"/><stop offset="1" stop-color="#f45d14"/></radialGradient></defs><rect width="32" height="32" rx="8" fill="url(#ym-t)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#ym-s)" stroke="#fff" stroke-opacity=".08"/><g transform="translate(16 16) scale(1.08) translate(-16.5 -16.5)"><path d="M22 9.5 12.5 24M11 9.5l5.43 8.5" fill="none" stroke="#f5f5f4" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="9.5" r="2.4" fill="#f5f5f4"/><circle cx="22" cy="9.5" r="2.4" fill="#f5f5f4"/><circle cx="12.5" cy="24" r="3" fill="url(#ym-r)"/></g></svg>
     <span>yuanme <span class="visually-hidden">docs</span></span>
   </a>
   <span class="version">{{ site.extra.version }}</span>
