@@ -1,3 +1,5 @@
+<img src="site/static/favicon.svg" width="72" height="72" alt="">
+
 # yuanme
 
 A fast Rust static site generator for personal sites and blogs. It renders Markdown and Org, renders math at build time, and is designed to be driven by coding agents.
