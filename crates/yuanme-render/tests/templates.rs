@@ -661,6 +661,14 @@ const ERRORS: &[(&str, &str, &str, &str)] = &[
         "templates/home.html",
         "date_format",
     ),
+    // In a Template no Route uses, where `title` may be set by one that
+    // extends or includes it.
+    (
+        "template/unknown-filter",
+        "=== templates/partials/card.html\n<h2>{{ title }}</h2>{{ \"x\"|date_format }}",
+        "templates/partials/card.html",
+        "date_format",
+    ),
     (
         "template/bad-filter-argument",
         "=== templates/home.html\n{{ \"2025-01-01\"|dateformat(format=\"iso\") }}",

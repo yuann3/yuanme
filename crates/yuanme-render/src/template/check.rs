@@ -9,10 +9,11 @@
 //! back to it (ADR 0006).
 //!
 //! Pass 1, in `signatures`, reads every macro's signature and the props
-//! and vars comments of `headers`. Pass 2 and pass 3, in `walk`, check
-//! each Component's body and then each Route's Template, statement by
-//! statement in `stmt` and expression by expression in `infer`, `filters`
-//! and `calls`, against the `types` of what `schema` says a Page sees.
+//! and vars comments of `headers`. Passes 2 to 4, in `walk`, check each
+//! Component's body, each Route's Template and then each Template no
+//! Route reaches, statement by statement in `stmt` and expression by
+//! expression in `infer`, `filters` and `calls`, against the `types` of
+//! what `schema` says a Page sees.
 
 mod calls;
 mod filters;
@@ -122,6 +123,8 @@ pub(super) fn check(
         seen_blocks: BTreeSet::new(),
         chain_broken: false,
         route: String::new(),
+        walked: BTreeSet::new(),
+        open: false,
     };
     c.signatures();
     c.components();
@@ -156,6 +159,18 @@ pub(super) fn check(
     }
     for g in &groups {
         c.route(g);
+    }
+    // Pass 2 checks Components on their own.
+    let unused: Vec<&str> = asts
+        .keys()
+        .copied()
+        .filter(|t| !t.starts_with("components/") && !c.walked.contains(t))
+        .collect();
+    for template in unused {
+        // One walked as a Partial of an earlier one is checked.
+        if !c.walked.contains(template) {
+            c.unused(template);
+        }
     }
     let mut out = c.out;
     out.sort_by(|a, b| {
@@ -202,6 +217,10 @@ struct Checker<'a> {
     chain_broken: bool,
     /// What the walk is checking, such as "an Entry of `posts`".
     route: String,
+    /// Every Template a walk has reached.
+    walked: BTreeSet<&'a str>,
+    /// Whether a name nothing binds is `Any`, in a Template no Route uses.
+    open: bool,
 }
 
 impl<'a> Checker<'a> {

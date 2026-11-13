@@ -346,7 +346,7 @@ impl<'a> Checker<'a> {
             let narrowed = self.narrowed.iter().any(|p| p == v.id);
             return (b.ty.clone(), b.optional && !narrowed);
         }
-        if v.id == "loop" || v.id == "self" {
+        if v.id == "loop" || v.id == "self" || (self.open && self.component.is_none()) {
             return (Ty::Any, false);
         }
         let at = v.span().start_offset as usize..v.span().end_offset as usize;

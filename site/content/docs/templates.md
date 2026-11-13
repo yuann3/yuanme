@@ -233,7 +233,7 @@ A Partial is a Template included as it is, with `{% include "partials/nav.html" 
 
 ## What check finds
 
-`yuanme check` walks every Template once for each kind of Route that uses it, with the types of what those Pages see, before any Page renders. It finds a mistake even on a path no Entry reaches, or one that `| default` would hide. A Template shared by two Collections is checked against both, so a field only one of them has is optional there. A Template that no Route uses is checked only as part of the Templates that use it.
+`yuanme check` walks every Template once for each kind of Route that uses it, with the types of what those Pages see, before any Page renders. It finds a mistake even on a path no Entry reaches, or one that `| default` would hide. A Template shared by two Collections is checked against both, so a field only one of them has is optional there. A Template that no Route reaches, such as a Partial nothing includes yet, is checked as any Route's: its filters, tests, calls and the globals' fields are checked, and a name nothing binds may be set by a Template that extends or includes it.
 
 A field or variable that isn't in the schema is `template/unknown-field`, with the name it probably meant:
 

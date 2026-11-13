@@ -2,6 +2,8 @@
 //! globals.
 //!
 //! Pass 3: each Route's Template, with what its Pages see.
+//!
+//! Pass 4: each Template that pass 3 didn't reach, as any Route's.
 
 use std::collections::BTreeMap;
 use std::ops::Range;
@@ -84,6 +86,7 @@ impl<'a> Checker<'a> {
         self.chain_broken = false;
         self.component = None;
         self.route.clear();
+        self.open = false;
         let globals = self
             .globals
             .iter()
@@ -100,13 +103,36 @@ impl<'a> Checker<'a> {
             .iter()
             .map(|(n, ty)| (n.to_string(), Bind::new(ty.clone(), false)))
             .collect();
-        self.scopes.push(vars);
-        self.scopes.push(BTreeMap::new());
         let template = self
             .asts
             .get_key_value(g.template.as_str())
             .expect("`check` groups only Templates that parsed")
             .0;
+        self.page(template, vars);
+    }
+
+    /// A Template no Route uses, which any could come to, and which a
+    /// Template could extend or include: a Layout's vars are set as it
+    /// declares them, and a name nothing else binds is `Any`.
+    pub(super) fn unused(&mut self, template: &'a str) {
+        self.reset();
+        self.route = "any Route, as none uses it".to_string();
+        self.open = true;
+        let vars = self
+            .vars
+            .get(template)
+            .into_iter()
+            .flatten()
+            .map(|v| (v.name.clone(), Bind::new(v.ty.clone(), v.optional)))
+            .collect();
+        self.page(template, vars);
+    }
+
+    /// Walks `template` as a Page's, which sees `vars`, and then the
+    /// blocks it overrides that no Layout it extends has.
+    fn page(&mut self, template: &'a str, vars: BTreeMap<String, Bind>) {
+        self.scopes.push(vars);
+        self.scopes.push(BTreeMap::new());
         self.walk(template, None);
         if self.chain_broken {
             return;
@@ -138,6 +164,7 @@ impl<'a> Checker<'a> {
         if self.stack.iter().filter(|f| **f == name).count() >= 2 {
             return;
         }
+        self.walked.insert(name);
         self.stack.push(name);
         let extends = t.children.iter().find_map(|s| match s {
             Stmt::Extends(e) => Some(e),
