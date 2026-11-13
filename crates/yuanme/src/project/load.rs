@@ -17,10 +17,15 @@ const EXTENSIONS: &[&str] = &[
     "md", "org", // Source formats
     "html", "xml", "txt", "css", "js", "mjs", "ts", "mts", // Templates, Sidecars, Scripts
     "jsx", "tsx", // JSX, which `asset/jsx` reports
+    "cjs", "cts", // what Tailwind's plugins and `tsc` may read
     "toml", "yaml", "yml", "json", // Site config, Data files
     "avif", "gif", "jpeg", "jpg", "png", "webp", "svg", "ico", // images
     "woff", "woff2", "ttf", "otf", // fonts
 ];
+
+/// Bun's lockfile, which stands for `node_modules` in the cache keys of
+/// Tailwind's output.
+const LOCKFILES: &[&str] = &["bun.lock", "bun.lockb"];
 
 /// Images are hashed as a stream and never held: the image pipeline reads
 /// them only on a cache miss (ADR 0011).
@@ -168,6 +173,7 @@ fn walk(
             dirs.push(relative);
         } else if relative.starts_with("static/")
             || EXTENSIONS.contains(&extension(&relative).as_str())
+            || LOCKFILES.contains(&relative.as_str())
         {
             files.push(relative);
         }

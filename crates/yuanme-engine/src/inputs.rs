@@ -126,9 +126,11 @@ impl Inputs {
             let Some(name) = path.strip_prefix("templates/") else {
                 continue;
             };
-            if [".css", ".js", ".mjs", ".ts", ".mts", ".jsx", ".tsx"]
-                .iter()
-                .any(|e| name.ends_with(e))
+            if [
+                ".css", ".js", ".mjs", ".cjs", ".ts", ".mts", ".cts", ".jsx", ".tsx",
+            ]
+            .iter()
+            .any(|e| name.ends_with(e))
             {
                 continue;
             }

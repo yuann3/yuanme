@@ -61,6 +61,9 @@ fn load_reads_what_a_build_could_use_and_streams_images() {
         "styles/site.css",
         "scripts/app.jsx",
         "scripts/app.tsx",
+        "tailwind/plugin.cjs",
+        "bun.lock",
+        "bun.lockb",
         "static/.well-known/security.txt",
         "static/talk.pdf",
         // Editor droppings: an Emacs lock and auto-save, a backup, Vim's probe.
@@ -74,6 +77,8 @@ fn load_reads_what_a_build_could_use_and_streams_images() {
         ".yuanme/cache/entry.pack",
         "node_modules/katex/katex.css",
         "private/secret.md",
+        // A lockfile stands for `node_modules` only at the root.
+        "content/bun.lock",
     ] {
         write(&root.join(path), path);
     }
@@ -86,6 +91,8 @@ fn load_reads_what_a_build_could_use_and_streams_images() {
     assert_eq!(
         paths,
         [
+            "bun.lock",
+            "bun.lockb",
             "content/notes/proof.org",
             "content/posts/IMG_1.JPG",
             "content/posts/pew.md",
@@ -94,6 +101,7 @@ fn load_reads_what_a_build_could_use_and_streams_images() {
             "static/.well-known/security.txt",
             "static/talk.pdf",
             "styles/site.css",
+            "tailwind/plugin.cjs",
             "templates/post.html",
             "yuanme.toml",
         ]
