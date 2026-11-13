@@ -4,7 +4,7 @@
 
 use std::borrow::Cow;
 use std::collections::BTreeMap;
-use std::path::PathBuf;
+use std::path::{MAIN_SEPARATOR, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use oxc_allocator::Allocator;
@@ -146,13 +146,15 @@ pub fn bundle(
 ) -> Result<Bundles, Vec<Problem>> {
     // Resolved paths are real paths, so a symlinked project root must be
     // too for them to start with it.
-    let root = project
-        .root
-        .as_ref()
-        .map(|r| r.canonicalize().unwrap_or_else(|_| r.clone()));
+    let root = project.root.as_deref().map(crate::real_path);
     let cwd = root.clone().unwrap_or_else(|| PathBuf::from("/"));
+    // A module id starts with the root and the platform's separator, as
+    // the ids rolldown resolves for packages do: `\` on Windows.
     let prefix = match &root {
-        Some(root) => format!("{}/", root.to_string_lossy().trim_end_matches('/')),
+        Some(root) => {
+            let root = root.to_string_lossy();
+            format!("{}{MAIN_SEPARATOR}", root.trim_end_matches(MAIN_SEPARATOR))
+        }
         None => "/".to_string(),
     };
     let problems = Arc::new(Mutex::new(Vec::new()));
@@ -378,10 +380,17 @@ fn relative(id: &str, prefix: &str) -> String {
     if id.starts_with(PAGE) {
         return "yuanme:page".to_string();
     }
-    id.strip_prefix('\0')
-        .or_else(|| id.strip_prefix(prefix))
-        .unwrap_or(id)
-        .to_string()
+    match id.strip_prefix('\0') {
+        Some(name) => name.to_string(),
+        None => from_root(id, prefix).unwrap_or_else(|| id.to_string()),
+    }
+}
+
+/// The path from the root of the file a module id names, if it is in the
+/// project. A resolved package's id has the platform's separators.
+fn from_root(id: &str, prefix: &str) -> Option<String> {
+    id.strip_prefix(prefix)
+        .map(|path| path.replace(MAIN_SEPARATOR, "/"))
 }
 
 /// Project files for rolldown: it resolves and loads them from the Engine's
@@ -444,12 +453,7 @@ impl Files {
             .push(Problem {
                 kind,
                 message,
-                file: Some(
-                    importer
-                        .strip_prefix(&self.prefix)
-                        .unwrap_or(importer)
-                        .to_string(),
-                ),
+                file: Some(from_root(importer, &self.prefix).unwrap_or_else(|| importer.into())),
                 at: At::Specifier(specifier.to_string()),
             });
         Ok(Some(HookResolveIdOutput {
@@ -557,14 +561,13 @@ impl Plugin for Files {
         let id: &str = resolved.id.as_ref();
         // The resolver looks in every `node_modules` up to the root of the
         // disk, but the build reads only the project's.
-        let Some(path) = id.strip_prefix(&self.prefix) else {
+        let Some(path) = from_root(id, &self.prefix) else {
             return not_found("it resolves outside the project".into());
         };
         if path.ends_with(".css") {
             let message = format!("a Script imports the stylesheet `{specifier}`");
-            let stylesheet = path.to_string();
             return self.problem(
-                ProblemKind::Css { stylesheet },
+                ProblemKind::Css { stylesheet: path },
                 message,
                 importer,
                 specifier,

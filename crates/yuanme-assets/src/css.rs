@@ -326,7 +326,7 @@ impl Packages {
         });
         // Resolved paths are real paths, so a symlinked project root must
         // be too for them to start with it.
-        let root = root.canonicalize().unwrap_or_else(|_| root.to_path_buf());
+        let root = crate::real_path(root);
         Packages { root, resolver }
     }
 

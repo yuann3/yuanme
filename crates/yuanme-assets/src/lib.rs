@@ -33,3 +33,16 @@ pub use typescript::{
     ENV as TSC_ENV, Error as TscError, TYPES as SCRIPT_TYPES, TypeError, VERSION as TSC_VERSION,
     errors as type_errors, run as run_tsc, tool as tsc_tool,
 };
+
+/// `path`'s real path, as oxc_resolver names the files under it, or `path`
+/// when it has none. On Windows a real path is a `\\?\C:\…` one, which
+/// oxc_resolver gives as `C:\…`, so the `\\?\` goes.
+fn real_path(path: &std::path::Path) -> std::path::PathBuf {
+    let Ok(real) = path.canonicalize() else {
+        return path.to_path_buf();
+    };
+    match real.to_str().and_then(|r| r.strip_prefix(r"\\?\")) {
+        Some(disk) if disk.as_bytes().get(1) == Some(&b':') => disk.into(),
+        _ => real,
+    }
+}
