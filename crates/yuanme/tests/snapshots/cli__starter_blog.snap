@@ -406,7 +406,7 @@ var e=Object.defineProperty,t=(t,n)=>{let r={};for(var i in t)e(r,i,{get:t[i],en
 </body>
 </html>
 === favicon.svg
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#1a5fb4"/><path d="M9 9l7 8 7-8M16 17v7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="t" x2="0" y2="1"><stop offset="0" stop-color="#2b3128"/><stop offset="1" stop-color="#121611"/></linearGradient><linearGradient id="s" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient><radialGradient id="r" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffb06b"/><stop offset="1" stop-color="#f45d14"/></radialGradient></defs><rect width="32" height="32" rx="8" fill="url(#t)"/><rect x=".5" y=".5" width="31" height="31" rx="7.5" fill="url(#s)" stroke="#fff" stroke-opacity=".08"/><g transform="translate(16 16) scale(1.08) translate(-16.5 -16.5)"><path d="M22 9.5 12.5 24M11 9.5l5.43 8.5" fill="none" stroke="#f5f5f4" stroke-width="2.2" stroke-linecap="round"/><circle cx="11" cy="9.5" r="2.4" fill="#f5f5f4"/><circle cx="22" cy="9.5" r="2.4" fill="#f5f5f4"/><circle cx="12.5" cy="24" r="3" fill="url(#r)"/></g></svg>
 === index.html
 <!doctype html>
 <html lang="en">
