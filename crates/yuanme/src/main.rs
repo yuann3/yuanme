@@ -25,6 +25,22 @@ use out::Out;
 #[global_allocator]
 static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
+/// Has mimalloc give memory a thread frees back to the OS at once. It waits
+/// a second by default, most of a build, so every encode's freed buffers
+/// stayed resident: on Linux with 4 threads, the Reference site's first
+/// build peaked at 0.53–0.56 GB, and does at 0.32–0.36 GB with this (#96).
+fn return_freed_memory() {
+    /// `mi_option_purge_delay`, in milliseconds, in `mimalloc.h`;
+    /// libmimalloc-sys doesn't name it.
+    const PURGE_DELAY: libmimalloc_sys::mi_option_t = 15;
+    // SAFETY: mi_option_set only stores the value, before any thread but
+    // this one runs.
+    #[allow(unsafe_code, reason = "mimalloc's options are set through its C API")]
+    unsafe {
+        libmimalloc_sys::mi_option_set(PURGE_DELAY, 0);
+    }
+}
+
 /// Every cache key starts with it (ADR 0011): the release version, plus the
 /// git commit and a dirty flag when built from a checkout.
 const ENGINE_VERSION: &str = env!("YUANME_ENGINE_VERSION");
@@ -84,6 +100,7 @@ impl From<io::Error> for Error {
 }
 
 fn main() -> ExitCode {
+    return_freed_memory();
     let cli = Cli::parse();
     let terminal = io::stdout().is_terminal();
     let out = Out {
