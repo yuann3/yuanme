@@ -35,7 +35,7 @@ jsonschema = { version = "0.60.1", default-features = false }
 # `tojson`, so a test Template can print its whole context. Authors don't
 # get it: only test builds turn it on.
 minijinja = { version = "=3.0.1", features = ["json"] }
-sha2 = "0.10"
+sha2 = "0.11"
 
 [lints]
 workspace = true
