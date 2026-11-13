@@ -16,6 +16,7 @@ use yuanme_engine::Inputs;
 const EXTENSIONS: &[&str] = &[
     "md", "org", // Source formats
     "html", "xml", "txt", "css", "js", "mjs", "ts", "mts", // Templates, Sidecars, Scripts
+    "jsx", "tsx", // JSX, which `asset/jsx` reports
     "toml", "yaml", "yml", "json", // Site config, Data files
     "avif", "gif", "jpeg", "jpg", "png", "webp", "svg", "ico", // images
     "woff", "woff2", "ttf", "otf", // fonts

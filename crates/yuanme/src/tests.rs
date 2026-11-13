@@ -59,6 +59,8 @@ fn load_reads_what_a_build_could_use_and_streams_images() {
         "content/notes/proof.org",
         "templates/post.html",
         "styles/site.css",
+        "scripts/app.jsx",
+        "scripts/app.tsx",
         "static/.well-known/security.txt",
         "static/talk.pdf",
         // Editor droppings: an Emacs lock and auto-save, a backup, Vim's probe.
@@ -87,6 +89,8 @@ fn load_reads_what_a_build_could_use_and_streams_images() {
             "content/notes/proof.org",
             "content/posts/IMG_1.JPG",
             "content/posts/pew.md",
+            "scripts/app.jsx",
+            "scripts/app.tsx",
             "static/.well-known/security.txt",
             "static/talk.pdf",
             "styles/site.css",
