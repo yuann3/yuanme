@@ -45,8 +45,6 @@ notify = "8.2.0"
 # musl's allocator is slow under rayon's threads, and the Linux release is
 # musl (#37).
 mimalloc = "0.1.52"
-# mimalloc's options (#96).
-libmimalloc-sys = { version = "0.1.49", features = ["extended"] }
 # `yuanme self update` checks a release's sha256.txt against the release
 # key (#37). Attestations would need a Sigstore client.
 minisign-verify = "0.3.0"
